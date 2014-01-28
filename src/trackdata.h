@@ -141,6 +141,8 @@ public:
 
     double elevation() const				{ return (mElevation); }
     QDateTime time() const				{ return (mDateTime); }
+    double latitude() const				{ return (mLatitude); }
+    double longitude() const				{ return (mLongitude); }
 
     QString formattedElevation() const;
     QString formattedTime() const;

@@ -47,6 +47,8 @@ public:
 //    // row 'row' in place
 //    void changePoint(const PointData *pnt, int row);
 
+    const TrackDataItem *rootItem() const		{ return (mRootItem); }
+
 private:
     TrackDataItem *dataPointer(const QModelIndex &idx) const;
     QModelIndex indexForData(const TrackDataItem *tdi) const;

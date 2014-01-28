@@ -188,9 +188,16 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             return (error(makeXmlException("nested TRKPT elements", "trkpt")));
         }
 
-        if (mCurrentSegment==NULL && mCurrentTrack==NULL)
-        {						// check properly nested
-            return (error(makeXmlException("TRKPT start not within TRKSEG or TRK", "trkpt")));
+        if (mCurrentSegment==NULL)			// no current segment yet
+        {
+            if (mCurrentTrack==NULL)			// must be within track, though
+            {
+                return (error(makeXmlException("TRKPT start not within TRKSEG or TRK", "trkpt")));
+            }
+
+            warning(makeXmlException("TRKPT start not within TRKSEG"));
+            QString segName = QString("segment_%1").arg(++mCountSegment, 2, 10, QLatin1Char('0'));
+            mCurrentSegment = new TrackDataSegment(segName);	// start new implied segment
         }
 
         QString pointName = QString("point_%1").arg(++mCountPoint, 4, 10, QLatin1Char('0'));
@@ -255,6 +262,15 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         if (mCurrentTrack==NULL)			// check must have started
         {
             return (error(makeXmlException("TRK element not started", "trk")));
+        }
+
+        if (mCurrentSegment!=NULL)			// segment not closed
+        {						// (may be an implied one)
+#ifdef DEBUG_IMPORT
+            kDebug() << "got implied TRKSEG:" << mCurrentSegment->description();
+#endif
+            mCurrentTrack->addChildItem(mCurrentSegment);
+            mCurrentSegment = NULL;			// finished with temporary
         }
 
 #ifdef DEBUG_IMPORT

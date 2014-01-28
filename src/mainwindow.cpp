@@ -87,7 +87,7 @@ void MainWindow::init()
     mSplitter->addWidget(mFilesController->view());
 
     mMapController = new MapController(this);
-//    mMapController->view()->setModel(mFilesController->model());
+    mMapController->view()->setFilesModel(mFilesController->model());
     connect(mMapController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
     connect(mMapController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mMapController, SIGNAL(mapZoomChanged(bool,bool)), SLOT(slotMapZoomChanged(bool,bool)));
@@ -445,14 +445,6 @@ err2:   slotStatusMessage(i18n("Error loading from %1", loadPath));
                                   loadPath,err));
         goto err2;
     }
-
-//    const QList<KUrl> *projectFiles = mProject->fileList();	// load files into model
-//    for (QList<KUrl>::const_iterator it = projectFiles->constBegin();
-//         it!=projectFiles->constEnd(); ++it)
-//    {
-//        const KUrl &file = (*it);
-//        importFile(file, true);
-//    }
 
     slotStatusMessage(i18n("Loaded from %1", loadPath));
     return (true);

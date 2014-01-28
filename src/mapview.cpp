@@ -16,10 +16,9 @@
 #include <marble/GeoDataPlacemark.h>
 #include <marble/AbstractFloatItem.h>
 
-//#include "pointsmodel.h"
-//#include "pointscontroller.h"
+#include "filesmodel.h"
+#include "trackdata.h"
 #include "mainwindow.h"
-//#include "iconsmanager.h"
 
 
 
@@ -70,7 +69,62 @@ void MapView::saveProperties(KConfigGroup &grp)
 // see http://techbase.kde.org/Projects/Marble/MarbleGeoPainter
 void MapView::customPaint(GeoPainter *painter)
 {
-    if (mModel==NULL) return;
+    if (filesModel()==NULL) return;
+    paintDataTree(filesModel()->rootItem(), painter);
+}
+
+
+void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter)
+{
+    int cnt = tdi->childCount();
+    if (cnt==0) return;					// quick escape if no children
+
+    kDebug() << tdi << tdi->name();
+
+    const TrackDataItem *firstChild = tdi->childAt(0);	// look at first child
+    if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
+    {							// see if it is a point
+        kDebug() << "points for" << tdi->name();
+
+///////////// TODO: line width/style: inherited or global setting
+        painter->setPen(QPen(Qt::black, 4));
+
+        GeoDataLineString lines;
+        for (int i = 0; i<cnt; ++i)
+        {
+            const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i));
+            if (tdp!=NULL)
+            {
+                GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                         0, GeoDataCoordinates::Degree);
+                lines.append(coord);
+            }
+        }
+
+        painter->drawPolyline(lines);
+
+///////////// TODO: points for selected segment
+
+
+
+
+    }
+    else						// not a point, so a container
+    {
+        for (int i = 0; i<cnt; ++i)			// recurse to paint children
+        {
+            paintDataTree(tdi->childAt(i), painter);
+        }
+    }
+}
+
+
+
+
+
+
+
+
 //    const int cnt = mModel->pointsCount();
 //
 //    for (int i = 0; i<cnt; ++i)
@@ -102,19 +156,18 @@ void MapView::customPaint(GeoPainter *painter)
 //        painter->drawText(coord, pnt->name());
 //        painter->restore();
 //    }
-}
 
 
 
-void MapView::slotRmbRequest(int x, int y)
+void MapView::slotRmbRequest(int mx, int my)
 {
-    mPopupX = x;					// save for actions
-    mPopupY = y;
+    mPopupX = mx;					// save for actions
+    mPopupY = my;
 
     QMenu *popup = static_cast<QMenu *>(
         mainWindow()->factory()->container("mapview_contextmenu",
                                            mainWindow()));
-    if (popup!=NULL) popup->exec(mapToGlobal(QPoint(x, y)));
+    if (popup!=NULL) popup->exec(mapToGlobal(QPoint(mx, my)));
 }
 
 

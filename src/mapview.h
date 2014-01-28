@@ -12,8 +12,9 @@ using namespace Marble;
 class KAction;
 class KConfigGroup;
 
-class PointsModel;
+class FilesModel;
 class MainWindow;
+class TrackDataItem;
 
 
 class MapView : public MarbleWidget
@@ -27,14 +28,14 @@ public:
     void readProperties(const KConfigGroup &grp);
     void saveProperties(KConfigGroup &grp);
 
-    void setModel(PointsModel *mdl)		{ mModel = mdl; }
+    void setFilesModel(FilesModel *mdl)		{ mModel = mdl; }
 
     QStringList overlays(bool visibleOnly) const;
     KAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);
 
 public slots:               
-    void slotRmbRequest(int x, int y);
+    void slotRmbRequest(int mx, int my);
     void slotFindAddress();
     void slotShowOverlay();
 
@@ -45,14 +46,17 @@ protected slots:
 
 private:
     MainWindow *mainWindow() const		{ return (mMainWindow); }
+    FilesModel *filesModel() const		{ return (mModel); }
 
     bool mouseCoordinates(GeoDataCoordinates *coords);
+
+    void paintDataTree(const TrackDataItem *tdi, GeoPainter *painter);
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
 
 private:
-    PointsModel *mModel;
+    FilesModel *mModel;
     MainWindow *mMainWindow;
     ReverseGeocodingRunnerManager *mRunnerManager;
     int mPopupX;
