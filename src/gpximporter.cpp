@@ -59,14 +59,9 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
     mRestartTag = QString::null;
     mContainedChars = QString::null;
 
-//    mPoints.clear();
     mCurrentTrack = NULL;
     mCurrentSegment = NULL;
     mCurrentPoint = NULL;
-
-    mCountTrack = 0;
-    mCountSegment = 0;
-    mCountPoint = 0;
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(this);
@@ -162,9 +157,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         {
             return (error(makeXmlException("nested TRK elements", "trk")));
         }
-
-        QString trackName = QString("track_%1").arg(++mCountTrack, 2, 10, QLatin1Char('0'));
-        mCurrentTrack = new TrackDataTrack(trackName);	// start new track
+							// start new track
+        mCurrentTrack = new TrackDataTrack(QString::null);
     }
     else if (localName=="trkseg")			// start of a TRKSEG element
     {
@@ -177,9 +171,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         {
             return (error(makeXmlException("TRKSEG start not within TRK", "trkseg")));
         }
-
-        QString segName = QString("segment_%1").arg(++mCountSegment, 2, 10, QLatin1Char('0'));
-        mCurrentSegment = new TrackDataSegment(segName);	// start new segment
+							// start new segment
+        mCurrentSegment = new TrackDataSegment(QString::null);
     }
     else if (localName=="trkpt")			// start of a TRKPT element
     {
@@ -196,12 +189,11 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             }
 
             warning(makeXmlException("TRKPT start not within TRKSEG"));
-            QString segName = QString("segment_%1").arg(++mCountSegment, 2, 10, QLatin1Char('0'));
-            mCurrentSegment = new TrackDataSegment(segName);	// start new implied segment
+							// start new implied segment
+            mCurrentSegment = new TrackDataSegment(QString::null);
         }
-
-        QString pointName = QString("point_%1").arg(++mCountPoint, 4, 10, QLatin1Char('0'));
-        mCurrentPoint = new TrackDataPoint(pointName);	// start new point
+							// start new point
+        mCurrentPoint = new TrackDataPoint(QString::null);
 
         double lat,lon;					// get coordinates
         for (int i = 0; i<atts.count(); ++i)

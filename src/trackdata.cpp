@@ -13,17 +13,33 @@
 
 
 
-TrackDataItem::TrackDataItem(const QString &name)
+TrackDataItem::TrackDataItem(const QString &desc)
 {
-    mName = name;
-//    mType = cat;
+    mName = desc;
+    init();
+}
+
+
+
+TrackDataItem::TrackDataItem(const QString &desc, const char *format, int *counter)
+{
+    if (!desc.isEmpty()) mName = desc;
+    else mName.sprintf(format, ++(*counter));
+    init();
+}
+
+
+
+void TrackDataItem::init()
+{
     mParent = NULL;
 }
 
 
+
 TrackDataItem::~TrackDataItem()
 {
-    ///////// TODO: recursively delete children
+    qDeleteAll(mChildItems);
 }
 
 
@@ -47,18 +63,18 @@ TrackDataItem *TrackDataItem::removeLastChildItem()
 
 
 
-TrackDataRoot::TrackDataRoot(const QString &name)
-    : TrackDataItem(name)
+TrackDataRoot::TrackDataRoot(const QString &desc)
+    : TrackDataItem(desc)
 {
 }
 
 
 
 
+int TrackDataFile::sCounter = 0;
 
-
-TrackDataFile::TrackDataFile(const QString &name)
-    : TrackDataItem(name)
+TrackDataFile::TrackDataFile(const QString &desc)
+    : TrackDataItem(desc, "file_%02d", &TrackDataFile::sCounter)
 {
 }
 
@@ -73,23 +89,28 @@ QString TrackDataFile::iconName() const
 
 
 
+int TrackDataTrack::sCounter = 0;
 
-
-TrackDataTrack::TrackDataTrack(const QString &name)
-    : TrackDataItem(name)
-{
-}
-
-
-TrackDataSegment::TrackDataSegment(const QString &name)
-    : TrackDataItem(name)
+TrackDataTrack::TrackDataTrack(const QString &desc)
+    : TrackDataItem(desc, "track_%02d", &TrackDataTrack::sCounter)
 {
 }
 
 
 
-TrackDataPoint::TrackDataPoint(const QString &name)
-    : TrackDataItem(name)
+int TrackDataSegment::sCounter = 0;
+
+TrackDataSegment::TrackDataSegment(const QString &desc)
+    : TrackDataItem(desc, "segment_%02d", &TrackDataSegment::sCounter)
+{
+}
+
+
+
+int TrackDataPoint::sCounter = 0;
+
+TrackDataPoint::TrackDataPoint(const QString &desc)
+    : TrackDataItem(desc, "point_%04d", &TrackDataPoint::sCounter)
 {
     mLatitude = mLongitude = NAN;
     mElevation = NAN;

@@ -39,9 +39,6 @@ public:
     bool fatalError(const QXmlParseException &ex);
     bool warning(const QXmlParseException &ex);
 
-//signals:
-//    void finished(const PointsList *points);
-
 private:
     QByteArray indent() const;
     inline bool parsing() const;
@@ -51,10 +48,6 @@ private:
     TrackDataTrack *mCurrentTrack;
     TrackDataSegment *mCurrentSegment;
     TrackDataPoint *mCurrentPoint;
-
-    int mCountTrack;
-    int mCountSegment;
-    int mCountPoint;
 
     int mXmlIndent;
     QString mRestartTag;

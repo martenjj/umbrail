@@ -56,7 +56,12 @@ public:
     void addChildItem(TrackDataItem *data);
     TrackDataItem *removeLastChildItem();
 
+protected:
+    TrackDataItem(const QString &desc, const char *format, int *counter);
+
 private:
+    void init();
+
     QString mName;
     QList<TrackDataItem *> mChildItems;
     TrackDataItem *mParent;
@@ -71,7 +76,7 @@ private:
 class TrackDataRoot : public TrackDataItem
 {
 public:
-    TrackDataRoot(const QString &name);
+    TrackDataRoot(const QString &desc);
     virtual ~TrackDataRoot()				{}
 
     QString iconName() const				{ return ("unknown"); }
@@ -87,7 +92,7 @@ public:
 class TrackDataFile : public TrackDataItem
 {
 public:
-    TrackDataFile(const QString &name);
+    TrackDataFile(const QString &desc);
     virtual ~TrackDataFile()				{}
 
     KUrl fileName() const				{ return (mFileName); }
@@ -95,6 +100,8 @@ public:
     QString iconName() const;
 
 private:
+    static int sCounter;
+
     KUrl mFileName;
 };
 
@@ -106,11 +113,13 @@ private:
 class TrackDataTrack : public TrackDataItem
 {
 public:
-    TrackDataTrack(const QString &name);
+    TrackDataTrack(const QString &desc);
     virtual ~TrackDataTrack()				{}
 
     QString iconName() const				{ return ("chart_track"); }
 
+private:
+    static int sCounter;
 };
 
 
@@ -118,11 +127,13 @@ public:
 class TrackDataSegment : public TrackDataItem
 {
 public:
-    TrackDataSegment(const QString &name);
+    TrackDataSegment(const QString &desc);
     virtual ~TrackDataSegment()				{}
 
     QString iconName() const				{ return ("chart_segment"); }
 
+private:
+    static int sCounter;
 };
 
 
@@ -130,10 +141,10 @@ public:
 class TrackDataPoint : public TrackDataItem
 {
 public:
-    TrackDataPoint(const QString &name);
+    TrackDataPoint(const QString &desc);
     virtual ~TrackDataPoint()				{}
 
-    QString iconName() const				{ return ("bookmarks"); }
+    QString iconName() const				{ return ("chart_point"); }
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }
@@ -148,6 +159,8 @@ public:
     QString formattedTime() const;
 
 private:
+    static int sCounter;
+
     double mLatitude;
     double mLongitude;
     double mElevation;
