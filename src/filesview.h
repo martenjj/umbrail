@@ -18,7 +18,7 @@ class FilesView : public QTreeView
     Q_OBJECT
 
 public:
-    FilesView(QWidget *parent = NULL);
+    FilesView(QWidget *pnt = NULL);
     ~FilesView();
 
     void readProperties(const KConfigGroup &grp);
@@ -32,6 +32,7 @@ public:
     int selectedCount() const			{ return (mSelectedCount); }
     TrackData::Type selectedType() const	{ return (mSelectedType); }
     const TrackDataItem *selectedItem() const	{ return (mSelectedItem); }
+    QList<TrackDataItem *> selectedItems() const;
 
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel);

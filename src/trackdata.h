@@ -2,6 +2,8 @@
 #ifndef TRACKDATA_H
 #define TRACKDATA_H
 
+#include <math.h>
+
 #include <qstring.h>
 #include <qlist.h>
 #include <qdatetime.h>
@@ -9,7 +11,64 @@
 #include <kurl.h>
 
 
-class QDateTime;
+class TrackDataItem;
+
+
+class TimeRange
+{
+public:
+    TimeRange()					{}
+    TimeRange(const QDateTime &sp, const QDateTime &fp)
+        : mStart(sp), mFinish(fp)		{}
+
+    ~TimeRange()				{}
+
+    QDateTime start() const			{ return (mStart); }
+    QDateTime finish() const			{ return (mFinish); }
+    bool isValid() const			{ return (mStart.isValid() && mFinish.isValid()); }
+    unsigned timeSpan() const			{ return (mStart.secsTo(mFinish)); }
+
+    TimeRange united(const TimeRange &other) const;
+
+    static const TimeRange null;
+
+private:
+    QDateTime mStart;
+    QDateTime mFinish;
+};
+
+
+
+
+
+class BoundingArea
+{
+public:
+    BoundingArea()
+        : mLatNorth(NAN), mLatSouth(NAN),
+          mLonWest(NAN), mLonEast(NAN)		{}
+    BoundingArea(double lat, double lon)
+        : mLatNorth(lat), mLatSouth(lat),
+          mLonWest(lon), mLonEast(lon)		{}
+    ~BoundingArea()				{}
+
+    double north() const			{ return (mLatNorth); }
+    double south() const			{ return (mLatSouth); }
+    double east() const				{ return (mLonEast); }
+    double west() const				{ return (mLonWest); }
+    bool isValid() const			{ return (!isnan(mLatNorth) && !isnan(mLonWest)); }
+
+    BoundingArea united(const BoundingArea &other) const;
+
+    static const BoundingArea null;
+
+private:
+    double mLatNorth;
+    double mLatSouth;
+    double mLonWest;
+    double mLonEast;
+};
+
 
 
 
@@ -28,8 +87,26 @@ namespace TrackData
         Segment,
         Point
     };
-};
 
+
+
+    BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> &items);
+
+    TimeRange unifyTimeSpans(const QList<TrackDataItem *> &items);
+
+    QString formattedLatLong(double lat, double lon);
+
+    double sumTotalTravelDistance(const QList<TrackDataItem *> &items);
+
+    unsigned sumTotalTravelTime(const QList<TrackDataItem *> &items);
+
+    QString formattedDuration(unsigned t);
+    QString formattedTime(const QDateTime &dt);
+
+
+
+
+};
 
 
 
@@ -44,7 +121,6 @@ public:
     virtual ~TrackDataItem();
 
     virtual QString name() const			{ return (mName); }
-//    virtual void setDescription(const QString &desc)	{ mDescription = desc; }
 
     virtual QString iconName() const = 0;
 
@@ -55,6 +131,15 @@ public:
 
     void addChildItem(TrackDataItem *data);
     TrackDataItem *removeLastChildItem();
+
+    virtual QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+//    virtual QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+
+    virtual BoundingArea boundingArea() const;
+    virtual TimeRange timeSpan() const;
+    virtual double totalTravelDistance() const;
+    virtual unsigned int totalTravelTime() const;
+
 
 protected:
     TrackDataItem(const QString &desc, const char *format, int *counter);
@@ -80,6 +165,9 @@ public:
     virtual ~TrackDataRoot()				{}
 
     QString iconName() const				{ return ("unknown"); }
+
+    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+
 };
 
 
@@ -98,6 +186,8 @@ public:
     KUrl fileName() const				{ return (mFileName); }
     void setFileName(const KUrl &file)			{ mFileName = file; }
     QString iconName() const;
+
+    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 private:
     static int sCounter;
@@ -118,6 +208,8 @@ public:
 
     QString iconName() const				{ return ("chart_track"); }
 
+    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+
 private:
     static int sCounter;
 };
@@ -131,6 +223,10 @@ public:
     virtual ~TrackDataSegment()				{}
 
     QString iconName() const				{ return ("chart_segment"); }
+
+    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+
+    TimeRange timeSpan() const;
 
 private:
     static int sCounter;
@@ -146,6 +242,8 @@ public:
 
     QString iconName() const				{ return ("chart_point"); }
 
+    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
@@ -157,6 +255,13 @@ public:
 
     QString formattedElevation() const;
     QString formattedTime() const;
+    QString formattedPosition() const;
+
+    BoundingArea boundingArea() const;
+    TimeRange timeSpan() const;
+    double distanceTo(const TrackDataPoint *other) const;
+    int timeTo(const TrackDataPoint *other) const;
+
 
 private:
     static int sCounter;

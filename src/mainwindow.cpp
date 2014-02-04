@@ -39,11 +39,7 @@
 #include "mapview.h"
 #include "project.h"
 #include "commands.h"
-#include "gpximporter.h"
 
-
-static const char dataFilter[] = "*.tracks|Track project (*.tracks)";
-static const char allFilter[] = "*|All Files";
 
 static const char configGroup[] = "MainWindow";
 static const char splitterStateKey[] = "SplitterState";
@@ -54,8 +50,8 @@ static const char notUsefulOverlays[] = "elevationprofile,GpsInfo,routing,speedo
 
 
  
-MainWindow::MainWindow(QWidget *parent)
-    : KXmlGuiWindow(parent)
+MainWindow::MainWindow(QWidget *pnt)
+    : KXmlGuiWindow(pnt)
 {
     kDebug();
 
@@ -165,6 +161,12 @@ void MainWindow::setupActions()
     a->setIcon(KIcon("application_side_list"));
     a->setShortcut(Qt::CTRL+Qt::Key_Comma);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
+
+    mPropertiesAction = actionCollection()->addAction("track_properties");
+    // text set in slotUpdateActionState() below
+    mPropertiesAction->setShortcut(KShortcut(Qt::CTRL+Qt::Key_Return, Qt::CTRL+Qt::Key_Enter));
+    mPropertiesAction->setIcon(KIcon("document-properties"));
+    connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
 
     a = actionCollection()->addAction("map_save");
     a->setText(i18n("Save As Image..."));
@@ -485,12 +487,8 @@ void MainWindow::slotOpenProject()
 {
     if (!queryClose()) return;
 
-    QStringList filters;
-    filters << dataFilter;
-    filters << allFilter;
-
-    KFileDialog d(QString("kfiledialog:///project/"), filters.join("\n"), this);
-    d.setCaption(i18n("Open Tracks File"));
+    KFileDialog d(QString("kfiledialog:///project/"), FilesController::allProjectFilters(true), this);
+    d.setCaption(i18n("Open Tracks Project"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -541,8 +539,8 @@ void MainWindow::slotSaveProject()
 
 void MainWindow::slotSaveAs()
 {
-    KFileDialog d(QString("kfiledialog:///project/%1").arg("untitled.tracks"), dataFilter, this);
-    d.setCaption(i18n("Save Tracks As"));
+    KFileDialog d(QString("kfiledialog:///project/%1").arg("untitled.tracks"), FilesController::allProjectFilters(false), this);
+    d.setCaption(i18n("Save Tracks Project As"));
     d.setOperationMode(KFileDialog::Saving);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -559,11 +557,7 @@ void MainWindow::slotSaveAs()
 
 void MainWindow::slotImportFile()
 {
-    QStringList filters;
-    filters << GpxImporter::filter();
-    filters << allFilter;
-
-    KFileDialog d(KUrl("kfiledialog:///import"), filters.join("\n"), this);
+    KFileDialog d(KUrl("kfiledialog:///import"), FilesController::allImportFilters(), this);
     d.setCaption(i18n("Import"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
@@ -661,8 +655,46 @@ void MainWindow::slotUpdateActionState()
 {
     int selCount = filesController()->view()->selectedCount();
     TrackData::Type selType = filesController()->view()->selectedType();
+    kDebug() << "selected" << selCount << "type" << selType;
 
+    bool propsEnabled = false;
+    QString propsText = i18nc("@action:inmenu", "Properties...");
+    switch (selType)
+    {
+case TrackData::File:
+        propsText = i18ncp("@action:inmenu", "File Properties...", "Files Properties...", selCount);
+        propsEnabled = true;
+        break;
 
+case TrackData::Track:
+        propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
+        propsEnabled = true;
+        break;
+
+case TrackData::Segment:
+        propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
+        propsEnabled = true;
+        break;
+
+case TrackData::Point:
+        propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
+        propsEnabled = true;
+        break;
+
+case TrackData::Mixed:
+        propsText = i18nc("@action:inmenu", "Selection Properties...");
+        break;
+
+default:
+        break;
+    }
+    mPropertiesAction->setEnabled(propsEnabled);
+    mPropertiesAction->setText(propsText);
+    // used in FilesController::slotTrackProperties()
+    // the "..." is I18N'ed so that translations can change it to something that
+    // will never match, if the target language does not use "..."
+    if (propsText.endsWith(i18nc("as added to strings above", "..."))) propsText.chop(3);
+    mPropertiesAction->setData(propsText);
 
 //    mSelectAllAction->setEnabled(selected<total && total>0);
     mClearSelectAction->setEnabled(selCount>0);

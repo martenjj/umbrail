@@ -66,8 +66,12 @@ TrackDataItem *FilesModel::dataPointer(const QModelIndex &idx) const
 
 QModelIndex FilesModel::indexForData(const TrackDataItem *tdi) const
 {
+    /////////////////////// Sometimes happens with crash after undo of import
+    Q_ASSERT(tdi!=NULL);
+
     if (tdi->parent()==NULL) return (QModelIndex());
     int row = tdi->parent()->childIndex(tdi);
+    // static_cast will not work here due to const'ness
     return (row==-1 ? QModelIndex() : createIndex(row, 0, (void *) tdi));
 }
 

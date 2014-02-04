@@ -20,14 +20,14 @@
 
 
 
-FilesView::FilesView(QWidget *parent)
-    : QTreeView(parent)
+FilesView::FilesView(QWidget *pnt)
+    : QTreeView(pnt)
 {
     kDebug();
 
     setObjectName("FilesView");
 
-    mMainWindow = qobject_cast<MainWindow *>(parent);
+    mMainWindow = qobject_cast<MainWindow *>(pnt);
 
     setRootIsDecorated(true);
     setSortingEnabled(true);
@@ -154,6 +154,41 @@ void FilesView::selectionChanged(const QItemSelection &sel,
 
     emit updateActionState();				// actions and status
 }
+
+
+
+static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
+{
+    const TrackDataItem *parentA = a->parent();
+    Q_ASSERT(parentA!=NULL);
+    const TrackDataItem *parentB = b->parent();
+    Q_ASSERT(parentB!=NULL);
+
+    int indexA = parentA->childIndex(a);
+    int indexB = parentB->childIndex(b);
+    return (indexA<indexB);
+}
+
+
+
+QList<TrackDataItem *> FilesView::selectedItems() const
+{
+    QModelIndexList selIndexes = selectionModel()->selectedIndexes();
+    Q_ASSERT(selIndexes.count()==mSelectedCount);
+
+    QList<TrackDataItem *> list;
+    foreach(const QModelIndex idx, selIndexes)
+    {
+        TrackDataItem *tdi = static_cast<TrackDataItem *>(idx.internalPointer());
+        list.append(tdi);
+    }
+
+    qStableSort(list.begin(), list.end(), &lessThanByIndexRow);
+    return (list);
+}
+
+
+
 
 
 

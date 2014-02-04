@@ -2,6 +2,7 @@
 #include "filescontroller.h"
 
 #include <qundostack.h>
+#include <qaction.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -19,7 +20,7 @@
 #include "gpximporter.h"
 //#include "gpxexporter.h"
 #include "mainwindow.h"
-//#include "pointpropertiesdialog.h"
+#include "trackpropertiesdialogue.h"
 //#include "categoriesmanager.h"
 //#include "categoriestooldialogue.h"
 //#include "iconsmanager.h"
@@ -34,8 +35,8 @@
 
 
 
-FilesController::FilesController(QObject *parent)
-    : QObject(parent)
+FilesController::FilesController(QObject *pnt)
+    : QObject(pnt)
 {
     kDebug();
 
@@ -364,10 +365,27 @@ case TrackData::Point:      if (selCount==1) emit statusMessage(i18n("Selected p
 //    else emit statusMessage(i18n("Deleted %1 files", cnt));
 //}
 //
-//
-//
-//void FilesController::slotPointProperties()
-//{
+
+
+void FilesController::slotTrackProperties()
+{
+    kDebug();
+
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()==0) return;
+
+    TrackPropertiesDialogue d(items, view());
+
+    // Using the action's text() directly will include any '&' accelerators
+    // if they have been added.  So we use the original text, which will have
+    // been stored in the action's data(), instead.
+    QAction *act = static_cast<QAction *>(sender());
+    if (act!=NULL) d.setCaption(act->data().toString());
+
+    if (d.exec())
+    {
+    }
+
 //    FilesView::RowList rows = view()->selectedRows();
 //    if (rows.count()!=1) return;
 //    int row = rows.first();
@@ -396,11 +414,10 @@ case TrackData::Point:      if (selCount==1) emit statusMessage(i18n("Selected p
 //    executeCommand(cmd);
 //
 //    slotUpdateActionState();
-//    categoryManager()->scanForNew(model());
 //    emit statusMessage(i18n("Updated point '%1'", newPoint->name()));
-//}
-//
-//
+}
+
+
 //
 //
 //void FilesController::slotNewPoint()
@@ -566,4 +583,30 @@ case TrackData::Point:      if (selCount==1) emit statusMessage(i18n("Selected p
 MainWindow *FilesController::mainWindow() const
 {
     return (qobject_cast<MainWindow *>(parent()));
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+
+static const char dataFilter[] = "*.tracks|Track project (*.tracks)";
+static const char allFilter[] = "*|All Files";
+
+
+QString FilesController::allImportFilters()
+{
+    QStringList filters;
+    filters << GpxImporter::filter();
+    filters << allFilter;
+    return (filters.join("\n"));
+}
+
+
+
+QString FilesController::allProjectFilters(bool includeAllFiles)
+{
+    QStringList filters;
+    filters << dataFilter;
+    if (includeAllFiles) filters << allFilter;
+    return (filters.join("\n"));
 }

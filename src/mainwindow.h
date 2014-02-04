@@ -26,7 +26,7 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = NULL);
+    MainWindow(QWidget *pnt = NULL);
     ~MainWindow();
 
     MapController *mapController() const	{ return (mMapController); }
@@ -94,6 +94,7 @@ private:
 
     KAction *mSelectAllAction;
     KAction *mClearSelectAction;
+    KAction *mPropertiesAction;
 
     KAction *mMapZoomInAction;
     KAction *mMapZoomOutAction;

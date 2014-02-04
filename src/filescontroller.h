@@ -33,7 +33,7 @@ class FilesController : public QObject
     Q_OBJECT
 
 public:
-    FilesController(QObject *parent = NULL);
+    FilesController(QObject *pnt = NULL);
     ~FilesController();
 
     FilesView *view() const			{ return (mView); }
@@ -52,13 +52,14 @@ public:
     QString load(const KConfig *conf);
     void clear();
 
-//    void setUndoStack(QUndoStack *undoStack)	{ mUndoStack = undoStack; }
+    static QString allImportFilters();
+    static QString allProjectFilters(bool includeAllFiles);
 
 public slots:               
 //    void slotNewPoint();
 //    void slotDeleteSelection();
 //    void slotMergeSelection();
-//    void slotPointProperties();
+    void slotTrackProperties();
 //    void slotManageCategories();
 //    void slotManageIcons();
 //    void slotManageSources();

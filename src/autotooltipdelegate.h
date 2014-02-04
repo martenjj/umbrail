@@ -11,7 +11,7 @@ class AutoToolTipDelegate : public QStyledItemDelegate
     Q_OBJECT
 
 public:
-    AutoToolTipDelegate(QObject *parent) : QStyledItemDelegate(parent) {};
+    AutoToolTipDelegate(QObject *pnt) : QStyledItemDelegate(pnt) {};
     virtual ~AutoToolTipDelegate() {};
 
 public slots:

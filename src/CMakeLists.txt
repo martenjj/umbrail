@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		20-Jan-14					#
+#  Edit:		02-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -41,7 +41,9 @@ set(navtracks_SRCS
   commands.cpp
 #  categoriesmanager.cpp
 #  sourcesmanager.cpp
-#  pointpropertiesdialog.cpp
+  trackpropertiesdialogue.cpp
+  trackproperties.cpp
+  variableunitdisplay.cpp
 #  mergepointsdialogue.cpp
 #  latlongedit.cpp
 #  latlongdialogue.cpp

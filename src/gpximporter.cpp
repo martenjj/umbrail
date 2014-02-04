@@ -3,6 +3,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 
 #include <qxml.h>
 
@@ -195,7 +196,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 							// start new point
         mCurrentPoint = new TrackDataPoint(QString::null);
 
-        double lat,lon;					// get coordinates
+        double lat = NAN;				// get coordinates
+        double lon = NAN;
         for (int i = 0; i<atts.count(); ++i)
         {
             QString attrName = atts.localName(i);
@@ -205,7 +207,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             else warning(makeXmlException("unexpected attribute on TRKPT element"));
         }
 
-        mCurrentPoint->setLatLong(lat, lon);
+        if (!isnan(lat) && !isnan(lon)) mCurrentPoint->setLatLong(lat, lon);
+        else warning(makeXmlException("missing lat/lon on TRKPT element"));
     }
     else if (localName=="ele")				// start of an ELE(vation) element
     {

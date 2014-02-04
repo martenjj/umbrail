@@ -22,6 +22,8 @@
       <text>Track</text>
       <Action name="track_expand_all"/>
       <Action name="track_collapse_all"/>
+      <Separator/>
+      <Action name="track_properties"/>
     </Menu>
 
     <Menu name="map">
@@ -51,6 +53,7 @@
     <Action name="track_expand_all"/>
     <Action name="track_collapse_all"/>
     <Separator/>
+    <Action name="track_properties"/>
   </Menu>
 
  
