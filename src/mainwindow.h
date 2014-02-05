@@ -9,6 +9,7 @@
 class QLabel;
 class QCloseEvent;
 class QUndoStack;
+class QUndoCommand;
 class QSplitter;
 
 class KAction;
@@ -18,7 +19,6 @@ class KUrl;
 class FilesController;
 class MapController;
 class Project;
-class CommandBase;
 
 
 class MainWindow : public KXmlGuiWindow
@@ -34,7 +34,7 @@ public:
 
     void loadProject(const KUrl &loadFrom);
 
-    void executeCommand(CommandBase *cmd);
+    void executeCommand(QUndoCommand *cmd);
 
 public slots:               
     void slotStatusMessage(const QString &text);

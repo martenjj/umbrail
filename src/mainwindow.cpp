@@ -38,7 +38,7 @@
 #include "mapcontroller.h"
 #include "mapview.h"
 #include "project.h"
-#include "commands.h"
+//#include "commands.h"
 
 
 static const char configGroup[] = "MainWindow";
@@ -279,9 +279,27 @@ bool MainWindow::queryClose()
     if (!mProject->isModified()) return (true);		// not modified, OK to close
 
     QString query;
-    if (mProject->hasFileName()) query = i18n("Save changes to project <b>%1</b>?",
-                                              mProject->name());
-    else query = i18n("Save changes to project?");
+    QStringList changedFiles = filesController()->modifiedFiles();
+    if (changedFiles.isEmpty())				// no files, just the project
+    {
+        if (mProject->hasFileName()) query = i18n("<qt>Save changes to project <b>%1</b>?",
+                                                  mProject->name());
+        else query = i18n("Save changes to project?");
+    }
+    else						// files changed also
+    {
+        if (mProject->hasFileName()) query = i18n("<qt>Save changes to project <b>%1</b>,<br>"
+                                                  "including these data files?"
+                                                  "<br><br>"
+                                                  "<filename>%2</filename>",
+                                                  mProject->name(),
+                                                  changedFiles.join("</filename><br><filename>"));
+        else query = i18n("<qt>Save changes to project,<br>"
+                          "including these data files?"
+                          "<br><br>"
+                          "<filename>%1</filename>",
+                          changedFiles.join("</filename><br><filename>"));
+    }
 
     switch (KMessageBox::warningYesNoCancel(this, query))
     {
@@ -468,6 +486,7 @@ void MainWindow::clear()
 {
     mUndoStack->clear();				// clear undo information
     mapController()->clear();				// clear old map
+    filesController()->clear();				// clear old data
     mProject->clear();					// clear project data
 }
 
@@ -581,7 +600,8 @@ void MainWindow::slotExportFile()
     d.setMode(KFile::File|KFile::LocalOnly);
 
     if (!d.exec()) return;
-    filesController()->exportFile(d.selectedUrl());
+//////// TODO: export selected item
+//    filesController()->exportFile(d.selectedUrl());
 }
 
 
@@ -693,7 +713,8 @@ default:
     // used in FilesController::slotTrackProperties()
     // the "..." is I18N'ed so that translations can change it to something that
     // will never match, if the target language does not use "..."
-    if (propsText.endsWith(i18nc("as added to strings above", "..."))) propsText.chop(3);
+    QString dotdotdot = i18nc("as added to strings above", "...");
+    if (propsText.endsWith(dotdotdot)) propsText.chop(dotdotdot.length());
     mPropertiesAction->setData(propsText);
 
 //    mSelectAllAction->setEnabled(selected<total && total>0);
@@ -739,7 +760,7 @@ void MainWindow::slotMapZoomChanged(bool canZoomIn, bool canZoomOut)
 }
 
 
-void MainWindow::executeCommand(CommandBase *cmd)
+void MainWindow::executeCommand(QUndoCommand *cmd)
 {
     if (mUndoStack!=NULL) mUndoStack->push(cmd);	// do via undo system
     else { cmd->redo(); delete cmd; }			// do directly (fallback)

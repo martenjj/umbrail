@@ -5,6 +5,8 @@
 //#include "trackdata.h"
 #include <qwidget.h>
 
+#include <kurl.h>
+
 class QLabel;
 class QFormLayout;
 class KLineEdit;
@@ -19,6 +21,8 @@ class TrackItemGeneralPage : public QWidget
 
 public:
     virtual ~TrackItemGeneralPage()				{}
+
+    QString newItemName() const;
 
 protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
@@ -59,6 +63,8 @@ class TrackFileGeneralPage : public TrackItemGeneralPage
 public:
     TrackFileGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackFileGeneralPage()				{}
+
+    KUrl newFileUrl() const;
 
 protected:
     virtual bool isDataValid() const;

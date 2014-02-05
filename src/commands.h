@@ -17,10 +17,12 @@
 class CommandBase : public QUndoCommand
 {
 public:
-    CommandBase(QUndoCommand *parent = NULL) : QUndoCommand(parent) {};
-    virtual ~CommandBase() {};
+    virtual ~CommandBase()			{}
     virtual void undo() = 0;
     virtual void redo() = 0;
+
+protected:
+    CommandBase(QUndoCommand *parent = NULL) : QUndoCommand(parent)	{};
 };
 
 
@@ -31,12 +33,13 @@ public:
 class FilesCommandBase : public CommandBase
 {
 public:
-    FilesCommandBase(FilesController *fc, QUndoCommand *parent = NULL)
-        : CommandBase(parent),
-          mController(fc)		{};
-    virtual ~FilesCommandBase()		{};
+    virtual ~FilesCommandBase()			{}
 
 protected:
+    FilesCommandBase(FilesController *fc, QUndoCommand *parent = NULL)
+        : CommandBase(parent),
+          mController(fc)			{}
+
     FilesController *controller() const		{ return (mController); }
     FilesModel *model() const			{ return (mController->model()); }
 
@@ -64,6 +67,74 @@ private:
 
 
 
+
+
+class ChangeItemCommand : public FilesCommandBase
+{
+public:
+    virtual ~ChangeItemCommand()		{}
+
+    void setDataItem(TrackDataItem *item)	{ mDataItem = item; }
+
+    void redo();
+    void undo();
+
+protected:
+    ChangeItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
+
+protected:
+    TrackDataItem *mDataItem;
+
+private:
+    bool mFileWasModified;
+};
+
+
+
+
+class ChangeItemNameCommand : public ChangeItemCommand
+{
+public:
+    ChangeItemNameCommand(FilesController *fc, QUndoCommand *parent = NULL)
+        : ChangeItemCommand(fc, parent)		{}
+    virtual ~ChangeItemNameCommand()		{}
+
+    void setNewName(const QString &name)	{ mNewName = name; }
+
+    void redo();
+    void undo();
+
+private:
+    QString mNewName;
+    QString mSavedName;
+};
+
+
+
+
+class ChangeFileUrlCommand : public ChangeItemCommand
+{
+public:
+    ChangeFileUrlCommand(FilesController *fc, QUndoCommand *parent = NULL)
+        : ChangeItemCommand(fc, parent)		{}
+    virtual ~ChangeFileUrlCommand()		{}
+
+    void setNewUrl(const KUrl &url)		{ mNewUrl = url; }
+
+    void redo();
+    void undo();
+
+private:
+    KUrl mNewUrl;
+    KUrl mSavedUrl;
+};
+
+
+
+
+
+
+
 //class DeletePointsCommand : public PointsCommandBase
 //{
 //public:
@@ -80,6 +151,10 @@ private:
 //    QList<int> mRowList;
 //    QList<PointData> mSavedPoints;
 //};
+
+
+
+
 
 
 

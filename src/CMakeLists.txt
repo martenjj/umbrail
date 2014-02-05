@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Feb-14					#
+#  Edit:		04-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -39,34 +39,21 @@ set(navtracks_SRCS
   filescontroller.cpp
   filesmodel.cpp
   commands.cpp
-#  categoriesmanager.cpp
-#  sourcesmanager.cpp
   trackpropertiesdialogue.cpp
   trackproperties.cpp
   variableunitdisplay.cpp
-#  mergepointsdialogue.cpp
 #  latlongedit.cpp
 #  latlongdialogue.cpp
-#  categoriesedit.cpp
-#  categoriesdialogue.cpp
 #  addressedit.cpp
 #  addressdialogue.cpp
-#  categoriestooldialogue.cpp
   mapcontroller.cpp
   mapview.cpp
   mapthemedialogue.cpp
-#  iconsmanager.cpp
-#  iconstooldialogue.cpp
-#  symboledit.cpp
-#  sourcesedit.cpp
-#  sourcesdialogue.cpp
-#  sourcestooldialogue.cpp
-#  iconselector.cpp
   importerexporterbase.cpp
   importerbase.cpp
   gpximporter.cpp
-#  exporterbase.cpp
-#  gpxexporter.cpp
+  exporterbase.cpp
+  gpxexporter.cpp
   autotooltipdelegate.cpp
 )
 

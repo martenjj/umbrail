@@ -21,6 +21,7 @@ class FilesModel;
 //class ExporterBase;
 //class CommandBase;
 class MainWindow;
+class TrackDataFile;
 
 
 #ifdef SORTABLE_VIEW
@@ -42,15 +43,13 @@ public:
     void readProperties(const KConfigGroup &grp);
     void saveProperties(KConfigGroup &grp);
 
-    void importFile(const KUrl &importFrom);
-    void exportFile(const KUrl &exportTo);
-
-//    ImporterBase *createGpxImporter();
-//    ExporterBase *createGpxExporter();
+    bool importFile(const KUrl &importFrom);
+    bool exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
 
     QString save(KConfig *conf);
     QString load(const KConfig *conf);
     void clear();
+    QStringList modifiedFiles() const;
 
     static QString allImportFilters();
     static QString allProjectFilters(bool includeAllFiles);

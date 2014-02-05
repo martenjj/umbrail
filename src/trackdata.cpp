@@ -302,6 +302,41 @@ unsigned int TrackDataItem::totalTravelTime() const
 
 
 
+
+
+bool TrackDataItem::setFileModified(bool state)
+{
+    kDebug() << "to" << state << "for" << name();
+
+    // The 'item' can point anywhere in the data tree.  So search upwards
+    // until a suitable TrackDataFile is found, or the root of the tree
+    // is reached (which should never happen).
+
+    TrackDataItem *item = this;
+    while (item!=NULL)
+    {
+        TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(item);
+        if (fileItem!=NULL)				// found the file item
+        {
+            bool wasModified = fileItem->isModified();
+            kDebug() << "file" << fileItem->name() << "was mod" << wasModified;
+            fileItem->setModified(state);
+            return (wasModified);
+        }
+
+        item = item->parent();				// back up the tree
+    }
+
+    kDebug() << "no ancestor file item!";
+    return (false);
+}
+
+
+
+
+
+
+
 TrackDataRoot::TrackDataRoot(const QString &desc)
     : TrackDataItem(desc)
 {
@@ -322,6 +357,7 @@ int TrackDataFile::sCounter = 0;
 TrackDataFile::TrackDataFile(const QString &desc)
     : TrackDataItem(desc, "file_%02d", &TrackDataFile::sCounter)
 {
+    mModified = false;
 }
 
 

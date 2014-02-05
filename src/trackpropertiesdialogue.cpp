@@ -9,6 +9,7 @@
 #include <kpagedialog.h>
 
 #include "trackdata.h"
+#include "trackproperties.h"
 
 
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &items, QWidget *pnt)
@@ -24,16 +25,13 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     Q_ASSERT(!items.isEmpty());
     TrackDataItem *item = items.first();
 
-    QWidget *w;
-    w = item->createPropertiesGeneralPage(items, this);
-    connect(w, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
+    QWidget *w = item->createPropertiesGeneralPage(items, this);
+    mGeneralPage = qobject_cast<TrackItemGeneralPage *>(w);
+    Q_ASSERT(mGeneralPage!=NULL);
+    connect(mGeneralPage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
     addPage(w, i18nc("@title:tab", "General"));
 //    w = item->createPropertiesStylePage(items, this);
 //    addPage(w, i18nc("@title:tab", "Style"));
-
-
-
-
 
 
 
@@ -51,3 +49,15 @@ TrackPropertiesDialogue::~TrackPropertiesDialogue()
 
 
 
+QString TrackPropertiesDialogue::newItemName() const
+{
+    return (mGeneralPage->newItemName());
+}
+
+
+KUrl TrackPropertiesDialogue::newFileUrl() const
+{
+    TrackFileGeneralPage *filePage = qobject_cast<TrackFileGeneralPage *>(mGeneralPage);
+    if (filePage==NULL) return (KUrl());
+    return (filePage->newFileUrl());
+}

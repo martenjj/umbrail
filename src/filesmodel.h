@@ -5,8 +5,6 @@
  
 #include <qabstractitemmodel.h>
 
-//#include "pointdata.h"
-
 
 class FilesController;
 class TrackDataItem;
@@ -30,7 +28,7 @@ public:
     void clear();
 
     int fileCount() const;
-    const TrackDataFile *fileAt(int i) const;
+    TrackDataFile *fileAt(int i) const;
     void addFile(TrackDataFile *tdf);
     TrackDataFile *removeFile();
 
@@ -44,8 +42,8 @@ public:
 //    // the new point becomes row 'row'
 //    void insertPoint(const PointData *pnt, int row);
 //
-//    // row 'row' in place
-//    void changePoint(const PointData *pnt, int row);
+    // in place
+    void changedItem(const TrackDataItem *item);
 
     const TrackDataItem *rootItem() const		{ return (mRootItem); }
 
@@ -55,8 +53,6 @@ private:
 //    FilesController *controller() const		{ return (mController); }
 
 private:
-//    FilesList mFiles;
-//    FilesController *mController;
     TrackDataItem *mRootItem;
 
 };

@@ -120,7 +120,8 @@ public:
     TrackDataItem(const QString &desc);
     virtual ~TrackDataItem();
 
-    virtual QString name() const			{ return (mName); }
+    QString name() const				{ return (mName); }
+    void setName(const QString &newName)		{ mName = newName; }
 
     virtual QString iconName() const = 0;
 
@@ -140,6 +141,7 @@ public:
     virtual double totalTravelDistance() const;
     virtual unsigned int totalTravelTime() const;
 
+    bool setFileModified(bool state);
 
 protected:
     TrackDataItem(const QString &desc, const char *format, int *counter);
@@ -187,12 +189,16 @@ public:
     void setFileName(const KUrl &file)			{ mFileName = file; }
     QString iconName() const;
 
+    bool isModified() const				{ return (mModified); }
+    void setModified(bool state)			{ mModified = state; }
+
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 private:
     static int sCounter;
 
     KUrl mFileName;
+    bool mModified;
 };
 
 

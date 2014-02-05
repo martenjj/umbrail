@@ -40,8 +40,8 @@ FilesModel::FilesModel(QObject *parent)
 {
     kDebug();
 
-    mRootItem = new TrackDataRoot("ROOT");
-//    mController = qobject_cast<FilesController *>(parent);
+    mRootItem = NULL;
+    clear();
 }
 
 
@@ -203,7 +203,8 @@ default:		return (QVariant());
 void FilesModel::clear()
 {
     emit layoutAboutToBeChanged();
-//    mFiles.clear();
+    delete mRootItem;					// delete any existing
+    mRootItem = new TrackDataRoot("ROOT");		// create new root item
     emit layoutChanged();
 }
 //
@@ -276,14 +277,15 @@ TrackDataFile *FilesModel::removeFile()
 //    mFiles.insert(row, *pnt);
 //    emit layoutChanged();
 //}
-//
-//
-//void FilesModel::changePoint(const PointData *pnt, int row)
-//{
-//    mFiles[row] = *pnt;
-//    emit dataChanged(index(row, 0), index(row, COL_COUNT-1));
-//}
-////////
+
+
+void FilesModel::changedItem(const TrackDataItem *item)
+{
+    QModelIndex idx = indexForData(item);
+    emit dataChanged(idx, idx);
+}
+
+
 
 
 int FilesModel::fileCount() const
@@ -292,7 +294,7 @@ int FilesModel::fileCount() const
 }
 
 
-const TrackDataFile *FilesModel::fileAt(int i) const
+TrackDataFile *FilesModel::fileAt(int i) const
 {
-    return (static_cast<const TrackDataFile *>(mRootItem->childAt(i)));
+    return (static_cast<TrackDataFile *>(mRootItem->childAt(i)));
 }

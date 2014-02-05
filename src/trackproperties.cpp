@@ -65,6 +65,11 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
 
 
 
+void TrackItemGeneralPage::slotDataChanged()
+{
+    emit enableButtonOk(isDataValid());
+}
+
 
 bool TrackItemGeneralPage::isDataValid() const
 {
@@ -73,6 +78,13 @@ bool TrackItemGeneralPage::isDataValid() const
     return (ok);
 }
 
+
+
+QString TrackItemGeneralPage::newItemName() const
+{							// only if editable
+    if (!mNameEdit->isEnabled()) return (QString::null);
+    return (mNameEdit->text());
+}
 
 
 
@@ -138,11 +150,6 @@ void TrackItemGeneralPage::addChildCountField(const QList<TrackDataItem *> &item
 
 
 
-void TrackItemGeneralPage::slotDataChanged()
-{
-    emit enableButtonOk(isDataValid());
-}
-
 
 
 
@@ -181,7 +188,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
 
     mFormLayout->insertRow(mFormLayout->rowCount()-1, i18nc("@label:textbox", "File:"), mUrlRequester);
 
-    addChildCountField(items, i18nc("@label:textbox:", "Tracks:"));
+    addChildCountField(items, i18nc("@label:textbox", "Tracks:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
 }
@@ -201,6 +208,14 @@ bool TrackFileGeneralPage::isDataValid() const
 
 
 
+KUrl TrackFileGeneralPage::newFileUrl() const
+{							// only if editable
+    if (!mUrlRequester->isEnabled()) return (KUrl());
+    return (mUrlRequester->url());
+}
+
+
+
 
 
 
@@ -214,7 +229,7 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items,
 
     mTypeLabel->setText(i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", items.count()));
 
-    addChildCountField(items, i18nc("@label:textbox:", "Segments:"));
+    addChildCountField(items, i18nc("@label:textbox", "Segments:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
 }
@@ -232,7 +247,7 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> it
 
     mTypeLabel->setText(i18ncp("@item:intable", "<b>Segment</b>", "<b>%1 segments</b>", items.count()));
 
-    addChildCountField(items, i18nc("@label:textbox:", "Points:"));
+    addChildCountField(items, i18nc("@label:textbox", "Points:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items, false);
 }
