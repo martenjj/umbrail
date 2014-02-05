@@ -71,21 +71,23 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         str.writeAttribute("lat", QString::number(tdp->latitude(), 'f'));
         str.writeAttribute("lon", QString::number(tdp->longitude(), 'f'));
 
-        // <ele> xsd:decimal </ele> [0..1] ?
+        // <ele> xsd:decimal </ele>
         double ele = tdp->elevation();
         if (ele!=NAN) str.writeTextElement("ele", QString::number(tdp->elevation(), 'f', 3));
 
-        // <time> xsd:dateTime </time> [0..1] ?
+        // <time> xsd:dateTime </time>
         QDateTime dt = tdp->time();
         if (dt.isValid()) str.writeTextElement("time", dt.toString(Qt::ISODate));
 
-        // <name> xsd:string </name> [0..1] ?
+        // <name> xsd:string </name>
         str.writeTextElement("name", tdp->name());
-        // <cmt> xsd:string </cmt> [0..1] ?
-        // <desc> xsd:string </desc> [0..1] ?
-        // <sym> xsd:string </sym> [0..1] ?
-        // <hdop> xsd:decimal </hdop> [0..1] ?
-        // <extensions> extensionsType </extensions> [0..1] ?
+        // <cmt> xsd:string </cmt>
+        // <desc> xsd:string </desc>
+        // <sym> xsd:string </sym>
+
+        // <hdop> xsd:decimal </hdop>
+        QString h = tdp->hdop();
+        if (!h.isEmpty()) str.writeTextElement("hdop", h);
     }
     else
     {
@@ -112,7 +114,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     }
     else if (tds!=NULL)					// extensions for TRKSEG
     {
-                // <extensions> extensionsType </extensions>
+        // <extensions> extensionsType </extensions>
         str.writeStartElement("extensions");
         // <name> xsd:string </name>
         str.writeTextElement("name", tds->name());
@@ -120,7 +122,15 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     }
     else if (tdp!=NULL)					// extensions for TRKPT
     {
-
+        // <extensions> extensionsType </extensions>
+        // <speed> </speed> - in OsmAnd+ recordings
+        QString s = tdp->speed();
+        if (!s.isEmpty())
+        {
+            str.writeStartElement("extensions");
+            str.writeTextElement("speed", s);
+            str.writeEndElement();
+        }
     }
 
     // end tag

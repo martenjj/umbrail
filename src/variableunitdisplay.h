@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Feb-14						//
+//  Edit:	05-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -47,14 +47,16 @@ public:
     enum DisplayType
     {
         Distance,
-        Speed
+        Speed,
+        Elevation
     };
 
     explicit VariableUnitDisplay(VariableUnitDisplay::DisplayType type, QWidget *pnt = NULL);
 
-    virtual ~VariableUnitDisplay()			{}
+    virtual ~VariableUnitDisplay();
 
     void setValue(double v);
+    void setSaveId(const QString &id);
 
 protected:
     void showEvent(QShowEvent *ev);
@@ -67,6 +69,9 @@ private:
     QComboBox *mUnitCombo;
     int mPrecision;
     double mValue;
+
+    QString mSaveId;
+    int mComboIndex;
 };
 
  

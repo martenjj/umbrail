@@ -254,10 +254,16 @@ public:
     void setElevation(double ele)			{ mElevation = ele; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
 
+    void setHdop(const QString &h)			{ mHdop = h; }
+    void setSpeed(const QString &s)			{ mSpeed = s; }
+
     double elevation() const				{ return (mElevation); }
     QDateTime time() const				{ return (mDateTime); }
     double latitude() const				{ return (mLatitude); }
     double longitude() const				{ return (mLongitude); }
+
+    QString hdop() const				{ return (mHdop); }
+    QString speed() const				{ return (mSpeed); }
 
     QString formattedElevation() const;
     QString formattedTime() const;
@@ -276,6 +282,8 @@ private:
     double mLongitude;
     double mElevation;
     QDateTime mDateTime;
+    QString mHdop;
+    QString mSpeed;
 };
 
 

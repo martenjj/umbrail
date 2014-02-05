@@ -4,14 +4,42 @@
 
 //#include "trackdata.h"
 #include <qwidget.h>
+#include <qlabel.h>
 
 #include <kurl.h>
 
-class QLabel;
+class QDateTime;
 class QFormLayout;
 class KLineEdit;
 class KUrlRequester;
 class TrackDataItem;
+
+
+
+
+
+
+class TrackDataLabel : public QLabel
+{
+    Q_OBJECT
+
+public:
+    TrackDataLabel(const QString &str, QWidget *parent = NULL);
+    TrackDataLabel(int i, QWidget *parent = NULL);
+    TrackDataLabel(const QDateTime &dt, QWidget *parent = NULL);
+    TrackDataLabel(double lat, double lon, QWidget *parent = NULL);
+
+    virtual ~TrackDataLabel()					{}
+
+private:
+    void init();
+};
+
+
+
+
+
+
 
 
 

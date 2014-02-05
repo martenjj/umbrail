@@ -210,18 +210,11 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         if (!isnan(lat) && !isnan(lon)) mCurrentPoint->setLatLong(lat, lon);
         else warning(makeXmlException("missing lat/lon on TRKPT element"));
     }
-    else if (localName=="ele")				// start of an ELE(vation) element
-    {
+    else if (localName=="ele" || localName=="time" || localName=="hdop" || localName=="speed")
+    {							// start of a point parameter element
         if (mCurrentPoint==NULL)			// check properly nested
         {
-            return (error(makeXmlException("ELE start not within TRKPT", "ele")));
-        }
-    }
-    else if (localName=="time")				// start of a TIME element
-    {
-        if (mCurrentPoint==NULL)			// check properly nested
-        {
-            return (error(makeXmlException("TIME start not within TRKPT", "time")));
+            return (error(makeXmlException(localName.toUpper()+" start not within TRKPT", localName)));
         }
     }
     else if (localName=="wpt")				// start of an WPT element
@@ -324,6 +317,34 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
         mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
+    }
+    else if (localName=="name")				// end of a NAME element
+    {							// may belong to any container
+        TrackDataItem *item = mCurrentPoint;		// find innermost current element
+        if (item==NULL) item = mCurrentSegment;
+        if (item==NULL) item = mCurrentTrack;
+
+        if (item!=NULL) item->setName(mContainedChars);	// assign its name
+        // TODO: can be in METADATA
+        //else warning(makeXmlException("NAME not within TRK, TRKSEG or TKKPT"));
+    }
+    else if (localName=="hdop")				// end of a HDOP element
+    {							// not currently interpreted
+        if (mCurrentPoint==NULL)			// check properly nested
+        {
+            return (error(makeXmlException("HDOP end not within TRKPT")));
+        }
+
+        mCurrentPoint->setHdop(mContainedChars);
+    }
+    else if (localName=="speed")			// end of a SPEED element
+    {							// not currently interpreted
+        if (mCurrentPoint==NULL)			// check properly nested
+        {
+            return (error(makeXmlException("SPEED end not within TRKPT")));
+        }
+
+        mCurrentPoint->setSpeed(mContainedChars);
     }
 
     return (true);

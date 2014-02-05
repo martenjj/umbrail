@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Feb-14						//
+//  Edit:	05-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,12 +32,17 @@
 
 #include <kdebug.h>
 #include <klocale.h>
+#include <kglobal.h>
+#include <kconfiggroup.h>
 
 
 
 static const double EARTH_RADIUS_KM = 6371;		// kilometres
 static const double EARTH_RADIUS_MI = 3959;		// statute miles
 static const double EARTH_RADIUS_NM = 3440;		// nautical miles
+
+static const double ELEVATION_METRE = 1;		// metres
+static const double ELEVATION_FEET = 3.2808;		// feet
 
 
 
@@ -57,7 +62,6 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitDisplay::DisplayType type, 
 
     mUnitCombo = new QComboBox(this);
     // TODO: global preference
-    // TODO: remember setting
     mUnitCombo->setCurrentIndex(0);
 
     switch (type)
@@ -75,6 +79,12 @@ case VariableUnitDisplay::Speed:
         mUnitCombo->addItem(i18n("knots"), EARTH_RADIUS_NM);
         break;
 
+case VariableUnitDisplay::Elevation:
+        mUnitCombo->addItem(i18n("metres"), ELEVATION_METRE);
+        mUnitCombo->addItem(i18n("feet"), ELEVATION_FEET);
+        mPrecision = 0;
+        break;
+
 default:
         break;
     }
@@ -87,6 +97,21 @@ default:
 
 
 
+VariableUnitDisplay::~VariableUnitDisplay()
+{
+    if (!mSaveId.isEmpty())
+    {
+        KConfigGroup grp = KGlobal::config()->group(objectName());
+        if (mComboIndex!=-1) grp.writeEntry(mSaveId, mComboIndex);
+    }
+}
+
+
+
+
+
+
+
 void VariableUnitDisplay::setValue(double v)
 {
     mValue = v;
@@ -94,11 +119,17 @@ void VariableUnitDisplay::setValue(double v)
 }
 
 
+
 void VariableUnitDisplay::slotUpdateDisplay()
 {
-    double v = mValue*mUnitCombo->itemData(mUnitCombo->currentIndex()).toDouble();
+    // Save this for use in destructor, in case combo box
+    // has been destroyed by then.
+    mComboIndex = mUnitCombo->currentIndex();
+
+    double v = mValue*mUnitCombo->itemData(mComboIndex).toDouble();
     mValueLabel->setText(QString::number(v, 'f', mPrecision));
 }
+
 
 
 void VariableUnitDisplay::showEvent(QShowEvent *ev)
@@ -130,3 +161,16 @@ void VariableUnitDisplay::showEvent(QShowEvent *ev)
         vud->mUnitCombo->setMinimumWidth(maxSize);
     }
 }
+
+
+void VariableUnitDisplay::setSaveId(const QString &id)
+{
+    mSaveId = id;
+    if (!mSaveId.isEmpty())
+    {
+        const KConfigGroup grp = KGlobal::config()->group(objectName());
+        int idx = grp.readEntry(mSaveId, -1);
+        if (idx!=-1) mUnitCombo->setCurrentIndex(idx);
+    }
+}
+

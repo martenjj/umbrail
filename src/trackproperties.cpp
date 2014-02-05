@@ -3,7 +3,6 @@
 
 #include <qformlayout.h>
 #include <qgridlayout.h>
-#include <qlabel.h>
 
 #include <kdebug.h>
 #include <kdialog.h>
@@ -20,7 +19,42 @@
 
 
 
+TrackDataLabel::TrackDataLabel(const QString &str, QWidget *parent)
+    : QLabel(str, parent)
+{
+    init();
+}
 
+
+
+TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *parent)
+    : QLabel(TrackData::formattedTime(dt), parent)
+{
+    init();
+}
+
+
+
+TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *parent)
+    : QLabel(TrackData::formattedLatLong(lat, lon), parent)
+{
+    init();
+}
+
+
+
+TrackDataLabel::TrackDataLabel(int i, QWidget *parent)
+    : QLabel(QString::number(i), parent)
+{
+    init();
+}
+
+
+
+void TrackDataLabel::init()
+{
+    setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+}
 
 
 
@@ -91,34 +125,32 @@ QString TrackItemGeneralPage::newItemName() const
 void TrackItemGeneralPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
-    QLabel *l = new QLabel(TrackData::formattedTime(tsp.start()), this);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), l);
 
-    l = new QLabel(TrackData::formattedTime(tsp.finish()), this);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    l = new TrackDataLabel(tsp.finish(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
 
     unsigned tt = tsp.timeSpan();
-    l = new QLabel(TrackData::formattedDuration(tt), this);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time span:"), l);
 
     if (bothTimes)
     {
         tt = TrackData::sumTotalTravelTime(items);
-        l = new QLabel(TrackData::formattedDuration(tt), this);
-        l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+        l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
     }
 
     double dist = TrackData::sumTotalTravelDistance(items);
     VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
+    vl->setSaveId("totaltraveldistance");
     vl->setValue(dist);
     mFormLayout->addRow(i18nc("@label:textbox", "Travel distance:"), vl);
 
     double averageSpeed = dist/(tt/3600.0);
     vl = new VariableUnitDisplay(VariableUnitDisplay::Speed, this);
+    vl->setSaveId("averagespeed");
     vl->setValue(averageSpeed);
     mFormLayout->addRow(i18nc("@label:textbox", "Average speed:"), vl);
 }
@@ -128,11 +160,9 @@ void TrackItemGeneralPage::addTimeDistanceSpeedFields(const QList<TrackDataItem 
 void TrackItemGeneralPage::addBoundingAreaField(const QList<TrackDataItem *> &items)
 {
     BoundingArea bb = TrackData::unifyBoundingAreas(items);
-    QLabel *l = new QLabel(TrackData::formattedLatLong(bb.north(), bb.west()), this);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    TrackDataLabel *l = new TrackDataLabel(bb.north(), bb.west(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Bounding area:"), l);
-    l = new QLabel(TrackData::formattedLatLong(bb.south(), bb.east()));
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    l = new TrackDataLabel(bb.south(), bb.east(), this);
     mFormLayout->addRow(QString::null, l);
 }
 
@@ -142,8 +172,7 @@ void TrackItemGeneralPage::addChildCountField(const QList<TrackDataItem *> &item
 {
     if (items.count()!=1) return;			// only for a single item
 
-    QLabel *l = new QLabel(QString::number(items.first()->childCount()), this);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    TrackDataLabel *l = new TrackDataLabel(items.first()->childCount(), this);
     mFormLayout->addRow(labelText, l);
 }
 
@@ -270,18 +299,37 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
         const TrackDataPoint *p = dynamic_cast<const TrackDataPoint *>(items.first());
         Q_ASSERT(p!=NULL);
 
-        QLabel *l = new QLabel(p->formattedPosition(), this);
-        l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+        TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
 
-        l = new QLabel(p->formattedTime(), this);
-        l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+        l = new TrackDataLabel(p->time(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
 
-        // TODO: variable units
-        l = new QLabel(p->formattedElevation(), this);
-        l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-        mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), l);
+        double ele = p->elevation();
+        if (!isnan(ele))
+        {
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
+            vl->setSaveId("elevation");
+            vl->setValue(ele);
+            mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
+        }
+
+        mFormLayout->addRow(new QLabel(this));
+
+        QString s = p->hdop();
+        if (!s.isEmpty())
+        {
+            l = new TrackDataLabel(s, this);
+            mFormLayout->addRow(i18nc("@label:textbox", "GPS HDOP:"), l);
+        }
+
+        s = p->speed();
+        if (!s.isEmpty())
+        {
+            double speed = s.toDouble();
+            l = new TrackDataLabel(QString::number(speed, 'f', 3), this);
+            mFormLayout->addRow(i18nc("@label:textbox", "GPS speed:"), l);
+        }
     }
     else						// multiple selection
     {
