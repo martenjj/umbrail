@@ -138,7 +138,7 @@ void MainWindow::setupActions()
     connect(mExportAction, SIGNAL(triggered()), SLOT(slotExportFile()));
     mExportAction->setEnabled(false);
 
-//    mSelectAllAction = KStandardAction::selectAll(pointsController()->view(), SLOT(selectAll()), actionCollection());
+    mSelectAllAction = KStandardAction::selectAll(filesController()->view(), SLOT(slotSelectAllSiblings()), actionCollection());
     mClearSelectAction = KStandardAction::deselect(filesController()->view(), SLOT(clearSelection()), actionCollection());
     mClearSelectAction->setIcon(KIcon("edit-clear-list"));
 
@@ -717,7 +717,7 @@ default:
     if (propsText.endsWith(dotdotdot)) propsText.chop(dotdotdot.length());
     mPropertiesAction->setData(propsText);
 
-//    mSelectAllAction->setEnabled(selected<total && total>0);
+    mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
 }
 

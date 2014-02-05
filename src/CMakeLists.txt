@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		04-Feb-14					#
+#  Edit:		05-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -40,7 +40,7 @@ set(navtracks_SRCS
   filesmodel.cpp
   commands.cpp
   trackpropertiesdialogue.cpp
-  trackproperties.cpp
+  trackpropertiesgeneralpages.cpp
   variableunitdisplay.cpp
 #  latlongedit.cpp
 #  latlongdialogue.cpp

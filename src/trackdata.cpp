@@ -7,9 +7,6 @@
 #include <klocale.h>
 #include <kmimetype.h>
 
-#include "trackproperties.h"
-
-
 
 static const double DEGREES_TO_RADIANS = 1/57.295;	// multiplier
 
@@ -343,12 +340,6 @@ TrackDataRoot::TrackDataRoot(const QString &desc)
 }
 
 
-QWidget *TrackDataRoot::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (NULL);
-}
-
-
 
 
 
@@ -365,22 +356,8 @@ TrackDataFile::TrackDataFile(const QString &desc)
 
 QString TrackDataFile::iconName() const
 {
-    //return ("media-floppy");
     return (KMimeType::iconNameForUrl(mFileName));
 }
-
-
-
-
-
-
-QWidget *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (new TrackFileGeneralPage(items, pnt));
-}
-
-
-
 
 
 
@@ -396,10 +373,6 @@ TrackDataTrack::TrackDataTrack(const QString &desc)
 }
 
 
-QWidget *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (new TrackTrackGeneralPage(items, pnt));
-}
 
 
 int TrackDataSegment::sCounter = 0;
@@ -425,19 +398,6 @@ TimeRange TrackDataSegment::timeSpan() const
     Q_ASSERT(lastPoint!=NULL);
     return (TimeRange(firstPoint->time(), lastPoint->time()));
 }
-
-
-
-
-
-QWidget *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (new TrackSegmentGeneralPage(items, pnt));
-}
-
-
-
-
 
 
 
@@ -511,12 +471,3 @@ int TrackDataPoint::timeTo(const TrackDataPoint *other) const
     return (time().secsTo(other->time()));
 }
 
-
-
-
-
-
-QWidget *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (new TrackPointGeneralPage(items, pnt));
-}

@@ -9,7 +9,7 @@
 #include <kpagedialog.h>
 
 #include "trackdata.h"
-#include "trackproperties.h"
+#include "trackpropertiesgeneralpages.h"
 
 
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &items, QWidget *pnt)

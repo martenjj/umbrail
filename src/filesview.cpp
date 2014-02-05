@@ -75,6 +75,7 @@ void FilesView::readProperties(const KConfigGroup &grp)
 #endif
 }
 
+
 void FilesView::saveProperties(KConfigGroup &grp)
 {
     KConfigGroup ourGroup = grp.config()->group(GROUP_FILESVIEW);
@@ -89,19 +90,16 @@ void FilesView::selectionChanged(const QItemSelection &sel,
 {
     QTreeView::selectionChanged(sel, desel);		// visually update
 
-
-//   bool isEmpty		whether the model is empty
-//
-//   int numSelected		how many rows are selected
-//
-//   TrackData::Type itemType	What type if item is selected, or 'None' if
-//				nothing is selected, or 'Mixed' if the
-//				selection is mixed.
-//
-// The selection is considered to be "mixed" if the selected items are
-// of more than one type, or items of the same type but spanning boundaries.
-// In practice, the test for this is that not all selected items/ranges
-// have the same model parent.
+    //   int numSelected		how many rows are selected
+    //
+    //   TrackData::Type itemType	What type if item is selected, or 'None' if
+    //					nothing is selected, or 'Mixed' if the
+    //					selection is mixed.
+    //
+    // The selection is considered to be "mixed" if the selected items are
+    // of more than one type, or items of the same type but spanning boundaries.
+    // In practice, the test for this is that not all selected items/ranges
+    // have the same model parent.
 
     QModelIndexList selIndexes = selectionModel()->selectedIndexes();
     mSelectedCount = selIndexes.count();		// get a flattened list
@@ -113,41 +111,27 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     }
     else
     {
-        const TrackDataItem *firstItem = NULL;
-        QModelIndex firstParent;
         bool isMixed = false;
-
-        foreach(const QModelIndex idx, selIndexes)
+        QModelIndex firstParent = selIndexes.first().parent();
+        for (int i = 1; i<mSelectedCount; ++i)
         {
-            const TrackDataItem *tdi = static_cast<const TrackDataItem *>(idx.internalPointer());
-            if (firstItem==NULL)			// the first item
+            if (selIndexes[i].parent()!=firstParent)
             {
-                firstItem = tdi;
-                firstParent = idx.parent();
-            }
-            else					// subsequent items
-            {
-                if (idx.parent()!=firstParent)
-                {
-                    isMixed = true;
-                    break;
-                }
+                isMixed = true;
+                break;
             }
         }
 
-        mSelectedItem = firstItem;
-        Q_ASSERT(mSelectedItem!=NULL);
-
-        if (isMixed)
-        {
-            mSelectedType = TrackData::Mixed;
-        }
+        if (isMixed) mSelectedType = TrackData::Mixed;
         else
         {
-            if (dynamic_cast<const TrackDataPoint *>(firstItem)!=NULL) mSelectedType = TrackData::Point;
-            else if (dynamic_cast<const TrackDataSegment *>(firstItem)!=NULL) mSelectedType = TrackData::Segment;
-            else if (dynamic_cast<const TrackDataTrack *>(firstItem)!=NULL) mSelectedType = TrackData::Track;
-            else if (dynamic_cast<const TrackDataFile *>(firstItem)!=NULL) mSelectedType = TrackData::File;
+            mSelectedItem = static_cast<const TrackDataItem *>(selIndexes.first().internalPointer());
+            Q_ASSERT(mSelectedItem!=NULL);
+
+            if (dynamic_cast<const TrackDataPoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Point;
+            else if (dynamic_cast<const TrackDataSegment *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Segment;
+            else if (dynamic_cast<const TrackDataTrack *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Track;
+            else if (dynamic_cast<const TrackDataFile *>(mSelectedItem)!=NULL) mSelectedType = TrackData::File;
             else mSelectedType = TrackData::None;
         }
     }
@@ -269,4 +253,27 @@ void FilesView::contextMenuEvent(QContextMenuEvent *ev)
         mainWindow()->factory()->container("filesview_contextmenu",
                                            mainWindow()));
     if (popup!=NULL) popup->exec(ev->globalPos());
+}
+
+
+void FilesView::slotSelectAllSiblings()
+{
+    // The usual "Select All" operation is not really useful in this
+    // application.  So this operation, where there is a single or
+    // non-mixed selection, selects all of the siblings of the selected
+    // item(s) - i.e. all of those that have the same parent.
+    //
+    // This is a model/index operation only - it doesn't need to know
+    // anything about the data!
+
+    QModelIndexList selIndexes = selectionModel()->selectedIndexes();
+    if (selIndexes.isEmpty()) return;			// get current selection
+
+    QModelIndex firstParent = selIndexes.first().parent();
+    if (!firstParent.isValid()) return;
+
+    QModelIndex firstRowIndex = model()->index(0, 0, firstParent);
+    QModelIndex lastRowIndex = model()->index(model()->rowCount(firstParent)-1, 0, firstParent);
+
+    selectionModel()->select(QItemSelection(firstRowIndex, lastRowIndex), QItemSelectionModel::Select);
 }

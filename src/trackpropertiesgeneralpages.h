@@ -1,8 +1,7 @@
 
-#ifndef TRACKPROPERTIES_H
-#define TRACKPROPERTIES_H
+#ifndef TRACKPROPERTIESGENERALPAGES_H
+#define TRACKPROPERTIESGENERALPAGES_H
 
-//#include "trackdata.h"
 #include <qwidget.h>
 #include <qlabel.h>
 
@@ -34,10 +33,6 @@ public:
 private:
     void init();
 };
-
-
-
-
 
 
 
@@ -76,10 +71,6 @@ signals:
 
 
 };
-
-
-
-
 
 
 
@@ -144,16 +135,4 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-#endif							// TRACKPROPERTIES_H
+#endif							// TRACKPROPERTIESGENERALPAGES_H

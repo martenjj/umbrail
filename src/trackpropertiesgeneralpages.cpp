@@ -1,5 +1,5 @@
 
-#include "trackproperties.h"
+#include "trackpropertiesgeneralpages.h"
 
 #include <qformlayout.h>
 #include <qgridlayout.h>
@@ -189,7 +189,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
-    setObjectName("TrackItemFilePage");
+    setObjectName("TrackFileGeneralPage");
 
     mTypeLabel->setText(i18ncp("@item:intable", "<b>File</b>", "<b>%1 files</b>", items.count()));
 
@@ -254,7 +254,7 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items,
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
-    setObjectName("TrackItemTrackPage");
+    setObjectName("TrackTrackGeneralPage");
 
     mTypeLabel->setText(i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", items.count()));
 
@@ -272,7 +272,7 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> it
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
-    setObjectName("TrackItemSegmentPage");
+    setObjectName("TrackSegmentGeneralPage");
 
     mTypeLabel->setText(i18ncp("@item:intable", "<b>Segment</b>", "<b>%1 segments</b>", items.count()));
 
@@ -290,7 +290,7 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
-    setObjectName("TrackItemPointPage");
+    setObjectName("TrackPointGeneralPage");
 
     mTypeLabel->setText(i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", items.count()));
 
@@ -355,4 +355,39 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
             addTimeDistanceSpeedFields(items, false);
         }
     }
+}
+
+
+
+
+
+
+
+QWidget *TrackDataRoot::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+{
+    return (NULL);
+}
+
+
+QWidget *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+{
+    return (new TrackFileGeneralPage(items, pnt));
+}
+
+
+QWidget *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+{
+    return (new TrackTrackGeneralPage(items, pnt));
+}
+
+
+QWidget *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+{
+    return (new TrackSegmentGeneralPage(items, pnt));
+}
+
+
+QWidget *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+{
+    return (new TrackPointGeneralPage(items, pnt));
 }

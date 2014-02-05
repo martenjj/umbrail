@@ -34,6 +34,9 @@ public:
     const TrackDataItem *selectedItem() const	{ return (mSelectedItem); }
     QList<TrackDataItem *> selectedItems() const;
 
+public slots:
+    void slotSelectAllSiblings();
+
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel);
     virtual void contextMenuEvent(QContextMenuEvent *ev);

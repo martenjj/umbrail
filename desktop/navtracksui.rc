@@ -53,6 +53,7 @@
     <Action name="track_expand_all"/>
     <Action name="track_collapse_all"/>
     <Separator/>
+    <Action name="edit_select_all"/>
     <Action name="track_properties"/>
   </Menu>
 

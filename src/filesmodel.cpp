@@ -5,12 +5,9 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-//#include <kglobalsettings.h>
 #include <kicon.h>
 
 #include "trackdata.h"
-//#include "filescontroller.h"
-//#include "iconsmanager.h"
 
 
 
@@ -20,11 +17,6 @@
 enum COLUMN
 {
     COL_NAME,						// icon/description
-//    COL_SYM,						// symbol
-//    COL_SOURCE,						// data source ID
-//    COL_COORDS,						// lat/long coordinates
-//    COL_ADDRESS,					// street address
-//    COL_CATS,						// catgeories
     COL_COUNT						// how many - must be last
 };
 
@@ -121,10 +113,6 @@ case Qt::DisplayRole:
         switch (idx.column())
         {
 case COL_NAME:     return (tdi->name());
-//case COL_SOURCE:   return (pnt->sources()->join(", "));
-//case COL_COORDS:   return (pnt->displayLatLong());
-//case COL_ADDRESS:  return (pnt->displayAddress(", "));
-//case COL_CATS:     return (pnt->categories()->join(", "));
         }
         break;
 
@@ -132,7 +120,6 @@ case Qt::DecorationRole:
         switch (idx.column())
         {
 case COL_NAME:     return (KIcon(tdi->iconName()));
-                   break;
         }
         break;
 
@@ -188,12 +175,6 @@ QVariant FilesModel::headerData(int section, Qt::Orientation orientation, int ro
     switch (section)
     {
 case COL_NAME:		return (i18n("Name"));
-//case COL_SYM:		return (i18n("Sym"));
-//case COL_SOURCE:	return (i18n("Source"));
-//case COL_COORDS:	return (i18n("Lat/Long"));
-//case COL_ADDRESS:	return (i18n("Address"));
-//case COL_CATS:		return (i18n("Categories"));
-
 default:		return (QVariant());
     }
 }
@@ -207,27 +188,8 @@ void FilesModel::clear()
     mRootItem = new TrackDataRoot("ROOT");		// create new root item
     emit layoutChanged();
 }
-//
-//
-//
-//void FilesModel::addFiles(const FilesList *files, bool clear)
-//{
-//    emit layoutAboutToBeChanged();
-//    kDebug() << "clear" << clear << "appending" << files->count() << "files";
-//
-//    if (clear) mFiles.clear();
-//    for (FilesList::const_iterator it = files->constBegin();
-//         it!=files->constEnd(); ++it)
-//    {
-//        PointData pnt = (*it);
-//        mFiles.append(pnt);
-//    }
-//
-//    emit layoutChanged();
-//}
-//
-//
-//
+
+
 void FilesModel::addFile(TrackDataFile *tdf)
 {
     emit layoutAboutToBeChanged();
