@@ -1,10 +1,20 @@
 
 #include "commands.h"
 
+#include <qmetaobject.h>
+
 #include <kdebug.h>
 
 #include "filesmodel.h"
-//#include "pointsview.h"
+
+
+
+void FilesCommandBase::updateMap() const
+{
+    // Cannot emit a signal directly, because we are not a QObject.
+    // Ask the FilesController to emit the signal instead.
+    QMetaObject::invokeMethod(controller(), "updateMap");
+}
 
 
 
@@ -29,6 +39,7 @@ void ImportFileCommand::redo()
 
     model()->addFile(tdf);				// add data tree to model
     mTrackData = NULL;					// model owns it now
+    updateMap();
 }
 
 
@@ -36,6 +47,7 @@ void ImportFileCommand::undo()
 {
     mTrackData = model()->removeFile();			// take ownership of data tree
     kDebug() << "saved" << mTrackData->name();
+    updateMap();
 }
 
 
@@ -131,6 +143,3 @@ void ChangeFileUrlCommand::undo()
     model()->changedItem(item);
     ChangeItemCommand::undo();
 }
-
-
-

@@ -43,6 +43,8 @@ protected:
     FilesController *controller() const		{ return (mController); }
     FilesModel *model() const			{ return (mController->model()); }
 
+    void updateMap() const;
+
 private:
     FilesController *mController;
 };

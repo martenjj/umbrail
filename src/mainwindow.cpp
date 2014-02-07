@@ -80,7 +80,6 @@ void MainWindow::init()
     connect(mFilesController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
     connect(mFilesController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mFilesController, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
-    mSplitter->addWidget(mFilesController->view());
 
     mMapController = new MapController(this);
     mMapController->view()->setFilesModel(mFilesController->model());
@@ -88,6 +87,9 @@ void MainWindow::init()
     connect(mMapController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mMapController, SIGNAL(mapZoomChanged(bool,bool)), SLOT(slotMapZoomChanged(bool,bool)));
 
+    connect(mFilesController, SIGNAL(updateMap()), mMapController->view(), SLOT(update()));
+
+    mSplitter->addWidget(mFilesController->view());
     mSplitter->addWidget(mMapController->view());
 
     setupStatusBar();
@@ -204,6 +206,12 @@ void MainWindow::setupActions()
     a->setIcon(KIcon("zoom-original"));
     a->setShortcut(Qt::CTRL+Qt::Key_1);
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotResetZoom()));
+
+    mMapGoToAction = actionCollection()->addAction("map_go_selection");
+    mMapGoToAction->setText(i18n("Show on Map"));
+    mMapGoToAction->setIcon(KIcon("marble"));
+    mMapGoToAction->setShortcut(Qt::CTRL+Qt::Key_G);
+    connect(mMapGoToAction, SIGNAL(triggered()), this, SLOT(slotMapGotoSelection()));
 
     a = actionCollection()->addAction("map_select_theme");
     a->setText(i18n("Select Theme..."));
@@ -467,6 +475,7 @@ err2:   slotStatusMessage(i18n("Error loading from %1", loadPath));
     }
 
     slotStatusMessage(i18n("Loaded from %1", loadPath));
+    filesController()->view()->expandToDepth(1);	// expand to segments
     return (true);
 }
 
@@ -589,10 +598,7 @@ void MainWindow::slotImportFile()
 
 void MainWindow::slotExportFile()
 {
-    QStringList filters;
-//    filters << GpxExporter::filter();
-
-    KFileDialog d(KUrl("kfiledialog:///export/"+mProject->name(true)), filters.join("\n"), this);
+    KFileDialog d(KUrl("kfiledialog:///export/"+mProject->name(true)), FilesController::allExportFilters(), this);
     d.setCaption(i18n("Export"));
     d.setOperationMode(KFileDialog::Saving);
     d.setConfirmOverwrite(true);
@@ -719,6 +725,7 @@ default:
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
+    mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
 }
 
 
@@ -757,6 +764,12 @@ void MainWindow::slotMapZoomChanged(bool canZoomIn, bool canZoomOut)
 {
     mMapZoomInAction->setEnabled(canZoomIn);
     mMapZoomOutAction->setEnabled(canZoomOut);
+}
+
+
+void MainWindow::slotMapGotoSelection()
+{
+    mapController()->gotoSelection(filesController()->view()->selectedItems());
 }
 
 

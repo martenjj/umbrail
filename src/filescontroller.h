@@ -52,6 +52,7 @@ public:
     QStringList modifiedFiles() const;
 
     static QString allImportFilters();
+    static QString allExportFilters();
     static QString allProjectFilters(bool includeAllFiles);
 
 public slots:               
@@ -69,6 +70,7 @@ signals:
     void statusMessage(const QString &text);
     void modified();
     void updateActionState();
+    void updateMap();
 
 private:
 //    void executeCommand(CommandBase *cmd);

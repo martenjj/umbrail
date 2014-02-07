@@ -594,6 +594,15 @@ static const char dataFilter[] = "*.tracks|Track project (*.tracks)";
 static const char allFilter[] = "*|All Files";
 
 
+QString FilesController::allExportFilters()
+{
+    QStringList filters;
+    filters << GpxExporter::filter();
+    return (filters.join("\n"));
+}
+
+
+
 QString FilesController::allImportFilters()
 {
     QStringList filters;

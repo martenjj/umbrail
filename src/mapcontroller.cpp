@@ -9,9 +9,10 @@
 #include <kmessagebox.h>
 
 #include <marble/MarbleAboutDialog.h>
+#include <marble/GeoDataLatLonBox.h>
 
 #include "mapview.h"
-//#include "pointdata.h"
+#include "trackdata.h"
 #include "mapthemedialogue.h"
 #include "mainwindow.h"
 
@@ -271,13 +272,18 @@ void MapController::slotAboutMarble()
 }
 
 
-void MapController::showPoint(const PointData *pnt)
-{
-//    view()->centerOn(pnt->longtitude(), pnt->latitude());
-}
-
-
 MainWindow *MapController::mainWindow() const
 {
     return (qobject_cast<MainWindow *>(parent()));
+}
+
+
+void MapController::gotoSelection(const QList<TrackDataItem *> &items)
+{
+    if (items.count()==0) return;
+
+    BoundingArea bb = TrackData::unifyBoundingAreas(items);
+    GeoDataLatLonBox ll(bb.north(), bb.south(),
+                        bb.east(), bb.west(), GeoDataCoordinates::Degree);
+    view()->centerOn(ll, true);
 }

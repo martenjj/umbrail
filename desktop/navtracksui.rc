@@ -23,6 +23,8 @@
       <Action name="track_expand_all"/>
       <Action name="track_collapse_all"/>
       <Separator/>
+      <Action name="map_go_selection"/>
+      <Separator/>
       <Action name="track_properties"/>
     </Menu>
 
@@ -52,6 +54,8 @@
   <Menu name="filesview_contextmenu">
     <Action name="track_expand_all"/>
     <Action name="track_collapse_all"/>
+    <Separator/>
+    <Action name="map_go_selection"/>
     <Separator/>
     <Action name="edit_select_all"/>
     <Action name="track_properties"/>

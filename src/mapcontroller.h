@@ -16,7 +16,7 @@ class KConfigGroup;
 
 class MapView;
 class MainWindow;
-class PointData;
+class TrackDataItem;
 
 
 
@@ -37,7 +37,7 @@ public:
     QString load(const KConfig *conf);
     void clear();
 
-    void showPoint(const PointData *pnt);
+    void gotoSelection(const QList<TrackDataItem *> &items);
 
 public slots:               
     void slotGoHome();

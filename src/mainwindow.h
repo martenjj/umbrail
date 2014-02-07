@@ -61,6 +61,7 @@ protected slots:
     void slotCleanUndoChanged(bool clean);
 
     void slotMapZoomChanged(bool canZoomIn, bool canZoomOut);
+    void slotMapGotoSelection();
 
 private:
     void init();
@@ -98,6 +99,7 @@ private:
 
     KAction *mMapZoomInAction;
     KAction *mMapZoomOutAction;
+    KAction *mMapGoToAction;
 
     QSplitter *mSplitter;
     QUndoStack *mUndoStack;
