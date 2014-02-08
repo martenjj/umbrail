@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		05-Feb-14					#
+#  Edit:		07-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -24,6 +24,8 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 
 include(FindMarble)
 
+
+
 #########################################################################
 #									#
 #  Building the target							#
@@ -32,30 +34,29 @@ include(FindMarble)
 
 set(navtracks_SRCS
   main.cpp
-  mainwindow.cpp
-  project.cpp
-  trackdata.cpp
-  filesview.cpp
+  autotooltipdelegate.cpp
+  commands.cpp
+  exporterbase.cpp
   filescontroller.cpp
   filesmodel.cpp
-  commands.cpp
-  trackpropertiesdialogue.cpp
-  trackpropertiesgeneralpages.cpp
-  variableunitdisplay.cpp
-#  latlongedit.cpp
-#  latlongdialogue.cpp
-#  addressedit.cpp
-#  addressdialogue.cpp
-  mapcontroller.cpp
-  mapview.cpp
-  mapthemedialogue.cpp
+  filesview.cpp
+  gpxexporter.cpp
+  gpximporter.cpp
   importerexporterbase.cpp
   importerbase.cpp
-  gpximporter.cpp
-  exporterbase.cpp
-  gpxexporter.cpp
-  autotooltipdelegate.cpp
+  mainwindow.cpp
+  mapcontroller.cpp
+  mapthemedialogue.cpp
+  mapview.cpp
+  project.cpp
+  style.cpp
+  trackdata.cpp
+  trackpropertiesgeneralpages.cpp
+  trackpropertiesdialogue.cpp
+  variableunitdisplay.cpp
 )
+
+kde4_add_kcfg_files(navtracks_SRCS settings.kcfgc)
 
 add_definitions("-DVERSION=\\\"${VERSION}\\\"")
 if (SORTABLE_VIEW)
@@ -74,3 +75,4 @@ add_dependencies(navtracks vcsversion)
 #########################################################################
 
 install(TARGETS navtracks ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(FILES settings.kcfg DESTINATION ${KCFG_INSTALL_DIR})

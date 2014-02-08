@@ -10,7 +10,6 @@ using namespace Marble;
 
 
 class KAction;
-class KConfigGroup;
 
 class FilesModel;
 class MainWindow;
@@ -25,8 +24,8 @@ public:
     MapView(QWidget *parent = NULL);
     ~MapView();
 
-    void readProperties(const KConfigGroup &grp);
-    void saveProperties(KConfigGroup &grp);
+    void readProperties();
+    void saveProperties();
 
     void setFilesModel(FilesModel *mdl)		{ mModel = mdl; }
 

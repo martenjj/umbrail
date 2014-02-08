@@ -19,6 +19,7 @@
 #include "filesmodel.h"
 #include "trackdata.h"
 #include "mainwindow.h"
+#include "style.h"
 
 
 
@@ -55,12 +56,12 @@ MapView::~MapView()
 
 
 // Do nothing here and next.  Map properties are saved in the project data file.
-void MapView::readProperties(const KConfigGroup &grp)
+void MapView::readProperties()
 {
 }
 
 
-void MapView::saveProperties(KConfigGroup &grp)
+void MapView::saveProperties()
 {
 }
 
@@ -87,7 +88,10 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter)
         kDebug() << "points for" << tdi->name();
 
 ///////////// TODO: line width/style: inherited or global setting
-        painter->setPen(QPen(Qt::black, 4));
+//        painter->setPen(QPen(Qt::black, 4));
+        painter->setPen(QPen(
+    Style::globalStyle()->lineColour()
+, 4));
 
         GeoDataLineString lines;
         for (int i = 0; i<cnt; ++i)

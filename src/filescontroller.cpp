@@ -65,83 +65,15 @@ void FilesController::clear()
 }
 
 
-void FilesController::readProperties(const KConfigGroup &grp)
+void FilesController::readProperties()
 {
-    view()->readProperties(grp);
-//    iconsManager()->readProperties(grp);
+    view()->readProperties();
 }
 
-void FilesController::saveProperties(KConfigGroup &grp)
+void FilesController::saveProperties()
 {
-    view()->saveProperties(grp);
-//    iconsManager()->saveProperties(grp);
+    view()->saveProperties();
 }
-
-//
-//ImporterBase *FilesController::createGpxImporter()
-//{
-//    GpxImporter *imp = new GpxImporter(mainWindow());
-//    connect(imp, SIGNAL(finished(const FilesList *)),
-//            SLOT(slotImportFinished(const FilesList *)));
-//    connect(imp, SIGNAL(statusMessage(const QString &)),
-//            this, SIGNAL(statusMessage(const QString &)));
-//    return (imp);
-//}
-//
-//
-//ExporterBase *FilesController::createGpxExporter()
-//{
-//    GpxExporter *exp = new GpxExporter(mainWindow());
-//    connect(exp, SIGNAL(statusMessage(const QString &)),
-//            this, SIGNAL(statusMessage(const QString &)));
-//    return (exp);
-//}
-//
-//
-//void FilesController::slotImportFinished(const FilesList *files)
-//{
-//    int curCount = model()->filesCount();
-//    int addedCount = files->count();
-//    kDebug() << "cur" << curCount << "added" << addedCount;
-//
-//    int mergeCount = 0;
-//    QList<int> mergeRows;
-//    for (int ia = 0; ia<addedCount; ++ia)		// scan over added files
-//    {
-//        const PointData aPoint = files->at(ia);
-//        int mergeRow = -1;
-//        for (int ic = 0; ic<curCount; ++ic)		// scan over existing files
-//        {
-//            const PointData *cPoint = model()->pointAt(ic);
-//            bool can = cPoint->canMerge(aPoint);
-//            if (can)
-//            {
-//                mergeRow = ic;
-//                ++mergeCount;
-//                kDebug() << "merge with row" << ic << cPoint->name();
-//                break;
-//            }
-//        }
-//
-//        if (mergeRow==-1) kDebug() << "no merge" << aPoint.name();
-//        mergeRows.append(mergeRow);
-//    }
-//
-//    MergeFilesCommand *cmd = new MergeFilesCommand(this);
-//    cmd->setText(i18np("Import point", "Import %1 files", addedCount));
-//    cmd->setFiles(files);
-//    cmd->setRows(&mergeRows);
-//    executeCommand(cmd);
-//
-//    slotUpdateActionState();
-//    categoryManager()->scanForNew(model());
-//    iconsManager()->scanForNew(model());
-//    emit statusMessage(i18n("Imported %1 files, new %2, merged %3, total %4",
-//                            addedCount,
-//                            (addedCount-mergeCount),
-//                            mergeCount,
-//                            model()->filesCount()));
-//}
 
 
 QString FilesController::save(KConfig *conf)

@@ -56,14 +56,14 @@ void MapController::clear()
 }
 
 
-void MapController::readProperties(const KConfigGroup &grp)
+void MapController::readProperties()
 {
-    view()->readProperties(grp);
+    view()->readProperties();
 }
 
-void MapController::saveProperties(KConfigGroup &grp)
+void MapController::saveProperties()
 {
-    view()->saveProperties(grp);
+    view()->saveProperties();
 }
 
 

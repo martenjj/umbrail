@@ -12,7 +12,6 @@
 //class QUndoStack;
 
 class KConfig;
-class KConfigGroup;
 class KUrl;
 
 class FilesView;
@@ -40,8 +39,8 @@ public:
     FilesView *view() const			{ return (mView); }
     FilesModel *model() const			{ return (mDataModel); }
 
-    void readProperties(const KConfigGroup &grp);
-    void saveProperties(KConfigGroup &grp);
+    void readProperties();
+    void saveProperties();
 
     bool importFile(const KUrl &importFrom);
     bool exportFile(const KUrl &exportTo, const TrackDataFile *tdf);

@@ -8,16 +8,11 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kconfiggroup.h>
 #include <kxmlguifactory.h>
 
 #include "mainwindow.h"
 #include "autotooltipdelegate.h"
-
-
-#define GROUP_FILESVIEW		"FilesView"
-#define CONFIG_COLSTATES	"ColumnStates"
-
+#include "settings.h"
 
 
 FilesView::FilesView(QWidget *pnt)
@@ -61,13 +56,12 @@ FilesView::~FilesView()
 }
 
 
-void FilesView::readProperties(const KConfigGroup &grp)
+void FilesView::readProperties()
 {
-    KConfigGroup ourGroup = grp.config()->group(GROUP_FILESVIEW);
-    kDebug() << "from" << ourGroup.name();
+    kDebug();
 
 #ifdef SORTABLE_VIEW
-    QString colStates = ourGroup.readEntry(CONFIG_COLSTATES, QString());
+    QString colStates = Settings::filesViewColumnStates();
     if (!colStates.isEmpty())
     {
         header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
@@ -76,12 +70,11 @@ void FilesView::readProperties(const KConfigGroup &grp)
 }
 
 
-void FilesView::saveProperties(KConfigGroup &grp)
+void FilesView::saveProperties()
 {
-    KConfigGroup ourGroup = grp.config()->group(GROUP_FILESVIEW);
-    kDebug() << "to" << ourGroup.name();
+    kDebug();
 
-    ourGroup.writeEntry(CONFIG_COLSTATES, header()->saveState().toHex());
+    Settings::setFilesViewColumnStates(header()->saveState().toHex());
 }
 
 

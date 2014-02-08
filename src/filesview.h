@@ -8,8 +8,6 @@
 #include "trackdata.h"
 
 
-class KConfigGroup;
-
 class MainWindow;
 
 
@@ -21,8 +19,8 @@ public:
     FilesView(QWidget *pnt = NULL);
     ~FilesView();
 
-    void readProperties(const KConfigGroup &grp);
-    void saveProperties(KConfigGroup &grp);
+    void readProperties();
+    void saveProperties();
 
 //    typedef QList<int> RowList;
 //    FilesView::RowList selectedRows() const;

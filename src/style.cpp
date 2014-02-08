@@ -1,0 +1,66 @@
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Project:	NavTracks						//
+//  Edit:	08-Feb-14						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Copyright (c) 2012-2014 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Home and download page:  http://www.keelhaul.me.uk/TBD/		//
+//									//
+//  This program is free software; you can redistribute it and/or	//
+//  modify it under the terms of the GNU General Public License as	//
+//  published by the Free Software Foundation; either version 2 of	//
+//  the License, or (at your option) any later version.			//
+//									//
+//  It is distributed in the hope that it will be useful, but		//
+//  WITHOUT ANY WARRANTY; without even the implied warranty of		//
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the	//
+//  GNU General Public License for more details.			//
+//									//
+//  You should have received a copy of the GNU General Public		//
+//  License along with this program; see the file COPYING for further	//
+//  details.  If not, write to the Free Software Foundation, Inc.,	//
+//  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.		//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#include "style.h"
+
+#include <kdebug.h>
+//#include <klocale.h>
+
+#include "settings.h"
+
+
+
+static Style *sGlobalStyle = NULL;
+
+
+
+Style::Style()
+{
+    mLineColour = Style::InheritColour;
+}
+
+
+Style *Style::globalStyle()
+{
+    if (sGlobalStyle==NULL)
+    {
+        sGlobalStyle = new Style();
+        kDebug() << "created globalStyle instance";
+
+        // Read the applicatiion settings into the global style object
+        sGlobalStyle->setLineColour(Settings::lineColour());
+    }
+
+    return (sGlobalStyle);
+}
+
+
+void Style::setLineColour(const QColor &col)
+{
+    if (col==Qt::transparent) mLineColour = QColor();
+    else mLineColour = col;
+}

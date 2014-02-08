@@ -12,7 +12,6 @@
 using namespace Marble;
 
 class KConfig;
-class KConfigGroup;
 
 class MapView;
 class MainWindow;
@@ -30,8 +29,8 @@ public:
 
     MapView *view() const			{ return (mView); }
 
-    void readProperties(const KConfigGroup &grp);
-    void saveProperties(KConfigGroup &grp);
+    void readProperties();
+    void saveProperties();
 
     QString save(KConfig *conf);
     QString load(const KConfig *conf);

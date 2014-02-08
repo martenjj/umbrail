@@ -38,11 +38,11 @@
 #include "mapcontroller.h"
 #include "mapview.h"
 #include "project.h"
-//#include "commands.h"
+#include "settings.h"
+#include "style.h"
 
 
-static const char configGroup[] = "MainWindow";
-static const char splitterStateKey[] = "SplitterState";
+static const char CONFIG_GROUP[] = "MainWindow";
 
 static const int sbModified = 0;
 
@@ -95,7 +95,8 @@ void MainWindow::init()
     setupStatusBar();
     setupActions();
 
-    readProperties(KConfigGroup(KGlobal::config(), configGroup));
+    readProperties(Settings::self()->config()->group(CONFIG_GROUP));
+
     slotSetModified(false);
     slotUpdateActionState();
 }
@@ -272,7 +273,7 @@ void MainWindow::setupStatusBar()
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
-    KConfigGroup grp(KGlobal::config(), configGroup);
+    KConfigGroup grp = Settings::self()->config()->group(CONFIG_GROUP);
     saveProperties(grp);
     grp.sync();
 
@@ -330,25 +331,30 @@ default:						// cancelled
 void MainWindow::saveProperties(KConfigGroup &grp)
 {
     kDebug() << "to" << grp.name();
-
     KMainWindow::saveProperties(grp);
-    mapController()->saveProperties(grp);
-    filesController()->saveProperties(grp);
 
-    grp.writeEntry(splitterStateKey, mSplitter->saveState().toBase64());
+    mapController()->saveProperties();
+    filesController()->saveProperties();
+
+    // Update the applicatiion settings from the global style object
+    Settings::setLineColour(Style::globalStyle()->lineColour());
+
+    Settings::setMainWindowSplitterState(mSplitter->saveState().toBase64());
+
+    Settings::self()->writeConfig();
 }
 
 
 void MainWindow::readProperties(const KConfigGroup &grp)
 {
     kDebug() << "from" << grp.name();
-
     KMainWindow::readProperties(grp);
-    mapController()->readProperties(grp);
-    filesController()->readProperties(grp);
 
-    QByteArray ss = grp.readEntry(splitterStateKey, QByteArray());
-    if (!ss.isEmpty()) mSplitter->restoreState(QByteArray::fromBase64(ss));
+    mapController()->readProperties();
+    filesController()->readProperties();
+
+    QString splitterState = Settings::mainWindowSplitterState();
+    if (!splitterState.isEmpty()) mSplitter->restoreState(QByteArray::fromBase64(splitterState.toAscii()));
 }
 
 
