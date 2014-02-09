@@ -17,21 +17,24 @@
 #include <marble/AbstractFloatItem.h>
 
 #include "filesmodel.h"
+#include "filesview.h"
 #include "trackdata.h"
 #include "mainwindow.h"
+#include "settings.h"
 #include "style.h"
 
 
 
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
-MapView::MapView(QWidget *parent)
-    : MarbleWidget(parent)
+MapView::MapView(QWidget *pnt)
+    : MarbleWidget(pnt)
 {
     kDebug();
 
-    mMainWindow = qobject_cast<MainWindow *>(parent);
+    mMainWindow = qobject_cast<MainWindow *>(pnt);
 
-    mModel = NULL;
+    mFilesModel = NULL;
+    mFilesView = NULL;
     mRunnerManager = NULL;
 
     setMapThemeId("earth/openstreetmap/openstreetmap.dgml");
@@ -67,57 +70,127 @@ void MapView::saveProperties()
 
 
 
-// see http://techbase.kde.org/Projects/Marble/MarbleGeoPainter
-void MapView::customPaint(GeoPainter *painter)
+static QColor resolveLineColour(const TrackDataItem *tdi)
 {
-    if (filesModel()==NULL) return;
-    paintDataTree(filesModel()->rootItem(), painter);
+// TODO: inherited or global setting
+return (Style::globalStyle()->lineColour());
+
+
+
+
+
 }
 
 
-void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter)
+
+
+// see http://techbase.kde.org/Projects/Marble/MarbleGeoPainter
+void MapView::customPaint(GeoPainter *painter)
+{
+    if (filesModel()==NULL) return;			// no data to use!
+
+    mSelectionId = (filesView()!=NULL ? filesView()->selectionId() : 0);
+    paintDataTree(filesModel()->rootItem(), painter, false);
+}
+
+
+void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool parentSelected)
 {
     int cnt = tdi->childCount();
     if (cnt==0) return;					// quick escape if no children
 
-    kDebug() << tdi << tdi->name();
+    bool isSelected = parentSelected || (tdi->selectionId()==mSelectionId);
+    kDebug() << tdi << tdi->name() << "selected" << isSelected;
+
+    // What is actually drawn on the map is a polyline representing a sequence
+    // of points (with their parent container normally a track segment, but this
+    // is not mandated).  So it is not necessary to recurse all the way down the
+    // data tree to the individual points, we can stop at the level above if the
+    // first child item (assumed to be representative of the others) is a point.
 
     const TrackDataItem *firstChild = tdi->childAt(0);	// look at first child
     if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
     {							// see if it is a point
         kDebug() << "points for" << tdi->name();
 
-///////////// TODO: line width/style: inherited or global setting
-//        painter->setPen(QPen(Qt::black, 4));
-        painter->setPen(QPen(
-    Style::globalStyle()->lineColour()
-, 4));
+        // Run along the segment, assembling the coordinates into a list and
+        // also drawing point markers if the segment is selected.  This relies
+        // on the selected line colour being the same as the selected point
+        // colour.
 
         GeoDataLineString lines;
         for (int i = 0; i<cnt; ++i)
         {
             const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i));
-            if (tdp!=NULL)
+            if (tdp==NULL) continue;
+
+            GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                     0, GeoDataCoordinates::Degree);
+            lines.append(coord);
+
+            if (isSelected)				// draw point markers
             {
-                GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                         0, GeoDataCoordinates::Degree);
-                lines.append(coord);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(Settings::selectedLineColour());
+                painter->drawEllipse(coord, 10, 10);
             }
         }
 
+        // Resolving the line colour, in the case where it is not selected, could
+        // potentially be an expensive operation - needing to examine not only the
+        // style of the current item, but also all of its parents, then the project
+        // default, then finally the application's default style.  However, this
+        // search will only need to be performed once per track segment, of which it
+        // is expected that there will be at most a few tens of them existing within
+        // a typical project.  So the overhead here is not likely to be significant.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        painter->setBrush(Qt::NoBrush);			// draw the polyline
+        painter->setPen(QPen(isSelected ? Settings::selectedLineColour() : resolveLineColour(tdi), 4));
         painter->drawPolyline(lines);
 
-///////////// TODO: points for selected segment
+        // Finally draw the selected points along the line, if there are any.
+        // Do this last so that the selection markers show up on top.
 
-
-
-
-    }
-    else						// not a point, so a container
-    {
-        for (int i = 0; i<cnt; ++i)			// recurse to paint children
+        if (isSelected)
         {
-            paintDataTree(tdi->childAt(i), painter);
+            for (int i = 0; i<cnt; ++i)
+            {
+                const TrackDataItem *pointItem = tdi->childAt(i);
+
+                // Optimisation: we can cheaply check whether the point is selected
+                // before actually having to do a dynamic_cast.
+                if (pointItem->selectionId()==mSelectionId)
+                {
+                    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(pointItem);
+                    if (tdp==NULL) continue;
+
+                    GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                             0, GeoDataCoordinates::Degree);
+                    painter->setPen(QPen(Qt::red, 2));
+                    painter->setBrush(Qt::yellow);
+                    painter->drawEllipse(coord, 10, 10);
+                }
+            }
+        }
+    }
+    else						// first child not a point,
+    {							// so we are higher container
+        for (int i = 0; i<cnt; ++i)			// just recurse to paint children
+        {
+            paintDataTree(tdi->childAt(i), painter, isSelected);
         }
     }
 }

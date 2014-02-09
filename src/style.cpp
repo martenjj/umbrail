@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	08-Feb-14						//
+//  Edit:	09-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -51,7 +51,7 @@ Style *Style::globalStyle()
         sGlobalStyle = new Style();
         kDebug() << "created globalStyle instance";
 
-        // Read the applicatiion settings into the global style object
+        // Read the application settings into the global style object
         sGlobalStyle->setLineColour(Settings::lineColour());
     }
 

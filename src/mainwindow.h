@@ -53,6 +53,7 @@ protected slots:
     void slotSaveAs();
     void slotExportFile();
     void slotImportFile();
+    void slotPreferences();
 
     void slotCanUndoChanged(bool can);
     void slotCanRedoChanged(bool can);

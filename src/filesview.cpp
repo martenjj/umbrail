@@ -47,6 +47,26 @@ FilesView::FilesView(QWidget *pnt)
     mSelectedCount = 0;
     mSelectedType = TrackData::None;
     mSelectedItem = NULL;
+
+    // The selection ID is a value which is incremented each time the selection
+    // changes.  Selected items have the current selection ID stored within them,
+    // and the map painter compares their stored selection ID to our current ID
+    // when checking whether an item is selected.  The advantage of this over
+    // just a simple selected/unselected flag within the item is that there is
+    // no need to reset the flag when a item becomes unselected, the old ID
+    // can just remain there.  This eliminates having to store the current selection
+    // list here and run through it to reset the selection flags before emptying
+    // it and refilling with the new selection, one extra loop and two list operations.
+    //
+    // The default selection ID used by the map painter if none is available (which
+    // should never happen) is 0.  The selection ID of a newly created TrackDataItem,
+    // set by its constructor, is 1.  So setting our initial selection ID just past
+    // those values ensures that there will be no problem with clashes or use of
+    // out-of-date IDs until of the order of 4 billion selection/deselection
+    // operations (assuming 32-bit longs) have been performed.  That will keep the
+    // user occupied for a while...
+
+    mSelectionId = 2;
 }
 
 
@@ -82,6 +102,9 @@ void FilesView::selectionChanged(const QItemSelection &sel,
                                  const QItemSelection &desel)
 {
     QTreeView::selectionChanged(sel, desel);		// visually update
+
+    ++mSelectionId;					// invalidate previous selection
+    kDebug() << "selection ID is now" << mSelectionId;
 
     //   int numSelected		how many rows are selected
     //
@@ -128,6 +151,28 @@ void FilesView::selectionChanged(const QItemSelection &sel,
             else mSelectedType = TrackData::None;
         }
     }
+
+    // Mark the current selection with the current selection ID.
+    for (int i = 0; i<mSelectedCount; ++i)
+    {
+        TrackDataItem *tdi = static_cast<TrackDataItem *>(selIndexes[i].internalPointer());
+        Q_ASSERT(tdi!=NULL);
+        tdi->setSelectionId(mSelectionId);
+
+        // Selecting a point automatically sets its parent container
+        // (normally a segment, but this is not enforced) to be selected
+        // also.  Only for drawing purposes, not for any user operations.
+        TrackDataPoint *tdp = dynamic_cast<TrackDataPoint *>(tdi);
+        if (tdp!=NULL)					// this is a point
+        {
+            TrackDataItem *par = tdi->parent();
+            Q_ASSERT(par!=NULL);
+            par->setSelectionId(mSelectionId);		// select its parent
+        }
+    }
+
+// TODO: more selective region updating
+// emit a different signal, remove connection in MainWindow
 
     emit updateActionState();				// actions and status
 }

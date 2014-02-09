@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		07-Feb-14					#
+#  Edit:		08-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -49,6 +49,7 @@ set(navtracks_SRCS
   mapthemedialogue.cpp
   mapview.cpp
   project.cpp
+  settingsdialogue.cpp
   style.cpp
   trackdata.cpp
   trackpropertiesgeneralpages.cpp

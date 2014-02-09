@@ -26,8 +26,8 @@
 
 
 
-MapController::MapController(QObject *parent)
-    : QObject(parent)
+MapController::MapController(QObject *pnt)
+    : QObject(pnt)
 {
     kDebug();
 

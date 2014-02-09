@@ -40,6 +40,7 @@
 #include "project.h"
 #include "settings.h"
 #include "style.h"
+#include "settingsdialogue.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -83,11 +84,14 @@ void MainWindow::init()
 
     mMapController = new MapController(this);
     mMapController->view()->setFilesModel(mFilesController->model());
+    mMapController->view()->setFilesView(mFilesController->view());
     connect(mMapController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
     connect(mMapController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mMapController, SIGNAL(mapZoomChanged(bool,bool)), SLOT(slotMapZoomChanged(bool,bool)));
 
     connect(mFilesController, SIGNAL(updateMap()), mMapController->view(), SLOT(update()));
+    // TODO: temp, see FilesView::selectionChanged()
+    connect(mFilesController, SIGNAL(updateActionState()), mMapController->view(), SLOT(update()));
 
     mSplitter->addWidget(mFilesController->view());
     mSplitter->addWidget(mMapController->view());
@@ -242,6 +246,8 @@ void MainWindow::setupActions()
     a = actionCollection()->addAction("map_show_overlays", itemsMenu);
     a->setText(i18n("Show Overlays"));
 
+    a = KStandardAction::preferences(this, SLOT(slotPreferences()), actionCollection());
+
     a = actionCollection()->addAction("help_about_marble");
     a->setText(i18n("About Marble"));
     a->setIcon(KIcon("marble"));
@@ -335,9 +341,6 @@ void MainWindow::saveProperties(KConfigGroup &grp)
 
     mapController()->saveProperties();
     filesController()->saveProperties();
-
-    // Update the applicatiion settings from the global style object
-    Settings::setLineColour(Style::globalStyle()->lineColour());
 
     Settings::setMainWindowSplitterState(mSplitter->saveState().toBase64());
 
@@ -777,6 +780,14 @@ void MainWindow::slotMapGotoSelection()
 {
     mapController()->gotoSelection(filesController()->view()->selectedItems());
 }
+
+
+void MainWindow::slotPreferences()
+{
+    SettingsDialogue d(this);
+    if (d.exec()) mapController()->view()->update();
+}
+
 
 
 void MainWindow::executeCommand(QUndoCommand *cmd)

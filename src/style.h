@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	07-Feb-14						//
+//  Edit:	09-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -74,7 +74,7 @@ public:
     static Style *globalStyle();
 
     /**
-     * Set the line colour for this style object.  A colour of @c Inherit
+     * Set the line colour for this style object.  A colour of @c InheritColour
      * means that the colour is to be inherited from the parent.
      *
      * @p col The colour to be set

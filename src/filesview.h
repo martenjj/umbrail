@@ -22,15 +22,12 @@ public:
     void readProperties();
     void saveProperties();
 
-//    typedef QList<int> RowList;
-//    FilesView::RowList selectedRows() const;
-//    void selectRows(const QList<int> &rows);
-//    void selectRows(int fromRow, int toRow);
-
     int selectedCount() const			{ return (mSelectedCount); }
     TrackData::Type selectedType() const	{ return (mSelectedType); }
     const TrackDataItem *selectedItem() const	{ return (mSelectedItem); }
     QList<TrackDataItem *> selectedItems() const;
+
+    unsigned long selectionId() const		{ return (mSelectionId); }
 
 public slots:
     void slotSelectAllSiblings();
@@ -51,6 +48,7 @@ private:
     int mSelectedCount;
     TrackData::Type mSelectedType;
     const TrackDataItem *mSelectedItem;
+    unsigned long mSelectionId;
 };
  
 #endif							// FILESVIEW_H

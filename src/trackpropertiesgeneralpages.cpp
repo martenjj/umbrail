@@ -354,6 +354,22 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
         {
             addTimeDistanceSpeedFields(items, false);
         }
+        else						// selection is noncontiguous
+        {
+
+// TODO: for noncontiguous selection of 2 points
+//
+//    travel distance
+//    travel time
+//    average speed
+//
+//    straight line distance
+//    bearing (of last from first) - absolute or red/green
+//
+// synthesise a list of points first/intermediates/last,
+// then use aTDSF as above for the first 3
+
+        }
     }
 }
 

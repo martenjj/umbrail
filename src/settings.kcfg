@@ -7,11 +7,19 @@
   <include>qcolor.h</include>
 
   <group name="DefaultStyle">
+
     <entry name="LineColour" type="Color">
       <label>Line colour:</label>
       <tooltip>The colour used to display tracks.</tooltip>
       <default code="true">Qt::magenta</default>
     </entry>
+
+    <entry name="SelectedLineColour" type="Color">
+      <label>Selected line colour:</label>
+      <tooltip>The colour used to display selected tracks.</tooltip>
+      <default code="true">Qt::green</default>
+    </entry>
+
   </group>
 
   <group name="MainWindow">

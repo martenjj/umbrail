@@ -243,6 +243,7 @@ TrackDataItem::TrackDataItem(const QString &desc, const char *format, int *count
 void TrackDataItem::init()
 {
     mParent = NULL;
+    mSelectionId = 1;
 }
 
 

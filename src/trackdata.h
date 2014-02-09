@@ -125,6 +125,9 @@ public:
 
     virtual QString iconName() const = 0;
 
+    unsigned long selectionId() const			{ return (mSelectionId); }
+    void setSelectionId(unsigned long id)		{ mSelectionId = id; }
+
     int childCount() const				{ return (mChildItems.count()); }
     TrackDataItem *childAt(int idx) const		{ return (mChildItems[idx]); }
     int childIndex(const TrackDataItem *data) const	{ return (mChildItems.indexOf(const_cast<TrackDataItem *>(data))); }
@@ -152,6 +155,7 @@ private:
     QString mName;
     QList<TrackDataItem *> mChildItems;
     TrackDataItem *mParent;
+    unsigned long mSelectionId;
 };
 
 
