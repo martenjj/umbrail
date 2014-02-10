@@ -3,10 +3,10 @@
 #define TRACKPROPERTIESGENERALPAGES_H
 
 #include <qwidget.h>
-#include <qlabel.h>
 
 #include <kurl.h>
 
+class QLabel;
 class QDateTime;
 class QFormLayout;
 class KLineEdit;
@@ -15,24 +15,6 @@ class TrackDataItem;
 
 
 
-
-
-
-class TrackDataLabel : public QLabel
-{
-    Q_OBJECT
-
-public:
-    TrackDataLabel(const QString &str, QWidget *parent = NULL);
-    TrackDataLabel(int i, QWidget *parent = NULL);
-    TrackDataLabel(const QDateTime &dt, QWidget *parent = NULL);
-    TrackDataLabel(double lat, double lon, QWidget *parent = NULL);
-
-    virtual ~TrackDataLabel()					{}
-
-private:
-    void init();
-};
 
 
 
@@ -47,19 +29,17 @@ public:
 
     QString newItemName() const;
 
+    virtual QString typeText(int count) const = 0;
+
 protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
     virtual bool isDataValid() const;
 
-    void addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes = true);
-    void addBoundingAreaField(const QList<TrackDataItem *> &items);
-    void addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText);
+    void addTimeFields(const QList<TrackDataItem *> &items);
     void addSpacerField();
 
 protected:
-    QLabel *mTypeLabel;
-    QLabel *mIconLabel;
     QFormLayout *mFormLayout;
     KLineEdit *mNameEdit;
 
@@ -86,6 +66,8 @@ public:
 
     KUrl newFileUrl() const;
 
+    QString typeText(int count) const;
+
 protected:
     virtual bool isDataValid() const;
 
@@ -104,6 +86,7 @@ public:
     TrackTrackGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackTrackGeneralPage()				{}
 
+    QString typeText(int count) const;
 
 };
 
@@ -117,6 +100,7 @@ public:
     TrackSegmentGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackSegmentGeneralPage()				{}
 
+    QString typeText(int count) const;
 
 };
 
@@ -130,6 +114,7 @@ public:
     TrackPointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackPointGeneralPage()				{}
 
+    QString typeText(int count) const;
 
 };
 

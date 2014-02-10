@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		08-Feb-14					#
+#  Edit:		10-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -52,6 +52,8 @@ set(navtracks_SRCS
   settingsdialogue.cpp
   style.cpp
   trackdata.cpp
+  trackdatalabel.cpp
+  trackpropertiesdetailpages.cpp
   trackpropertiesgeneralpages.cpp
   trackpropertiesdialogue.cpp
   variableunitdisplay.cpp

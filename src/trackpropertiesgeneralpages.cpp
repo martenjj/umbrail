@@ -2,7 +2,6 @@
 #include "trackpropertiesgeneralpages.h"
 
 #include <qformlayout.h>
-#include <qgridlayout.h>
 
 #include <kdebug.h>
 #include <kdialog.h>
@@ -14,48 +13,9 @@
 #include <kfiledialog.h>
 
 #include "trackdata.h"
+#include "trackdatalabel.h"
 #include "filescontroller.h"
 #include "variableunitdisplay.h"
-
-
-
-TrackDataLabel::TrackDataLabel(const QString &str, QWidget *parent)
-    : QLabel(str, parent)
-{
-    init();
-}
-
-
-
-TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *parent)
-    : QLabel(TrackData::formattedTime(dt), parent)
-{
-    init();
-}
-
-
-
-TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *parent)
-    : QLabel(TrackData::formattedLatLong(lat, lon), parent)
-{
-    init();
-}
-
-
-
-TrackDataLabel::TrackDataLabel(int i, QWidget *parent)
-    : QLabel(QString::number(i), parent)
-{
-    init();
-}
-
-
-
-void TrackDataLabel::init()
-{
-    setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-}
-
 
 
 
@@ -70,31 +30,16 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
     setObjectName("TrackItemGeneralPage");
     Q_ASSERT(!items.isEmpty());
 
-    QGridLayout *gl = new QGridLayout(this);
-
-    mTypeLabel = new QLabel("?", this);
-    gl->addWidget(mTypeLabel, 0, 0, Qt::AlignLeft);
-
-    mIconLabel = new QLabel(this);
-    mIconLabel->setPixmap(KIconLoader::global()->loadIcon(items.first()->iconName(),
-                                                          KIconLoader::NoGroup,
-                                                          KIconLoader::SizeMedium));
-    gl->addWidget(mIconLabel, 0, 1, Qt::AlignRight);
-    gl->setRowMinimumHeight(1, 2*KDialog::spacingHint());
-
-    mFormLayout = new QFormLayout;
-    mFormLayout->setMargin(0);
+    mFormLayout = new QFormLayout(this);
 
     mNameEdit = new KLineEdit(this);
     if (items.count()==1) mNameEdit->setText(items.first()->name());
     else mNameEdit->setEnabled(false);
     connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
+    addSpacerField();
     mFormLayout->addRow(i18nc("@label:textbox", "Name:"), mNameEdit);
     addSpacerField();
-
-    gl->addLayout(mFormLayout, 2, 0, 1, -1);
-    gl->setRowStretch(2, 1);
 }
 
 
@@ -129,7 +74,7 @@ void TrackItemGeneralPage::addSpacerField()
 
 
 
-void TrackItemGeneralPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes)
+void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
@@ -137,53 +82,7 @@ void TrackItemGeneralPage::addTimeDistanceSpeedFields(const QList<TrackDataItem 
 
     l = new TrackDataLabel(tsp.finish(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
-
-    unsigned tt = tsp.timeSpan();
-    l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
-    mFormLayout->addRow(i18nc("@label:textbox", "Time span:"), l);
-
-    if (bothTimes)
-    {
-        tt = TrackData::sumTotalTravelTime(items);
-        l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
-        mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
-    }
-
-    double dist = TrackData::sumTotalTravelDistance(items);
-    VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
-    vl->setSaveId("totaltraveldistance");
-    vl->setValue(dist);
-    mFormLayout->addRow(i18nc("@label:textbox", "Travel distance:"), vl);
-
-    double averageSpeed = dist/(tt/3600.0);
-    vl = new VariableUnitDisplay(VariableUnitDisplay::Speed, this);
-    vl->setSaveId("averagespeed");
-    vl->setValue(averageSpeed);
-    mFormLayout->addRow(i18nc("@label:textbox", "Average speed:"), vl);
 }
-
-
-
-void TrackItemGeneralPage::addBoundingAreaField(const QList<TrackDataItem *> &items)
-{
-    BoundingArea bb = TrackData::unifyBoundingAreas(items);
-    TrackDataLabel *l = new TrackDataLabel(bb.north(), bb.west(), this);
-    mFormLayout->addRow(i18nc("@label:textbox", "Bounding area:"), l);
-    l = new TrackDataLabel(bb.south(), bb.east(), this);
-    mFormLayout->addRow(QString::null, l);
-}
-
-
-
-void TrackItemGeneralPage::addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText)
-{
-    if (items.count()!=1) return;			// only for a single item
-
-    TrackDataLabel *l = new TrackDataLabel(items.first()->childCount(), this);
-    mFormLayout->addRow(labelText, l);
-}
-
-
 
 
 
@@ -197,8 +96,6 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
 {
     kDebug();
     setObjectName("TrackFileGeneralPage");
-
-    mTypeLabel->setText(i18ncp("@item:intable", "<b>File</b>", "<b>%1 files</b>", items.count()));
 
     mNameEdit->setReadOnly(true);			// can't rename here for files
 
@@ -216,20 +113,22 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
     }
     else						// may be mixed MIME types
     {
-        mIconLabel->setPixmap(KIconLoader::global()->loadIcon("unknown",
-                                                              KIconLoader::NoGroup,
-                                                              KIconLoader::SizeMedium));
+//        mIconLabel->setPixmap(KIconLoader::global()->loadIcon("unknown",
+//                                                              KIconLoader::NoGroup,
+//                                                              KIconLoader::SizeMedium));
         mUrlRequester->setEnabled(false);		// can't edit for multiple items
     }
 
     mFormLayout->insertRow(mFormLayout->rowCount()-1, i18nc("@label:textbox", "File:"), mUrlRequester);
 
-    addChildCountField(items, i18nc("@label:textbox", "Tracks:"));
-    addBoundingAreaField(items);
-    addTimeDistanceSpeedFields(items);
+    addTimeFields(items);
 }
 
 
+QString TrackFileGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>File</b>", "<b>%1 files</b>", count));
+}
 
 
 
@@ -263,11 +162,13 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items,
     kDebug();
     setObjectName("TrackTrackGeneralPage");
 
-    mTypeLabel->setText(i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", items.count()));
+    addTimeFields(items);
+}
 
-    addChildCountField(items, i18nc("@label:textbox", "Segments:"));
-    addBoundingAreaField(items);
-    addTimeDistanceSpeedFields(items);
+
+QString TrackTrackGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", count));
 }
 
 
@@ -281,11 +182,13 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> it
     kDebug();
     setObjectName("TrackSegmentGeneralPage");
 
-    mTypeLabel->setText(i18ncp("@item:intable", "<b>Segment</b>", "<b>%1 segments</b>", items.count()));
+    addTimeFields(items);
+}
 
-    addChildCountField(items, i18nc("@label:textbox", "Points:"));
-    addBoundingAreaField(items);
-    addTimeDistanceSpeedFields(items, false);
+
+QString TrackSegmentGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>Segment</b>", "<b>%1 segments</b>", count));
 }
 
 
@@ -299,8 +202,6 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
     kDebug();
     setObjectName("TrackPointGeneralPage");
 
-    mTypeLabel->setText(i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", items.count()));
-
     if (items.count()==1)				// single selection
     {
         const TrackDataPoint *p = dynamic_cast<const TrackDataPoint *>(items.first());
@@ -311,37 +212,9 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
 
         l = new TrackDataLabel(p->time(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
-
-        double ele = p->elevation();
-        if (!isnan(ele))
-        {
-            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
-            vl->setSaveId("elevation");
-            vl->setValue(ele);
-            mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
-        }
-
-        addSpacerField();
-
-        QString s = p->hdop();
-        if (!s.isEmpty())
-        {
-            l = new TrackDataLabel(s, this);
-            mFormLayout->addRow(i18nc("@label:textbox", "GPS HDOP:"), l);
-        }
-
-        s = p->speed();
-        if (!s.isEmpty())
-        {
-            double speed = s.toDouble();
-            l = new TrackDataLabel(QString::number(speed, 'f', 3), this);
-            mFormLayout->addRow(i18nc("@label:textbox", "GPS speed:"), l);
-        }
     }
     else						// multiple selection
     {
-        addBoundingAreaField(items);
-
         const TrackDataItem *seg = items.first()->parent();
         Q_ASSERT(seg!=NULL);				// find parent segment
         int firstIdx = seg->childIndex(items.first());	// its index of first item
@@ -359,51 +232,15 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
 
         if (contiguousSelection)			// selection is contiguous
         {
-            addTimeDistanceSpeedFields(items, false);
-        }
-        else						// selection is noncontiguous
-        {
-            if (items.count()==2)			// exactly two points selected
-            {
-                TrackDataItem *item1 = items.first();
-                TrackDataItem *item2 = items.last();
-
-                int idx1 = seg->childIndex(item1);
-                int idx2 = seg->childIndex(item2);
-                if (idx1>idx2) qSwap(idx1, idx2);	// order by index = time
-
-                QList<TrackDataItem *> items2;
-                for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
-
-                addTimeDistanceSpeedFields(items2, false);
-                addSpacerField();
-
-                TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx1));
-                TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));
-                Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
-
-                VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
-                vl->setSaveId("crowflies");
-                vl->setValue(pnt1->distanceTo(pnt2, true));
-                mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
-
-                vl = new VariableUnitDisplay(VariableUnitDisplay::Bearing, this);
-                vl->setSaveId("bearing");
-                vl->setValue(pnt1->bearingTo(pnt2));
-                mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
-
-                double ele1 = pnt1->elevation();
-                double ele2 = pnt2->elevation();
-                if (!isnan(ele1) && !isnan(ele2))
-                {
-                    vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
-                    vl->setSaveId("elediff");
-                    vl->setValue(ele2-ele1);
-                    mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
-                }
-            }
+            addTimeFields(items);
         }
     }
+}
+
+
+QString TrackPointGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", count));
 }
 
 

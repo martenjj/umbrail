@@ -137,6 +137,7 @@ public:
     TrackDataItem *removeLastChildItem();
 
     virtual QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+    virtual QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
 //    virtual QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
 
     virtual BoundingArea boundingArea() const;
@@ -173,6 +174,7 @@ public:
     QString iconName() const				{ return ("unknown"); }
 
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 };
 
@@ -197,6 +199,7 @@ public:
     void setModified(bool state)			{ mModified = state; }
 
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 private:
     static int sCounter;
@@ -219,6 +222,7 @@ public:
     QString iconName() const				{ return ("chart_track"); }
 
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 private:
     static int sCounter;
@@ -235,6 +239,7 @@ public:
     QString iconName() const				{ return ("chart_segment"); }
 
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
     TimeRange timeSpan() const;
 
@@ -253,6 +258,7 @@ public:
     QString iconName() const				{ return ("chart_point"); }
 
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }

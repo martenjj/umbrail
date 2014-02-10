@@ -1,43 +1,75 @@
 
 #include "trackpropertiesdialogue.h"
 
-#include <qlayout.h>
+#include <qgridlayout.h>
 #include <qlabel.h>
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kpagedialog.h>
+#include <ktabwidget.h>
 
 #include "trackdata.h"
 #include "trackpropertiesgeneralpages.h"
+#include "trackpropertiesdetailpages.h"
 
 
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &items, QWidget *pnt)
-    : KPageDialog(pnt)
+    : KDialog(pnt)
 {
     setObjectName("TrackPropertiesDialogue");
 
     setModal(true);
     setButtons(KDialog::Ok|KDialog::Cancel);
-    setFaceType(KPageDialog::Tabbed);
     showButtonSeparator(false);
 
     Q_ASSERT(!items.isEmpty());
     TrackDataItem *item = items.first();
 
-    QWidget *w = item->createPropertiesGeneralPage(items, this);
+    QWidget *w = new QWidget(this);
+    QGridLayout *gl = new QGridLayout(w);
+
+    gl->setColumnMinimumWidth(0, KDialog::marginHint());
+    gl->setColumnStretch(1, 1);
+    gl->setColumnMinimumWidth(3, KDialog::marginHint());
+
+    QLabel *typeLabel = new QLabel("?", this);
+    gl->addWidget(typeLabel, 0, 1, Qt::AlignLeft);
+
+    // TODO: if the items are files, there are more than one, and they are
+    // of mixed types (although we only support GPX files at present), the
+    // icon should be "unknown".
+    QLabel *iconLabel = new QLabel(this);
+    iconLabel->setPixmap(KIconLoader::global()->loadIcon(items.first()->iconName(),
+                                                         KIconLoader::NoGroup,
+                                                         KIconLoader::SizeMedium));
+    gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);
+    gl->setRowMinimumHeight(1, KDialog::spacingHint());
+
+    mTabWidget = new KTabWidget(this);
+    mTabWidget->setTabsClosable(false);
+    gl->addWidget(mTabWidget, 2, 0, 1, -1);
+
+    setMainWidget(w);
+
+    w = item->createPropertiesGeneralPage(items, this);
     mGeneralPage = qobject_cast<TrackItemGeneralPage *>(w);
     Q_ASSERT(mGeneralPage!=NULL);
     connect(mGeneralPage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
-    addPage(w, i18nc("@title:tab", "General"));
-//    w = item->createPropertiesStylePage(items, this);
-//    addPage(w, i18nc("@title:tab", "Style"));
+    mTabWidget->addTab(w, i18nc("@title:tab", "General"));
 
+    typeLabel->setText(mGeneralPage->typeText(items.count()));
 
-
+    w = item->createPropertiesDetailPage(items, this);
+    mDetailPage = qobject_cast<TrackItemDetailPage *>(w);
+    Q_ASSERT(mDetailPage!=NULL);
+    connect(mDetailPage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
+    mTabWidget->addTab(w, i18nc("@title:tab", "Detail"));
 
     setMinimumSize(320,380);
-    restoreDialogSize(KGlobal::config()->group(objectName()));
+    KConfigGroup grp = KGlobal::config()->group(objectName());
+    restoreDialogSize(grp);
+    int idx = grp.readEntry("Index", -1);
+    if (idx!=-1) mTabWidget->setCurrentIndex(idx);
 }
 
 
@@ -45,6 +77,7 @@ TrackPropertiesDialogue::~TrackPropertiesDialogue()
 {
     KConfigGroup grp = KGlobal::config()->group(objectName());
     saveDialogSize(grp);
+    grp.writeEntry("Index", mTabWidget->currentIndex());
 }
 
 

@@ -5,10 +5,13 @@
 
 #include <qlist.h>
 
-#include <kpagedialog.h>
+#include <kdialog.h>
+
+class KTabWidget;
 
 class TrackDataItem;
 class TrackItemGeneralPage;
+class TrackItemDetailPage;
 class TrackItemStylePage;
 
 
@@ -16,7 +19,7 @@ class TrackItemStylePage;
 
 
 
-class TrackPropertiesDialogue : public KPageDialog
+class TrackPropertiesDialogue : public KDialog
 {
     Q_OBJECT
 
@@ -30,7 +33,10 @@ public:
 private:
 
 private:
+    KTabWidget *mTabWidget;
+
     TrackItemGeneralPage *mGeneralPage;
+    TrackItemDetailPage *mDetailPage;
 //    TrackItemStylePage *mStylePage;
 
 
