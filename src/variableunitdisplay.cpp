@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	05-Feb-14						//
+//  Edit:	10-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -56,6 +56,7 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitDisplay::DisplayType type, 
 
     mValue = 0.0;
     mPrecision = 1;
+    mType = type;
 
     mValueLabel = new QLabel("---", this);
     mValueLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
@@ -85,6 +86,13 @@ case VariableUnitDisplay::Elevation:
         mPrecision = 0;
         break;
 
+case VariableUnitDisplay::Bearing:
+        mUnitCombo->addItem(i18n("absolute"), 0);
+        mUnitCombo->addItem(i18n("relative"), 1);
+        mUnitCombo->addItem(i18n("nautical"), 2);
+        mPrecision = 0;
+        break;
+
 default:
         break;
     }
@@ -94,7 +102,6 @@ default:
     setFocusProxy(mUnitCombo);
     setFocusPolicy(Qt::StrongFocus);
 }
-
 
 
 VariableUnitDisplay::~VariableUnitDisplay()
@@ -107,17 +114,11 @@ VariableUnitDisplay::~VariableUnitDisplay()
 }
 
 
-
-
-
-
-
 void VariableUnitDisplay::setValue(double v)
 {
     mValue = v;
     slotUpdateDisplay();
 }
-
 
 
 void VariableUnitDisplay::slotUpdateDisplay()
@@ -126,8 +127,35 @@ void VariableUnitDisplay::slotUpdateDisplay()
     // has been destroyed by then.
     mComboIndex = mUnitCombo->currentIndex();
 
-    double v = mValue*mUnitCombo->itemData(mComboIndex).toDouble();
-    mValueLabel->setText(QString::number(v, 'f', mPrecision));
+    if (mType==VariableUnitDisplay::Bearing)
+    {
+        int brgType = mUnitCombo->itemData(mComboIndex).toInt();
+        int v = qRound(mValue);
+
+        QString sign;
+        QString degs(QLatin1Char(0xB0));
+        switch (brgType)
+        {
+case 0:     if (v<0) v += 360;				// absolute
+            break;
+
+case 1:	    sign = (v<0 ? "-" : "+");			// relative
+            if (v<0) v = -v;
+            break;
+
+case 2:     sign = (v<0 ? "R " : "G ");			// nautical
+            if (v<0) v = -v;
+            degs = QString::null;
+            break;
+        }
+
+        mValueLabel->setText(sign+QString::number(v, 'f', mPrecision)+degs);
+    }
+    else
+    {
+        double v = mValue*mUnitCombo->itemData(mComboIndex).toDouble();
+        mValueLabel->setText(QString::number(v, 'f', mPrecision));
+    }
 }
 
 

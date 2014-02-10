@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	05-Feb-14						//
+//  Edit:	10-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -48,7 +48,8 @@ public:
     {
         Distance,
         Speed,
-        Elevation
+        Elevation,
+        Bearing
     };
 
     explicit VariableUnitDisplay(VariableUnitDisplay::DisplayType type, QWidget *pnt = NULL);
@@ -69,6 +70,7 @@ private:
     QComboBox *mUnitCombo;
     int mPrecision;
     double mValue;
+    VariableUnitDisplay::DisplayType mType;
 
     QString mSaveId;
     int mComboIndex;

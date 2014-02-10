@@ -8,8 +8,7 @@
 #include <kmimetype.h>
 
 
-static const double DEGREES_TO_RADIANS = 1/57.295;	// multiplier
-
+static const double DEGREES_TO_RADIANS = (2*M_PI)/360;	// multiplier
 
 const TimeRange TimeRange::null = TimeRange();
 const BoundingArea BoundingArea::null = BoundingArea();
@@ -450,20 +449,45 @@ TimeRange TrackDataPoint::timeSpan() const
 
 
 
-double TrackDataPoint::distanceTo(const TrackDataPoint *other) const
+double TrackDataPoint::distanceTo(const TrackDataPoint *other, bool accurate) const
 {
     // See http://www.movable-type.co.uk/scripts/latlong.html
-    // Pythagoras is good enough for small distances
+
     double lat1 = latitude()*DEGREES_TO_RADIANS;
     double lon1 = longitude()*DEGREES_TO_RADIANS;
     double lat2 = other->latitude()*DEGREES_TO_RADIANS;
     double lon2 = other->longitude()*DEGREES_TO_RADIANS;
 
-    double x = (lon2-lon1)*cos((lat1+lat2)/2.0);
-    double y = (lat2-lat1);
-
-    return (sqrt(x*x + y*y));
+    if (accurate)
+    {
+        // Spherical cosines for maximum accuracy
+        return (acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2)*cos(lon2-lon1)));
+    }
+    else
+    {
+        // Pythagoras is good enough for small distances
+        double x = (lon2-lon1)*cos((lat1+lat2)/2.0);
+        double y = (lat2-lat1);
+        return (sqrt(x*x + y*y));
+    }
 }
+
+
+double TrackDataPoint::bearingTo(const TrackDataPoint *other) const
+{
+    // Rhumb line distance/bearing as per reference above
+
+    double lat1 = latitude()*DEGREES_TO_RADIANS;
+    double lon1 = longitude()*DEGREES_TO_RADIANS;
+    double lat2 = other->latitude()*DEGREES_TO_RADIANS;
+    double lon2 = other->longitude()*DEGREES_TO_RADIANS;
+
+    double dphi = log(tan(M_PI/4+lat2/2)/tan(M_PI/4+lat1/2));
+    double dlon = lon2-lon1;
+    if (abs(dlon)>M_PI) dlon = dlon>0 ? -(2*M_PI-dlon) : (2*M_PI+dlon);
+    return (atan2(dlon, dphi)/DEGREES_TO_RADIANS);
+}
+
 
 
 
@@ -471,4 +495,3 @@ int TrackDataPoint::timeTo(const TrackDataPoint *other) const
 {
     return (time().secsTo(other->time()));
 }
-

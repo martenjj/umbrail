@@ -55,6 +55,7 @@ protected:
     void addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes = true);
     void addBoundingAreaField(const QList<TrackDataItem *> &items);
     void addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText);
+    void addSpacerField();
 
 protected:
     QLabel *mTypeLabel;

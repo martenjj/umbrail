@@ -275,7 +275,8 @@ public:
 
     BoundingArea boundingArea() const;
     TimeRange timeSpan() const;
-    double distanceTo(const TrackDataPoint *other) const;
+    double distanceTo(const TrackDataPoint *other, bool accurate = false) const;
+    double bearingTo(const TrackDataPoint *other) const;
     int timeTo(const TrackDataPoint *other) const;
 
 
