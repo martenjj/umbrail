@@ -5,23 +5,13 @@
  
 #include <qobject.h>
 
-//#include "pointdata.h"
-
-
-//class QItemSelection;
-//class QUndoStack;
-
 class KConfig;
 class KUrl;
 
 class FilesView;
 class FilesModel;
-//class ImporterBase;
-//class ExporterBase;
-//class CommandBase;
 class MainWindow;
 class TrackDataFile;
-
 
 #ifdef SORTABLE_VIEW
 class QSortFilterProxyModel;
@@ -55,13 +45,7 @@ public:
     static QString allProjectFilters(bool includeAllFiles);
 
 public slots:               
-//    void slotNewPoint();
-//    void slotDeleteSelection();
-//    void slotMergeSelection();
     void slotTrackProperties();
-//    void slotManageCategories();
-//    void slotManageIcons();
-//    void slotManageSources();
 
 protected slots:
 
@@ -72,7 +56,6 @@ signals:
     void updateMap();
 
 private:
-//    void executeCommand(CommandBase *cmd);
     MainWindow *mainWindow() const;
 
 private slots:
@@ -84,7 +67,6 @@ private:
 #ifdef SORTABLE_VIEW
     QSortFilterProxyModel *mProxyModel;
 #endif
-//    QUndoStack *mUndoStack;
 };
  
 #endif							// FILESCONTROLLER_H

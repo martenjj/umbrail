@@ -6,6 +6,7 @@
 #include <kdebug.h>
 
 #include "filesmodel.h"
+#include "style.h"
 
 
 
@@ -109,8 +110,35 @@ void ChangeItemNameCommand::undo()
 
 
 
+void ChangeItemStyleCommand::redo()
+{
+    TrackDataItem *item = mDataItem;
+    Q_ASSERT(item!=NULL);
+    kDebug() << "item" << item->name() << "->" << mNewStyle.toString();
+
+    mSavedStyle = *item->style();			// save original item style
+    item->setStyle(mNewStyle);				// set new item style
+
+    model()->changedItem(item);
+    ChangeItemCommand::redo();
+    updateMap();
+}
 
 
+
+
+void ChangeItemStyleCommand::undo()
+{
+    TrackDataItem *item = mDataItem;
+    Q_ASSERT(item!=NULL);
+    kDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
+
+    item->setStyle(mSavedStyle);			// restore original style
+
+    model()->changedItem(item);
+    ChangeItemCommand::undo();
+    updateMap();
+}
 
 
 

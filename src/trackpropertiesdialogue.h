@@ -14,7 +14,7 @@ class TrackItemGeneralPage;
 class TrackItemDetailPage;
 class TrackItemStylePage;
 
-
+class Style;
 
 
 
@@ -29,6 +29,7 @@ public:
 
     QString newItemName() const;
     KUrl newFileUrl() const;
+    Style newStyle() const;
 
 private:
 
@@ -37,7 +38,7 @@ private:
 
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;
-//    TrackItemStylePage *mStylePage;
+    TrackItemStylePage *mStylePage;
 
 
 

@@ -7,32 +7,32 @@
 
 
 
-TrackDataLabel::TrackDataLabel(const QString &str, QWidget *parent)
-    : QLabel(str, parent)
+TrackDataLabel::TrackDataLabel(const QString &str, QWidget *pnt)
+    : QLabel(str, pnt)
 {
     init();
 }
 
 
 
-TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *parent)
-    : QLabel(TrackData::formattedTime(dt), parent)
+TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
+    : QLabel(TrackData::formattedTime(dt), pnt)
 {
     init();
 }
 
 
 
-TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *parent)
-    : QLabel(TrackData::formattedLatLong(lat, lon), parent)
+TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *pnt)
+    : QLabel(TrackData::formattedLatLong(lat, lon), pnt)
 {
     init();
 }
 
 
 
-TrackDataLabel::TrackDataLabel(int i, QWidget *parent)
-    : QLabel(QString::number(i), parent)
+TrackDataLabel::TrackDataLabel(int i, QWidget *pnt)
+    : QLabel(QString::number(i), pnt)
 {
     init();
 }

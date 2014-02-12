@@ -22,6 +22,7 @@
 #include "gpxexporter.h"
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
+#include "style.h"
 
 #define GROUP_FILES		"Files"
 
@@ -362,10 +363,14 @@ void FilesController::slotTrackProperties()
         if (newFileUrl==fileItem->fileName()) newFileUrl.clear();
     }							// no, throw entry away
 
-    if (newItemName.isEmpty() && !newFileUrl.isValid()) return;
-        						// nothing to do
+    const Style newStyle = d.newStyle();		// has style changed?
+    bool changedStyle = !(newStyle==*item->style());
+							// anything to do?
+    if (newItemName.isEmpty() && !newFileUrl.isValid() && !changedStyle) return;
+
     kDebug() << "new name" << newItemName;
     kDebug() << "new url" << newFileUrl;
+    kDebug() << "new style" << newStyle;
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
     cmd->setText(act!=NULL ? act->data().toString() : i18n("Properties"));
@@ -390,105 +395,15 @@ void FilesController::slotTrackProperties()
                                  QString::null, "fileMoveInfo");
     }
 
+    if (changedStyle)
+    {
+        ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
+        cmd3->setDataItem(item);
+        cmd3->setNewStyle(newStyle);
+    }
+
     mainWindow()->executeCommand(cmd);
 }
-
-
-//
-//
-//void FilesController::slotNewPoint()
-//{
-//    kDebug();
-//
-//    PointPropertiesDialog d(this, mainWindow());
-//    d.setCaption(i18n("New Point"));
-//
-//    emit statusMessage(i18n("Creating new point"));
-//    d.show();
-//    if (!d.exec())
-//    {
-//        emit statusMessage(i18n("Create cancelled"));
-//        return;
-//    }
-//
-//    const PointData *pnt = d.resultPoint();
-//    AddFilesCommand *cmd = new AddFilesCommand(this);
-//    cmd->setText(i18n("New point"));
-//    cmd->setPoint(pnt);
-//    executeCommand(cmd);
-//
-//    slotUpdateActionState();
-//    emit statusMessage(i18n("Created new point '%1'", pnt->name()));
-//}
-//
-//
-//
-//
-//
-//
-//
-//void FilesController::slotMergeSelection()
-//{
-//    FilesView::RowList rows = view()->selectedRows();
-//    int cnt = rows.count();
-//    if (cnt<2) return;
-//    kDebug() << "rows" << rows;
-//
-//    emit statusMessage(i18n("Checking positions"));
-//
-//    FilesList files;					// files to be merged
-//    bool mergeOk = true;				// positions close enough?
-//    const PointData *refPoint = model()->pointAt(rows.first());
-//    files.append(*refPoint);
-//    for (int i = 1; i<cnt; ++i)				// check reference against others
-//    {
-//        int row = rows[i];
-//        const PointData *pnt = model()->pointAt(row);
-//        files.append(*pnt);
-//
-//        if (!refPoint->canMerge(*pnt, true))
-//        {
-//            mergeOk = false;
-//        }
-//    }
-//
-//    if (!mergeOk)
-//    {
-//        // TODO: show the difference distance
-//        QString query = i18n("<qt>Some of the selected files are not close together."
-//                             "<p>Really merge the %1 files?", cnt);
-//        if (KMessageBox::warningContinueCancel(mainWindow(), query,
-//                                               i18n("Merge Files"))!=KMessageBox::Continue)
-//        {
-//            emit statusMessage(i18n("Merge cancelled"));
-//            return;
-//        }
-//    }
-//
-//    emit statusMessage(i18n("Manual merge"));
-//
-//    MergeFilesDialogue d(this, mainWindow());
-//    d.setFiles(&files);
-//    if (!d.exec())
-//    {
-//        emit statusMessage(i18n("Merge cancelled"));
-//        return;
-//    }
-//
-//    CombineFilesCommand *cmd = new CombineFilesCommand(this);
-//    cmd->setText(i18np("Merge point", "Merge %1 files", cnt));
-//    cmd->setPoint(d.resultPoint());
-//    cmd->setRowList(&rows);
-//    executeCommand(cmd);
-//
-//    slotUpdateActionState();
-//    emit statusMessage(i18n("Merged %1 files", cnt));
-//}
-//
-//
-//
-//
-//
 
 
 

@@ -7,6 +7,8 @@
 #include <klocale.h>
 #include <kmimetype.h>
 
+#include "style.h"
+
 
 static const double DEGREES_TO_RADIANS = (2*M_PI)/360;	// multiplier
 
@@ -241,8 +243,9 @@ TrackDataItem::TrackDataItem(const QString &desc, const char *format, int *count
 
 void TrackDataItem::init()
 {
-    mParent = NULL;
-    mSelectionId = 1;
+    mParent = NULL;					// not attached to parent
+    mStyle = NULL;					// no style set yet
+    mSelectionId = 1;					// nothing selected yet
 }
 
 
@@ -256,8 +259,8 @@ TrackDataItem::~TrackDataItem()
 
 void TrackDataItem::addChildItem(TrackDataItem *data)
 {
-    data->mParent = this;				// set item parent
-    mChildItems.append(data);
+    mChildItems.append(data);				// take ownership of child
+    data->mParent = this;				// set child item parent
 }
 
 
@@ -269,6 +272,29 @@ TrackDataItem *TrackDataItem::removeLastChildItem()
     data->mParent = NULL;				// now no longer has parent
     return (data);
 }
+
+
+
+
+const Style *TrackDataItem::style() const
+{
+    return ((mStyle!=NULL) ? mStyle : &Style::null);
+}
+
+
+
+void TrackDataItem::setStyle(const Style &s)
+{
+    if (mStyle==NULL)
+    {
+        kDebug() << "set style for" << name();
+        mStyle = new Style(s);
+    }
+    else *mStyle = s;
+}
+
+
+
 
 
 BoundingArea TrackDataItem::boundingArea() const

@@ -8,6 +8,7 @@
 
 #include "trackdata.h"
 #include "filescontroller.h"
+#include "style.h"
 
 
 
@@ -86,10 +87,11 @@ protected:
 
 protected:
     TrackDataItem *mDataItem;
-
-private:
     bool mFileWasModified;
 };
+
+
+
 
 
 
@@ -109,6 +111,26 @@ public:
 private:
     QString mNewName;
     QString mSavedName;
+};
+
+
+
+
+class ChangeItemStyleCommand : public ChangeItemCommand
+{
+public:
+    ChangeItemStyleCommand(FilesController *fc, QUndoCommand *parent = NULL)
+        : ChangeItemCommand(fc, parent)		{}
+    virtual ~ChangeItemStyleCommand()		{}
+
+    void setNewStyle(const Style &style)	{ mNewStyle = style; }
+
+    void redo();
+    void undo();
+
+private:
+    Style mNewStyle;
+    Style mSavedStyle;
 };
 
 

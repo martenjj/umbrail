@@ -70,20 +70,6 @@ void MapView::saveProperties()
 
 
 
-static QColor resolveLineColour(const TrackDataItem *tdi)
-{
-// TODO: inherited or global setting
-return (Style::globalStyle()->lineColour());
-
-
-
-
-
-}
-
-
-
-
 // see http://techbase.kde.org/Projects/Marble/MarbleGeoPainter
 void MapView::customPaint(GeoPainter *painter)
 {
@@ -113,6 +99,8 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool 
     {							// see if it is a point
         kDebug() << "points for" << tdi->name();
 
+        QColor col = resolveLineColour(tdi);
+
         // Run along the segment, assembling the coordinates into a list and
         // also drawing point markers if the segment is selected.  This relies
         // on the selected line colour being the same as the selected point
@@ -130,35 +118,17 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool 
 
             if (isSelected)				// draw point markers
             {
+//                painter->setPen(QPen(Qt::black, 0));
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(Settings::selectedLineColour());
+//                painter->setBrush(col);
                 painter->drawEllipse(coord, 10, 10);
             }
         }
 
-        // Resolving the line colour, in the case where it is not selected, could
-        // potentially be an expensive operation - needing to examine not only the
-        // style of the current item, but also all of its parents, then the project
-        // default, then finally the application's default style.  However, this
-        // search will only need to be performed once per track segment, of which it
-        // is expected that there will be at most a few tens of them existing within
-        // a typical project.  So the overhead here is not likely to be significant.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         painter->setBrush(Qt::NoBrush);			// draw the polyline
-        painter->setPen(QPen(isSelected ? Settings::selectedLineColour() : resolveLineColour(tdi), 4));
+        painter->setPen(QPen((isSelected ? Settings::selectedLineColour() : col), 4));
+//        painter->setPen(QPen(col, 4));
         painter->drawPolyline(lines);
 
         // Finally draw the selected points along the line, if there are any.
@@ -194,45 +164,6 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool 
         }
     }
 }
-
-
-
-
-
-
-
-
-//    const int cnt = mModel->pointsCount();
-//
-//    for (int i = 0; i<cnt; ++i)
-//    {
-//        const PointData *pnt = mModel->pointAt(i);
-//
-//        GeoDataCoordinates coord(pnt->longtitude(),
-//                                 pnt->latitude(),
-//                                 0, GeoDataCoordinates::Degree);
-//
-//        const QImage *img = mainWindow()->pointsController()->iconsManager()->iconForName(pnt->symbol());
-//        if (img!=NULL)					// icon image available
-//        {
-//            painter->drawImage(coord, *img);
-//        }
-//        else						// draw our own marker
-//        {
-//            painter->setPen(QPen(Qt::red, 2));
-//            painter->setBrush(Qt::yellow);
-//            painter->drawEllipse(coord, 10, 10);
-//        }
-//
-//        painter->save();
-//        painter->translate(12, 3);			// offset text from point
-//        painter->setPen(Qt::gray);			// draw with drop shadow
-//        painter->drawText(coord, pnt->name());
-//        painter->translate(-1, -1);
-//        painter->setPen(Qt::black);
-//        painter->drawText(coord, pnt->name());
-//        painter->restore();
-//    }
 
 
 
@@ -344,4 +275,33 @@ void MapView::slotShowOverlay()
     bool nowVisible = !item->visible();
     item->setVisible(nowVisible);
     a->setChecked(nowVisible);
+}
+
+
+
+
+QColor MapView::resolveLineColour(const TrackDataItem *tdi)
+{
+    // Resolving the line colour (in the case where it is not selected) could
+    // potentially be an expensive operation - needing to examine not only the
+    // style of the current item, but also all of its parents, then the project
+    // default, then finally the application's default style.  However, this
+    // search will only need to be performed once per track segment, of which it
+    // is expected that there will be at most a few tens of them existing within
+    // a typical project.  So the overhead here is not likely to be significant.
+
+    while (tdi!=NULL)					// search to root of tree
+    {
+        const Style *s = tdi->style();			// get style from item
+        //kDebug() << "style for" << tdi->name() << "is" << *s;
+        if (s->hasLineColour())				// has a style set?
+        {
+            //kDebug() << "inherited from" << tdi->name();
+            return (s->lineColour());			// use colour from that
+        }
+        tdi = tdi->parent();				// up to parent item
+    }
+
+    // TODO: project global style?
+    return (Style::globalStyle()->lineColour());	// finally application default
 }

@@ -53,9 +53,10 @@ set(navtracks_SRCS
   style.cpp
   trackdata.cpp
   trackdatalabel.cpp
+  trackpropertiesdialogue.cpp
   trackpropertiesdetailpages.cpp
   trackpropertiesgeneralpages.cpp
-  trackpropertiesdialogue.cpp
+  trackpropertiesstylepages.cpp
   variableunitdisplay.cpp
 )
 

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	09-Feb-14						//
+//  Edit:	11-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -30,6 +30,7 @@
 
 
 #include <qcolor.h>
+#include <qdebug.h>
 
 
 /**
@@ -55,7 +56,13 @@ public:
     static const Qt::GlobalColor InheritColour = Qt::transparent;
 
     /**
-     * Create a new style object.
+     * A special value meaning a null style, i.e. a style with
+     * everything inherited.
+     **/
+    static const Style null;
+
+    /**
+     * Create a new empty style object.
      *
      * The line colour is initialised to be inherited.
      **/
@@ -94,11 +101,45 @@ public:
      * @return @c true if a colour has been set.
      **/
     bool hasLineColour() const				{ return (mLineColour.isValid()); }
+
+    /**
+     * See if this style is empty, i.e. inherits everything
+     * from its parent style.
+     *
+     * @return true if this style is empty
+     **/
+    bool isEmpty() const;
      
+    /**
+     * See if this style is equivalent to another.
+     *
+     * @param other The other style
+     * @return @c true if the styles are equivalent
+     **/
+    bool operator==(const Style &other) const;
+
+    /**
+     * Get a printable representation of the style.
+     *
+     * @return the string representation
+     **/
+    QString toString() const;
 
 private:
     QColor mLineColour;
 };
 
  
+
+/**
+ * Print the representation of a style to a debug stream.
+ *
+ * @param str The debug stream
+ * @param style The style to print
+ * @return the same debug stream
+ **/
+extern QDebug operator<<(QDebug str, const Style &style);
+
+
+
 #endif							// STYLE_H

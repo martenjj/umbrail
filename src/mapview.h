@@ -35,6 +35,8 @@ public:
     KAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);
 
+    static QColor resolveLineColour(const TrackDataItem *tdi);
+
 public slots:               
     void slotRmbRequest(int mx, int my);
     void slotFindAddress();

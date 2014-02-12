@@ -11,6 +11,9 @@
 #include "trackdata.h"
 #include "trackpropertiesgeneralpages.h"
 #include "trackpropertiesdetailpages.h"
+#include "trackpropertiesstylepages.h"
+#include "style.h"
+
 
 
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &items, QWidget *pnt)
@@ -63,13 +66,24 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     mDetailPage = qobject_cast<TrackItemDetailPage *>(w);
     Q_ASSERT(mDetailPage!=NULL);
     connect(mDetailPage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
-    mTabWidget->addTab(w, i18nc("@title:tab", "Detail"));
+    mTabWidget->addTab(w, i18nc("@title:tab", "Details"));
+
+    w = item->createPropertiesStylePage(items, this);
+    mStylePage = qobject_cast<TrackItemStylePage *>(w);
+    Q_ASSERT(mStylePage!=NULL);
+    connect(mStylePage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
+    mTabWidget->addTab(w, i18nc("@title:tab", "Style"));
 
     setMinimumSize(320,380);
     KConfigGroup grp = KGlobal::config()->group(objectName());
     restoreDialogSize(grp);
     int idx = grp.readEntry("Index", -1);
     if (idx!=-1) mTabWidget->setCurrentIndex(idx);
+
+    if (items.count()>1 || dynamic_cast<const TrackDataPoint *>(items.first())!=NULL)
+    {							// "Style" not applicable here
+        mTabWidget->setTabEnabled(2, false);
+    }
 }
 
 
@@ -93,4 +107,11 @@ KUrl TrackPropertiesDialogue::newFileUrl() const
     TrackFileGeneralPage *filePage = qobject_cast<TrackFileGeneralPage *>(mGeneralPage);
     if (filePage==NULL) return (KUrl());
     return (filePage->newFileUrl());
+}
+
+
+Style TrackPropertiesDialogue::newStyle() const
+{
+    if (!mTabWidget->isTabEnabled(2)) return (Style::null);	// style not applicable
+    return (mStylePage->newStyle());				// style from page
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	09-Feb-14						//
+//  Edit:	11-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -28,7 +28,6 @@
 #include "style.h"
 
 #include <kdebug.h>
-//#include <klocale.h>
 
 #include "settings.h"
 
@@ -36,11 +35,13 @@
 
 static Style *sGlobalStyle = NULL;
 
+const Style Style::null = Style();
+
 
 
 Style::Style()
 {
-    mLineColour = Style::InheritColour;
+    mLineColour = QColor();
 }
 
 
@@ -63,4 +64,37 @@ void Style::setLineColour(const QColor &col)
 {
     if (col==Qt::transparent) mLineColour = QColor();
     else mLineColour = col;
+}
+
+
+
+
+bool Style::isEmpty() const
+{
+    return (!hasLineColour());
+}
+
+
+bool Style::operator==(const Style &other) const
+{
+    if (isEmpty()) return (other.isEmpty());		// two null styles are equal
+    if (other.isEmpty()) return (false);		// valid never equals null
+    return (mLineColour==other.mLineColour);		// compare colours for equality
+}
+
+
+
+QString Style::toString() const
+{
+    return (QString("[linecol=%1%2]")
+            .arg(QString::number(mLineColour.rgba(), 16), 8, QChar('0'))
+            .arg(!hasLineColour() ? " inherit" : ""));
+}
+
+
+
+QDebug operator<<(QDebug str, const Style &style)
+{
+    str << style.toString();
+    return (str);
 }
