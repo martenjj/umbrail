@@ -20,7 +20,7 @@
 #include "filesview.h"
 #include "trackdata.h"
 #include "mainwindow.h"
-#include "settings.h"
+//#include "settings.h"
 #include "style.h"
 
 
@@ -76,17 +76,25 @@ void MapView::customPaint(GeoPainter *painter)
     if (filesModel()==NULL) return;			// no data to use!
 
     mSelectionId = (filesView()!=NULL ? filesView()->selectionId() : 0);
-    paintDataTree(filesModel()->rootItem(), painter, false);
+
+    // Paint the data in two passes.  The first does all non-selected tracks,
+    // the second selected ones.  This is so that selected tracks show up
+    // on top of all non-selected ones.  In the absence of any selection,
+    // all tracks will be painted in time order (i.e. later tracks on top
+    // of earlier ones).
+    paintDataTree(filesModel()->rootItem(), painter, false, false);
+    paintDataTree(filesModel()->rootItem(), painter, true, false);
 }
 
 
-void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool parentSelected)
+void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, 
+                            bool doSelected, bool parentSelected)
 {
     int cnt = tdi->childCount();
     if (cnt==0) return;					// quick escape if no children
 
     bool isSelected = parentSelected || (tdi->selectionId()==mSelectionId);
-    kDebug() << tdi << tdi->name() << "selected" << isSelected;
+    kDebug() << tdi->name() << "isselected" << isSelected << "doselected" << doSelected;
 
     // What is actually drawn on the map is a polyline representing a sequence
     // of points (with their parent container normally a track segment, but this
@@ -94,64 +102,59 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool 
     // data tree to the individual points, we can stop at the level above if the
     // first child item (assumed to be representative of the others) is a point.
 
-    const TrackDataItem *firstChild = tdi->childAt(0);	// look at first child
+    const TrackDataItem *firstChild = tdi->childAt(0);
     if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
-    {							// see if it is a point
-        kDebug() << "points for" << tdi->name();
+    {							// is first child a point?
+        if ((isSelected && doSelected) || (!isSelected && !doSelected))
+        {						// Bjarne, why couldn't you add ^^
+            kDebug() << "points for" << tdi->name();
 
-        QColor col = resolveLineColour(tdi);
+            // Run along the segment, assembling the coordinates into a list.
+            // This will go wrong (the array indexes will be out of step) if
+            // any of the children is not a TrackDataPoint, so let's hope not.
 
-        // Run along the segment, assembling the coordinates into a list and
-        // also drawing point markers if the segment is selected.  This relies
-        // on the selected line colour being the same as the selected point
-        // colour.
-
-        GeoDataLineString lines;
-        for (int i = 0; i<cnt; ++i)
-        {
-            const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i));
-            if (tdp==NULL) continue;
-
-            GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                     0, GeoDataCoordinates::Degree);
-            lines.append(coord);
-
-            if (isSelected)				// draw point markers
-            {
-//                painter->setPen(QPen(Qt::black, 0));
-                painter->setPen(Qt::NoPen);
-                painter->setBrush(Settings::selectedLineColour());
-//                painter->setBrush(col);
-                painter->drawEllipse(coord, 10, 10);
-            }
-        }
-
-        painter->setBrush(Qt::NoBrush);			// draw the polyline
-        painter->setPen(QPen((isSelected ? Settings::selectedLineColour() : col), 4));
-//        painter->setPen(QPen(col, 4));
-        painter->drawPolyline(lines);
-
-        // Finally draw the selected points along the line, if there are any.
-        // Do this last so that the selection markers show up on top.
-
-        if (isSelected)
-        {
+            GeoDataLineString lines;
             for (int i = 0; i<cnt; ++i)
             {
-                const TrackDataItem *pointItem = tdi->childAt(i);
+                const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i));
+                if (tdp==NULL) continue;		// should never happen
 
-                // Optimisation: we can cheaply check whether the point is selected
-                // before actually having to do a dynamic_cast.
-                if (pointItem->selectionId()==mSelectionId)
+                GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                         0, GeoDataCoordinates::Degree);
+                lines.append(coord);
+            }
+
+            // First, draw the track in its requested colour
+
+            QColor col = resolveLineColour(tdi);
+            painter->setBrush(Qt::NoBrush);
+            painter->setPen(QPen(col, 4));
+            painter->drawPolyline(lines);
+
+            if (isSelected)
+            {
+                // Next, if the line is selected, draw the point markers.  In the
+                // same colour, circled with a cosmetic line.  This can use the
+                // same coordinate array as generated in the previous step.
+
+                painter->setPen(QPen(Qt::black, 0));
+                painter->setBrush(col);
+
+                for (int i = 0; i<cnt; ++i) painter->drawEllipse(lines[i], 10, 10);
+
+                // Finally, draw the selected points along the line, if there are any.
+                // Do this last so that the selection markers always show up on top.
+
+                painter->setPen(QPen(Qt::red, 3));
+                painter->setBrush(Qt::yellow);
+
+                for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(pointItem);
-                    if (tdp==NULL) continue;
-
-                    GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                             0, GeoDataCoordinates::Degree);
-                    painter->setPen(QPen(Qt::red, 2));
-                    painter->setBrush(Qt::yellow);
-                    painter->drawEllipse(coord, 10, 10);
+                    const TrackDataItem *pointItem = tdi->childAt(i);
+                    if (pointItem->selectionId()==mSelectionId)
+                    {
+                        painter->drawEllipse(lines[i], 12, 12);
+                    }
                 }
             }
         }
@@ -160,7 +163,7 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool 
     {							// so we are higher container
         for (int i = 0; i<cnt; ++i)			// just recurse to paint children
         {
-            paintDataTree(tdi->childAt(i), painter, isSelected);
+            paintDataTree(tdi->childAt(i), painter, doSelected, isSelected);
         }
     }
 }

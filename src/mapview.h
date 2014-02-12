@@ -54,7 +54,7 @@ private:
 
     bool mouseCoordinates(GeoDataCoordinates *coords);
 
-    void paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool parentSelected);
+    void paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool doSelected, bool parentSelected);
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
