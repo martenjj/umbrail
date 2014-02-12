@@ -253,6 +253,7 @@ void TrackDataItem::init()
 TrackDataItem::~TrackDataItem()
 {
     qDeleteAll(mChildItems);
+    delete mStyle;
 }
 
 

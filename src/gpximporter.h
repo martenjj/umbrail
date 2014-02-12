@@ -8,6 +8,7 @@
 #include "importerbase.h"
 
 
+class TrackDataItem;
 class TrackDataTrack;
 class TrackDataSegment;
 class TrackDataPoint;
@@ -43,6 +44,7 @@ private:
     QByteArray indent() const;
     inline bool parsing() const;
     QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString::null);
+    TrackDataItem *currentItem() const;
 
 private:
     TrackDataTrack *mCurrentTrack;

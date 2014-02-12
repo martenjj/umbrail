@@ -19,8 +19,8 @@
 #include <kcomponentdata.h>
 #include <kaboutdata.h>
 
-//#include "mainwindow.h"
 #include "trackdata.h"
+#include "style.h"
 
 
 
@@ -34,6 +34,28 @@ GpxExporter::GpxExporter()
 GpxExporter::~GpxExporter()
 {
     kDebug() << "done";
+}
+
+
+
+
+
+
+static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str, bool extensionsStarted)
+{
+    const Style *s = item->style();
+    if (s->isEmpty()) return;
+
+    if (!extensionsStarted) str.writeStartElement("extensions");
+
+    if (s->hasLineColour())
+    {
+        // <topografix:color>c0c0c0</topografix:color>
+        str.writeTextElement("topografix:color",
+                             QString("%1").arg(QString::number(s->lineColour().rgb() & 0x00FFFFFF, 16), 6, QChar('0')));
+    }
+
+    if (!extensionsStarted) str.writeEndElement();
 }
 
 
@@ -110,7 +132,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     // according to GPX spec, must appear after children
     if (tdt!=NULL)					// extensions for TRK
     {
-
+        writeStyle(tdt, str, false);
     }
     else if (tds!=NULL)					// extensions for TRKSEG
     {
@@ -118,19 +140,20 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         str.writeStartElement("extensions");
         // <name> xsd:string </name>
         str.writeTextElement("name", tds->name());
+        writeStyle(tds, str, true);
         str.writeEndElement();
     }
     else if (tdp!=NULL)					// extensions for TRKPT
     {
         // <extensions> extensionsType </extensions>
+        str.writeStartElement("extensions");
+
         // <speed> </speed> - in OsmAnd+ recordings
         QString s = tdp->speed();
-        if (!s.isEmpty())
-        {
-            str.writeStartElement("extensions");
-            str.writeTextElement("speed", s);
-            str.writeEndElement();
-        }
+        if (!s.isEmpty()) str.writeTextElement("speed", s);
+
+        writeStyle(tdp, str, true);
+        str.writeEndElement();
     }
 
     // end tag

@@ -6,12 +6,14 @@
 #include <math.h>
 
 #include <qxml.h>
+#include <qcolor.h>
 
 #include <kdebug.h>
 #include <klocale.h>
 #include <kurl.h>
 
 #include "trackdata.h"
+#include "style.h"
 
 
 
@@ -121,6 +123,17 @@ QXmlParseException GpxImporter::makeXmlException(const QString &message, const Q
 void GpxImporter::setDocumentLocator(QXmlLocator *locator)
 {
     mXmlLocator = locator;
+}
+
+
+
+
+TrackDataItem *GpxImporter::currentItem() const
+{
+    TrackDataItem *item = mCurrentPoint;		// find innermost current element
+    if (item==NULL) item = mCurrentSegment;
+    if (item==NULL) item = mCurrentTrack;
+    return (item);
 }
 
 
@@ -320,10 +333,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
-        TrackDataItem *item = mCurrentPoint;		// find innermost current element
-        if (item==NULL) item = mCurrentSegment;
-        if (item==NULL) item = mCurrentTrack;
-
+        TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=NULL) item->setName(mContainedChars);	// assign its name
         // TODO: can be in METADATA
         //else warning(makeXmlException("NAME not within TRK, TRKSEG or TKKPT"));
@@ -345,6 +355,26 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
         mCurrentPoint->setSpeed(mContainedChars);
+    }
+
+    else if (localName=="color")			// end of a COLOR element
+    {							// should be within EXTENSIONS
+        TrackDataItem *item = currentItem();		// find innermost current element
+        if (item==NULL)
+        {
+            return (error(makeXmlException("COLOR end not within TRK, TRKSEG or TKKPT")));
+        }
+
+        bool ok;
+        unsigned int rgb = mContainedChars.toUInt(&ok, 16);
+        if (!ok)
+        {
+            return (error(makeXmlException("invalid value for COLOR", localName)));
+        }
+
+        Style s = *item->style();
+        s.setLineColour(QColor(rgb));
+        item->setStyle(s);
     }
 
     return (true);
