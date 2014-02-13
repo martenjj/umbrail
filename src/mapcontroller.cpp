@@ -53,6 +53,7 @@ MapController::~MapController()
 void MapController::clear()
 {
     kDebug();
+    slotGoHome();
 }
 
 
