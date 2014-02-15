@@ -23,7 +23,9 @@ ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
     mTrackData = NULL;					// nothing held at present
+    mSavedCount = 0;
 }
+
 
 
 ImportFileCommand::~ImportFileCommand()
@@ -32,22 +34,31 @@ ImportFileCommand::~ImportFileCommand()
 }
 
 
+
 void ImportFileCommand::redo()
 {
-    TrackDataFile *tdf = mTrackData;
-    Q_ASSERT(tdf!=NULL);
-    kDebug() << "file" << tdf->name();
+    Q_ASSERT(mTrackData!=NULL);
+    mSavedCount = mTrackData->childCount();		// how many tracks contained
+    kDebug() << "file" << mTrackData->name() << "count" << mSavedCount;
 
-    model()->addFile(tdf);				// add data tree to model
-    mTrackData = NULL;					// model owns it now
+    model()->addFile(mTrackData);			// add data tree to model
+    Q_ASSERT(mTrackData->childCount()==0);		// should have taken all tracks
+							// retain original for undo
     updateMap();
 }
 
 
 void ImportFileCommand::undo()
 {
-    mTrackData = model()->removeFile();			// take ownership of data tree
-    kDebug() << "saved" << mTrackData->name();
+    Q_ASSERT(mTrackData!=NULL);
+    for (int i = 0; i<mSavedCount; ++i)			// how many tracks added last time
+    {
+        TrackDataItem *item = model()->removeLast();	// remove each from model
+        if (item==NULL) continue;			// and re-add to saved file item
+        mTrackData->addChildItem(item, true);		// in the original order of course
+    }
+
+    kDebug() << "saved" << mTrackData->name() << "children" << mTrackData->childCount();
     updateMap();
 }
 
@@ -63,21 +74,6 @@ ChangeItemCommand::ChangeItemCommand(FilesController *fc, QUndoCommand *parent)
 
 
 
-void ChangeItemCommand::redo()
-{
-    mFileWasModified = mDataItem->setFileModified(true);
-}
-
-
-void ChangeItemCommand::undo()
-{
-    mDataItem->setFileModified(mFileWasModified);
-}
-
-
-
-
-
 
 
 
@@ -90,7 +86,6 @@ void ChangeItemNameCommand::redo()
 
     item->setName(mNewName);
     model()->changedItem(item);
-    ChangeItemCommand::redo();
 }
 
 
@@ -104,7 +99,6 @@ void ChangeItemNameCommand::undo()
 
     item->setName(mSavedName);
     model()->changedItem(item);
-    ChangeItemCommand::undo();
 }
 
 
@@ -112,7 +106,7 @@ void ChangeItemNameCommand::undo()
 
 void ChangeItemStyleCommand::redo()
 {
-    TrackDataItem *item = mDataItem;
+    TrackDataDisplayable *item = mDataItem;
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "->" << mNewStyle.toString();
 
@@ -120,7 +114,6 @@ void ChangeItemStyleCommand::redo()
     item->setStyle(mNewStyle);				// set new item style
 
     model()->changedItem(item);
-    ChangeItemCommand::redo();
     updateMap();
 }
 
@@ -129,14 +122,13 @@ void ChangeItemStyleCommand::redo()
 
 void ChangeItemStyleCommand::undo()
 {
-    TrackDataItem *item = mDataItem;
+    TrackDataDisplayable *item = mDataItem;
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
 
     item->setStyle(mSavedStyle);			// restore original style
 
     model()->changedItem(item);
-    ChangeItemCommand::undo();
     updateMap();
 }
 
@@ -153,7 +145,6 @@ void ChangeFileUrlCommand::redo()
     item->setFileName(mNewUrl);
     item->setName(mNewUrl.fileName());
     model()->changedItem(item);
-    ChangeItemCommand::redo();
 }
 
 
@@ -169,5 +160,4 @@ void ChangeFileUrlCommand::undo()
     item->setFileName(mSavedUrl);
     item->setName(mSavedUrl.fileName());
     model()->changedItem(item);
-    ChangeItemCommand::undo();
 }

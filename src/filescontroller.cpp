@@ -10,7 +10,6 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kconfiggroup.h>
 #include <kmessagebox.h>
 #include <kmimetype.h>
 #include <kurl.h>
@@ -77,48 +76,11 @@ void FilesController::saveProperties()
 }
 
 
-QString FilesController::save(KConfig *conf)
+
+void FilesController::reportFileError(bool saving, const QString &msg)
 {
-    const int cnt = model()->fileCount();
-    kDebug() << "saving" << cnt << "files to" << conf->name();
-
-    KConfigGroup grp = conf->group(GROUP_FILES);
-    for (int i = 0; i<cnt; ++i)
-    {
-        TrackDataFile *tdf = model()->fileAt(i);
-        const KUrl file = tdf->fileName();
-        kDebug() << "  " << i << "=" << file;
-        grp.writeEntry(QString::number(i), file);
-
-        if (tdf->isModified())
-        {
-            if (!exportFile(tdf->fileName(), tdf))
-            {						// detailed error already given
-                return (i18n("Save to <filename>%1</filename> failed"));
-            }
-            // TODO: will this affect undo?
-            tdf->setModified(false);
-        }
-    }
-
-    return (QString::null);
-}
-
-
-QString FilesController::load(const KConfig *conf)
-{
-    kDebug() << "from" << conf->name();
-
-    KConfigGroup grp = conf->group(GROUP_FILES);
-    for (int i = 0; ; ++i)
-    {
-        KUrl file = grp.readEntry(QString::number(i), KUrl());
-        if (!file.isValid()) break;
-        kDebug() << "  " << i << "=" << file;
-        importFile(file);
-    }
-
-    return (QString::null);
+    KMessageBox::sorry(mainWindow(), msg, (saving ? i18n("File Save Error") : i18n("File Load Error")));
+    emit statusMessage(saving ? i18n("Error saving file") : i18n("Error loading file"));
 }
 
 
@@ -146,29 +108,39 @@ bool FilesController::importFile(const KUrl &importFrom)
     if (imp.isNull())					// could not create importer
     {
         kDebug() << "Unknown import format" << importType;
+        reportFileError(false, i18n("<qt>Unknown import format for<br><filename>%1</filename>",
+                                    importFrom.pathOrUrl()));
         return (false);
     }
 
+    emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.pathOrUrl()));
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
     if (tdf==NULL)
     {
-        KMessageBox::sorry(mainWindow(), i18n("<qt>Cannot import %1 from<br><filename>%3</filename><br><br>%2",
-                                              importType, imp->lastError(), importFrom.pathOrUrl()));
-        emit statusMessage(i18n("Import failed"));
+        reportFileError(false, i18n("<qt>Cannot import %1 from<br><filename>%3</filename><br><br>%2",
+                                    importType, imp->lastError(), importFrom.pathOrUrl()));
         return (false);
     }
-    else
-    {
+
+    if (model()->isEmpty())				// any data held so far?
+    {							// no, pass to model directly
+        model()->addFile(tdf);				// takes ownership of tree
+        delete tdf;					// this no longer required
+
+        emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.pathOrUrl()));
+    }
+    else						// model is not empty
+    {							// make the operation undo'able
         ImportFileCommand *cmd = new ImportFileCommand(this);
         cmd->setText(i18n("Import"));
-        cmd->setTrackData(tdf);
+        cmd->setTrackData(tdf);				// takes ownership of tree
         mainWindow()->executeCommand(cmd);
 
         emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.pathOrUrl()));
-        emit modified();
     }
 
-    return (true);					// done, finished with exporter
+    emit modified();
+    return (true);					// done, finished with importer
 }
 
 
@@ -196,6 +168,8 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
     if (exp.isNull())					// could not create exporter
     {
         kDebug() << "Unknown export format" << exportType;
+        reportFileError(true, i18n("<qt>Unknown export format for<br><filename>%1</filename>",
+                                   exportTo.pathOrUrl()));
         return (false);
     }
 
@@ -209,10 +183,8 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
         {
             if (!QFile::copy(exportTo.path(), backupFile.path()))
             {
-                KMessageBox::sorry(mainWindow(),
-                                   i18n("<qt>Cannot save original<br>of<filename>%1</filename><br>as <filename>%2</filename>",
-                                        exportTo.pathOrUrl(), backupFile.pathOrUrl()),
-                                   i18n("Cannot save original file"));
+                reportFileError(true, i18n("<qt>Cannot save original<br>of<filename>%1</filename><br>as <filename>%2</filename>",
+                                           exportTo.pathOrUrl(), backupFile.pathOrUrl()));
                 emit statusMessage(i18n("Backup failed"));
                 return (false);
             }
@@ -225,18 +197,15 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
         }
     }
 
+    emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.pathOrUrl()));
     if (!exp->save(exportTo, tdf))
     {
-        KMessageBox::sorry(mainWindow(), i18n("<qt>Cannot export %1 to<br><filename>%3</filename><br><br>%2",
-                                     exportType, exp->lastError(), exportTo.pathOrUrl()));
-        emit statusMessage(i18n("Export failed"));
+        reportFileError(true, i18n("<qt>Cannot save %1 to<br><filename>%3</filename><br><br>%2",
+                             exportType, exp->lastError(), exportTo.pathOrUrl()));
         return (false);
     }
-    else
-    {
-        emit statusMessage(i18n("<qt>Exported <filename>%1</filename>", exportTo.pathOrUrl()));
-    }
 
+    emit statusMessage(i18n("<qt>Exported <filename>%1</filename>", exportTo.pathOrUrl()));
     return (true);					// done, finished with exporter
 }
 
@@ -355,6 +324,7 @@ void FilesController::slotTrackProperties()
         if (newItemName==item->name()) newItemName.clear();
     }							// no, throw entry away
 
+
     KUrl newFileUrl = d.newFileUrl();			// URL for file item
     if (newFileUrl.isValid())				// valid entry?
     {
@@ -363,8 +333,10 @@ void FilesController::slotTrackProperties()
         if (newFileUrl==fileItem->fileName()) newFileUrl.clear();
     }							// no, throw entry away
 
+    TrackDataDisplayable *dispItem = dynamic_cast<TrackDataDisplayable *>(item);
+    Q_ASSERT(dispItem!=NULL);
     const Style newStyle = d.newStyle();		// has style changed?
-    bool changedStyle = !(newStyle==*item->style());
+    bool changedStyle = !(newStyle==*dispItem->style());
 							// anything to do?
     if (newItemName.isEmpty() && !newFileUrl.isValid() && !changedStyle) return;
 
@@ -378,14 +350,14 @@ void FilesController::slotTrackProperties()
     if (!newItemName.isEmpty())				// changing the name
     {
         ChangeItemNameCommand *cmd1 = new ChangeItemNameCommand(this, cmd);
-        cmd1->setDataItem(item);
+        cmd1->setDataItem(dispItem);
         cmd1->setNewName(newItemName);
     }
 
     if (!newFileUrl.isEmpty())				// changing the URL
     {
         ChangeFileUrlCommand *cmd2 = new ChangeFileUrlCommand(this, cmd);
-        cmd2->setDataItem(item);
+        cmd2->setDataItem(dispItem);
         cmd2->setNewUrl(newFileUrl);
 
         KMessageBox::information(mainWindow(),
@@ -398,7 +370,7 @@ void FilesController::slotTrackProperties()
     if (changedStyle)
     {
         ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
-        cmd3->setDataItem(item);
+        cmd3->setDataItem(dispItem);
         cmd3->setNewStyle(newStyle);
     }
 
@@ -413,31 +385,9 @@ MainWindow *FilesController::mainWindow() const
 }
 
 
-QStringList FilesController::modifiedFiles() const
-{
-    QStringList result;
-
-    const TrackDataItem *root = model()->rootItem();
-    int num = root->childCount();
-    for (int i = 0; i<num; ++i)
-    {
-        const TrackDataFile *fileItem = dynamic_cast<const TrackDataFile *>(root->childAt(i));
-        if (fileItem!=NULL)				// should always be so
-        {
-            if (fileItem->isModified()) result.append(fileItem->fileName().pathOrUrl());
-        }
-    }
-
-    return (result);
-}
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////////
 
-static const char dataFilter[] = "*.tracks|Track project (*.tracks)";
 static const char allFilter[] = "*|All Files";
 
 
@@ -463,7 +413,7 @@ QString FilesController::allImportFilters()
 QString FilesController::allProjectFilters(bool includeAllFiles)
 {
     QStringList filters;
-    filters << dataFilter;
+    filters << GpxImporter::filter();
     if (includeAllFiles) filters << allFilter;
     return (filters.join("\n"));
 }

@@ -13,6 +13,7 @@
 
 class Style;
 class TrackDataItem;
+class TrackDataMeta;
 
 
 class TimeRange
@@ -89,24 +90,15 @@ namespace TrackData
         Point
     };
 
-
-
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> &items);
-
     TimeRange unifyTimeSpans(const QList<TrackDataItem *> &items);
 
-    QString formattedLatLong(double lat, double lon);
-
     double sumTotalTravelDistance(const QList<TrackDataItem *> &items);
-
     unsigned sumTotalTravelTime(const QList<TrackDataItem *> &items);
 
+    QString formattedLatLong(double lat, double lon);
     QString formattedDuration(unsigned t);
     QString formattedTime(const QDateTime &dt);
-
-
-
-
 };
 
 
@@ -118,41 +110,28 @@ namespace TrackData
 class TrackDataItem
 {
 public:
-    TrackDataItem(const QString &desc);
     virtual ~TrackDataItem();
 
     QString name() const				{ return (mName); }
     void setName(const QString &newName)		{ mName = newName; }
-
-    virtual QString iconName() const = 0;
-
-    unsigned long selectionId() const			{ return (mSelectionId); }
-    void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
     int childCount() const				{ return (mChildItems.count()); }
     TrackDataItem *childAt(int idx) const		{ return (mChildItems[idx]); }
     int childIndex(const TrackDataItem *data) const	{ return (mChildItems.indexOf(const_cast<TrackDataItem *>(data))); }
     TrackDataItem *parent() const			{ return (mParent); }
 
-    void addChildItem(TrackDataItem *data);
-    TrackDataItem *removeLastChildItem();
+    void addChildItem(TrackDataItem *data, bool atStart = false);
+    TrackDataItem *takeLastChildItem();
+    TrackDataItem *takeFirstChildItem();
 
-    const Style *style() const;
-    void setStyle(const Style &s);
-
-    virtual QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
-    virtual QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
-    virtual QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
-
+// TODO: can move to Displayable?
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
     virtual double totalTravelDistance() const;
     virtual unsigned int totalTravelTime() const;
 
-    bool setFileModified(bool state);
-
 protected:
-    TrackDataItem(const QString &desc, const char *format, int *counter);
+    TrackDataItem(const QString &nm, const char *format = NULL, int *counter = NULL);
 
 private:
     TrackDataItem(const TrackDataItem &other);
@@ -163,6 +142,42 @@ private:
     QString mName;
     QList<TrackDataItem *> mChildItems;
     TrackDataItem *mParent;
+};
+
+
+
+
+
+
+class TrackDataDisplayable : public TrackDataItem
+{
+public:
+    virtual ~TrackDataDisplayable();
+
+    virtual QString iconName() const = 0;
+
+    QString desc() const				{ return (mDesc); }
+    void setDesc(const QString &newDesc)		{ mDesc = newDesc; }
+
+    const TrackDataMeta *metadata() const		{ return (mMetadata); }
+    void setMetadata(TrackDataMeta *m)			{ mMetadata = m; }
+
+    unsigned long selectionId() const			{ return (mSelectionId); }
+    void setSelectionId(unsigned long id)		{ mSelectionId = id; }
+
+    const Style *style() const;
+    void setStyle(const Style &s);
+
+    virtual QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+    virtual QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+    virtual QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+
+protected:
+    TrackDataDisplayable(const QString &nm, const char *format, int *counter);
+
+private:
+    QString mDesc;
+    TrackDataMeta *mMetadata;
     unsigned long mSelectionId;
     Style *mStyle;
 };
@@ -173,18 +188,13 @@ private:
 
 
 
+
+
 class TrackDataRoot : public TrackDataItem
 {
 public:
-    TrackDataRoot(const QString &desc);
+    TrackDataRoot(const QString &nm);
     virtual ~TrackDataRoot()				{}
-
-    QString iconName() const				{ return ("unknown"); }
-
-    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-
 };
 
 
@@ -192,20 +202,15 @@ public:
 
 
 
-
-
-class TrackDataFile : public TrackDataItem
+class TrackDataFile : public TrackDataDisplayable
 {
 public:
-    TrackDataFile(const QString &desc);
+    TrackDataFile(const QString &nm);
     virtual ~TrackDataFile()				{}
 
     KUrl fileName() const				{ return (mFileName); }
     void setFileName(const KUrl &file)			{ mFileName = file; }
     QString iconName() const;
-
-    bool isModified() const				{ return (mModified); }
-    void setModified(bool state)			{ mModified = state; }
 
     QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
     QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
@@ -215,7 +220,6 @@ private:
     static int sCounter;
 
     KUrl mFileName;
-    bool mModified;
 };
 
 
@@ -223,10 +227,10 @@ private:
 
 
 
-class TrackDataTrack : public TrackDataItem
+class TrackDataTrack : public TrackDataDisplayable
 {
 public:
-    TrackDataTrack(const QString &desc);
+    TrackDataTrack(const QString &nm);
     virtual ~TrackDataTrack()				{}
 
     QString iconName() const				{ return ("chart_track"); }
@@ -241,10 +245,10 @@ private:
 
 
 
-class TrackDataSegment : public TrackDataItem
+class TrackDataSegment : public TrackDataDisplayable
 {
 public:
-    TrackDataSegment(const QString &desc);
+    TrackDataSegment(const QString &nm);
     virtual ~TrackDataSegment()				{}
 
     QString iconName() const				{ return ("chart_segment"); }
@@ -261,10 +265,10 @@ private:
 
 
 
-class TrackDataPoint : public TrackDataItem
+class TrackDataPoint : public TrackDataDisplayable
 {
 public:
-    TrackDataPoint(const QString &desc);
+    TrackDataPoint(const QString &nm);
     virtual ~TrackDataPoint()				{}
 
     QString iconName() const				{ return ("chart_point"); }
@@ -310,6 +314,25 @@ private:
     QString mSpeed;
 };
 
+
+
+
+
+
+class TrackDataMeta : public TrackDataItem
+{
+public:
+    TrackDataMeta(const QString &nm);
+    virtual ~TrackDataMeta();
+
+    void setData(const QString &key, const QString &value);
+    QString data(const QString &key) const;
+    QString toString() const;
+
+private:
+    QHash<QString,QString> *mData;
+
+};
 
 
 

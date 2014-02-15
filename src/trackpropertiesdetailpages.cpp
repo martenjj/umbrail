@@ -154,6 +154,8 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> item
     addChildCountField(items, i18nc("@label:textbox", "Points:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items, false);
+// TODO: recording interval (time span divided by points count)
+
 }
 
 
@@ -276,12 +278,6 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
 
 
 
-
-
-QWidget *TrackDataRoot::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (NULL);
-}
 
 
 QWidget *TrackDataFile::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)

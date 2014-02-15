@@ -15,6 +15,7 @@ class FilesModel;
 class FilesView;
 class MainWindow;
 class TrackDataItem;
+class TrackDataDisplayable;
 
 
 class MapView : public MarbleWidget
@@ -35,7 +36,7 @@ public:
     KAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);
 
-    static QColor resolveLineColour(const TrackDataItem *tdi);
+    static QColor resolveLineColour(const TrackDataDisplayable *tdd);
 
 public slots:               
     void slotRmbRequest(int mx, int my);
@@ -54,7 +55,7 @@ private:
 
     bool mouseCoordinates(GeoDataCoordinates *coords);
 
-    void paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool doSelected, bool parentSelected);
+    void paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter, bool doSelected, bool parentSelected);
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);

@@ -249,12 +249,6 @@ QString TrackPointGeneralPage::typeText(int count) const
 
 
 
-QWidget *TrackDataRoot::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (NULL);
-}
-
-
 QWidget *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackFileGeneralPage(items, pnt));

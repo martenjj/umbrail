@@ -9,9 +9,11 @@
 
 
 class TrackDataItem;
+class TrackDataDisplayable;
 class TrackDataTrack;
 class TrackDataSegment;
 class TrackDataPoint;
+class TrackDataMeta;
 
 
 
@@ -44,12 +46,13 @@ private:
     QByteArray indent() const;
     inline bool parsing() const;
     QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString::null);
-    TrackDataItem *currentItem() const;
+    TrackDataDisplayable *currentItem() const;
 
 private:
     TrackDataTrack *mCurrentTrack;
     TrackDataSegment *mCurrentSegment;
     TrackDataPoint *mCurrentPoint;
+    TrackDataMeta *mCurrentMetadata;
 
     int mXmlIndent;
     QString mRestartTag;

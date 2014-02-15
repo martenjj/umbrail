@@ -53,3 +53,9 @@ bool ImporterBase::prepareLoadFile(const KUrl &file)
     mReadingFile->setFileName(file);
     return (true);
 }
+
+
+bool ImporterBase::finaliseLoadFile(const KUrl &file)
+{
+    return (true);
+}

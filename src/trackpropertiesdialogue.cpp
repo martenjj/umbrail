@@ -26,7 +26,8 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     showButtonSeparator(false);
 
     Q_ASSERT(!items.isEmpty());
-    TrackDataItem *item = items.first();
+    TrackDataDisplayable *item = dynamic_cast<TrackDataDisplayable *>(items.first());
+    Q_ASSERT(item!=NULL);
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -42,7 +43,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     // of mixed types (although we only support GPX files at present), the
     // icon should be "unknown".
     QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(KIconLoader::global()->loadIcon(items.first()->iconName(),
+    iconLabel->setPixmap(KIconLoader::global()->loadIcon(item->iconName(),
                                                          KIconLoader::NoGroup,
                                                          KIconLoader::SizeMedium));
     gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);

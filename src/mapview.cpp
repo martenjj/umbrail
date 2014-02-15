@@ -20,8 +20,11 @@
 #include "filesview.h"
 #include "trackdata.h"
 #include "mainwindow.h"
-//#include "settings.h"
 #include "style.h"
+
+
+
+#undef DEBUG_PAINTING
 
 
 
@@ -82,19 +85,22 @@ void MapView::customPaint(GeoPainter *painter)
     // on top of all non-selected ones.  In the absence of any selection,
     // all tracks will be painted in time order (i.e. later tracks on top
     // of earlier ones).
-    paintDataTree(filesModel()->rootItem(), painter, false, false);
-    paintDataTree(filesModel()->rootItem(), painter, true, false);
+    paintDataTree(filesModel()->rootFileItem(), painter, false, false);
+    paintDataTree(filesModel()->rootFileItem(), painter, true, false);
 }
 
 
-void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, 
+void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter, 
                             bool doSelected, bool parentSelected)
 {
-    int cnt = tdi->childCount();
+    if (tdd==NULL) return;				// nothing to paint
+    int cnt = tdd->childCount();
     if (cnt==0) return;					// quick escape if no children
 
-    bool isSelected = parentSelected || (tdi->selectionId()==mSelectionId);
-    kDebug() << tdi->name() << "isselected" << isSelected << "doselected" << doSelected;
+    bool isSelected = parentSelected || (tdd->selectionId()==mSelectionId);
+#ifdef DEBUG_PAINTING
+    kDebug() << tdd->name() << "isselected" << isSelected << "doselected" << doSelected;
+#endif
 
     // What is actually drawn on the map is a polyline representing a sequence
     // of points (with their parent container normally a track segment, but this
@@ -102,21 +108,25 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
     // data tree to the individual points, we can stop at the level above if the
     // first child item (assumed to be representative of the others) is a point.
 
-    const TrackDataItem *firstChild = tdi->childAt(0);
+    const TrackDataItem *firstChild = tdd->childAt(0);
     if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
     {							// is first child a point?
         if ((isSelected && doSelected) || (!isSelected && !doSelected))
         {						// Bjarne, why couldn't you add ^^
-            kDebug() << "points for" << tdi->name();
-
+#ifdef DEBUG_PAINTING
+            kDebug() << "points for" << tdd->name();
+#endif
             // Run along the segment, assembling the coordinates into a list.
             // This will go wrong (the array indexes will be out of step) if
             // any of the children is not a TrackDataPoint, so let's hope not.
 
+// TODO: some polyline segments not drawn if too many at high magnifications -
+// limitation in Marble?  Split up if too many.
+
             GeoDataLineString lines;
             for (int i = 0; i<cnt; ++i)
             {
-                const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i));
+                const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdd->childAt(i));
                 if (tdp==NULL) continue;		// should never happen
 
                 GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
@@ -126,7 +136,7 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
 
             // First, draw the track in its requested colour
 
-            QColor col = resolveLineColour(tdi);
+            QColor col = resolveLineColour(tdd);
             painter->setBrush(Qt::NoBrush);
             painter->setPen(QPen(col, 4));
             painter->drawPolyline(lines);
@@ -150,7 +160,7 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
 
                 for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataItem *pointItem = tdi->childAt(i);
+                    const TrackDataDisplayable *pointItem = static_cast<TrackDataDisplayable *>(tdd->childAt(i));
                     if (pointItem->selectionId()==mSelectionId)
                     {
                         painter->drawEllipse(lines[i], 12, 12);
@@ -163,7 +173,8 @@ void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
     {							// so we are higher container
         for (int i = 0; i<cnt; ++i)			// just recurse to paint children
         {
-            paintDataTree(tdi->childAt(i), painter, doSelected, isSelected);
+            const TrackDataDisplayable *childItem = static_cast<TrackDataDisplayable *>(tdd->childAt(i));
+            paintDataTree(childItem, painter, doSelected, isSelected);
         }
     }
 }
@@ -283,7 +294,7 @@ void MapView::slotShowOverlay()
 
 
 
-QColor MapView::resolveLineColour(const TrackDataItem *tdi)
+QColor MapView::resolveLineColour(const TrackDataDisplayable *tdd)
 {
     // Resolving the line colour (in the case where it is not selected) could
     // potentially be an expensive operation - needing to examine not only the
@@ -293,17 +304,17 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
     // is expected that there will be at most a few tens of them existing within
     // a typical project.  So the overhead here is not likely to be significant.
 
-    while (tdi!=NULL)					// search to root of tree
+    while (tdd!=NULL)					// search to root of tree
     {
-        const Style *s = tdi->style();			// get style from item
+        const Style *s = tdd->style();			// get style from item
         //kDebug() << "style for" << tdi->name() << "is" << *s;
         if (s->hasLineColour())				// has a style set?
         {
             //kDebug() << "inherited from" << tdi->name();
             return (s->lineColour());			// use colour from that
         }
-        tdi = tdi->parent();				// up to parent item
-    }
+        tdd = dynamic_cast<const TrackDataDisplayable *>(tdd->parent());
+    }							// up to parent item
 
     // TODO: project global style?
     return (Style::globalStyle()->lineColour());	// finally application default

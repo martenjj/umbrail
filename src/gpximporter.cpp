@@ -38,6 +38,7 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
 {
     kDebug() << "from" << file;
 
+// TODO: move to ImporterBase
 // verify/open file
     if (!file.isLocalFile())
     {
@@ -65,6 +66,7 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
     mCurrentTrack = NULL;
     mCurrentSegment = NULL;
     mCurrentPoint = NULL;
+    mCurrentMetadata = NULL;
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(this);
@@ -82,6 +84,7 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
     }
 
     f.close();
+    ImporterBase::finaliseLoadFile(file);
     return (mReadingFile);
 }
 
@@ -128,9 +131,9 @@ void GpxImporter::setDocumentLocator(QXmlLocator *locator)
 
 
 
-TrackDataItem *GpxImporter::currentItem() const
+TrackDataDisplayable *GpxImporter::currentItem() const
 {
-    TrackDataItem *item = mCurrentPoint;		// find innermost current element
+    TrackDataDisplayable *item = mCurrentPoint;		// find innermost current element
     if (item==NULL) item = mCurrentSegment;
     if (item==NULL) item = mCurrentTrack;
     return (item);
@@ -165,7 +168,19 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     ++mXmlIndent;
     if (!parsing()) return (true);
 
-    if (localName=="trk")				// start of a TRK element
+    else if (localName=="gpx")				// start of a GPX element
+    {
+        if (mCurrentMetadata==NULL) mCurrentMetadata = new TrackDataMeta(QString::null);
+
+        int i = atts.index("version");
+        if (i>=0) mCurrentMetadata->setData(atts.localName(i), atts.value(i));
+        i = atts.index("creator");
+        if (i>=0) mCurrentMetadata->setData(atts.localName(i), atts.value(i));
+    }
+    else if (localName=="metadata")			// start of a METADATA element
+    {
+    }
+    else if (localName=="trk")				// start of a TRK element
     {
         if (mCurrentTrack!=NULL)			// check not nested
         {
@@ -217,17 +232,24 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             QString attrValue = atts.value(i);
             if (attrName=="lat") lat = attrValue.toDouble();
             else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute on TRKPT element"));
+            else warning(makeXmlException(attrName.toUpper()+" unexpected attribute on TRKPT element"));
         }
 
         if (!isnan(lat) && !isnan(lon)) mCurrentPoint->setLatLong(lat, lon);
         else warning(makeXmlException("missing lat/lon on TRKPT element"));
     }
-    else if (localName=="ele" || localName=="time" || localName=="hdop" || localName=="speed")
+    else if (localName=="ele" || localName=="hdop" || localName=="speed")
     {							// start of a point parameter element
-        if (mCurrentPoint==NULL)			// check properly nested
-        {
+        if (mCurrentPoint==NULL)
+        {						// check properly nested
             return (error(makeXmlException(localName.toUpper()+" start not within TRKPT", localName)));
+        }
+    }
+    else if (localName=="time")
+    {							// start of a TIME element
+        if (mCurrentPoint==NULL && mCurrentMetadata==NULL)
+        {						// check properly nested
+            return (error(makeXmlException(localName.toUpper()+" start not within TRKPT or METADATA", localName)));
         }
     }
     else if (localName=="wpt")				// start of an WPT element
@@ -324,19 +346,29 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     }
     else if (localName=="time")				// end of a TIME element
     {
-        if (mCurrentPoint==NULL)			// check properly nested
+        if (mCurrentPoint!=NULL)			// check properly nested
         {
-            return (error(makeXmlException("TIME end not within TRKPT")));
+            mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
         }
-
-        mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
+        else if (mCurrentMetadata!=NULL)
+        {
+            mCurrentMetadata->setData(localName, mContainedChars);
+        }
+        else return (error(makeXmlException("TIME end not within TRKPT or METADATA")));
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
-        TrackDataItem *item = currentItem();		// find innermost current element
+        TrackDataDisplayable *item = currentItem();	// find innermost current element
         if (item!=NULL) item->setName(mContainedChars);	// assign its name
-        // TODO: can be in METADATA
-        //else warning(makeXmlException("NAME not within TRK, TRKSEG or TKKPT"));
+        else if (mCurrentMetadata!=NULL) mCurrentMetadata->setData(localName, mContainedChars);
+        else warning(makeXmlException("NAME not within TRK, TRKSEG, TKKPT or METADATA"));
+    }
+    else if (localName=="desc")				// end of a DESC element
+    {							// may belong to any container
+        TrackDataDisplayable *item = currentItem();	// find innermost current element
+        if (item!=NULL) item->setDesc(mContainedChars);	// assign the description
+        else if (mCurrentMetadata!=NULL) mCurrentMetadata->setData(localName, mContainedChars);
+        else warning(makeXmlException("DESC not within TRK, TRKSEG, TKKPT or METADATA"));
     }
     else if (localName=="hdop")				// end of a HDOP element
     {							// not currently interpreted
@@ -359,7 +391,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
 
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
-        TrackDataItem *item = currentItem();		// find innermost current element
+        TrackDataDisplayable *item = currentItem();	// find innermost current element
         if (item==NULL)
         {
             return (error(makeXmlException("COLOR end not within TRK, TRKSEG or TKKPT")));
@@ -402,6 +434,9 @@ bool GpxImporter::endDocument()
     {
         return (error(makeXmlException(QString("TRKPT not terminated"))));
     }
+
+    kDebug() << "setting metadata" << mCurrentMetadata->toString();
+    mReadingFile->setMetadata(mCurrentMetadata);	// add metadata to file record
 
     kDebug() << "end document";
     return (true);

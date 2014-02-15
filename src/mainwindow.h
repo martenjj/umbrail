@@ -71,7 +71,6 @@ private:
 
     bool save(const KUrl &to);
     bool load(const KUrl &from);
-    void reportFileError(bool saving,const QString &msg);
     void clear();
 
 private slots:
@@ -86,6 +85,7 @@ private:
     QLabel *mModifiedIndicator;
 
     KAction *mSaveProjectAction;
+    KAction *mSaveProjectAsAction;
     KAction *mExportAction;
     KAction *mImportAction;
 

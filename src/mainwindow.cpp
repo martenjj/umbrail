@@ -24,9 +24,9 @@
 #include <ksqueezedtextlabel.h>
 #include <kmimetype.h>
 #include <kurl.h>
-#include <kconfig.h>
-#include <kaboutdata.h>
-#include <ksavefile.h>
+//#include <kconfig.h>
+//#include <kaboutdata.h>
+//#include <ksavefile.h>
 #include <kactionmenu.h>
 
 #include <marble/AbstractFloatItem.h>
@@ -118,19 +118,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupActions()
 {
-    KStandardAction::quit(this, SLOT(close()), actionCollection());
+//    KStandardAction::quit(this, SLOT(close()), actionCollection());
+    KStandardAction::close(this, SLOT(close()), actionCollection());
 
     KAction *a = KStandardAction::openNew(this, SLOT(slotNewProject()), actionCollection());
-    a->setText(i18n("New Project"));
-
     a = KStandardAction::open(this, SLOT(slotOpenProject()), actionCollection());
-    a->setText(i18n("Open Project..."));
-
     mSaveProjectAction = KStandardAction::save(this, SLOT(slotSaveProject()), actionCollection());
-    mSaveProjectAction->setText(i18n("Save Project"));
-
-    a = KStandardAction::saveAs(this, SLOT(slotSaveAs()), actionCollection());
-    a->setText(i18n("Save Project As..."));
+    mSaveProjectAsAction = KStandardAction::saveAs(this, SLOT(slotSaveAs()), actionCollection());
 
     mImportAction = actionCollection()->addAction("file_import");
     mImportAction->setText(i18n("Import..."));
@@ -294,29 +288,11 @@ bool MainWindow::queryClose()
     if (!mProject->isModified()) return (true);		// not modified, OK to close
 
     QString query;
-    QStringList changedFiles = filesController()->modifiedFiles();
-    if (changedFiles.isEmpty())				// no files, just the project
-    {
-        if (mProject->hasFileName()) query = i18n("<qt>Save changes to project <b>%1</b>?",
-                                                  mProject->name());
-        else query = i18n("Save changes to project?");
-    }
-    else						// files changed also
-    {
-        if (mProject->hasFileName()) query = i18n("<qt>Save changes to project <b>%1</b>,<br>"
-                                                  "including these data files?"
-                                                  "<br><br>"
-                                                  "<filename>%2</filename>",
-                                                  mProject->name(),
-                                                  changedFiles.join("</filename><br><filename>"));
-        else query = i18n("<qt>Save changes to project,<br>"
-                          "including these data files?"
-                          "<br><br>"
-                          "<filename>%1</filename>",
-                          changedFiles.join("</filename><br><filename>"));
-    }
+    if (mProject->hasFileName()) query = i18n("<qt>File <b>%1</b> has been modified. Save changes?", mProject->name());
+    else query = i18n("File has been modified. Save changes?");
 
-    switch (KMessageBox::warningYesNoCancel(this, query))
+    switch (KMessageBox::warningYesNoCancel(this, query, QString::null,
+                                            KStandardGuiItem::save(), KStandardGuiItem::discard()))
     {
 case KMessageBox::Yes:
         slotSaveProject();
@@ -333,7 +309,8 @@ default:						// cancelled
 
 
 
-
+// TODO: only when last window closed
+// or to unique window/file ID
 void MainWindow::saveProperties(KConfigGroup &grp)
 {
     kDebug() << "to" << grp.name();
@@ -362,72 +339,30 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 
 
 
-void MainWindow::reportFileError(bool saving, const QString &msg)
-{
-    KMessageBox::sorry(this, msg, (saving ? i18n("File Save Error") : i18n("File Load Error")));
-    slotStatusMessage(saving ? i18n("Error saving file") : i18n("Error loading file"));
-}
 
-
-
-
-//  Since we are using KSaveFile here, the KConfig object is always created
-//  over an empty file.  The initial config is therefore guaranteed to be blank.
-
+// Error reporting and status messages are done in FilesController::exportFile()
 bool MainWindow::save(const KUrl &to)
 {
     kDebug() << "to" << to;
 
     if (!to.isValid() || !to.hasPath()) return (false);	// should never happen
-    if (!to.isLocalFile())				// only local at present
-    {
-        reportFileError(true, i18n("<qt>Can only save to a local file<br><filename>%1</filename>",
-                                  to.pathOrUrl()));
-        return (false);
-    }
-
     QDir d(to.path());					// should be absolute already,
     QString savePath = d.absolutePath();		// but just make sure
-    KSaveFile saveFile(savePath);
-    if (!saveFile.open())				// really opens a temp file
-    {
-err1:   reportFileError(true, i18n("<qt>Cannot create save file<br><filename>%1</filename><br>%2",
-                                   savePath, saveFile.errorString()));
 
-err2:   slotStatusMessage(i18n("Error saving to %1", savePath));
-        return (false);
-    }
+    TrackDataFile *tdf = filesController()->model()->rootFileItem();
+    if (tdf==NULL) return (false);			// should never happen
 
-    slotStatusMessage(i18n("Saving to %1...", savePath));
+// TODO: add metadata from map controller
 
-    saveFile.close();					// don't need this temp file
-    QString confPath = static_cast<QFile *>(&saveFile)->fileName();
-    kDebug() << "config file" << confPath;		// but create config file there
 
-    KConfig *conf = new KConfig(confPath, KConfig::SimpleConfig);
 
-    KConfigGroup grp = conf->group("Creator");
-    grp.writeEntry("AppName", KGlobal::mainComponent().aboutData()->appName());
 
-    QString err = mProject->save(conf);				// save project data
-    if (err.isEmpty()) err = filesController()->save(conf);	// save files data
-    if (err.isEmpty()) err = mapController()->save(conf);	// save map data
 
-    if (!err.isEmpty())
-    {
-        saveFile.abort();
-        delete conf;
-        reportFileError(true, i18n("<qt>Cannot save data to file<br><filename>%1</filename><br>%2",
-                                   savePath, err));
-        goto err2;
-    }
 
-    conf->sync();					// ensure config committed
-    delete conf;					// ensure config really committed
-    if (!saveFile.finalize()) goto err1;		// commit file to final location
 
-    slotStatusMessage(i18n("Saved to %1", savePath));
-    return (true);
+
+
+    return (!filesController()->exportFile(savePath, tdf));
 }
 
 
@@ -435,56 +370,19 @@ err2:   slotStatusMessage(i18n("Error saving to %1", savePath));
 
 
 
+// Error reporting and status messages are done in FilesController::importFile()
 bool MainWindow::load(const KUrl &from)
 {
     kDebug() << "from" << from;
 
+    // TODO: allow non-local files
     if (!from.isValid() || !from.hasPath()) return (false);
-    if (!from.isLocalFile())				// only local at present
-    {
-        reportFileError(false, i18n("<qt>Can only load from a local file<br><filename>%1</filename>",
-                                  from.pathOrUrl()));
-        return (false);
-    }
-
     QDir d(from.path());				// should be absolute already,
     QString loadPath = d.absolutePath();		// but just make sure
 
-    QFile f(loadPath);
-    if (!f.open(QIODevice::ReadOnly))			// check file can be read
-    {
-        reportFileError(false,i18n("<qt>Cannot read file<br><filename>%1</filename><br>%2",
-                                   loadPath, strerror(errno)));
+    if (!filesController()->importFile(loadPath)) return (false);
 
-err2:   slotStatusMessage(i18n("Error loading from %1", loadPath));
-        return (false);
-    }
-    f.close();						// don't need this now
-
-    slotStatusMessage(i18n("Loading from %1...", loadPath));
-
-    KConfig conf(loadPath, KConfig::SimpleConfig);	// create config from file
-    if (!conf.hasGroup("Creator"))			// check for our mark
-    {
-        reportFileError(false,i18n("<qt>Unrecognised file format<br><filename>%1</filename>",
-                                  from.pathOrUrl()));
-        goto err2;
-    }
-
-    QString err = mProject->load(&conf);			// load project data
-    if (err.isEmpty()) err = filesController()->load(&conf);	// load files data
-    if (err.isEmpty()) err = mapController()->load(&conf);	// load map data
-    conf.markAsClean();						// don't want to write out
-
-    if (!err.isEmpty())
-    {
-        reportFileError(true,i18n("<qt>Cannot load data from file<br><filename>%1</filename><br>%2",
-                                  loadPath,err));
-        goto err2;
-    }
-
-    slotStatusMessage(i18n("Loaded from %1", loadPath));
-    filesController()->view()->expandToDepth(1);	// expand to segments
+    filesController()->view()->expandToDepth(1);	// expand to show segments
     return (true);
 }
 
@@ -512,10 +410,8 @@ void MainWindow::clear()
 
 void MainWindow::slotNewProject()
 {
-    if (!queryClose()) return;
-    clear();
-    slotSetModified(false);
-    slotStatusMessage(i18n("New project"));
+    MainWindow *w = new MainWindow(NULL);
+    w->show();
 }
 
 
@@ -525,12 +421,16 @@ void MainWindow::slotOpenProject()
     if (!queryClose()) return;
 
     KFileDialog d(QString("kfiledialog:///project/"), FilesController::allProjectFilters(true), this);
-    d.setCaption(i18n("Open Tracks Project"));
+    d.setCaption(i18n("Open Tracks File"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
 
-    if (d.exec()) loadProject(d.selectedUrl());
+    if (!d.exec()) return;
+
+    MainWindow *w = new MainWindow(NULL);
+    w->loadProject(d.selectedUrl());
+    w->show();
 }
 
 
@@ -545,9 +445,7 @@ void MainWindow::loadProject(const KUrl &loadFrom)
         mProject->setFileName(loadFrom);
         mUndoStack->clear();				// clear undo history
         slotSetModified(false);				// ensure window title updated
-        slotStatusMessage(i18n("Loaded %1", loadFrom.pathOrUrl()));
     }
-    else slotStatusMessage(i18n("Error loading project"));
 }
 
 
@@ -565,19 +463,17 @@ void MainWindow::slotSaveProject()
 
     if (save(projectFile))
     {
-        slotStatusMessage(i18n("Saved to %1", projectFile.pathOrUrl()));
         mUndoStack->setClean();				// undo history is now clean
         slotSetModified(false);				// ensure window title updated
     }
-    else slotStatusMessage(i18n("Error saving project"));
 }
 
 
 
 void MainWindow::slotSaveAs()
 {
-    KFileDialog d(QString("kfiledialog:///project/%1").arg("untitled.tracks"), FilesController::allProjectFilters(false), this);
-    d.setCaption(i18n("Save Tracks Project As"));
+    KFileDialog d(QString("kfiledialog:///project/%1").arg("untitled"), FilesController::allProjectFilters(false), this);
+    d.setCaption(i18n("Save Tracks File As"));
     d.setOperationMode(KFileDialog::Saving);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -595,7 +491,7 @@ void MainWindow::slotSaveAs()
 void MainWindow::slotImportFile()
 {
     KFileDialog d(KUrl("kfiledialog:///import"), FilesController::allImportFilters(), this);
-    d.setCaption(i18n("Import"));
+    d.setCaption(i18n("Import File"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -608,7 +504,7 @@ void MainWindow::slotImportFile()
 void MainWindow::slotExportFile()
 {
     KFileDialog d(KUrl("kfiledialog:///export/"+mProject->name(true)), FilesController::allExportFilters(), this);
-    d.setCaption(i18n("Export"));
+    d.setCaption(i18n("Export File"));
     d.setOperationMode(KFileDialog::Saving);
     d.setConfirmOverwrite(true);
     d.setKeepLocation(true);
@@ -678,9 +574,11 @@ void MainWindow::slotExportFile()
 void MainWindow::slotSetModified(bool mod)
 {
     mProject->setModified(mod);
-    mSaveProjectAction->setEnabled(mod);
+    mSaveProjectAction->setEnabled(mod && mProject->hasFileName());
     mModifiedIndicator->setEnabled(mod);
     setCaption(mProject->name(), mod);
+
+    mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
 }
 
 

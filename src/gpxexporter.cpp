@@ -41,7 +41,7 @@ GpxExporter::~GpxExporter()
 
 
 
-static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str, bool extensionsStarted)
+static void writeStyle(const TrackDataDisplayable *item, QXmlStreamWriter &str, bool extensionsStarted)
 {
     const Style *s = item->style();
     if (s->isEmpty()) return;

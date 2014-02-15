@@ -32,7 +32,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidg
     mFormLayout = new QFormLayout(this);
     addSpacerField();
 
-    const TrackDataItem *item = items.first();
+    const TrackDataDisplayable *item = dynamic_cast<const TrackDataDisplayable *>(items.first());
     const Style *s = item->style();
     kDebug() << "initial style" << *s;
 
@@ -44,12 +44,6 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidg
     mLineInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
     mLineInheritCheck->setChecked(!s->hasLineColour());
     mFormLayout->addRow(QString::null, mLineInheritCheck);
-
-
-
-
-
-
 }
 
 
@@ -169,12 +163,6 @@ TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWi
 
 }
 
-
-
-QWidget *TrackDataRoot::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
-{
-    return (NULL);
-}
 
 
 QWidget *TrackDataFile::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)

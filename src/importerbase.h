@@ -21,6 +21,7 @@ public:
 
 protected:
     bool prepareLoadFile(const KUrl &file);
+    bool finaliseLoadFile(const KUrl &file);
 
 protected:
     TrackDataFile *mReadingFile;

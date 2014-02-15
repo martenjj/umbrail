@@ -47,6 +47,27 @@ FilesModel::~FilesModel()
 
 
 
+// Actually, the first (and normally only) file item child of the root item.
+TrackDataFile *FilesModel::rootFileItem() const
+{
+    if (isEmpty()) return (NULL);
+    return (dynamic_cast<TrackDataFile *>(mRootItem->childAt(0)));
+}
+
+
+bool FilesModel::isEmpty() const
+{
+    return (mRootItem==NULL || mRootItem->childCount()==0);
+}
+
+
+
+
+
+
+
+
+
 TrackDataItem *FilesModel::dataPointer(const QModelIndex &idx) const
 {
     TrackDataItem *tdi = static_cast<TrackDataItem *>(idx.internalPointer());
@@ -85,6 +106,7 @@ QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 QModelIndex FilesModel::parent(const QModelIndex &idx) const
 {
     const TrackDataItem *tdi = dataPointer(idx);
+    if (tdi->parent()==NULL) return (QModelIndex());
     return (indexForData(tdi->parent()));
 }
 
@@ -119,7 +141,11 @@ case COL_NAME:     return (tdi->name());
 case Qt::DecorationRole:
         switch (idx.column())
         {
-case COL_NAME:     return (KIcon(tdi->iconName()));
+case COL_NAME:     
+            {
+                const TrackDataDisplayable *tdd = dynamic_cast<const TrackDataDisplayable *>(tdi);
+                if (tdd!=NULL) return (KIcon(tdd->iconName()));
+            }
         }
         break;
 
@@ -134,24 +160,24 @@ case Qt::ToolTipRole:
         switch (idx.column())
         {
 case COL_NAME:
-                   {
-                       const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                       if (tdf!=NULL) return (i18np("File %2 with %1 track", "File %2 with %1 tracks", tdf->childCount(), tdf->fileName().pathOrUrl()));
-                   }
-                   {
-                       const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(tdi);
-                       if (tdt!=NULL) return (i18np("Track with %1 segment", "Track with %1 segments", tdt->childCount()));
-                   }
-                   {
-                       const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(tdi);
-                       if (tds!=NULL) return (i18np("Segment with %1 point", "Segment with %1 points", tds->childCount()));
-                   }
-                   {
-                       const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
-                       if (tdp!=NULL) return (i18n("Point at %1, elevation %2",
-                                                   tdp->formattedTime(), tdp->formattedElevation()));
-                   }
-                   break;
+            {
+                const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
+                if (tdf!=NULL) return (i18np("File %2 with %1 track", "File %2 with %1 tracks", tdf->childCount(), tdf->fileName().pathOrUrl()));
+            }
+            {
+                const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(tdi);
+                if (tdt!=NULL) return (i18np("Track with %1 segment", "Track with %1 segments", tdt->childCount()));
+            }
+            {
+                const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(tdi);
+                if (tds!=NULL) return (i18np("Segment with %1 point", "Segment with %1 points", tds->childCount()));
+            }
+            {
+                const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
+                if (tdp!=NULL) return (i18n("Point at %1, elevation %2",
+                                            tdp->formattedTime(), tdp->formattedElevation()));
+            }
+            break;
         }
         break;
 
@@ -193,15 +219,60 @@ void FilesModel::clear()
 void FilesModel::addFile(TrackDataFile *tdf)
 {
     emit layoutAboutToBeChanged();
-    mRootItem->addChildItem(tdf);			// files always at top level
+
+    TrackDataFile *fileRoot = NULL;
+
+    if (isEmpty())
+    {
+        // If the model is currently empty, then first we add a file item
+        // immediately under the (invisible) root item.  The input tracks
+        // will then be adopted to become children of this.
+
+        kDebug() << "adding root file item" << tdf->name();
+        fileRoot = new TrackDataFile(tdf->name());
+        fileRoot->setFileName(tdf->fileName());
+        mRootItem->addChildItem(fileRoot);
+    }
+    else
+    {
+        // Get the file root, the first (and only) child of the root item.
+
+        fileRoot = dynamic_cast<TrackDataFile *>(mRootItem->childAt(0));
+    }
+    Q_ASSERT(fileRoot!=NULL);
+
+    // Now, the tracks contained in the new file are adopted as children
+    // of the file root.
+    kDebug() << "adding from" << tdf->name() << tdf->childCount() << "tracks";
+    while (tdf->childCount()>0)
+    {
+        TrackDataTrack *tdt = dynamic_cast<TrackDataTrack *>(tdf->takeFirstChildItem());
+        if (tdt!=NULL) fileRoot->addChildItem(tdt);
+    }
+
     emit layoutChanged();
+
+    // The file root passed in is now empty, as all its children have been
+    // taken away.  Leave it owned by the caller.
 }
 
 
-TrackDataFile *FilesModel::removeFile()
+
+
+
+
+TrackDataItem *FilesModel::removeLast()
 {
+    // Remove and return the last track item child of the root file item.
+    // TODO: need to make this work for removing the root file item?
+    if (rootFileItem()->childCount()==0)
+    {
+        kDebug() << "!!!!!!!!!!!!!!!!!!!!!!! no tracks to remove";
+        return (NULL);
+    }
+
     emit layoutAboutToBeChanged();
-    TrackDataFile *tdf = static_cast<TrackDataFile *>(mRootItem->removeLastChildItem());
+    TrackDataFile *tdf = static_cast<TrackDataFile *>(rootFileItem()->takeLastChildItem());
     emit layoutChanged();
     return (tdf);
 }
@@ -245,18 +316,4 @@ void FilesModel::changedItem(const TrackDataItem *item)
 {
     QModelIndex idx = indexForData(item);
     emit dataChanged(idx, idx);
-}
-
-
-
-
-int FilesModel::fileCount() const
-{
-    return (mRootItem->childCount());
-}
-
-
-TrackDataFile *FilesModel::fileAt(int i) const
-{
-    return (static_cast<TrackDataFile *>(mRootItem->childAt(i)));
 }

@@ -2,6 +2,8 @@
 
 #include "trackdata.h"
 
+#include <qhash.h>
+
 #include <kdebug.h>
 #include <kglobal.h>
 #include <klocale.h>
@@ -223,19 +225,10 @@ QString TrackData::formattedTime(const QDateTime &dt)
 
 
 
-
-TrackDataItem::TrackDataItem(const QString &desc)
+TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter)
 {
-    mName = desc;
-    init();
-}
-
-
-
-TrackDataItem::TrackDataItem(const QString &desc, const char *format, int *counter)
-{
-    if (!desc.isEmpty()) mName = desc;
-    else mName.sprintf(format, ++(*counter));
+    mName = nm;
+    if (nm.isEmpty() && format!=NULL) mName.sprintf(format, ++(*counter));
     init();
 }
 
@@ -244,8 +237,6 @@ TrackDataItem::TrackDataItem(const QString &desc, const char *format, int *count
 void TrackDataItem::init()
 {
     mParent = NULL;					// not attached to parent
-    mStyle = NULL;					// no style set yet
-    mSelectionId = 1;					// nothing selected yet
 }
 
 
@@ -253,20 +244,20 @@ void TrackDataItem::init()
 TrackDataItem::~TrackDataItem()
 {
     qDeleteAll(mChildItems);
-    delete mStyle;
 }
 
 
 
-void TrackDataItem::addChildItem(TrackDataItem *data)
+void TrackDataItem::addChildItem(TrackDataItem *data, bool atStart)
 {
-    mChildItems.append(data);				// take ownership of child
+    if (atStart) mChildItems.prepend(data);
+    else mChildItems.append(data);			// take ownership of child
     data->mParent = this;				// set child item parent
 }
 
 
 
-TrackDataItem *TrackDataItem::removeLastChildItem()
+TrackDataItem *TrackDataItem::takeLastChildItem()
 {
     Q_ASSERT(!mChildItems.isEmpty());
     TrackDataItem *data = mChildItems.takeLast();
@@ -276,15 +267,25 @@ TrackDataItem *TrackDataItem::removeLastChildItem()
 
 
 
+TrackDataItem *TrackDataItem::takeFirstChildItem()
+{
+    Q_ASSERT(!mChildItems.isEmpty());
+    TrackDataItem *data = mChildItems.takeFirst();
+    data->mParent = NULL;				// now no longer has parent
+    return (data);
+}
 
-const Style *TrackDataItem::style() const
+
+
+
+const Style *TrackDataDisplayable::style() const
 {
     return ((mStyle!=NULL) ? mStyle : &Style::null);
 }
 
 
 
-void TrackDataItem::setStyle(const Style &s)
+void TrackDataDisplayable::setStyle(const Style &s)
 {
     if (mStyle==NULL)
     {
@@ -327,32 +328,27 @@ unsigned int TrackDataItem::totalTravelTime() const
 
 
 
-
-bool TrackDataItem::setFileModified(bool state)
+TrackDataRoot::TrackDataRoot(const QString &nm)
+    : TrackDataItem(nm)
 {
-    kDebug() << "to" << state << "for" << name();
+}
 
-    // The 'item' can point anywhere in the data tree.  So search upwards
-    // until a suitable TrackDataFile is found, or the root of the tree
-    // is reached (which should never happen).
 
-    TrackDataItem *item = this;
-    while (item!=NULL)
-    {
-        TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(item);
-        if (fileItem!=NULL)				// found the file item
-        {
-            bool wasModified = fileItem->isModified();
-            kDebug() << "file" << fileItem->name() << "was mod" << wasModified;
-            fileItem->setModified(state);
-            return (wasModified);
-        }
 
-        item = item->parent();				// back up the tree
-    }
 
-    kDebug() << "no ancestor file item!";
-    return (false);
+TrackDataDisplayable::TrackDataDisplayable(const QString &nm, const char *format, int *counter)
+    : TrackDataItem(nm, format, counter)
+{
+    mMetadata = NULL;					// no metadata added yet
+    mStyle = NULL;					// no style set yet
+    mSelectionId = 1;					// nothing selected yet
+}
+
+
+TrackDataDisplayable::~TrackDataDisplayable()
+{
+    delete mMetadata;
+    delete mStyle;
 }
 
 
@@ -361,10 +357,6 @@ bool TrackDataItem::setFileModified(bool state)
 
 
 
-TrackDataRoot::TrackDataRoot(const QString &desc)
-    : TrackDataItem(desc)
-{
-}
 
 
 
@@ -372,10 +364,9 @@ TrackDataRoot::TrackDataRoot(const QString &desc)
 
 int TrackDataFile::sCounter = 0;
 
-TrackDataFile::TrackDataFile(const QString &desc)
-    : TrackDataItem(desc, "file_%02d", &TrackDataFile::sCounter)
+TrackDataFile::TrackDataFile(const QString &nm)
+    : TrackDataDisplayable(nm, "file_%02d", &TrackDataFile::sCounter)
 {
-    mModified = false;
 }
 
 
@@ -394,8 +385,8 @@ QString TrackDataFile::iconName() const
 
 int TrackDataTrack::sCounter = 0;
 
-TrackDataTrack::TrackDataTrack(const QString &desc)
-    : TrackDataItem(desc, "track_%02d", &TrackDataTrack::sCounter)
+TrackDataTrack::TrackDataTrack(const QString &nm)
+    : TrackDataDisplayable(nm, "track_%02d", &TrackDataTrack::sCounter)
 {
 }
 
@@ -404,8 +395,8 @@ TrackDataTrack::TrackDataTrack(const QString &desc)
 
 int TrackDataSegment::sCounter = 0;
 
-TrackDataSegment::TrackDataSegment(const QString &desc)
-    : TrackDataItem(desc, "segment_%02d", &TrackDataSegment::sCounter)
+TrackDataSegment::TrackDataSegment(const QString &nm)
+    : TrackDataDisplayable(nm, "segment_%02d", &TrackDataSegment::sCounter)
 {
 }
 
@@ -434,8 +425,8 @@ TimeRange TrackDataSegment::timeSpan() const
 
 int TrackDataPoint::sCounter = 0;
 
-TrackDataPoint::TrackDataPoint(const QString &desc)
-    : TrackDataItem(desc, "point_%04d", &TrackDataPoint::sCounter)
+TrackDataPoint::TrackDataPoint(const QString &nm)
+    : TrackDataDisplayable(nm, "point_%04d", &TrackDataPoint::sCounter)
 {
     mLatitude = mLongitude = NAN;
     mElevation = NAN;
@@ -522,3 +513,54 @@ int TrackDataPoint::timeTo(const TrackDataPoint *other) const
 {
     return (time().secsTo(other->time()));
 }
+
+
+
+
+TrackDataMeta::TrackDataMeta(const QString &nm)
+    : TrackDataItem(nm)
+{
+    mData = NULL;
+}
+
+
+
+TrackDataMeta::~TrackDataMeta()
+{
+    delete mData;
+}
+
+
+
+void TrackDataMeta::setData(const QString &key, const QString &value)
+{
+    if (mData==NULL) mData = new QHash<QString,QString>;
+    kDebug() << "adding" << key << "=" << value;
+    mData->insert(key, value);
+}
+
+
+
+QString TrackDataMeta::data(const QString &key) const
+{
+    if (mData==NULL) return (QString::null);
+    else return (mData->value(key));
+}
+
+
+QString TrackDataMeta::toString() const
+{
+    QString result;
+    if (mData!=NULL)
+    {
+        for (QHash<QString,QString>::const_iterator it = mData->constBegin();
+             it!=mData->constEnd(); ++it)
+        {
+            if (!result.isEmpty()) result += " ";
+            result += QString("%1=\"%2\"").arg(it.key(), it.value());
+        }
+    }
+
+    return ("["+result+"]");
+}
+

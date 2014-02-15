@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	18-Jan-14						//
+//  Edit:	13-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -30,7 +30,6 @@
 #include <kdebug.h>
 #include <kurl.h>
 #include <klocale.h>
-#include <kmimetype.h>
 
 
 Project::Project()
@@ -75,12 +74,7 @@ QString Project::load(const KConfig *conf)
 
 QString Project::name(bool onlyIfValid) const
 {
-    if (mSaveFile.isValid())
-    {
-        QString fn = mSaveFile.fileName();
-        QString ext = KMimeType::extractKnownExtension(fn);
-        return (ext.length()>0 ? fn.left(fn.length()-ext.length()-1) : fn);
-    }
+    if (mSaveFile.isValid()) return (mSaveFile.fileName());
     else return (onlyIfValid ? QString::null : i18n("Untitled"));
 }
 

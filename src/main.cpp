@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	20-Jan-14						//
+//  Edit:	13-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -70,8 +70,7 @@ int main(int argc,char *argv[])
                         "http://www.keelhaul.me.uk");
 
     KCmdLineOptions opts;
-    opts.add("p <file>", ki18n("Load a project 'file'"));
-    opts.add("i <file>", ki18n("Import a 'file'"));
+    opts.add("f <file>", ki18n("Load a data file"));
     KCmdLineArgs::addCmdLineOptions(opts);
 
     KCmdLineArgs::init(argc,argv,&aboutData);
@@ -80,11 +79,8 @@ int main(int argc,char *argv[])
 
     MainWindow *w = new MainWindow(NULL);
 
-    KUrl u = args->getOption("p");			// load a project file?
+    KUrl u = args->getOption("f");			// load a project file?
     if (u.isValid()) w->loadProject(u);
-
-    u = args->getOption("i");				//  import a data file?
-    if (u.isValid()) w->filesController()->importFile(u);
 
     w->show();
     return (app.exec());

@@ -34,11 +34,7 @@ public:
 
     bool importFile(const KUrl &importFrom);
     bool exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
-
-    QString save(KConfig *conf);
-    QString load(const KConfig *conf);
     void clear();
-    QStringList modifiedFiles() const;
 
     static QString allImportFilters();
     static QString allExportFilters();
@@ -57,6 +53,7 @@ signals:
 
 private:
     MainWindow *mainWindow() const;
+    void reportFileError(bool saving, const QString &msg);
 
 private slots:
     void slotUpdateActionState();

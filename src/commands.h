@@ -18,7 +18,7 @@
 class CommandBase : public QUndoCommand
 {
 public:
-    virtual ~CommandBase()			{}
+    virtual ~CommandBase()				{}
     virtual void undo() = 0;
     virtual void redo() = 0;
 
@@ -34,15 +34,15 @@ protected:
 class FilesCommandBase : public CommandBase
 {
 public:
-    virtual ~FilesCommandBase()			{}
+    virtual ~FilesCommandBase()				{}
 
 protected:
     FilesCommandBase(FilesController *fc, QUndoCommand *parent = NULL)
         : CommandBase(parent),
-          mController(fc)			{}
+          mController(fc)				{}
 
-    FilesController *controller() const		{ return (mController); }
-    FilesModel *model() const			{ return (mController->model()); }
+    FilesController *controller() const			{ return (mController); }
+    FilesModel *model() const				{ return (mController->model()); }
 
     void updateMap() const;
 
@@ -59,13 +59,14 @@ public:
     ImportFileCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~ImportFileCommand();
 
-    void setTrackData(TrackDataFile *tdf)	{ mTrackData = tdf; }
+    void setTrackData(TrackDataFile *tdf)		{ mTrackData = tdf; }
 
     void redo();
     void undo();
 
 private:
     TrackDataFile *mTrackData;
+    int mSavedCount;
 };
 
 
@@ -75,18 +76,15 @@ private:
 class ChangeItemCommand : public FilesCommandBase
 {
 public:
-    virtual ~ChangeItemCommand()		{}
+    virtual ~ChangeItemCommand()			{}
 
-    void setDataItem(TrackDataItem *item)	{ mDataItem = item; }
-
-    void redo();
-    void undo();
+    void setDataItem(TrackDataDisplayable *item)	{ mDataItem = item; }
 
 protected:
     ChangeItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
 
 protected:
-    TrackDataItem *mDataItem;
+    TrackDataDisplayable *mDataItem;
     bool mFileWasModified;
 };
 
