@@ -14,6 +14,7 @@
 class Style;
 class TrackDataItem;
 class TrackDataMeta;
+class TrackPropertiesPage;
 
 
 class TimeRange
@@ -160,7 +161,7 @@ public:
     void setDesc(const QString &newDesc)		{ mDesc = newDesc; }
 
     const TrackDataMeta *metadata() const		{ return (mMetadata); }
-    void setMetadata(TrackDataMeta *m)			{ mMetadata = m; }
+    void setMetadata(const TrackDataMeta *m)		{ mMetadata = m; }
 
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
@@ -168,16 +169,16 @@ public:
     const Style *style() const;
     void setStyle(const Style &s);
 
-    virtual QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
-    virtual QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
-    virtual QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
+    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
 
 protected:
     TrackDataDisplayable(const QString &nm, const char *format, int *counter);
 
 private:
     QString mDesc;
-    TrackDataMeta *mMetadata;
+    const TrackDataMeta *mMetadata;
     unsigned long mSelectionId;
     Style *mStyle;
 };
@@ -212,9 +213,9 @@ public:
     void setFileName(const KUrl &file)			{ mFileName = file; }
     QString iconName() const;
 
-    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 private:
     static int sCounter;
@@ -235,9 +236,9 @@ public:
 
     QString iconName() const				{ return ("chart_track"); }
 
-    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
 private:
     static int sCounter;
@@ -253,9 +254,9 @@ public:
 
     QString iconName() const				{ return ("chart_segment"); }
 
-    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
     TimeRange timeSpan() const;
 
@@ -273,9 +274,9 @@ public:
 
     QString iconName() const				{ return ("chart_point"); }
 
-    QWidget *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
-    QWidget *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL);
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }

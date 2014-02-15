@@ -31,7 +31,8 @@ public:
     KUrl newFileUrl() const;
     Style newStyle() const;
 
-private:
+protected slots:
+    void slotDataChanged();
 
 private:
     KTabWidget *mTabWidget;

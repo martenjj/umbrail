@@ -18,34 +18,15 @@
 
 
 TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
-    : QWidget(pnt)
+    : TrackPropertiesPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackItemDetailPage");
-    Q_ASSERT(!items.isEmpty());
 
-    mFormLayout = new QFormLayout(this);
     addSpacerField();
 }
 
 
-
-void TrackItemDetailPage::slotDataChanged()
-{
-    emit enableButtonOk(isDataValid());
-}
-
-
-bool TrackItemDetailPage::isDataValid() const
-{
-    return (true);
-}
-
-
-void TrackItemDetailPage::addSpacerField()
-{
-    mFormLayout->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
-}
 
 
 
@@ -108,6 +89,23 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items
 
 
 
+void TrackFileDetailPage::addMetadataField(const TrackDataMeta *meta, const QString &key, const QString &label)
+{
+    QString m = meta->data(key);
+    if (!m.isEmpty())
+    {
+        TrackDataLabel *l;
+        if (key=="time")				// special conversion for this
+        {
+            l = new TrackDataLabel(QDateTime::fromString(m, Qt::ISODate), this);
+        }
+        else						// just string value
+        {
+            l = new TrackDataLabel(m, this);
+        }
+        mFormLayout->addRow(label, l);
+    }
+}
 
 
 
@@ -121,6 +119,21 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWi
     addChildCountField(items, i18nc("@label:textbox", "Tracks:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
+
+    if (items.count()==1)				// should always be so
+    {
+        const TrackDataFile *f = dynamic_cast<const TrackDataFile *>(items.first());
+        Q_ASSERT(f!=NULL);
+
+        const TrackDataMeta *meta = f->metadata();
+        if (meta!=NULL)
+        {
+            kDebug() << "metadata" << meta->toString();
+            addMetadataField(meta, "creator", i18nc("@label:textbox", "Creator:"));
+            addMetadataField(meta, "version", i18nc("@label:textbox", "GPX version:"));
+            addMetadataField(meta, "time", i18nc("@label:textbox", "Save time:"));
+        }
+    }
 }
 
 
@@ -280,25 +293,25 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
 
 
 
-QWidget *TrackDataFile::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataFile::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackFileDetailPage(items, pnt));
 }
 
 
-QWidget *TrackDataTrack::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataTrack::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackTrackDetailPage(items, pnt));
 }
 
 
-QWidget *TrackDataSegment::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataSegment::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackSegmentDetailPage(items, pnt));
 }
 
 
-QWidget *TrackDataPoint::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataPoint::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackPointDetailPage(items, pnt));
 }

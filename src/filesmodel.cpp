@@ -231,6 +231,8 @@ void FilesModel::addFile(TrackDataFile *tdf)
         kDebug() << "adding root file item" << tdf->name();
         fileRoot = new TrackDataFile(tdf->name());
         fileRoot->setFileName(tdf->fileName());
+        fileRoot->setMetadata(tdf->metadata());
+        tdf->setMetadata(NULL);
         mRootItem->addChildItem(fileRoot);
     }
     else

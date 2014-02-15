@@ -24,13 +24,10 @@
 
 
 TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
-    : QWidget(pnt)
+    : TrackPropertiesPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackItemGeneralPage");
-    Q_ASSERT(!items.isEmpty());
-
-    mFormLayout = new QFormLayout(this);
 
     mNameEdit = new KLineEdit(this);
     if (items.count()==1) mNameEdit->setText(items.first()->name());
@@ -44,17 +41,11 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
 
 
 
-void TrackItemGeneralPage::slotDataChanged()
-{
-    emit enableButtonOk(isDataValid());
-}
-
 
 bool TrackItemGeneralPage::isDataValid() const
 {
-    bool ok = true;
-    if (mNameEdit->isEnabled()) ok = ok && !mNameEdit->text().isEmpty();
-    return (ok);
+    if (!mNameEdit->isEnabled()) return (true);
+    return (!mNameEdit->text().isEmpty());
 }
 
 
@@ -66,11 +57,6 @@ QString TrackItemGeneralPage::newItemName() const
 }
 
 
-
-void TrackItemGeneralPage::addSpacerField()
-{
-    mFormLayout->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
-}
 
 
 
@@ -113,9 +99,6 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
     }
     else						// may be mixed MIME types
     {
-//        mIconLabel->setPixmap(KIconLoader::global()->loadIcon("unknown",
-//                                                              KIconLoader::NoGroup,
-//                                                              KIconLoader::SizeMedium));
         mUrlRequester->setEnabled(false);		// can't edit for multiple items
     }
 
@@ -135,9 +118,8 @@ QString TrackFileGeneralPage::typeText(int count) const
 
 bool TrackFileGeneralPage::isDataValid() const
 {
-    bool ok = TrackItemGeneralPage::isDataValid();
-    if (mUrlRequester->isEnabled()) ok = ok && mUrlRequester->url().isValid();
-    return (ok);
+    if (!mUrlRequester->isEnabled()) return (true);
+    return (!mUrlRequester->url().isValid());
 }
 
 
@@ -249,25 +231,25 @@ QString TrackPointGeneralPage::typeText(int count) const
 
 
 
-QWidget *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackFileGeneralPage(items, pnt));
 }
 
 
-QWidget *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackTrackGeneralPage(items, pnt));
 }
 
 
-QWidget *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackSegmentGeneralPage(items, pnt));
 }
 
 
-QWidget *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackPointGeneralPage(items, pnt));
 }

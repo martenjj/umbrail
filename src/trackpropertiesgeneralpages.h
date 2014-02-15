@@ -2,9 +2,9 @@
 #ifndef TRACKPROPERTIESGENERALPAGES_H
 #define TRACKPROPERTIESGENERALPAGES_H
 
-#include <qwidget.h>
-
 #include <kurl.h>
+
+#include "trackpropertiespage.h"
 
 class QLabel;
 class QDateTime;
@@ -20,7 +20,7 @@ class TrackDataItem;
 
 
 
-class TrackItemGeneralPage : public QWidget
+class TrackItemGeneralPage : public TrackPropertiesPage
 {
     Q_OBJECT
 
@@ -30,27 +30,15 @@ public:
     QString newItemName() const;
 
     virtual QString typeText(int count) const = 0;
+    virtual bool isDataValid() const;
 
 protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
-    virtual bool isDataValid() const;
-
     void addTimeFields(const QList<TrackDataItem *> &items);
-    void addSpacerField();
 
 protected:
-    QFormLayout *mFormLayout;
     KLineEdit *mNameEdit;
-
-protected slots:
-    void slotDataChanged();
-
-signals:
-    void enableButtonOk(bool);
-
-
-
 };
 
 
@@ -65,11 +53,9 @@ public:
     virtual ~TrackFileGeneralPage()				{}
 
     KUrl newFileUrl() const;
+    virtual bool isDataValid() const;
 
     QString typeText(int count) const;
-
-protected:
-    virtual bool isDataValid() const;
 
 private:
     KUrlRequester *mUrlRequester;

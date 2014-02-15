@@ -2,7 +2,7 @@
 #ifndef TRACKPROPERTIESSTYLEPAGES_H
 #define TRACKPROPERTIESSTYLEPAGES_H
 
-#include <qwidget.h>
+#include "trackpropertiespage.h"
 
 
 class QFormLayout;
@@ -18,7 +18,7 @@ class KColorButton;
 
 
 
-class TrackItemStylePage : public QWidget
+class TrackItemStylePage : public TrackPropertiesPage
 {
     Q_OBJECT
 
@@ -31,24 +31,12 @@ public:
 protected:
     TrackItemStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
 
-    virtual bool isDataValid() const;
-
-    void addSpacerField();
-
 protected:
-    QFormLayout *mFormLayout;
     KColorButton *mLineColourButton;
     QCheckBox *mLineInheritCheck;
 
 protected slots:
-    void slotDataChanged();
     void slotColourChanged(const QColor &col);
-
-signals:
-    void enableButtonOk(bool);
-
-private:
-
 
 };
 

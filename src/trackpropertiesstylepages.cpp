@@ -23,13 +23,11 @@
 
 
 TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
-    : QWidget(pnt)
+    : TrackPropertiesPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackItemStylePage");
-    Q_ASSERT(!items.isEmpty());
 
-    mFormLayout = new QFormLayout(this);
     addSpacerField();
 
     const TrackDataDisplayable *item = dynamic_cast<const TrackDataDisplayable *>(items.first());
@@ -47,12 +45,6 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidg
 }
 
 
-
-
-void TrackItemStylePage::slotDataChanged()
-{
-    emit enableButtonOk(isDataValid());
-}
 
 
 
@@ -73,13 +65,6 @@ void TrackItemStylePage::slotColourChanged(const QColor &col)
 
 
 
-bool TrackItemStylePage::isDataValid() const
-{
-    return (true);
-}
-
-
-
 
 const Style TrackItemStylePage::newStyle() const
 {
@@ -89,14 +74,6 @@ const Style TrackItemStylePage::newStyle() const
     return (result);
 }
 
-
-
-
-
-void TrackItemStylePage::addSpacerField()
-{
-    mFormLayout->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
-}
 
 
 
@@ -165,25 +142,25 @@ TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWi
 
 
 
-QWidget *TrackDataFile::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataFile::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackFileStylePage(items, pnt));
 }
 
 
-QWidget *TrackDataTrack::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataTrack::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackTrackStylePage(items, pnt));
 }
 
 
-QWidget *TrackDataSegment::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataSegment::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackSegmentStylePage(items, pnt));
 }
 
 
-QWidget *TrackDataPoint::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataPoint::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
 {
     return (new TrackPointStylePage(items, pnt));
 }

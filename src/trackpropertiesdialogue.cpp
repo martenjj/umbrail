@@ -9,6 +9,7 @@
 #include <ktabwidget.h>
 
 #include "trackdata.h"
+#include "trackpropertiespage.h"
 #include "trackpropertiesgeneralpages.h"
 #include "trackpropertiesdetailpages.h"
 #include "trackpropertiesstylepages.h"
@@ -55,25 +56,25 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
 
     setMainWidget(w);
 
-    w = item->createPropertiesGeneralPage(items, this);
-    mGeneralPage = qobject_cast<TrackItemGeneralPage *>(w);
+    TrackPropertiesPage *page = item->createPropertiesGeneralPage(items, this);
+    mGeneralPage = qobject_cast<TrackItemGeneralPage *>(page);
     Q_ASSERT(mGeneralPage!=NULL);
-    connect(mGeneralPage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
-    mTabWidget->addTab(w, i18nc("@title:tab", "General"));
+    connect(mGeneralPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    mTabWidget->addTab(page, i18nc("@title:tab", "General"));
 
     typeLabel->setText(mGeneralPage->typeText(items.count()));
 
-    w = item->createPropertiesDetailPage(items, this);
-    mDetailPage = qobject_cast<TrackItemDetailPage *>(w);
+    page = item->createPropertiesDetailPage(items, this);
+    mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
     Q_ASSERT(mDetailPage!=NULL);
-    connect(mDetailPage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
-    mTabWidget->addTab(w, i18nc("@title:tab", "Details"));
+    connect(mDetailPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    mTabWidget->addTab(page, i18nc("@title:tab", "Statistics"));
 
-    w = item->createPropertiesStylePage(items, this);
-    mStylePage = qobject_cast<TrackItemStylePage *>(w);
+    page = item->createPropertiesStylePage(items, this);
+    mStylePage = qobject_cast<TrackItemStylePage *>(page);
     Q_ASSERT(mStylePage!=NULL);
-    connect(mStylePage, SIGNAL(enableButtonOk(bool)), SLOT(enableButtonOk(bool)));
-    mTabWidget->addTab(w, i18nc("@title:tab", "Style"));
+    connect(mStylePage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
 
     setMinimumSize(320,380);
     KConfigGroup grp = KGlobal::config()->group(objectName());
@@ -93,6 +94,15 @@ TrackPropertiesDialogue::~TrackPropertiesDialogue()
     KConfigGroup grp = KGlobal::config()->group(objectName());
     saveDialogSize(grp);
     grp.writeEntry("Index", mTabWidget->currentIndex());
+}
+
+
+
+
+
+void TrackPropertiesDialogue::slotDataChanged()
+{
+    enableButtonOk(mGeneralPage->isDataValid() && mDetailPage->isDataValid() && mStylePage->isDataValid());
 }
 
 
