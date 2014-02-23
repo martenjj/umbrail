@@ -34,9 +34,9 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
     else mNameEdit->setEnabled(false);
     connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
-    addSpacerField();
+    addSeparatorField();
     mFormLayout->addRow(i18nc("@label:textbox", "Name:"), mNameEdit);
-    addSpacerField();
+    addSeparatorField();
 }
 
 

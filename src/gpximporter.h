@@ -13,7 +13,6 @@ class TrackDataDisplayable;
 class TrackDataTrack;
 class TrackDataSegment;
 class TrackDataPoint;
-class TrackDataMeta;
 
 
 
@@ -52,7 +51,9 @@ private:
     TrackDataTrack *mCurrentTrack;
     TrackDataSegment *mCurrentSegment;
     TrackDataPoint *mCurrentPoint;
-    TrackDataMeta *mCurrentMetadata;
+
+    bool mWithinMetadata;
+    bool mWithinExtensions;
 
     int mXmlIndent;
     QString mRestartTag;

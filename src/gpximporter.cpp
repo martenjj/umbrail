@@ -1,8 +1,6 @@
 
 #include "gpximporter.h"
 
-#include <errno.h>
-#include <string.h>
 #include <math.h>
 
 #include <qxml.h>
@@ -14,6 +12,7 @@
 
 #include "trackdata.h"
 #include "style.h"
+#include "dataindexer.h"
 
 
 
@@ -37,55 +36,38 @@ GpxImporter::~GpxImporter()
 TrackDataFile *GpxImporter::load(const KUrl &file)
 {
     kDebug() << "from" << file;
-
-// TODO: move to ImporterBase
-// verify/open file
-    if (!file.isLocalFile())
-    {
-        setError(i18n("Can only read local files"));
-        return (NULL);
-    }
-
-    QFile f(file.path());
-    if (!f.open(QIODevice::ReadOnly))
-    {
-        setError(i18n("Cannot open file, %1", strerror(errno)));
-        return (NULL);
-    }
-
     if (!ImporterBase::prepareLoadFile(file)) return (NULL);
 
-// prepare to read into 'mReadingFile'
-//    emit statusMessage(i18n("Loading '%1'...", file.pathOrUrl()));
+    // prepare to read into 'mDataRoot'
 
     mXmlIndent = 0;
     mXmlLocator = NULL;
     mRestartTag = QString::null;
     mContainedChars = QString::null;
 
+    mWithinMetadata = false;
+    mWithinExtensions = false;
     mCurrentTrack = NULL;
     mCurrentSegment = NULL;
     mCurrentPoint = NULL;
-    mCurrentMetadata = NULL;
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(this);
     xmlReader.setErrorHandler(this);
-    xmlReader.setFeature ("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
+    xmlReader.setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
 
-    QXmlInputSource xmlSource(&f);
+    QXmlInputSource xmlSource(mFile);
 
-// xml read
+    // xml read
     bool ok = xmlReader.parse(xmlSource);
     if (!ok)
     {
         kDebug() << "XML parsing failed!";
-        delete mReadingFile; mReadingFile = NULL;
+        delete mDataRoot; mDataRoot = NULL;
     }
 
-    f.close();
     ImporterBase::finaliseLoadFile(file);
-    return (mReadingFile);
+    return (mDataRoot);
 }
 
 
@@ -168,17 +150,35 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     ++mXmlIndent;
     if (!parsing()) return (true);
 
-    else if (localName=="gpx")				// start of a GPX element
+    if (localName=="gpx")				// start of a GPX element
     {
-        if (mCurrentMetadata==NULL) mCurrentMetadata = new TrackDataMeta(QString::null);
-
         int i = atts.index("version");
-        if (i>=0) mCurrentMetadata->setData(atts.localName(i), atts.value(i));
+        if (i>=0) mDataRoot->setMetadata(DataIndexer::self()->index(atts.localName(i)), atts.value(i));
         i = atts.index("creator");
-        if (i>=0) mCurrentMetadata->setData(atts.localName(i), atts.value(i));
+        if (i>=0) mDataRoot->setMetadata(DataIndexer::self()->index(atts.localName(i)), atts.value(i));
     }
     else if (localName=="metadata")			// start of a METADATA element
     {
+        if (mWithinMetadata || mCurrentTrack!=NULL)	// check not nested
+        {
+            return (error(makeXmlException("nested METADATA elements", "metadata")));
+        }
+
+        mWithinMetadata = true;				// just note for contents
+    }
+    else if (localName=="extensions")			// start of an EXTENSIONS element
+    {
+        if (mWithinExtensions)				// check not nested
+        {
+            return (error(makeXmlException("nested EXTENSIONS elements", "extensions")));
+        }
+
+        if (currentItem()==NULL)			// must be within element
+        {
+            return (error(makeXmlException("EXTENSIONS not within TRK, TRKSEG or TRKPT", "extensions")));
+        }
+
+        mWithinExtensions = true;			// just note for contents
     }
     else if (localName=="trk")				// start of a TRK element
     {
@@ -238,8 +238,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         if (!isnan(lat) && !isnan(lon)) mCurrentPoint->setLatLong(lat, lon);
         else warning(makeXmlException("missing lat/lon on TRKPT element"));
     }
-    else if (localName=="ele" || localName=="hdop" || localName=="speed")
-    {							// start of a point parameter element
+    else if (localName=="ele")				// start of an ELEvation element
+    {
         if (mCurrentPoint==NULL)
         {						// check properly nested
             return (error(makeXmlException(localName.toUpper()+" start not within TRKPT", localName)));
@@ -247,7 +247,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="time")
     {							// start of a TIME element
-        if (mCurrentPoint==NULL && mCurrentMetadata==NULL)
+        if (mCurrentPoint==NULL && !mWithinMetadata)
         {						// check properly nested
             return (error(makeXmlException(localName.toUpper()+" start not within TRKPT or METADATA", localName)));
         }
@@ -280,7 +280,24 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
 
 // handle end of element here even if it had some errors
 
-    if (localName=="trk")				// end of a TRK element
+    if (localName=="gpx") return (true);		// end of the GPX element
+    else if (localName=="metadata")			// end of a METADATA element
+    {
+#ifdef DEBUG_DETAILED
+        kDebug() << "got end of METADATA";
+#endif
+        mWithinMetadata = false;
+        return (true);
+    }
+    else if (localName=="extensions")			// end of an EXTENSIONS element
+    {
+#ifdef DEBUG_DETAILED
+        kDebug() << "got end of EXTENSIONS";
+#endif
+        mWithinExtensions = false;
+        return (true);
+    }
+    else if (localName=="trk")				// end of a TRK element
     {
         if (mCurrentTrack==NULL)			// check must have started
         {
@@ -290,17 +307,18 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         if (mCurrentSegment!=NULL)			// segment not closed
         {						// (may be an implied one)
 #ifdef DEBUG_IMPORT
-            kDebug() << "got implied TRKSEG:" << mCurrentSegment->description();
+            kDebug() << "got implied TRKSEG:" << mCurrentSegment->name();
 #endif
             mCurrentTrack->addChildItem(mCurrentSegment);
             mCurrentSegment = NULL;			// finished with temporary
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a TRK:" << mCurrentTrack->description();
+        kDebug() << "got a TRK:" << mCurrentTrack->name();
 #endif
-        mReadingFile->addChildItem(mCurrentTrack);
+        mDataRoot->addChildItem(mCurrentTrack);
         mCurrentTrack = NULL;				// finished with temporary
+        return (true);
     }
     else if (localName=="trkseg")			// end of a TRKSEG element
     {
@@ -310,10 +328,11 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a TRKSEG:" << mCurrentSegment->description();
+        kDebug() << "got a TRKSEG:" << mCurrentSegment->name();
 #endif
         mCurrentTrack->addChildItem(mCurrentSegment);
         mCurrentSegment = NULL;				// finished with temporary
+        return (true);
     }
     else if (localName=="trkpt")			// end of a TRKPT element
     {
@@ -323,12 +342,13 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a TRKPT:" << mCurrentPoint->description();
+        kDebug() << "got a TRKPT:" << mCurrentPoint->name();
 #endif
         Q_ASSERT(mCurrentSegment!=NULL || mCurrentTrack!=NULL);
         if (mCurrentSegment!=NULL) mCurrentSegment->addChildItem(mCurrentPoint);
         else mCurrentTrack->addChildItem(mCurrentPoint);
         mCurrentPoint = NULL;				// finished with temporary
+        return (true);
     }
 
     if (!parsing()) return (true);
@@ -350,9 +370,9 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         {
             mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
         }
-        else if (mCurrentMetadata!=NULL)
+        else if (mWithinMetadata)
         {
-            mCurrentMetadata->setData(localName, mContainedChars);
+            mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
         }
         else return (error(makeXmlException("TIME end not within TRKPT or METADATA")));
     }
@@ -360,35 +380,25 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {							// may belong to any container
         TrackDataDisplayable *item = currentItem();	// find innermost current element
         if (item!=NULL) item->setName(mContainedChars);	// assign its name
-        else if (mCurrentMetadata!=NULL) mCurrentMetadata->setData(localName, mContainedChars);
+        else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
         else warning(makeXmlException("NAME not within TRK, TRKSEG, TKKPT or METADATA"));
     }
-    else if (localName=="desc")				// end of a DESC element
-    {							// may belong to any container
-        TrackDataDisplayable *item = currentItem();	// find innermost current element
-        if (item!=NULL) item->setDesc(mContainedChars);	// assign the description
-        else if (mCurrentMetadata!=NULL) mCurrentMetadata->setData(localName, mContainedChars);
-        else warning(makeXmlException("DESC not within TRK, TRKSEG, TKKPT or METADATA"));
-    }
-    else if (localName=="hdop")				// end of a HDOP element
-    {							// not currently interpreted
-        if (mCurrentPoint==NULL)			// check properly nested
-        {
-            return (error(makeXmlException("HDOP end not within TRKPT")));
-        }
-
-        mCurrentPoint->setHdop(mContainedChars);
-    }
-    else if (localName=="speed")			// end of a SPEED element
-    {							// not currently interpreted
-        if (mCurrentPoint==NULL)			// check properly nested
-        {
-            return (error(makeXmlException("SPEED end not within TRKPT")));
-        }
-
-        mCurrentPoint->setSpeed(mContainedChars);
-    }
-
+//    else if (localName=="desc")				// end of a DESC element
+//    {							// may belong to any container
+//        TrackDataDisplayable *item = currentItem();	// find innermost current element
+//        if (item!=NULL) item->setDesc(mContainedChars);	// assign the description
+//        else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
+//        else warning(makeXmlException("DESC end not within TRK, TRKSEG, TKKPT or METADATA"));
+//    }
+//    else if (localName=="hdop" || localName=="speed")	// end of a HDOP or SPEED element
+//    {							// not currently interpreted
+//        if (mCurrentPoint==NULL)			// check properly nested
+//        {
+//            return (error(makeXmlException("HDOP/SPEED end not within TRKPT")));
+//        }
+//
+//        mCurrentPoint->setMetadata(DataIndexer::self()->index(localName, mWithinExtensions), mContainedChars);
+//    }
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
         TrackDataDisplayable *item = currentItem();	// find innermost current element
@@ -407,6 +417,14 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         Style s = *item->style();
         s.setLineColour(QColor(rgb));
         item->setStyle(s);
+    }
+    else						// Unknown tag, save as metadata
+    {
+        TrackDataDisplayable *item = currentItem();	// find innermost current element
+        int idx = DataIndexer::self()->index(localName, mWithinExtensions);
+        if (item!=NULL) item->setMetadata(idx, mContainedChars);
+        else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);
+        else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TKKPT or METADATA"));
     }
 
     return (true);
@@ -435,8 +453,10 @@ bool GpxImporter::endDocument()
         return (error(makeXmlException(QString("TRKPT not terminated"))));
     }
 
-    kDebug() << "setting metadata" << mCurrentMetadata->toString();
-    mReadingFile->setMetadata(mCurrentMetadata);	// add metadata to file record
+    if (mWithinMetadata || mWithinExtensions)		// check terminated
+    {
+        return (error(makeXmlException(QString("METADATA or EXTENSIONS not terminated"))));
+    }
 
     kDebug() << "end document";
     return (true);

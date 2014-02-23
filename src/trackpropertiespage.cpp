@@ -2,6 +2,7 @@
 #include "trackpropertiesdetailpages.h"
 
 #include <qformlayout.h>
+#include <qgroupbox.h>
 
 #include <kdebug.h>
 #include <kdialog.h>
@@ -34,9 +35,17 @@ void TrackPropertiesPage::slotDataChanged()
 
 
 
-void TrackPropertiesPage::addSpacerField()
+void TrackPropertiesPage::addSeparatorField(const QString &title)
 {
-    mFormLayout->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
+    if (title.isEmpty())				// no title, just some space
+    {
+        mFormLayout->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
+    }
+    else						// title, a separator line
+    {
+        QGroupBox *sep = new QGroupBox(title, this);
+        sep->setFlat(true);
+        mFormLayout->addRow(sep);
+    }
 }
-
 

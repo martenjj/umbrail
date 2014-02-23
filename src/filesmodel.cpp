@@ -227,18 +227,20 @@ void FilesModel::addFile(TrackDataFile *tdf)
         // If the model is currently empty, then first we add a file item
         // immediately under the (invisible) root item.  The input tracks
         // will then be adopted to become children of this.
+        //
+        // The original metadata from the file will have been copied to the
+        // contained tracks by the importer.
 
         kDebug() << "adding root file item" << tdf->name();
         fileRoot = new TrackDataFile(tdf->name());
         fileRoot->setFileName(tdf->fileName());
-        fileRoot->setMetadata(tdf->metadata());
-        tdf->setMetadata(NULL);
+        fileRoot->copyMetadata(tdf);
+
         mRootItem->addChildItem(fileRoot);
     }
     else
     {
         // Get the file root, the first (and only) child of the root item.
-
         fileRoot = dynamic_cast<TrackDataFile *>(mRootItem->childAt(0));
     }
     Q_ASSERT(fileRoot!=NULL);

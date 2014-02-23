@@ -24,7 +24,7 @@ public:
 protected:
     TrackPropertiesPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
-    void addSpacerField();
+    void addSeparatorField(const QString &title = QString::null);
 
 protected:
     QFormLayout *mFormLayout;

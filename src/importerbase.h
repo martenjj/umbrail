@@ -7,6 +7,7 @@
 #include "importerexporterbase.h"
 
 
+class QFile;
 class KUrl;
 class TrackDataFile;
 
@@ -24,7 +25,8 @@ protected:
     bool finaliseLoadFile(const KUrl &file);
 
 protected:
-    TrackDataFile *mReadingFile;
+    QFile *mFile;
+    TrackDataFile *mDataRoot;
 };
 
  

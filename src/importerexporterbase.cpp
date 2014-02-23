@@ -4,9 +4,6 @@
 #include <kdebug.h>
 #include <klocale.h>
 
-#include "mainwindow.h"
-
-
 
 
 ImporterExporterBase::ImporterExporterBase()

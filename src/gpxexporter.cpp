@@ -14,13 +14,10 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kurl.h>
-#include <kglobal.h>
-#include <kcomponentdata.h>
-#include <kaboutdata.h>
 
 #include "trackdata.h"
 #include "style.h"
+#include "dataindexer.h"
 
 
 
@@ -40,24 +37,64 @@ GpxExporter::~GpxExporter()
 
 
 
+static bool startedExtensions = false;
 
-static void writeStyle(const TrackDataDisplayable *item, QXmlStreamWriter &str, bool extensionsStarted)
+
+
+static void startExtensions(QXmlStreamWriter &str)
+{
+    if (startedExtensions) return;			// already started
+    str.writeStartElement("extensions");
+    startedExtensions = true;
+}
+
+
+
+static void endExtensions(QXmlStreamWriter &str)
+{
+    if (!startedExtensions) return;			// not started
+    str.writeEndElement();
+    startedExtensions = false;
+}
+
+
+
+static void writeStyle(const TrackDataDisplayable *item, QXmlStreamWriter &str)
 {
     const Style *s = item->style();
     if (s->isEmpty()) return;
 
-    if (!extensionsStarted) str.writeStartElement("extensions");
-
     if (s->hasLineColour())
     {
         // <topografix:color>c0c0c0</topografix:color>
+        startExtensions(str);
         str.writeTextElement("topografix:color",
                              QString("%1").arg(QString::number(s->lineColour().rgb() & 0x00FFFFFF, 16), 6, QChar('0')));
     }
-
-    if (!extensionsStarted) str.writeEndElement();
 }
 
+
+
+
+static void writeMetadata(const TrackDataDisplayable *item, QXmlStreamWriter &str, bool wantExtensions)
+{
+    for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
+    {
+        //kDebug() << "metadata" << idx
+        //         << "isext" << DataIndexer::self()->isExtension(idx)
+        //         << "name" << DataIndexer::self()->name(idx)
+        //         << "=" << item->metadata(idx);
+
+        if (DataIndexer::self()->isExtension(idx) ^ wantExtensions) continue;
+
+        QString name = DataIndexer::self()->name(idx);
+        QString data =  item->metadata(idx);
+        if (data.isEmpty()) continue;
+
+        if (wantExtensions) startExtensions(str);
+        str.writeTextElement(name, data);
+    }
+}
 
 
 
@@ -77,13 +114,15 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         str.writeStartElement("trk");
         // <name> xsd:string </name>
         str.writeTextElement("name", tdt->name());
-        // <cmt> xsd:string </cmt>
         // <desc> xsd:string </desc>
         // <type> xsd:string </type>
+        writeMetadata(tdt, str, false);
+        // <cmt> xsd:string </cmt>
     }
     else if (tds!=NULL)
     {
         str.writeStartElement("trkseg");
+        writeMetadata(tds, str, false);
     }
     else if (tdp!=NULL)
     {
@@ -108,8 +147,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         // <sym> xsd:string </sym>
 
         // <hdop> xsd:decimal </hdop>
-        QString h = tdp->hdop();
-        if (!h.isEmpty()) str.writeTextElement("hdop", h);
+        writeMetadata(tdp, str, false);
     }
     else
     {
@@ -130,31 +168,27 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
     // extensions
     // according to GPX spec, must appear after children
+
+    // <extensions> extensionsType </extensions>
     if (tdt!=NULL)					// extensions for TRK
     {
-        writeStyle(tdt, str, false);
+        writeMetadata(tdt, str, true);
+        writeStyle(tdt, str);
     }
     else if (tds!=NULL)					// extensions for TRKSEG
     {
-        // <extensions> extensionsType </extensions>
-        str.writeStartElement("extensions");
         // <name> xsd:string </name>
+        startExtensions(str);
         str.writeTextElement("name", tds->name());
-        writeStyle(tds, str, true);
-        str.writeEndElement();
+        writeMetadata(tds, str, true);
+        writeStyle(tds, str);
     }
     else if (tdp!=NULL)					// extensions for TRKPT
     {
-        // <extensions> extensionsType </extensions>
-        str.writeStartElement("extensions");
-
-        // <speed> </speed> - in OsmAnd+ recordings
-        QString s = tdp->speed();
-        if (!s.isEmpty()) str.writeTextElement("speed", s);
-
-        writeStyle(tdp, str, true);
-        str.writeEndElement();
+        writeMetadata(tdp, str, true);
+        writeStyle(tdp, str);
     }
+    endExtensions(str);
 
     // end tag
     str.writeEndElement();
@@ -168,13 +202,12 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
 
 
-
-
 bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 {
     kDebug() << "item" << item->name() << "to" << file;
 
     if (!prepareSaveFile(file)) return (false);
+    startedExtensions = false;
 
     QXmlStreamWriter str(&mSaveFile);
     str.setAutoFormatting(true);
@@ -186,7 +219,7 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
     // <gpx>
     str.writeStartElement("gpx");
     str.writeAttribute("version", "1.1");
-    str.writeAttribute("creator", KGlobal::mainComponent().aboutData()->appName());
+    str.writeAttribute("creator", item->metadata(DataIndexer::self()->index("creator")));
     str.writeAttribute("xmlns", "http://www.topografix.com/GPX/1/1");
     str.writeNamespace("http://www.garmin.com/xmlschemas/GpxExtensions/v3", "gpxx");
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
@@ -195,13 +228,13 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 
     // <metadata>
     str.writeStartElement("metadata");
+    writeMetadata(item, str, false);
 //    // <link href="http://www.garmin.com"><text>Garmin International</text></link>
 //    str.writeStartElement("link");
 //    str.writeAttribute("href", "http://www.garmin.com");
 //    str.writeTextElement("text", "Garmin International");
 //    str.writeEndElement();				// </link>
     // <time>2011-11-29T14:39:05Z</time>
-    str.writeTextElement("time", QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
     str.writeEndElement();				// </metadata>
 
 //    // Waypoints

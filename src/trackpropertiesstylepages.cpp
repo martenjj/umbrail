@@ -28,7 +28,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidg
     kDebug();
     setObjectName("TrackItemStylePage");
 
-    addSpacerField();
+    addSeparatorField();
 
     const TrackDataDisplayable *item = dynamic_cast<const TrackDataDisplayable *>(items.first());
     const Style *s = item->style();

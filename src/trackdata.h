@@ -7,13 +7,13 @@
 #include <qstring.h>
 #include <qlist.h>
 #include <qdatetime.h>
+#include <qvector.h>
 
 #include <kurl.h>
 
 
 class Style;
 class TrackDataItem;
-class TrackDataMeta;
 class TrackPropertiesPage;
 
 
@@ -141,6 +141,7 @@ private:
     void init();
 
     QString mName;
+    // TODO: can this list be lazy allocated?
     QList<TrackDataItem *> mChildItems;
     TrackDataItem *mParent;
 };
@@ -157,11 +158,9 @@ public:
 
     virtual QString iconName() const = 0;
 
-    QString desc() const				{ return (mDesc); }
-    void setDesc(const QString &newDesc)		{ mDesc = newDesc; }
-
-    const TrackDataMeta *metadata() const		{ return (mMetadata); }
-    void setMetadata(const TrackDataMeta *m)		{ mMetadata = m; }
+    void setMetadata(int idx, const QString &value);
+    QString metadata(int idx) const;
+    void copyMetadata(const TrackDataDisplayable *other, bool overwrite = false);
 
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
@@ -177,9 +176,9 @@ protected:
     TrackDataDisplayable(const QString &nm, const char *format, int *counter);
 
 private:
-    QString mDesc;
-    const TrackDataMeta *mMetadata;
     unsigned long mSelectionId;
+    // TODO: can this list be lazy allocated?
+    QVector<QString> mMetadata;
     Style *mStyle;
 };
 
@@ -282,16 +281,10 @@ public:
     void setElevation(double ele)			{ mElevation = ele; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
 
-    void setHdop(const QString &h)			{ mHdop = h; }
-    void setSpeed(const QString &s)			{ mSpeed = s; }
-
     double elevation() const				{ return (mElevation); }
     QDateTime time() const				{ return (mDateTime); }
     double latitude() const				{ return (mLatitude); }
     double longitude() const				{ return (mLongitude); }
-
-    QString hdop() const				{ return (mHdop); }
-    QString speed() const				{ return (mSpeed); }
 
     QString formattedElevation() const;
     QString formattedTime() const;
@@ -311,29 +304,8 @@ private:
     double mLongitude;
     double mElevation;
     QDateTime mDateTime;
-    QString mHdop;
-    QString mSpeed;
 };
 
-
-
-
-
-
-class TrackDataMeta : public TrackDataItem
-{
-public:
-    TrackDataMeta(const QString &nm);
-    virtual ~TrackDataMeta();
-
-    void setData(const QString &key, const QString &value);
-    QString data(const QString &key) const;
-    QString toString() const;
-
-private:
-    QHash<QString,QString> *mData;
-
-};
 
 
 

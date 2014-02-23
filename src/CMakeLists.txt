@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		15-Feb-14					#
+#  Edit:		22-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -36,6 +36,7 @@ set(navtracks_SRCS
   main.cpp
   autotooltipdelegate.cpp
   commands.cpp
+  dataindexer.cpp
   exporterbase.cpp
   filescontroller.cpp
   filesmodel.cpp

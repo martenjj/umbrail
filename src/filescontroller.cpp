@@ -124,12 +124,11 @@ bool FilesController::importFile(const KUrl &importFrom)
 
     if (model()->isEmpty())				// any data held so far?
     {							// no, pass to model directly
-        model()->addFile(tdf);				// takes ownership of tree
-        delete tdf;					// this no longer required
-
+        model()->addFile(tdf);				// takes ownership of tracks
+        delete tdf;					// not needed any more
         emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.pathOrUrl()));
     }
-    else						// model is not empty
+    else						// model is not empty,
     {							// make the operation undo'able
         ImportFileCommand *cmd = new ImportFileCommand(this);
         cmd->setText(i18n("Import"));
@@ -173,8 +172,8 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
         return (false);
     }
 
-    if (exportTo.isLocalFile())				// to a local file?
-    {
+    if (exportTo.isLocalFile() && QFile::exists(exportTo.path()))
+    {							// to a local file?
         KUrl backupFile = exportTo;			// make path for backup file
         backupFile.setFileName(exportTo.fileName()+".orig");
 // TODO: use KIO
@@ -183,7 +182,7 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
         {
             if (!QFile::copy(exportTo.path(), backupFile.path()))
             {
-                reportFileError(true, i18n("<qt>Cannot save original<br>of<filename>%1</filename><br>as <filename>%2</filename>",
+                reportFileError(true, i18n("<qt>Cannot save original<br>of <filename>%1</filename><br>as <filename>%2</filename>",
                                            exportTo.pathOrUrl(), backupFile.pathOrUrl()));
                 emit statusMessage(i18n("Backup failed"));
                 return (false);

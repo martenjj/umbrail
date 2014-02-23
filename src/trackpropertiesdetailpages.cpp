@@ -11,6 +11,7 @@
 #include "trackdata.h"
 #include "trackdatalabel.h"
 #include "variableunitdisplay.h"
+#include "dataindexer.h"
 
 
 
@@ -23,7 +24,7 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWi
     kDebug();
     setObjectName("TrackItemDetailPage");
 
-    addSpacerField();
+    addSeparatorField();
 }
 
 
@@ -89,22 +90,27 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items
 
 
 
-void TrackFileDetailPage::addMetadataField(const TrackDataMeta *meta, const QString &key, const QString &label)
+void TrackItemDetailPage::addMetadataField(const TrackDataDisplayable *tdd, const QString &key, const QString &label)
 {
-    QString m = meta->data(key);
-    if (!m.isEmpty())
+    QString s = tdd->metadata(DataIndexer::self()->indexAny(key));
+    if (s.isEmpty()) return;				// nothing to display
+
+    TrackDataLabel *l;
+    if (key=="time")					// special conversion for this
     {
-        TrackDataLabel *l;
-        if (key=="time")				// special conversion for this
-        {
-            l = new TrackDataLabel(QDateTime::fromString(m, Qt::ISODate), this);
-        }
-        else						// just string value
-        {
-            l = new TrackDataLabel(m, this);
-        }
-        mFormLayout->addRow(label, l);
+        l = new TrackDataLabel(QDateTime::fromString(s, Qt::ISODate), this);
     }
+    else if (key=="speed")				// special conversion for this
+    {
+        double speed = s.toDouble();
+        l = new TrackDataLabel(QString::number(speed, 'f', 3), this);
+    }
+    else						// just string value
+    {
+        l = new TrackDataLabel(s, this);
+    }
+
+    mFormLayout->addRow(label, l);
 }
 
 
@@ -122,17 +128,12 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWi
 
     if (items.count()==1)				// should always be so
     {
-        const TrackDataFile *f = dynamic_cast<const TrackDataFile *>(items.first());
-        Q_ASSERT(f!=NULL);
+        const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(items.first());
+        Q_ASSERT(tdf!=NULL);
 
-        const TrackDataMeta *meta = f->metadata();
-        if (meta!=NULL)
-        {
-            kDebug() << "metadata" << meta->toString();
-            addMetadataField(meta, "creator", i18nc("@label:textbox", "Creator:"));
-            addMetadataField(meta, "version", i18nc("@label:textbox", "GPX version:"));
-            addMetadataField(meta, "time", i18nc("@label:textbox", "Save time:"));
-        }
+        addSeparatorField(i18nc("@title:group", "File"));
+        addMetadataField(tdf, "creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField(tdf, "time", i18nc("@label:textbox", "Save time:"));
     }
 }
 
@@ -151,6 +152,16 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> items, Q
     addChildCountField(items, i18nc("@label:textbox", "Segments:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
+
+    if (items.count()==1)				// should always be so
+    {
+        const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(items.first());
+        Q_ASSERT(tdt!=NULL);
+
+        addSeparatorField(i18nc("@title:group", "Source"));
+        addMetadataField(tdt, "creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField(tdt, "time", i18nc("@label:textbox", "Time:"));
+    }
 }
 
 
@@ -167,8 +178,23 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> item
     addChildCountField(items, i18nc("@label:textbox", "Points:"));
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items, false);
-// TODO: recording interval (time span divided by points count)
 
+    if (items.count()==1)				// should always be so
+    {
+        const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items.first());
+        Q_ASSERT(tds!=NULL);
+
+        int cnt = tds->childCount();
+        if (cnt>1)
+        {
+            const TrackDataPoint *first = dynamic_cast<const TrackDataPoint *>(tds->childAt(0));
+            const TrackDataPoint *last = dynamic_cast<const TrackDataPoint *>(tds->childAt(cnt-1));
+            Q_ASSERT(first!=NULL && last!=NULL);
+            int tt = qRound(double(first->timeTo(last))/(cnt-1));
+            QLabel *l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
+            mFormLayout->addRow(i18nc("@label:textbox", "Interval:"), l);
+        }
+    }
 }
 
 
@@ -184,16 +210,16 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
 
     if (items.count()==1)				// single selection
     {
-        const TrackDataPoint *p = dynamic_cast<const TrackDataPoint *>(items.first());
-        Q_ASSERT(p!=NULL);
+        const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(items.first());
+        Q_ASSERT(tdp!=NULL);
 
-        TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
+        TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
 
-        l = new TrackDataLabel(p->time(), this);
+        l = new TrackDataLabel(tdp->time(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
 
-        double ele = p->elevation();
+        double ele = tdp->elevation();
         if (!isnan(ele))
         {
             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
@@ -202,22 +228,10 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
             mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
         }
 
-        addSpacerField();
+        addSeparatorField();
 
-        QString s = p->hdop();
-        if (!s.isEmpty())
-        {
-            l = new TrackDataLabel(s, this);
-            mFormLayout->addRow(i18nc("@label:textbox", "GPS HDOP:"), l);
-        }
-
-        s = p->speed();
-        if (!s.isEmpty())
-        {
-            double speed = s.toDouble();
-            l = new TrackDataLabel(QString::number(speed, 'f', 3), this);
-            mFormLayout->addRow(i18nc("@label:textbox", "GPS speed:"), l);
-        }
+        addMetadataField(tdp, "hdop", i18nc("@label:textbox", "GPS HDOP:"));
+        addMetadataField(tdp, "speed", i18nc("@label:textbox", "GPS speed:"));
     }
     else						// multiple selection
     {
@@ -257,7 +271,7 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
                 for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
 
                 addTimeDistanceSpeedFields(items2, false);
-                addSpacerField();
+                addSeparatorField();
 
                 TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx1));
                 TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));

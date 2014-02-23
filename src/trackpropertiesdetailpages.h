@@ -9,7 +9,7 @@
 class QLabel;
 
 class TrackDataItem;
-class TrackDataMeta;
+class TrackDataDisplayable;
 
 
 
@@ -33,6 +33,7 @@ protected:
     void addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes = true);
     void addBoundingAreaField(const QList<TrackDataItem *> &items);
     void addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText);
+    void addMetadataField(const TrackDataDisplayable *tdd, const QString &key, const QString &label);
 
 };
 
@@ -48,7 +49,6 @@ public:
     virtual ~TrackFileDetailPage()				{}
 
 protected:
-    void addMetadataField(const TrackDataMeta *meta, const QString &key, const QString &label);
 };
 
 

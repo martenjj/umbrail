@@ -15,6 +15,7 @@
 #include <klocale.h>
 
 #include <kapplication.h>
+#include <kaboutdata.h>
 #include <kaction.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
@@ -35,6 +36,7 @@
 #include "filescontroller.h"
 #include "filesview.h"
 #include "filesmodel.h"
+#include "dataindexer.h"
 #include "mapcontroller.h"
 #include "mapview.h"
 #include "project.h"
@@ -354,13 +356,8 @@ bool MainWindow::save(const KUrl &to)
 
 // TODO: add metadata from map controller
 
-
-
-
-
-
-
-
+    tdf->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+    tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
     return (!filesController()->exportFile(savePath, tdf));
 }

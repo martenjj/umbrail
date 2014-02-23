@@ -339,7 +339,6 @@ TrackDataRoot::TrackDataRoot(const QString &nm)
 TrackDataDisplayable::TrackDataDisplayable(const QString &nm, const char *format, int *counter)
     : TrackDataItem(nm, format, counter)
 {
-    mMetadata = NULL;					// no metadata added yet
     mStyle = NULL;					// no style set yet
     mSelectionId = 1;					// nothing selected yet
 }
@@ -347,15 +346,40 @@ TrackDataDisplayable::TrackDataDisplayable(const QString &nm, const char *format
 
 TrackDataDisplayable::~TrackDataDisplayable()
 {
-    delete mMetadata;
     delete mStyle;
 }
 
 
 
+void TrackDataDisplayable::setMetadata(int idx, const QString &value)
+{
+    int cnt = mMetadata.count();
+    if (idx>=cnt) mMetadata.resize(idx+1);
+    mMetadata[idx] = value;
+}
 
 
 
+QString TrackDataDisplayable::metadata(int idx) const
+{
+    int cnt = mMetadata.count();
+    if (idx<0 || idx>=cnt) return (QString::null);
+    return (mMetadata.at(idx));
+}
+
+
+
+void TrackDataDisplayable::copyMetadata(const TrackDataDisplayable *other, bool overwrite)
+{
+    for (int idx = 0; idx<other->mMetadata.size(); ++idx)
+    {
+        QString om = other->mMetadata.at(idx);
+        if (om.isEmpty()) continue;
+        QString tm = this->metadata(idx);
+        if (!tm.isEmpty() && !overwrite) continue;
+        this->setMetadata(idx, om);
+    }
+}
 
 
 
@@ -513,54 +537,3 @@ int TrackDataPoint::timeTo(const TrackDataPoint *other) const
 {
     return (time().secsTo(other->time()));
 }
-
-
-
-
-TrackDataMeta::TrackDataMeta(const QString &nm)
-    : TrackDataItem(nm)
-{
-    mData = NULL;
-}
-
-
-
-TrackDataMeta::~TrackDataMeta()
-{
-    delete mData;
-}
-
-
-
-void TrackDataMeta::setData(const QString &key, const QString &value)
-{
-    if (mData==NULL) mData = new QHash<QString,QString>;
-    kDebug() << "adding" << key << "=" << value;
-    mData->insert(key, value);
-}
-
-
-
-QString TrackDataMeta::data(const QString &key) const
-{
-    if (mData==NULL) return (QString::null);
-    else return (mData->value(key));
-}
-
-
-QString TrackDataMeta::toString() const
-{
-    QString result;
-    if (mData!=NULL)
-    {
-        for (QHash<QString,QString>::const_iterator it = mData->constBegin();
-             it!=mData->constEnd(); ++it)
-        {
-            if (!result.isEmpty()) result += " ";
-            result += QString("%1=\"%2\"").arg(it.key(), it.value());
-        }
-    }
-
-    return ("["+result+"]");
-}
-
