@@ -134,6 +134,28 @@ private:
 
 
 
+class ChangeItemDataCommand : public ChangeItemCommand
+{
+public:
+    ChangeItemDataCommand(FilesController *fc, QUndoCommand *parent = NULL)
+        : ChangeItemCommand(fc, parent)		{}
+    virtual ~ChangeItemDataCommand()		{}
+
+    void setNewData(const QString &key,
+                    const QString &value)	{ mKey = key; mNewValue = value; }
+
+    void redo();
+    void undo();
+
+private:
+    QString mKey;
+    QString mNewValue;
+    QString mSavedValue;
+};
+
+
+
+
 class ChangeFileUrlCommand : public ChangeItemCommand
 {
 public:

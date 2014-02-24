@@ -11,6 +11,7 @@ class QDateTime;
 class QFormLayout;
 class KLineEdit;
 class KUrlRequester;
+class ItemTypeCombo;
 class TrackDataItem;
 
 
@@ -28,6 +29,7 @@ public:
     virtual ~TrackItemGeneralPage()				{}
 
     QString newItemName() const;
+    QString newTrackType() const;
 
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const;
@@ -36,9 +38,11 @@ protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
     void addTimeFields(const QList<TrackDataItem *> &items);
+    void addTypeField(const QList<TrackDataItem *> &items);
 
 protected:
     KLineEdit *mNameEdit;
+    ItemTypeCombo *mTypeCombo;
 };
 
 
@@ -59,7 +63,6 @@ public:
 
 private:
     KUrlRequester *mUrlRequester;
-
 };
 
 
@@ -73,7 +76,6 @@ public:
     virtual ~TrackTrackGeneralPage()				{}
 
     QString typeText(int count) const;
-
 };
 
 
@@ -87,7 +89,6 @@ public:
     virtual ~TrackSegmentGeneralPage()				{}
 
     QString typeText(int count) const;
-
 };
 
 
@@ -101,7 +102,6 @@ public:
     virtual ~TrackPointGeneralPage()				{}
 
     QString typeText(int count) const;
-
 };
 
 

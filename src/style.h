@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	11-Feb-14						//
+//  Edit:	24-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -117,6 +117,14 @@ public:
      * @return @c true if the styles are equivalent
      **/
     bool operator==(const Style &other) const;
+
+    /**
+     * See if this style is not equivalent to another.
+     *
+     * @param other The other style
+     * @return @c true if the styles are not equivalent
+     **/
+    bool operator!=(const Style &other) const		{ return (!this->operator==(other)); }
 
     /**
      * Get a printable representation of the style.

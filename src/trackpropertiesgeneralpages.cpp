@@ -16,6 +16,8 @@
 #include "trackdatalabel.h"
 #include "filescontroller.h"
 #include "variableunitdisplay.h"
+#include "itemtypecombo.h"
+#include "dataindexer.h"
 
 
 
@@ -37,6 +39,8 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
     addSeparatorField();
     mFormLayout->addRow(i18nc("@label:textbox", "Name:"), mNameEdit);
     addSeparatorField();
+
+    mTypeCombo = NULL;					// not applicable yet
 }
 
 
@@ -58,6 +62,16 @@ QString TrackItemGeneralPage::newItemName() const
 
 
 
+QString TrackItemGeneralPage::newTrackType() const
+{
+    if (mTypeCombo==NULL) return ("-");			// not for this data
+    if (!mTypeCombo->isEnabled()) return ("-");		// not applicable
+
+    int idx = mTypeCombo->currentIndex();
+    if (idx==0) return (QString::null);			// first is always "none"
+    return (mTypeCombo->currentText());
+}
+
 
 
 void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
@@ -68,6 +82,25 @@ void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
 
     l = new TrackDataLabel(tsp.finish(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
+}
+
+
+
+
+
+void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> &items)
+{
+    mTypeCombo = new ItemTypeCombo(this);
+    if (items.count()==1)
+    {
+        TrackDataDisplayable *tdd = dynamic_cast<TrackDataDisplayable *>(items.first());
+        Q_ASSERT(tdd!=NULL);
+        mTypeCombo->setType(tdd->metadata(DataIndexer::self()->index("type")));
+        connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
+        connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
+    }
+    else mTypeCombo->setEnabled(false);
+    mFormLayout->addRow(i18nc("@label:listbox", "Type:"), mTypeCombo);
 }
 
 
@@ -145,13 +178,21 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items,
     setObjectName("TrackTrackGeneralPage");
 
     addTimeFields(items);
+    addSeparatorField();
+    addTypeField(items);
 }
+
+
 
 
 QString TrackTrackGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", count));
 }
+
+
+
+
 
 
 
@@ -165,6 +206,8 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> it
     setObjectName("TrackSegmentGeneralPage");
 
     addTimeFields(items);
+    addSeparatorField();
+    addTypeField(items);
 }
 
 

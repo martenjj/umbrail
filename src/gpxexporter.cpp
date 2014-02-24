@@ -21,6 +21,14 @@
 
 
 
+// According to the GPX specification, extensions must appear after
+// any children of an element.  However, the output GPX file is more
+// readable if they appear before.  Define this symbol to have them
+// appear after the children.
+#undef EXTENSIONS_AFTER_CHILDREN
+
+
+
 GpxExporter::GpxExporter()
     : ExporterBase()
 {
@@ -75,19 +83,35 @@ static void writeStyle(const TrackDataDisplayable *item, QXmlStreamWriter &str)
 
 
 
+static bool shouldBeInExtensions(const TrackDataDisplayable *item, const QString &name)
+{
+    if (dynamic_cast<const TrackDataPoint *>(item)!=NULL)
+    {							// point - these not in extensions
+        return (!(name=="name" || name=="ele" || name=="time" || name=="hdop"));
+    }
+    else if (dynamic_cast<const TrackDataTrack *>(item)!=NULL)
+    {							// track - these not in extensions
+        return (!(name=="name" || name=="desc" || name=="type"));
+    }
+    else if (dynamic_cast<const TrackDataSegment *>(item)!=NULL)
+    {							// segment - all in extensions
+        return (true);
+    }
+    else return (false);				// metadata - no extensions
+}
+
+
 
 static void writeMetadata(const TrackDataDisplayable *item, QXmlStreamWriter &str, bool wantExtensions)
 {
     for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
     {
         //kDebug() << "metadata" << idx
-        //         << "isext" << DataIndexer::self()->isExtension(idx)
         //         << "name" << DataIndexer::self()->name(idx)
         //         << "=" << item->metadata(idx);
 
-        if (DataIndexer::self()->isExtension(idx) ^ wantExtensions) continue;
-
         QString name = DataIndexer::self()->name(idx);
+        if (shouldBeInExtensions(item, name) ^ wantExtensions) continue;
         QString data =  item->metadata(idx);
         if (data.isEmpty()) continue;
 
@@ -95,6 +119,26 @@ static void writeMetadata(const TrackDataDisplayable *item, QXmlStreamWriter &st
         str.writeTextElement(name, data);
     }
 }
+
+
+
+static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str);
+
+
+
+static inline bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &str)
+{
+    int num = item->childCount();
+    for (int i = 0; i<num; ++i)
+    {
+        if (!writeItem(item->childAt(i), str)) return (false);
+    }
+
+    return (true);
+}
+
+
+
 
 
 
@@ -155,19 +199,9 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         return (true);					// warning only, don't abort
     }
 
-    // children
-    int num = item->childCount();
-    for (int i = 0; i<num; ++i)
-    {
-        if (!writeItem(item->childAt(i), str))
-        {
-            status = false;
-            break;
-        }
-    }
-
-    // extensions
-    // according to GPX spec, must appear after children
+#ifdef EXTENSIONS_AFTER_CHILDREN
+    writeChildren(item, str);				// write child items
+#endif
 
     // <extensions> extensionsType </extensions>
     if (tdt!=NULL)					// extensions for TRK
@@ -189,6 +223,10 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         writeStyle(tdp, str);
     }
     endExtensions(str);
+
+#ifndef EXTENSIONS_AFTER_CHILDREN
+    writeChildren(item, str);				// write child items
+#endif
 
     // end tag
     str.writeEndElement();

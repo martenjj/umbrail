@@ -22,6 +22,7 @@
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
 #include "style.h"
+#include "dataindexer.h"
 
 #define GROUP_FILES		"Files"
 
@@ -316,63 +317,68 @@ void FilesController::slotTrackProperties()
     if (!d.exec()) return;
 
     TrackDataItem *item = items.first();
-
-    QString newItemName = d.newItemName();		// name of item
-    if (!newItemName.isEmpty())				// valid entry?
-    {							// has name changed?
-        if (newItemName==item->name()) newItemName.clear();
-    }							// no, throw entry away
-
-
-    KUrl newFileUrl = d.newFileUrl();			// URL for file item
-    if (newFileUrl.isValid())				// valid entry?
-    {
-        TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(item);
-        Q_ASSERT(fileItem!=NULL);			// has URL changed?
-        if (newFileUrl==fileItem->fileName()) newFileUrl.clear();
-    }							// no, throw entry away
-
     TrackDataDisplayable *dispItem = dynamic_cast<TrackDataDisplayable *>(item);
     Q_ASSERT(dispItem!=NULL);
-    const Style newStyle = d.newStyle();		// has style changed?
-    bool changedStyle = !(newStyle==*dispItem->style());
-							// anything to do?
-    if (newItemName.isEmpty() && !newFileUrl.isValid() && !changedStyle) return;
-
-    kDebug() << "new name" << newItemName;
-    kDebug() << "new url" << newFileUrl;
-    kDebug() << "new style" << newStyle;
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
-    cmd->setText(act!=NULL ? act->data().toString() : i18n("Properties"));
 
-    if (!newItemName.isEmpty())				// changing the name
-    {
+    QString newItemName = d.newItemName();		// new name for item
+    kDebug() << "new name" << newItemName;
+    if (!newItemName.isEmpty() && newItemName!=item->name())
+    {							// changing the name
         ChangeItemNameCommand *cmd1 = new ChangeItemNameCommand(this, cmd);
         cmd1->setDataItem(dispItem);
         cmd1->setNewName(newItemName);
     }
 
-    if (!newFileUrl.isEmpty())				// changing the URL
+    // TODO: does changing this actually work now?
+    TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(item);
+    if (fileItem!=NULL)					// this is a file item
     {
-        ChangeFileUrlCommand *cmd2 = new ChangeFileUrlCommand(this, cmd);
-        cmd2->setDataItem(dispItem);
-        cmd2->setNewUrl(newFileUrl);
+        KUrl newFileUrl = d.newFileUrl();		// new file URL
+        kDebug() << "new url" << newFileUrl;
+        if (!newFileUrl.isEmpty() && newFileUrl!=fileItem->fileName())
+        {						// changing the URL
+            ChangeFileUrlCommand *cmd2 = new ChangeFileUrlCommand(this, cmd);
+            cmd2->setDataItem(dispItem);
+            cmd2->setNewUrl(newFileUrl);
 
-        KMessageBox::information(mainWindow(),
-                                 i18n("<qt>Changing the location of a file will not immediately "
-                                      "copy the existing file to the new location. "
-                                      "It will be saved to the new location when the project is saved."),
-                                 QString::null, "fileMoveInfo");
+            KMessageBox::information(mainWindow(),
+                                     i18n("<qt>Changing the location of a file will not immediately "
+                                          "copy the existing file to the new location. "
+                                          "It will be saved to the new location when the project is saved."),
+                                     QString::null, "fileMoveInfo");
+        }
     }
 
-    if (changedStyle)
+    const Style newStyle = d.newStyle();		// item style
+    kDebug() << "new style" << newStyle;
+    if (newStyle!=*dispItem->style())			// changing the style
     {
         ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
         cmd3->setDataItem(dispItem);
         cmd3->setNewStyle(newStyle);
     }
 
+    QString newType = d.newTrackType();
+    if (newType!="-")					// new type is applicable
+    {
+        kDebug() << "new type" << newType;
+        if (newType!=dispItem->metadata(DataIndexer::self()->index("type")))
+        {
+            ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
+            cmd4->setDataItem(dispItem);
+            cmd4->setNewData("type", newType);
+        }
+    }
+
+    if (cmd->childCount()==0)				// anything to actually do?
+    {							// no changes above, so
+        delete cmd;					// don't need this after all
+        return;
+    }
+
+    cmd->setText(act!=NULL ? act->data().toString() : i18n("Properties"));
     mainWindow()->executeCommand(cmd);
 }
 

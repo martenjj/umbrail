@@ -7,6 +7,7 @@
 
 #include "filesmodel.h"
 #include "style.h"
+#include "dataindexer.h"
 
 
 
@@ -131,6 +132,44 @@ void ChangeItemStyleCommand::undo()
     model()->changedItem(item);
     updateMap();
 }
+
+
+
+
+
+void ChangeItemDataCommand::redo()
+{
+    TrackDataDisplayable *item = mDataItem;
+    Q_ASSERT(item!=NULL);
+    kDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
+
+    int idx = DataIndexer::self()->index(mKey);
+    mSavedValue = item->metadata(idx);
+    item->setMetadata(idx, mNewValue);
+    model()->changedItem(item);
+    //updateMap();
+}
+
+
+
+
+void ChangeItemDataCommand::undo()
+{
+    TrackDataDisplayable *item = mDataItem;
+    Q_ASSERT(item!=NULL);
+    kDebug() << "item" << item->name() << "data" << mKey << "back to" << mSavedValue;
+    int idx = DataIndexer::self()->index(mKey);
+    item->setMetadata(idx, mSavedValue);
+    model()->changedItem(item);
+//    updateMap();
+}
+
+
+
+
+
+
+
 
 
 

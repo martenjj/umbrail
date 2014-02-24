@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Feb-14						//
+//  Edit:	24-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -64,39 +64,17 @@ public:
      * Get the index for an attribute or element name, allocating it if necessary.
      *
      * @param nm The name
-     * @param inExtension Whether this name belongs within a GPX @c &lt;extensions&gt; element
-     * @return the index
-     *
-     * @note Two names, one belonging within an extension and one without, can
-     * be allocated, and will have different index numbers.
+     * @return the existing or a newly allocated index
      **/
-    int index(const QString &nm, bool inExtension = false);
-
-    /**
-     * Get the index for an attribute or element name, whether it is an
-     * extensions name or not.  The name is not allocated if it does not
-     * exist already.
-     *
-     * @param nm The name
-     * @return The index, or -1 if it is not allocated
-     **/
-    int indexAny(const QString &nm) const;
+    int index(const QString &nm);
 
     /**
      * Get the name allocated for an index.
      *
      * @param idx The index
-     * @return the allocated name, or QString::null if the index is not allocated
+     * @return the allocated name, or @c QString::null if the index is not allocated
      **/
     QString name(int idx) const;
-
-    /**
-     * Check whether an allocated name belongs within an @c &lt;extensions&gt; element.
-     *
-     * @param idx The index
-     * @return @c true if the name is an extension
-     **/
-    bool isExtension(int idx) const;
 
     /**
      * Get the number of indexes that are currently allocated.

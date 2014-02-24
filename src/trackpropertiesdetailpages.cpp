@@ -92,7 +92,7 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items
 
 void TrackItemDetailPage::addMetadataField(const TrackDataDisplayable *tdd, const QString &key, const QString &label)
 {
-    QString s = tdd->metadata(DataIndexer::self()->indexAny(key));
+    QString s = tdd->metadata(DataIndexer::self()->index(key));
     if (s.isEmpty()) return;				// nothing to display
 
     TrackDataLabel *l;

@@ -25,9 +25,6 @@
 #include <ksqueezedtextlabel.h>
 #include <kmimetype.h>
 #include <kurl.h>
-//#include <kconfig.h>
-//#include <kaboutdata.h>
-//#include <ksavefile.h>
 #include <kactionmenu.h>
 
 #include <marble/AbstractFloatItem.h>
@@ -359,7 +356,7 @@ bool MainWindow::save(const KUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
-    return (!filesController()->exportFile(savePath, tdf));
+    return (filesController()->exportFile(savePath, tdf));
 }
 
 

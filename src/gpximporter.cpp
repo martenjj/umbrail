@@ -421,7 +421,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else						// Unknown tag, save as metadata
     {
         TrackDataDisplayable *item = currentItem();	// find innermost current element
-        int idx = DataIndexer::self()->index(localName, mWithinExtensions);
+        int idx = DataIndexer::self()->index(localName);
         if (item!=NULL) item->setMetadata(idx, mContainedChars);
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);
         else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TKKPT or METADATA"));

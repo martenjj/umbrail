@@ -67,7 +67,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
     Q_ASSERT(mDetailPage!=NULL);
     connect(mDetailPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
-    mTabWidget->addTab(page, i18nc("@title:tab", "Statistics"));
+    mTabWidget->addTab(page, i18nc("@title:tab", "Details"));
 
     page = item->createPropertiesStylePage(items, this);
     mStylePage = qobject_cast<TrackItemStylePage *>(page);
@@ -125,3 +125,16 @@ Style TrackPropertiesDialogue::newStyle() const
     if (!mTabWidget->isTabEnabled(2)) return (Style::null);	// style not applicable
     return (mStylePage->newStyle());				// style from page
 }
+
+
+
+QString TrackPropertiesDialogue::newTrackType() const
+{
+    TrackTrackGeneralPage *trackPage = qobject_cast<TrackTrackGeneralPage *>(mGeneralPage);
+    if (trackPage!=NULL) return (trackPage->newTrackType());	// style from page
+
+    TrackSegmentGeneralPage *segPage = qobject_cast<TrackSegmentGeneralPage *>(mGeneralPage);
+    if (segPage!=NULL) return (segPage->newTrackType());	// style from page
+
+    return ("-");					// not applicable, but
+}							// not the same as "blank"

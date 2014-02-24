@@ -30,6 +30,7 @@ public:
     QString newItemName() const;
     KUrl newFileUrl() const;
     Style newStyle() const;
+    QString newTrackType() const;
 
 protected slots:
     void slotDataChanged();

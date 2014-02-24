@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		22-Feb-14					#
+#  Edit:		24-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -45,6 +45,7 @@ set(navtracks_SRCS
   gpximporter.cpp
   importerexporterbase.cpp
   importerbase.cpp
+  itemtypecombo.cpp
   mainwindow.cpp
   mapcontroller.cpp
   mapthemedialogue.cpp

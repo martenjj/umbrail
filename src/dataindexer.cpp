@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Feb-14						//
+//  Edit:	24-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -50,44 +50,21 @@ DataIndexer *DataIndexer::self()
 
 
 
-int DataIndexer::index(const QString &nm, bool inExtension)
+int DataIndexer::index(const QString &nm)
 {
-    QString nm1 = nm;
-    if (inExtension) nm1 += "*";
-    int idx = mIndexHash.value(nm1, -1);
+    int idx = mIndexHash.value(nm, -1);
     if (idx==-1)					// nothing allocated yet
     {
         idx = mNextIndex++;				// next integer value
-        mIndexHash.insert(nm1, idx);
-        kDebug() << "allocated index" << idx << "for" << nm1;
+        mIndexHash.insert(nm, idx);
+        kDebug() << "allocated index" << idx << "for" << nm;
     }
 
     return (idx);					// existing or new index
 }
 
 
-int DataIndexer::indexAny(const QString &nm) const
-{
-    QString nm1 = nm;
-    if (mIndexHash.contains(nm1)) return (mIndexHash.value(nm1));
-    nm1 += "*";
-    if (mIndexHash.contains(nm1)) return (mIndexHash.value(nm1));
-    return (-1);
-}
-
-
-
 QString DataIndexer::name(int idx) const
 {
-    QString nm = mIndexHash.key(idx);
-    if (nm.endsWith(QLatin1Char('*'))) nm.chop(1);
-    return (nm);
-}
-
-
-
-bool DataIndexer::isExtension(int idx) const
-{
-    QString nm = mIndexHash.key(idx);
-    return (nm.endsWith(QLatin1Char('*')));
+    return (mIndexHash.key(idx));
 }

@@ -70,10 +70,7 @@ static void dumpMetadata(const TrackDataDisplayable *tdd, const QString &source)
     {
         QString s =  tdd->metadata(i);
         if (s.isEmpty()) continue;
-        kDebug() << "  " << i
-                 << DataIndexer::self()->name(i)
-                 << (DataIndexer::self()->isExtension(i) ? "*" : "")
-                 << "=" << s;
+        kDebug() << "  " << i << DataIndexer::self()->name(i) << "=" << s;
     }
 }
 #endif
