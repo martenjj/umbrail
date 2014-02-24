@@ -27,6 +27,11 @@
 
 
 
+static const int POINTS_PER_BLOCK = 50;			// points drawn per polyline
+static const int POINT_CIRCLE_SIZE = 10;		// size of point circle
+static const int POINT_SELECTED_WIDTH = 3;		// line width for selected points
+
+
 #undef DEBUG_PAINTING
 
 
@@ -117,46 +122,69 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
     const TrackDataItem *firstChild = tdd->childAt(0);
     if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
     {							// is first child a point?
-        if ((isSelected && doSelected) || (!isSelected && !doSelected))
-        {						// Bjarne, why couldn't you add ^^
+        if (!(isSelected ^ doSelected))			// check selected or not
+        {
 #ifdef DEBUG_PAINTING
-            kDebug() << "points for" << tdd->name();
+            kDebug() << "points for" << tdd->name() << "count" << cnt;
 #endif
-            // Run along the segment, assembling the coordinates into a list.
-            // This will go wrong (the array indexes will be out of step) if
-            // any of the children is not a TrackDataPoint, so let's hope not.
-
-// TODO: some polyline segments not drawn if too many at high magnifications -
-// limitation in Marble?  Split up if too many.
-
-            GeoDataLineString lines;
-            for (int i = 0; i<cnt; ++i)
-            {
-                const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdd->childAt(i));
-                if (tdp==NULL) continue;		// should never happen
-
-                GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                         0, GeoDataCoordinates::Degree);
-                lines.append(coord);
-            }
-
-            // First, draw the track in its requested colour
+            // Scan along the segment, assembling the coordinates into a list,
+            // and draw them as a polyline.
+            //
+            // Some polyline segments appear to be not drawn if there are too many
+            // of them at high magnifications - is this a limitation in Marble?
+            // Split the drawing up if there are too many - this may make clipping
+            // more efficient too.
 
             QColor col = resolveLineColour(tdd);
             painter->setBrush(Qt::NoBrush);
             painter->setPen(QPen(col, 4));
-            painter->drawPolyline(lines);
+
+            GeoDataLineString lines;			// generated coordinate list
+            int start = 0;				// start point in list
+            while (start<(cnt-1))			// while more blocks to do
+            {
+#ifdef DEBUG_PAINTING
+                kDebug() << "starting at" << start;
+#endif
+                lines.clear();				// empty the list
+                int sofar = 0;				// points so far this block
+                for (int i = start; i<cnt; ++i)		// up to end of list
+                {
+                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdd->childAt(i));
+                    GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                             0, GeoDataCoordinates::Degree);
+                    lines.append(coord);		// add point to list
+                    ++sofar;				// count how many this block
+                    if (sofar>=POINTS_PER_BLOCK) break;	// too many, draw and start again
+                }
+
+#ifdef DEBUG_PAINTING
+                kDebug() << "block of" << sofar << "points";
+#endif
+                if (lines.size()<2) break;		// nothing more to draw
+                painter->drawPolyline(lines);		// draw track in its colour
+
+                // Step back one point from the last one drawn, so that
+                // the line connecting the last point of the previous
+                // block to the first of the next is drawn.
+                start += sofar-1;
+            }
 
             if (isSelected)
             {
                 // Next, if the line is selected, draw the point markers.  In the
-                // same colour, circled with a cosmetic line.  This can use the
-                // same coordinate array as generated in the previous step.
+                // same track colour, circled with a black cosmetic line.
 
                 painter->setPen(QPen(Qt::black, 0));
                 painter->setBrush(col);
 
-                for (int i = 0; i<cnt; ++i) painter->drawEllipse(lines[i], 10, 10);
+                for (int i = 0; i<cnt; ++i)
+                {
+                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdd->childAt(i));
+                    GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                             0, GeoDataCoordinates::Degree);
+                    painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
+                }
 
                 // Finally, draw the selected points along the line, if there are any.
                 // Do this last so that the selection markers always show up on top.
@@ -164,22 +192,23 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
                 if (Settings::selectedUseSystemColours())
                 {					// use system selection colours
                     KColorScheme sch(QPalette::Active, KColorScheme::Selection);
-                    painter->setPen(QPen(sch.background().color(), 3));
+                    painter->setPen(QPen(sch.background().color(), POINT_SELECTED_WIDTH));
                     painter->setBrush(sch.foreground());
-
                 }
                 else					// our own custom colours
                 {
-                    painter->setPen(QPen(Settings::selectedMarkOuter(), 3));
+                    painter->setPen(QPen(Settings::selectedMarkOuter(), POINT_SELECTED_WIDTH));
                     painter->setBrush(Settings::selectedMarkInner());
                 }
 
                 for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataDisplayable *pointItem = static_cast<TrackDataDisplayable *>(tdd->childAt(i));
-                    if (pointItem->selectionId()==mSelectionId)
+                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdd->childAt(i));
+                    if (tdp->selectionId()==mSelectionId)
                     {
-                        painter->drawEllipse(lines[i], 12, 12);
+                        GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
+                                                 0, GeoDataCoordinates::Degree);
+                        painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
                     }
                 }
             }
