@@ -7,6 +7,7 @@
 
 
 
+class QCheckBox;
 class KColorButton;
 
 
@@ -43,9 +44,14 @@ public slots:
     void slotSave();
     void slotDefaults();
 
+private slots:
+    void slotItemChanged();
+
 private:
     KColorButton *mLineColourButton;
-    KColorButton *mSelectedColourButton;
+    QCheckBox *mSelectedUseSystemCheck;
+    KColorButton *mSelectedOuterButton;
+    KColorButton *mSelectedInnerButton;
 };
 
 

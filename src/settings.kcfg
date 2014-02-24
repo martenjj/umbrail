@@ -9,17 +9,28 @@
   <group name="DefaultStyle">
 
     <entry name="LineColour" type="Color">
-      <label>Line colour:</label>
-      <tooltip>The colour used to display tracks.</tooltip>
+      <label>Default track colour:</label>
+      <tooltip>The default colour used to display tracks, if none has been explictly set.</tooltip>
       <default code="true">Qt::magenta</default>
     </entry>
 
-    <entry name="SelectedLineColour" type="Color">
-      <label>Selected line colour:</label>
-      <tooltip>The colour used to display selected tracks.</tooltip>
-      <default code="true">Qt::green</default>
+    <entry name="SelectedMarkOuter" type="Color">
+      <label>Point border:</label>
+      <tooltip>The border colour used to display selected points.</tooltip>
+      <default code="true">Qt::red</default>
     </entry>
 
+    <entry name="SelectedMarkInner" type="Color">
+      <label>Point inner:</label>
+      <tooltip>The inner colour used to display selected points.</tooltip>
+      <default code="true">Qt::yellow</default>
+    </entry>
+
+    <entry name="SelectedUseSystemColours" type="Bool">
+      <label>Use system colours</label>
+      <tooltip>Use the system selection colours for selected points.</tooltip>
+      <default>true</default>
+    </entry>
   </group>
 
   <group name="MainWindow">

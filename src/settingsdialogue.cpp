@@ -2,6 +2,8 @@
 #include "settingsdialogue.h"
 
 #include <qformlayout.h>
+#include <qformlayout.h>
+#include <qcheckbox.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -62,15 +64,34 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
 
     mLineColourButton = new KColorButton(Settings::lineColour(), w);
     mLineColourButton->setAlphaChannelEnabled(false);
-    fl->addRow(i18n("Default line colour:"), mLineColourButton);
+    const KConfigSkeletonItem *kcsi = Settings::self()->lineColourItem();
+    mLineColourButton->setToolTip(kcsi->toolTip());
+    fl->addRow(kcsi->label(), mLineColourButton);
 
-    mSelectedColourButton = new KColorButton(Settings::selectedLineColour(), w);
-    mSelectedColourButton->setAlphaChannelEnabled(false);
-    fl->addRow(i18n("Selected line colour:"), mSelectedColourButton);
+    fl->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
+
+    kcsi = Settings::self()->selectedUseSystemColoursItem();
+    mSelectedUseSystemCheck = new QCheckBox(kcsi->label(), w);
+    mSelectedUseSystemCheck->setChecked(Settings::selectedUseSystemColours());
+    connect(mSelectedUseSystemCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    mSelectedUseSystemCheck->setToolTip(kcsi->toolTip());
+    fl->addRow(i18n("Selection:"), mSelectedUseSystemCheck);
+
+    mSelectedOuterButton = new KColorButton(Settings::selectedMarkOuter(), w);
+    mSelectedOuterButton->setAlphaChannelEnabled(false);
+    kcsi = Settings::self()->selectedMarkOuterItem();
+    mSelectedOuterButton->setToolTip(kcsi->toolTip());
+    fl->addRow(kcsi->label(), mSelectedOuterButton);
+
+    mSelectedInnerButton = new KColorButton(Settings::selectedMarkInner(), w);
+    mSelectedInnerButton->setAlphaChannelEnabled(false);
+    kcsi = Settings::self()->selectedMarkInnerItem();
+    mSelectedInnerButton->setToolTip(kcsi->toolTip());
+    fl->addRow(kcsi->label(), mSelectedInnerButton);
 
 
 
-
+    slotItemChanged();
 }
 
 
@@ -80,7 +101,9 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
 void SettingsMapStylePage::slotSave()
 {
     Settings::setLineColour(mLineColourButton->color());
-    Settings::setSelectedLineColour(mSelectedColourButton->color());
+    Settings::setSelectedMarkOuter(mSelectedOuterButton->color());
+    Settings::setSelectedMarkInner(mSelectedInnerButton->color());
+    Settings::setSelectedUseSystemColours(mSelectedUseSystemCheck->isChecked());
 
 
 
@@ -98,11 +121,29 @@ void SettingsMapStylePage::slotDefaults()
     kcsi->setDefault();
     mLineColourButton->setColor(Settings::lineColour());
 
-    kcsi = Settings::self()->selectedLineColourItem();
+    kcsi = Settings::self()->selectedUseSystemColoursItem();
     kcsi->setDefault();
-    mSelectedColourButton->setColor(Settings::selectedLineColour());
+    mSelectedUseSystemCheck->setChecked(Settings::selectedUseSystemColours());
+
+    kcsi = Settings::self()->selectedMarkOuterItem();
+    kcsi->setDefault();
+    mSelectedOuterButton->setColor(Settings::selectedMarkOuter());
+
+    kcsi = Settings::self()->selectedMarkInnerItem();
+    kcsi->setDefault();
+    mSelectedInnerButton->setColor(Settings::selectedMarkInner());
 
 
 
 
+    slotItemChanged();
+}
+
+
+
+void SettingsMapStylePage::slotItemChanged()
+{
+    bool syscol = mSelectedUseSystemCheck->isChecked();
+    mSelectedOuterButton->setEnabled(!syscol);
+    mSelectedInnerButton->setEnabled(!syscol);
 }

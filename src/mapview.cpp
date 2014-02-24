@@ -9,6 +9,8 @@
 #include <kmessagebox.h>
 #include <kxmlguifactory.h>
 #include <kaction.h>
+#include <kcolorscheme.h>
+#include <kglobalsettings.h>
 
 #include <marble/GeoPainter.h>
 #include <marble/MarbleWidgetInputHandler.h>
@@ -21,6 +23,7 @@
 #include "trackdata.h"
 #include "mainwindow.h"
 #include "style.h"
+#include "settings.h"
 
 
 
@@ -52,6 +55,9 @@ MapView::MapView(QWidget *pnt)
     MarbleWidgetInputHandler *ih = inputHandler();
     disconnect(ih, SIGNAL(rmbRequest(int,int)), NULL, NULL);
     connect(ih, SIGNAL(rmbRequest(int,int)), SLOT(slotRmbRequest(int,int)));
+
+    // Watch for system palette changes
+    connect(KGlobalSettings::self(), SIGNAL(kdisplayPaletteChanged()), SLOT(slotSystemPaletteChanged()));
 }
 
 
@@ -155,8 +161,18 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
                 // Finally, draw the selected points along the line, if there are any.
                 // Do this last so that the selection markers always show up on top.
 
-                painter->setPen(QPen(Qt::red, 3));
-                painter->setBrush(Qt::yellow);
+                if (Settings::selectedUseSystemColours())
+                {					// use system selection colours
+                    KColorScheme sch(QPalette::Active, KColorScheme::Selection);
+                    painter->setPen(QPen(sch.background().color(), 3));
+                    painter->setBrush(sch.foreground());
+
+                }
+                else					// our own custom colours
+                {
+                    painter->setPen(QPen(Settings::selectedMarkOuter(), 3));
+                    painter->setBrush(Settings::selectedMarkInner());
+                }
 
                 for (int i = 0; i<cnt; ++i)
                 {
@@ -318,4 +334,12 @@ QColor MapView::resolveLineColour(const TrackDataDisplayable *tdd)
 
     // TODO: project global style?
     return (Style::globalStyle()->lineColour());	// finally application default
+}
+
+
+void MapView::slotSystemPaletteChanged()
+{
+    bool syscol = Settings::selectedUseSystemColours();
+    kDebug() << "using system?" << syscol;
+    if (syscol) update();
 }

@@ -46,8 +46,6 @@ public slots:
 protected:
     virtual void customPaint(GeoPainter* painter);
 
-protected slots:
-
 private:
     MainWindow *mainWindow() const		{ return (mMainWindow); }
     FilesModel *filesModel() const		{ return (mFilesModel); }
@@ -59,6 +57,7 @@ private:
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
+    void slotSystemPaletteChanged();
 
 private:
     FilesModel *mFilesModel;
