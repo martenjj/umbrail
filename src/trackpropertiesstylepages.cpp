@@ -87,8 +87,7 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> items, QWidg
     kDebug();
     setObjectName("TrackFileStylePage");
 
-
-
+    mLineInheritCheck->setText(i18n("Use application default"));
 }
 
 
@@ -102,10 +101,6 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> items, QWi
 {
     kDebug();
     setObjectName("TrackTrackStylePage");
-
-
-
-
 }
 
 
@@ -118,10 +113,6 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> items,
 {
     kDebug();
     setObjectName("TrackSegmentStylePage");
-
-
-
-
 }
 
 
@@ -134,10 +125,6 @@ TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWi
 {
     kDebug();
     setObjectName("TrackPointStylePage");
-
-
-
-
 }
 
 
