@@ -3,7 +3,6 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kconfiggroup.h>
 #include <kfiledialog.h>
 #include <kimageio.h>
 #include <kmessagebox.h>
@@ -15,14 +14,10 @@
 #include "trackdata.h"
 #include "mapthemedialogue.h"
 #include "mainwindow.h"
+#include "settings.h"
 
 
 
-#define GROUP_MAP		"Map"
-#define CONFIG_HOME		"Home"
-#define CONFIG_CURRENT		"Current"
-#define CONFIG_OVERLAYS		"Overlays"
-#define CONFIG_THEME		"Theme"
 
 
 
@@ -59,80 +54,54 @@ void MapController::clear()
 
 void MapController::readProperties()
 {
+    bool haveHome = false;
+    QString s = Settings::mapHome();
+    if (!s.isEmpty())
+    {
+        haveHome = positionFromString(s, &mHomeLat, &mHomeLong, &mHomeZoom);
+        kDebug() << "have home?" << haveHome;
+    }
+
     view()->readProperties();
+
+    if (!Settings::mapCurrent().isEmpty()) haveHome = false;
+    if (haveHome) slotGoHome();				// go home if have that but no current
 }
 
 void MapController::saveProperties()
 {
+    QString s = positionToString(mHomeLat, mHomeLong, mHomeZoom);
+    kDebug() << "home" << s;
+    Settings::setMapHome(s);
+
     view()->saveProperties();
 }
 
 
-QString MapController::save(KConfig *conf)
+
+QString MapController::positionToString(double lat, double lon, int zoom)
 {
-    kDebug() << "saving to" << conf->name();
-
-    KConfigGroup grp = conf->group(GROUP_MAP);
-
-    QList<double> list;
-    list << view()->centerLatitude() << view()->centerLongitude() << view()->zoom();
-    kDebug() << "  current" << list;
-    grp.writeEntry(CONFIG_CURRENT, list);
-
-    list.clear();
-    list << mHomeLat << mHomeLong << mHomeZoom;
-    kDebug() << "  home" << list;
-    grp.writeEntry(CONFIG_HOME, list);
-
-// TODO: crosshairs etc?
-    grp.writeEntry(CONFIG_THEME, view()->mapThemeId());
-    grp.writeEntry(CONFIG_OVERLAYS, view()->overlays(true));
-
-    return (QString::null);
+    return (QString("%1,%2,%3").arg(lat).arg(lon).arg(zoom));
 }
 
 
-QString MapController::load(const KConfig *conf)
+bool MapController::positionFromString(const QString &str, double *plat, double *plon, int *pzoom)
 {
-    kDebug() << "reading from" << conf->name();
-    KConfigGroup grp = conf->group(GROUP_MAP);
+    if (str.isEmpty()) return (false);
+    QStringList l = str.split(',');
+    if (l.count()!=3) return (false);
 
-    bool haveHome = false;
-    QList<double> list = grp.readEntry(CONFIG_HOME, QList<double>());
-    kDebug() << "  home" << list;
-    if (list.count()==3)
-    {
-        mHomeLat = list[0];
-        mHomeLong = list[1];
-        mHomeZoom = list[2];
-        haveHome = true;
-    }
-
-    list = grp.readEntry(CONFIG_CURRENT, QList<double>());
-    kDebug() << "  current" << list;
-    if (list.count()==3)				// have a current setting
-    {
-        view()->zoomView(list[2]);
-        view()->centerOn(list[1], list[0]);
-    }
-    else if (haveHome)					// not got that, go home
-    {							// if have a home setting
-        slotGoHome();
-    }
-
-// TODO: crosshairs etc?
-    QString themeId = grp.readEntry(CONFIG_THEME, "");
-    if (!themeId.isEmpty()) view()->setMapThemeId(themeId);
-    view()->showOverlays(grp.readEntry(CONFIG_OVERLAYS, QStringList()));
-
-    return (QString::null);
+    *plat = l[0].toDouble();
+    *plon = l[1].toDouble();
+    *pzoom = l[2].toInt();
+    return (true);
 }
 
 
 
 void MapController::slotGoHome()
 {
-    kDebug() << "lat" << mHomeLat << "long" << mHomeLong << "zoom" << mHomeZoom;
+    kDebug() << "lat" << mHomeLat << "lon" << mHomeLong << "zoom" << mHomeZoom;
     view()->zoomView(mHomeZoom);
     view()->centerOn(mHomeLong, mHomeLat);
 

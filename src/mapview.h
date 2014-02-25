@@ -32,6 +32,9 @@ public:
     void setFilesModel(FilesModel *mod)		{ mFilesModel = mod; }
     void setFilesView(FilesView *view)		{ mFilesView = view; }
 
+    QString currentPosition() const;
+    void setCurrentPosition(const QString &str);
+
     QStringList overlays(bool visibleOnly) const;
     KAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);

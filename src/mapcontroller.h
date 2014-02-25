@@ -32,11 +32,12 @@ public:
     void readProperties();
     void saveProperties();
 
-    QString save(KConfig *conf);
-    QString load(const KConfig *conf);
     void clear();
 
     void gotoSelection(const QList<TrackDataItem *> &items);
+
+    static QString positionToString(double lat, double lon, int zoom);
+    static bool positionFromString(const QString &str, double *plat, double *plon, int *pzoom);
 
 public slots:               
     void slotGoHome();
@@ -66,7 +67,7 @@ private:
 
     double mHomeLat;
     double mHomeLong;
-    double mHomeZoom;
+    int mHomeZoom;
 };
  
 #endif							// MAPCONTROLLER_H

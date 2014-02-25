@@ -324,6 +324,7 @@ void MainWindow::saveProperties(KConfigGroup &grp)
 }
 
 
+
 void MainWindow::readProperties(const KConfigGroup &grp)
 {
     kDebug() << "from" << grp.name();
@@ -335,7 +336,6 @@ void MainWindow::readProperties(const KConfigGroup &grp)
     QString splitterState = Settings::mainWindowSplitterState();
     if (!splitterState.isEmpty()) mSplitter->restoreState(QByteArray::fromBase64(splitterState.toAscii()));
 }
-
 
 
 
@@ -351,16 +351,15 @@ bool MainWindow::save(const KUrl &to)
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf==NULL) return (false);			// should never happen
 
-// TODO: add metadata from map controller
+    // metadata from map controller
+    tdf->setMetadata(DataIndexer::self()->index("position"), mapController()->view()->currentPosition());
 
+    // metadata for save file
     tdf->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
     return (filesController()->exportFile(savePath, tdf));
 }
-
-
-
 
 
 
@@ -376,12 +375,17 @@ bool MainWindow::load(const KUrl &from)
 
     if (!filesController()->importFile(loadPath)) return (false);
 
+    TrackDataFile *tdf = filesController()->model()->rootFileItem();
+    if (tdf!=NULL)
+    {
+        QString s = tdf->metadata(DataIndexer::self()->index("position"));
+        kDebug() << "pos metadata" << s;
+        if (!s.isEmpty()) mapController()->view()->setCurrentPosition(s);
+    }
+
     filesController()->view()->expandToDepth(1);	// expand to show segments
     return (true);
 }
-
-
-
 
 
 

@@ -7,7 +7,6 @@
   <include>qcolor.h</include>
 
   <group name="DefaultStyle">
-
     <entry name="LineColour" type="Color">
       <label>Default track colour:</label>
       <tooltip>The default colour used to display tracks, if none has been explictly set.</tooltip>
@@ -33,13 +32,24 @@
     </entry>
   </group>
 
+  <group name="Map">
+    <entry name="MapHome" key="Home" type="String">
+    </entry>
+    <entry name="MapCurrent" key="Current" type="String">
+    </entry>
+    <entry name="MapTheme" key="Theme" type="String">
+    </entry>
+    <entry name="MapOverlays" key="Overlays" type="StringList">
+    </entry>
+  </group>
+
   <group name="MainWindow">
-    <entry name="MainWindowSplitterState" type="String">
+    <entry name="MainWindowSplitterState" key="SplitterState" type="String">
     </entry>
   </group>
 
   <group name="FilesView">
-    <entry name="FilesViewColumnStates" type="String">
+    <entry name="FilesViewColumnStates" key="ColumnStates" type="String">
     </entry>
   </group>
 

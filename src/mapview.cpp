@@ -22,6 +22,7 @@
 #include "filesview.h"
 #include "trackdata.h"
 #include "mainwindow.h"
+#include "mapcontroller.h"
 #include "style.h"
 #include "settings.h"
 
@@ -72,14 +73,49 @@ MapView::~MapView()
 }
 
 
-// Do nothing here and next.  Map properties are saved in the project data file.
+QString MapView::currentPosition() const
+{
+    return (MapController::positionToString(centerLatitude(), centerLongitude(), zoom()));
+}
+
+
+void MapView::setCurrentPosition(const QString &str)
+{
+    kDebug() << str;
+
+    double lat,lon;
+    int z;
+    if (MapController::positionFromString(str, &lat, &lon, &z))
+    {
+        centerOn(lon, lat);
+        zoomView(z);
+    }
+}
+
+
+
 void MapView::readProperties()
 {
+    QString s = Settings::mapCurrent();
+    if (!s.isEmpty()) setCurrentPosition(s);
+
+    // TODO: crosshairs etc?
+    QString themeId = Settings::mapTheme();
+    if (!themeId.isEmpty()) setMapThemeId(themeId);
+    showOverlays(Settings::mapOverlays());
 }
+
 
 
 void MapView::saveProperties()
 {
+    QString s = currentPosition();
+    kDebug() << "  current" << s;
+    Settings::setMapCurrent(s);
+
+    // TODO: crosshairs etc?
+    Settings::setMapTheme(mapThemeId());
+    Settings::setMapOverlays(overlays(true));
 }
 
 
