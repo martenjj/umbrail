@@ -9,6 +9,7 @@
 #include <kglobal.h>
 #include <kiconloader.h>
 #include <klineedit.h>
+#include <ktextedit.h>
 #include <kurlrequester.h>
 #include <kfiledialog.h>
 
@@ -41,6 +42,7 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
     addSeparatorField();
 
     mTypeCombo = NULL;					// not applicable yet
+    mDescEdit = NULL;
 }
 
 
@@ -58,6 +60,15 @@ QString TrackItemGeneralPage::newItemName() const
 {							// only if editable
     if (!mNameEdit->isEnabled()) return (QString::null);
     return (mNameEdit->text());
+}
+
+
+
+QString TrackItemGeneralPage::newItemDesc() const
+{							// only if editable
+    if (mDescEdit==NULL) return ("-");			// not for this data
+    if (!mDescEdit->isEnabled()) return ("-");		// not applicable
+    return (mDescEdit->toPlainText().trimmed());
 }
 
 
@@ -88,19 +99,39 @@ void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
 
 
 
-void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> &items)
+void TrackItemGeneralPage::addTypeDescFields(const QList<TrackDataItem *> &items)
 {
     mTypeCombo = new ItemTypeCombo(this);
+
+    mDescEdit = new KTextEdit(this);
+    mDescEdit->setMaximumHeight(100);
+
     if (items.count()==1)
     {
         TrackDataDisplayable *tdd = dynamic_cast<TrackDataDisplayable *>(items.first());
         Q_ASSERT(tdd!=NULL);
+
         mTypeCombo->setType(tdd->metadata(DataIndexer::self()->index("type")));
         connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
         connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
+
+        mDescEdit->setAcceptRichText(false);
+        mDescEdit->setTabChangesFocus(true);
+
+        QString d = tdd->metadata(DataIndexer::self()->index("desc"));
+        if (!d.endsWith('\n')) d += "\n";
+        mDescEdit->setPlainText(d);
+
+        connect(mDescEdit, SIGNAL(textChanged()), SLOT(slotDataChanged()));
     }
-    else mTypeCombo->setEnabled(false);
+    else
+    {
+        mTypeCombo->setEnabled(false);
+        mDescEdit->setEnabled(false);
+    }
+
     mFormLayout->addRow(i18nc("@label:listbox", "Type:"), mTypeCombo);
+    mFormLayout->addRow(i18nc("@label:listbox", "Description:"), mDescEdit);
 }
 
 
@@ -179,7 +210,7 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items,
 
     addTimeFields(items);
     addSeparatorField();
-    addTypeField(items);
+    addTypeDescFields(items);
 }
 
 
@@ -207,7 +238,7 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> it
 
     addTimeFields(items);
     addSeparatorField();
-    addTypeField(items);
+    addTypeDescFields(items);
 }
 
 

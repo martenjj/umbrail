@@ -97,10 +97,14 @@ bool ImporterBase::finaliseLoadFile(const KUrl &file)
 #ifdef DEBUG_IMPORT
         dumpMetadata(tdt, QString("original metadata of track %1:").arg(i));
 #endif
-        tdt->copyMetadata(mDataRoot, false);
+
+        if (tdt->metadata(DataIndexer::self()->index("creator")).isEmpty())
+        {						// only if blank already
+            tdt->copyMetadata(mDataRoot, false);
 #ifdef DEBUG_IMPORT
-        dumpMetadata(tdt, QString("merged metadata of track %1:").arg(i));
+            dumpMetadata(tdt, QString("merged metadata of track %1:").arg(i));
 #endif
+        }
     }
 
     return (true);

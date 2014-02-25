@@ -10,6 +10,7 @@ class QLabel;
 class QDateTime;
 class QFormLayout;
 class KLineEdit;
+class KTextEdit;
 class KUrlRequester;
 class ItemTypeCombo;
 class TrackDataItem;
@@ -29,6 +30,7 @@ public:
     virtual ~TrackItemGeneralPage()				{}
 
     QString newItemName() const;
+    QString newItemDesc() const;
     QString newTrackType() const;
 
     virtual QString typeText(int count) const = 0;
@@ -38,11 +40,12 @@ protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
     void addTimeFields(const QList<TrackDataItem *> &items);
-    void addTypeField(const QList<TrackDataItem *> &items);
+    void addTypeDescFields(const QList<TrackDataItem *> &items);
 
 protected:
     KLineEdit *mNameEdit;
     ItemTypeCombo *mTypeCombo;
+    KTextEdit *mDescEdit;
 };
 
 

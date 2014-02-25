@@ -112,6 +112,12 @@ QString TrackPropertiesDialogue::newItemName() const
 }
 
 
+QString TrackPropertiesDialogue::newItemDesc() const
+{
+    return (mGeneralPage->newItemDesc());
+}
+
+
 KUrl TrackPropertiesDialogue::newFileUrl() const
 {
     TrackFileGeneralPage *filePage = qobject_cast<TrackFileGeneralPage *>(mGeneralPage);

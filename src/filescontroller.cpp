@@ -372,6 +372,18 @@ void FilesController::slotTrackProperties()
         }
     }
 
+    QString newDesc = d.newItemDesc();
+    if (newDesc!="-")					// new description is applicable
+    {
+        kDebug() << "new description" << newDesc;
+        if (newDesc!=dispItem->metadata(DataIndexer::self()->index("desc")))
+        {
+            ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
+            cmd5->setDataItem(dispItem);
+            cmd5->setNewData("desc", newDesc);
+        }
+    }
+
     if (cmd->childCount()==0)				// anything to actually do?
     {							// no changes above, so
         delete cmd;					// don't need this after all
