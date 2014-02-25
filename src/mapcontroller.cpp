@@ -105,8 +105,7 @@ void MapController::slotGoHome()
     view()->zoomView(mHomeZoom);
     view()->centerOn(mHomeLong, mHomeLat);
 
-//    emit statusMessage(i18n("At home position %1",
-//                            PointData::displayLatLong(mHomeLat, mHomeLong, true)));
+    emit statusMessage(i18n("At home position %1", TrackData::formattedLatLong(mHomeLat, mHomeLong)));
 }
 
 
@@ -116,10 +115,7 @@ void MapController::slotSetHome()
     double lng = view()->centerLongitude();
 
     if (KMessageBox::questionYesNo(mainWindow(),
-                                   i18n("<qt>Set home position to <b>%1</b>?", 
-//                                        PointData::displayLatLong(lat, lng, true)
-QString::null
-),
+                                   i18n("<qt>Set home position to <b>%1</b>?", TrackData::formattedLatLong(lat, lng)),
                                    i18n("Set Home Position?"),
                                    KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
                                    KStandardGuiItem::cancel(),
@@ -129,8 +125,7 @@ QString::null
     // TODO: do this here?
     //mHomeZoom = view()->zoom();
 
-//    emit statusMessage(i18n("Home position set to %1",
-//                            PointData::displayLatLong(mHomeLat, mHomeLong, true)));
+    emit statusMessage(i18n("Home position set to %1", TrackData::formattedLatLong(mHomeLat, mHomeLong)));
     emit modified();
 }
 
