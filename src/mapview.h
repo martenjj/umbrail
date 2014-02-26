@@ -9,13 +9,14 @@
 using namespace Marble;
 
 
+class QElapsedTimer;
 class KAction;
-
 class FilesModel;
 class FilesView;
 class MainWindow;
 class TrackDataItem;
 class TrackDataDisplayable;
+class TrackDataPoint;
 
 
 class MapView : public MarbleWidget
@@ -24,7 +25,7 @@ class MapView : public MarbleWidget
 
 public:
     MapView(QWidget *pnt = NULL);
-    ~MapView();
+    virtual ~MapView();
 
     void readProperties();
     void saveProperties();
@@ -48,6 +49,7 @@ public slots:
 
 protected:
     virtual void customPaint(GeoPainter* painter);
+    bool eventFilter(QObject *obj, QEvent *ev);
 
 private:
     MainWindow *mainWindow() const		{ return (mMainWindow); }
@@ -55,6 +57,7 @@ private:
     FilesView *filesView() const		{ return (mFilesView); }
 
     bool mouseCoordinates(GeoDataCoordinates *coords);
+    const TrackDataPoint *findClickedPoint(const TrackDataDisplayable *tdd);
 
     void paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter, bool doSelected, bool parentSelected);
 
@@ -70,6 +73,16 @@ private:
     int mPopupX;
     int mPopupY;
     unsigned long mSelectionId;
+
+    QElapsedTimer *mClickTimer;
+    int mClickX;
+    int mClickY;
+    const TrackDataPoint *mClickedPoint;
+
+    double mLatMin;
+    double mLonMin;
+    double mLatMax;
+    double mLonMax;
 };
 
 

@@ -316,3 +316,12 @@ void FilesView::slotSelectAllSiblings()
 
     selectionModel()->select(QItemSelection(firstRowIndex, lastRowIndex), QItemSelectionModel::Select);
 }
+
+
+
+void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
+{
+    selectionModel()->select(QItemSelection(index, index),
+                             static_cast<QItemSelectionModel::SelectionFlags>(flags));
+    scrollTo(index);
+}

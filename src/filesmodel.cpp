@@ -2,6 +2,7 @@
 #include "filesmodel.h"
 
 #include <qfont.h>
+#include <qitemselectionmodel.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -320,4 +321,16 @@ void FilesModel::changedItem(const TrackDataItem *item)
 {
     QModelIndex idx = indexForData(item);
     emit dataChanged(idx, idx);
+}
+
+
+void FilesModel::clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods)
+{
+    QItemSelectionModel::SelectionFlags selFlags;
+    if (mods==Qt::NoModifier) selFlags = QItemSelectionModel::ClearAndSelect;
+    else if (mods==Qt::ControlModifier) selFlags = QItemSelectionModel::Toggle;
+    else return;
+
+    kDebug() << "click for" << indexForData(tdp) << "flags" << selFlags;
+    emit clickedItem(indexForData(tdp), static_cast<unsigned int>(selFlags));
 }

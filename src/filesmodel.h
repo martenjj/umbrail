@@ -10,6 +10,8 @@ class FilesController;
 class TrackDataDisplayable;
 class TrackDataItem;
 class TrackDataFile;
+class TrackDataPoint;
+
 
 class FilesModel : public QAbstractItemModel
 {
@@ -32,6 +34,7 @@ public:
     void addFile(TrackDataFile *tdf);
     TrackDataItem *removeLast();
 
+    void clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods);
 
 //    void addPoint(const PointData *point);
 //    void addFiles(const FilesList *files, bool clear = false);
@@ -47,6 +50,9 @@ public:
     void changedItem(const TrackDataItem *item);
 
     TrackDataFile *rootFileItem() const;
+
+signals:
+    void clickedItem(const QModelIndex &index, unsigned int flags);
 
 private:
     TrackDataItem *dataPointer(const QModelIndex &idx) const;

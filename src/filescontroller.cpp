@@ -50,6 +50,8 @@ FilesController::FilesController(QObject *pnt)
     mView->setModel(mDataModel);
 #endif
     connect(mView, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
+    connect(mDataModel, SIGNAL(clickedItem(const QModelIndex &,unsigned int)),
+            mView, SLOT(slotClickedItem(const QModelIndex &,unsigned int)));
 }
 
 

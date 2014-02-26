@@ -31,6 +31,7 @@ public:
 
 public slots:
     void slotSelectAllSiblings();
+    void slotClickedItem(const QModelIndex &index, unsigned int flags);
 
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel);

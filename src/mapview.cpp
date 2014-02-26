@@ -3,6 +3,9 @@
 
 #include <qmenu.h>
 #include <qimage.h>
+#include <qevent.h>
+#include <qelapsedtimer.h>
+#include <qapplication.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -27,6 +30,7 @@
 #include "settings.h"
 
 
+static const double RADIANS_TO_DEGREES = 360/(2*M_PI);	// multiplier
 
 static const int POINTS_PER_BLOCK = 50;			// points drawn per polyline
 static const int POINT_CIRCLE_SIZE = 10;		// size of point circle
@@ -64,11 +68,17 @@ MapView::MapView(QWidget *pnt)
 
     // Watch for system palette changes
     connect(KGlobalSettings::self(), SIGNAL(kdisplayPaletteChanged()), SLOT(slotSystemPaletteChanged()));
+
+    // Interpret mouse clicks
+    mClickedPoint = NULL;
+    mClickTimer = new QElapsedTimer;
+    installEventFilter(this);
 }
 
 
 MapView::~MapView()
 {
+    delete mClickTimer;
     kDebug() << "done";
 }
 
@@ -407,4 +417,107 @@ void MapView::slotSystemPaletteChanged()
     bool syscol = Settings::selectedUseSystemColours();
     kDebug() << "using system?" << syscol;
     if (syscol) update();
+}
+
+
+
+const TrackDataPoint *MapView::findClickedPoint(const TrackDataDisplayable *tdd)
+{
+    if (tdd==NULL) return (NULL);			// nothing to do
+
+    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdd);
+    if (tdp!=NULL)					// is this a point?
+    {
+        const double lat = tdp->latitude();
+        const double lon = tdp->longitude();
+        if (lat>=mLatMin && lat<=mLatMax &&
+            lon>=mLonMin && lon<=mLonMax)
+        {						// check within tolerance
+            kDebug() << "found point" << tdp->name();
+            return (tdp);				// clicked point found
+        }
+    }
+    else						// not a point, so a container
+    {
+        for (int i = 0; i<tdd->childCount(); ++i)	// recurse to search children
+        {
+            const TrackDataDisplayable *childItem = static_cast<TrackDataDisplayable *>(tdd->childAt(i));
+            const TrackDataPoint *childPoint = findClickedPoint(childItem);
+            if (childPoint!=NULL) return (childPoint);
+        }
+    }
+
+    return (NULL);					// nothing found
+}
+
+
+
+bool MapView::eventFilter(QObject *obj, QEvent *ev)
+{
+    if (ev->type()==QEvent::MouseButtonPress)
+    {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
+        kDebug() << "press" << mouseEvent->pos();
+        if (mouseEvent->button()!=Qt::LeftButton) return (false);
+
+        mClickX = mouseEvent->pos().x();		// record click position
+        mClickY = mouseEvent->pos().y();
+        mClickTimer->start();				// start elapsed timer
+
+        // See whether there is a track data point under the click.
+        qreal lat,lon;
+        bool onEarth = geoCoordinates(mClickX, mClickY, lon, lat);
+        kDebug() << "onearth" << onEarth << "lat" << lat << "lon" << lon;
+        if (!onEarth) return (false);			// click not on Earth
+
+        qreal lat1,lat2;
+        qreal lon1,lon2;
+        const int dragStart = qApp->startDragDistance();
+        geoCoordinates(mClickX-dragStart, mClickY-dragStart, lon1, lat1);
+        geoCoordinates(mClickX+dragStart, mClickY+dragStart, lon2, lat2);
+        mLatMin = qMin(lat1, lat2);
+        mLatMax = qMax(lat1, lat2);
+        mLonMin = qMin(lon1, lon2);
+        mLonMax = qMax(lon1, lon2);
+        kDebug() << "tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
+
+        const TrackDataPoint *tdp = findClickedPoint(filesModel()->rootFileItem());
+        if (tdp!=NULL)					// a point was found
+        {
+            mClickedPoint = tdp;			// record for release event
+
+            // If the click was over a point, then do not pass the event
+            // on to Marble.  This stops it turing into a move-the-map drag.
+            return (true);
+        }
+    }
+    else if (ev->type()==QEvent::MouseButtonRelease)
+    {
+        if (mClickedPoint==NULL) return (false);	// no point clicked to start
+
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
+        kDebug() << "release" << mouseEvent->pos();
+
+        // See whether this release is in the same position and the same
+        // time (allowing for a tolerance in both).  If so, accept the click
+        // and action it for the point detected earlier.
+        const int dragStart = qApp->startDragDistance();
+        if (qAbs(mouseEvent->pos().x()-mClickX)<dragStart &&
+            qAbs(mouseEvent->pos().y()-mClickY)<dragStart &&
+            mClickTimer->elapsed()<qApp->startDragTime())
+        {
+            //kDebug() << "valid click detected";
+            filesModel()->clickedPoint(mClickedPoint, mouseEvent->modifiers());
+            mClickedPoint = NULL;
+            return (true);				// event consumed
+        }
+    }
+    else if (ev->type()==QEvent::CursorChange)
+    {							// force our cursor shape
+        // Marble forces the "hand" cursor while idle, see
+        // MarbleWidgetDefaultInputHandler::eventFilter()
+        if (cursor().shape()==Qt::OpenHandCursor) setCursor(Qt::CrossCursor);
+    }
+
+    return (false);					// pass event on
 }
