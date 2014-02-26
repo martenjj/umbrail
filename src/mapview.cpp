@@ -140,8 +140,8 @@ void MapView::customPaint(GeoPainter *painter)
     // Paint the data in two passes.  The first does all non-selected tracks,
     // the second selected ones.  This is so that selected tracks show up
     // on top of all non-selected ones.  In the absence of any selection,
-    // all tracks will be painted in time order (i.e. later tracks on top
-    // of earlier ones).
+    // all tracks will be painted in file and then time order (i.e. later
+    // track segments on top of earlier ones).
     paintDataTree(filesModel()->rootFileItem(), painter, false, false);
     paintDataTree(filesModel()->rootFileItem(), painter, true, false);
 }
@@ -389,8 +389,8 @@ QColor MapView::resolveLineColour(const TrackDataDisplayable *tdd)
 {
     // Resolving the line colour (in the case where it is not selected) could
     // potentially be an expensive operation - needing to examine not only the
-    // style of the current item, but also all of its parents, then the project
-    // default, then finally the application's default style.  However, this
+    // style of the current item, but also all of its parents, up to the top
+    // level file, then finally the application's default style.  However, this
     // search will only need to be performed once per track segment, of which it
     // is expected that there will be at most a few tens of them existing within
     // a typical project.  So the overhead here is not likely to be significant.
@@ -407,7 +407,6 @@ QColor MapView::resolveLineColour(const TrackDataDisplayable *tdd)
         tdd = dynamic_cast<const TrackDataDisplayable *>(tdd->parent());
     }							// up to parent item
 
-    // TODO: project global style?
     return (Style::globalStyle()->lineColour());	// finally application default
 }
 

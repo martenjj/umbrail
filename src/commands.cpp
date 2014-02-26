@@ -165,38 +165,3 @@ void ChangeItemDataCommand::undo()
 }
 
 
-
-
-
-
-
-
-
-
-
-void ChangeFileUrlCommand::redo()
-{
-    TrackDataFile *item = dynamic_cast<TrackDataFile *>(mDataItem);
-    Q_ASSERT(item!=NULL);
-    mSavedUrl = item->fileName();
-    kDebug() << "item" << mSavedUrl << "->" << mNewUrl;
-
-    item->setFileName(mNewUrl);
-    item->setName(mNewUrl.fileName());
-    model()->changedItem(item);
-}
-
-
-
-
-
-void ChangeFileUrlCommand::undo()
-{
-    TrackDataFile *item = dynamic_cast<TrackDataFile *>(mDataItem);
-    Q_ASSERT(item!=NULL);
-    kDebug() << "item" << item->fileName() << "back to" << mSavedUrl;
-
-    item->setFileName(mSavedUrl);
-    item->setName(mSavedUrl.fileName());
-    model()->changedItem(item);
-}

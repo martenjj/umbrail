@@ -156,26 +156,6 @@ private:
 
 
 
-class ChangeFileUrlCommand : public ChangeItemCommand
-{
-public:
-    ChangeFileUrlCommand(FilesController *fc, QUndoCommand *parent = NULL)
-        : ChangeItemCommand(fc, parent)		{}
-    virtual ~ChangeFileUrlCommand()		{}
-
-    void setNewUrl(const KUrl &url)		{ mNewUrl = url; }
-
-    void redo();
-    void undo();
-
-private:
-    KUrl mNewUrl;
-    KUrl mSavedUrl;
-};
-
-
-
-
 
 
 

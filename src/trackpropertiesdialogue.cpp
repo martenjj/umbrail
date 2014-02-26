@@ -118,14 +118,6 @@ QString TrackPropertiesDialogue::newItemDesc() const
 }
 
 
-KUrl TrackPropertiesDialogue::newFileUrl() const
-{
-    TrackFileGeneralPage *filePage = qobject_cast<TrackFileGeneralPage *>(mGeneralPage);
-    if (filePage==NULL) return (KUrl());
-    return (filePage->newFileUrl());
-}
-
-
 Style TrackPropertiesDialogue::newStyle() const
 {
     if (!mTabWidget->isTabEnabled(2)) return (Style::null);	// style not applicable

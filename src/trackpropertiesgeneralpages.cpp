@@ -10,7 +10,6 @@
 #include <kiconloader.h>
 #include <klineedit.h>
 #include <ktextedit.h>
-#include <kurlrequester.h>
 #include <kfiledialog.h>
 
 #include "trackdata.h"
@@ -149,9 +148,8 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
 
     mNameEdit->setReadOnly(true);			// can't rename here for files
 
-    mUrlRequester = new KUrlRequester(this);
-    mUrlRequester->setFilter(FilesController::allImportFilters());
-    mUrlRequester->fileDialog()->setCaption("Relocate Tracks File");
+    mUrlRequester = new KLineEdit(this);
+    mUrlRequester->setReadOnly(true);
 
     connect(mUrlRequester, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
@@ -159,7 +157,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
     {
         TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items.first());
         Q_ASSERT(fileItem!=NULL);
-        mUrlRequester->setUrl(fileItem->fileName());
+        mUrlRequester->setText(fileItem->fileName().pathOrUrl());
     }
     else						// may be mixed MIME types
     {
@@ -183,18 +181,8 @@ QString TrackFileGeneralPage::typeText(int count) const
 bool TrackFileGeneralPage::isDataValid() const
 {
     if (!mUrlRequester->isEnabled()) return (true);
-    return (!mUrlRequester->url().isValid());
+    return (!mUrlRequester->text().isEmpty());
 }
-
-
-
-
-KUrl TrackFileGeneralPage::newFileUrl() const
-{							// only if editable
-    if (!mUrlRequester->isEnabled()) return (KUrl());
-    return (mUrlRequester->url());
-}
-
 
 
 

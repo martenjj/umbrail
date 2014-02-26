@@ -2,8 +2,6 @@
 #ifndef TRACKPROPERTIESGENERALPAGES_H
 #define TRACKPROPERTIESGENERALPAGES_H
 
-#include <kurl.h>
-
 #include "trackpropertiespage.h"
 
 class QLabel;
@@ -11,7 +9,6 @@ class QDateTime;
 class QFormLayout;
 class KLineEdit;
 class KTextEdit;
-class KUrlRequester;
 class ItemTypeCombo;
 class TrackDataItem;
 
@@ -59,13 +56,12 @@ public:
     TrackFileGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackFileGeneralPage()				{}
 
-    KUrl newFileUrl() const;
     virtual bool isDataValid() const;
 
     QString typeText(int count) const;
 
 private:
-    KUrlRequester *mUrlRequester;
+    KLineEdit *mUrlRequester;
 };
 
 

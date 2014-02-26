@@ -29,7 +29,6 @@ public:
 
     QString newItemName() const;
     QString newItemDesc() const;
-    KUrl newFileUrl() const;
     Style newStyle() const;
     QString newTrackType() const;
 

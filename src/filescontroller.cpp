@@ -333,26 +333,6 @@ void FilesController::slotTrackProperties()
         cmd1->setNewName(newItemName);
     }
 
-    // TODO: does changing this actually work now?
-    TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(item);
-    if (fileItem!=NULL)					// this is a file item
-    {
-        KUrl newFileUrl = d.newFileUrl();		// new file URL
-        kDebug() << "new url" << newFileUrl;
-        if (!newFileUrl.isEmpty() && newFileUrl!=fileItem->fileName())
-        {						// changing the URL
-            ChangeFileUrlCommand *cmd2 = new ChangeFileUrlCommand(this, cmd);
-            cmd2->setDataItem(dispItem);
-            cmd2->setNewUrl(newFileUrl);
-
-            KMessageBox::information(mainWindow(),
-                                     i18n("<qt>Changing the location of a file will not immediately "
-                                          "copy the existing file to the new location. "
-                                          "It will be saved to the new location when the project is saved."),
-                                     QString::null, "fileMoveInfo");
-        }
-    }
-
     const Style newStyle = d.newStyle();		// item style
     kDebug() << "new style" << newStyle;
     if (newStyle!=*dispItem->style())			// changing the style

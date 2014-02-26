@@ -18,8 +18,8 @@
       <Separator/>
     </Menu>
 
-    <Menu name="Track">
-      <text>Track</text>
+    <Menu name="data">
+      <text>Data</text>
       <Action name="track_expand_all"/>
       <Action name="track_collapse_all"/>
       <Separator/>

@@ -431,9 +431,13 @@ void MainWindow::slotOpenProject()
 
     if (!d.exec()) return;
 
-    MainWindow *w = new MainWindow(NULL);
-    w->loadProject(d.selectedUrl());
-    w->show();
+    if (filesController()->model()->isEmpty()) loadProject(d.selectedUrl());
+    else
+    {
+        MainWindow *w = new MainWindow(NULL);
+        w->loadProject(d.selectedUrl());
+        w->show();
+    }
 }
 
 
