@@ -51,6 +51,8 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
         mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
     }
 
+    addSeparatorField();
+
     double dist = TrackData::sumTotalTravelDistance(items);
     VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
     vl->setSaveId("totaltraveldistance");
@@ -222,6 +224,8 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
         double ele = tdp->elevation();
         if (!isnan(ele))
         {
+            addSeparatorField();
+
             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
             vl->setSaveId("elevation");
             vl->setValue(ele);
@@ -256,46 +260,50 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
         {
             addTimeDistanceSpeedFields(items, false);
         }
-        else						// selection is noncontiguous
-        {
-            if (items.count()==2)			// exactly two points selected
+
+        if (items.count()==2)				// exactly two points selected
+        {						// (nocontiguous doesn't matter)
+            TrackDataItem *item1 = items.first();
+            TrackDataItem *item2 = items.last();
+
+            int idx1 = seg->childIndex(item1);
+            int idx2 = seg->childIndex(item2);
+            if (idx1>idx2) qSwap(idx1, idx2);		// order by index = time
+
+            QList<TrackDataItem *> items2;
+            for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
+
+            if (!contiguousSelection)			// not already added above
             {
-                TrackDataItem *item1 = items.first();
-                TrackDataItem *item2 = items.last();
-
-                int idx1 = seg->childIndex(item1);
-                int idx2 = seg->childIndex(item2);
-                if (idx1>idx2) qSwap(idx1, idx2);	// order by index = time
-
-                QList<TrackDataItem *> items2;
-                for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
-
                 addTimeDistanceSpeedFields(items2, false);
-                addSeparatorField();
+            }
+            addSeparatorField();
 
-                TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx1));
-                TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));
-                Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
+            TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx1));
+            TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));
+            Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
 
-                VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Bearing, this);
+            vl->setSaveId("bearing");
+            vl->setValue(pnt1->bearingTo(pnt2));
+            mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
+
+            if (!contiguousSelection)
+            {
+                vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
                 vl->setSaveId("crowflies");
                 vl->setValue(pnt1->distanceTo(pnt2, true));
                 mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
+            }
 
-                vl = new VariableUnitDisplay(VariableUnitDisplay::Bearing, this);
-                vl->setSaveId("bearing");
-                vl->setValue(pnt1->bearingTo(pnt2));
-                mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
-
-                double ele1 = pnt1->elevation();
-                double ele2 = pnt2->elevation();
-                if (!isnan(ele1) && !isnan(ele2))
-                {
-                    vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
-                    vl->setSaveId("elediff");
-                    vl->setValue(ele2-ele1);
-                    mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
-                }
+            double ele1 = pnt1->elevation();
+            double ele2 = pnt2->elevation();
+            if (!isnan(ele1) && !isnan(ele2))
+            {
+                vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
+                vl->setSaveId("elediff");
+                vl->setValue(ele2-ele1);
+                mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
             }
         }
     }

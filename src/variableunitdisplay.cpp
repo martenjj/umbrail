@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	10-Feb-14						//
+//  Edit:	26-Feb-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -71,6 +71,8 @@ case VariableUnitDisplay::Distance:
         mUnitCombo->addItem(i18n("kilometres"), EARTH_RADIUS_KM);
         mUnitCombo->addItem(i18n("miles"), EARTH_RADIUS_MI);
         mUnitCombo->addItem(i18n("nautical miles"), EARTH_RADIUS_NM);
+        // synchronise this with index in slotUpdateDisplay() below
+        mUnitCombo->addItem(i18n("metres"), EARTH_RADIUS_KM*1000);
         mPrecision = 2;
         break;
 
@@ -154,7 +156,8 @@ case 2:     sign = (v<0 ? "R " : "G ");			// nautical
     else
     {
         double v = mValue*mUnitCombo->itemData(mComboIndex).toDouble();
-        mValueLabel->setText(QString::number(v, 'f', mPrecision));
+        int p = (mComboIndex==3 ? 0 : mPrecision);
+        mValueLabel->setText(QString::number(v, 'f', p));
     }
 }
 
@@ -169,7 +172,7 @@ void VariableUnitDisplay::showEvent(QShowEvent *ev)
 
     QList<VariableUnitDisplay *> siblings = pnt->findChildren<VariableUnitDisplay *>();
     if (siblings.isEmpty()) return;			// should never happen
-    if (siblings.first()!=this) return;			// only do this once per chain
+    if (this!=siblings.first()) return;			// only do this once per chain
 
     // Run through the sibling chain, and find the longest display
     // width of all their combo boxes.
