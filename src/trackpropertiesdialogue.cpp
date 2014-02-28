@@ -29,6 +29,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     Q_ASSERT(!items.isEmpty());
     TrackDataDisplayable *item = dynamic_cast<TrackDataDisplayable *>(items.first());
     Q_ASSERT(item!=NULL);
+    QString zoneName = item->timeZone();
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -58,7 +59,10 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     TrackPropertiesPage *page = item->createPropertiesGeneralPage(items, this);
     mGeneralPage = qobject_cast<TrackItemGeneralPage *>(page);
     Q_ASSERT(mGeneralPage!=NULL);
+    mGeneralPage->setTimeZone(zoneName);
     connect(mGeneralPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
+            mGeneralPage, SLOT(setTimeZone(const QString &)));
     mTabWidget->addTab(page, i18nc("@title:tab", "General"));
 
     typeLabel->setText(mGeneralPage->typeText(items.count()));
@@ -66,13 +70,19 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     page = item->createPropertiesDetailPage(items, this);
     mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
     Q_ASSERT(mDetailPage!=NULL);
+    mDetailPage->setTimeZone(zoneName);
     connect(mDetailPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
+            mDetailPage, SLOT(setTimeZone(const QString &)));
     mTabWidget->addTab(page, i18nc("@title:tab", "Details"));
 
     page = item->createPropertiesStylePage(items, this);
     mStylePage = qobject_cast<TrackItemStylePage *>(page);
     Q_ASSERT(mStylePage!=NULL);
+    mStylePage->setTimeZone(zoneName);
     connect(mStylePage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
+            mStylePage, SLOT(setTimeZone(const QString &)));
     mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
 
     setMinimumSize(320,380);
@@ -115,6 +125,12 @@ QString TrackPropertiesDialogue::newItemName() const
 QString TrackPropertiesDialogue::newItemDesc() const
 {
     return (mGeneralPage->newItemDesc());
+}
+
+
+QString TrackPropertiesDialogue::newTimeZone() const
+{
+    return (mGeneralPage->newTimeZone());
 }
 
 

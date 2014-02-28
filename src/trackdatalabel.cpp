@@ -2,8 +2,10 @@
 #include "trackdatalabel.h"
 
 #include <kdebug.h>
+#include <ksystemtimezone.h>
 
 #include "trackdata.h"
+#include "trackpropertiespage.h"
 
 
 
@@ -16,9 +18,26 @@ TrackDataLabel::TrackDataLabel(const QString &str, QWidget *pnt)
 
 
 TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
-    : QLabel(TrackData::formattedTime(dt), pnt)
+    : QLabel(pnt)
 {
+    mDateTime = dt;
+
+    TrackPropertiesPage *page = qobject_cast<TrackPropertiesPage *>(pnt);
+    if (page!=NULL)					// part of a parent page
+    {
+        connect(page, SIGNAL(updateTimeZones(const KTimeZone *)), SLOT(slotTimeZoneChanged(const KTimeZone *)));
+        slotTimeZoneChanged(page->timeZone());
+    }
+    else slotTimeZoneChanged(NULL);
     init();
+}
+
+
+
+void TrackDataLabel::slotTimeZoneChanged(const KTimeZone *tz)
+{
+    if (!mDateTime.isValid()) return;			// not a date/time label
+    setText(TrackData::formattedTime(mDateTime, tz));	// date/time with zone
 }
 
 

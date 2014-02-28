@@ -18,7 +18,7 @@ class FilesModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    FilesModel(QObject *parent = NULL);
+    FilesModel(QObject *pnt = NULL);
     virtual ~FilesModel();
 
     virtual QModelIndex index(int row, int col, const QModelIndex &parent = QModelIndex()) const;

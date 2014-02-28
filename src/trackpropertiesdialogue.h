@@ -31,6 +31,7 @@ public:
     QString newItemDesc() const;
     Style newStyle() const;
     QString newTrackType() const;
+    QString newTimeZone() const;
 
 protected slots:
     void slotDataChanged();

@@ -17,9 +17,7 @@
 #include "filescontroller.h"
 #include "variableunitdisplay.h"
 #include "itemtypecombo.h"
-#include "dataindexer.h"
-
-
+#include "timezoneselector.h"
 
 
 
@@ -42,6 +40,7 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
 
     mTypeCombo = NULL;					// not applicable yet
     mDescEdit = NULL;
+    mTimeZoneSel = NULL;
 }
 
 
@@ -84,6 +83,14 @@ QString TrackItemGeneralPage::newTrackType() const
 
 
 
+QString TrackItemGeneralPage::newTimeZone() const
+{							// only if editable
+    if (mTimeZoneSel==NULL || !mTimeZoneSel->isEnabled()) return (QString::null);
+    return (mTimeZoneSel->timeZone());
+}
+
+
+
 void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
@@ -110,14 +117,14 @@ void TrackItemGeneralPage::addTypeDescFields(const QList<TrackDataItem *> &items
         TrackDataDisplayable *tdd = dynamic_cast<TrackDataDisplayable *>(items.first());
         Q_ASSERT(tdd!=NULL);
 
-        mTypeCombo->setType(tdd->metadata(DataIndexer::self()->index("type")));
+        mTypeCombo->setType(tdd->metadata("type"));
         connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
         connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
 
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
 
-        QString d = tdd->metadata(DataIndexer::self()->index("desc"));
+        QString d = tdd->metadata("desc");
         if (!d.endsWith('\n')) d += "\n";
         mDescEdit->setPlainText(d);
 
@@ -150,24 +157,33 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
 
     mUrlRequester = new KLineEdit(this);
     mUrlRequester->setReadOnly(true);
-
     connect(mUrlRequester, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
+
+    mTimeZoneSel = new TimeZoneSelector(this);
+    connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SLOT(slotDataChanged()));
+    connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SIGNAL(timeZoneChanged(const QString &)));
 
     if (items.count()==1)				// a single item
     {
         TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items.first());
         Q_ASSERT(fileItem!=NULL);
         mUrlRequester->setText(fileItem->fileName().pathOrUrl());
+
+        QString zone = fileItem->metadata("timezone");
+        if (!zone.isEmpty()) mTimeZoneSel->setTimeZone(zone);
     }
     else						// may be mixed MIME types
     {
         mUrlRequester->setEnabled(false);		// can't edit for multiple items
+        mTimeZoneSel->setEnabled(false);
     }
 
     mFormLayout->insertRow(mFormLayout->rowCount()-1, i18nc("@label:textbox", "File:"), mUrlRequester);
+    mFormLayout->addRow(i18nc("@label:textbox", "Time zone:"), mTimeZoneSel);
 
     addTimeFields(items);
 }
+
 
 
 QString TrackFileGeneralPage::typeText(int count) const
@@ -180,8 +196,9 @@ QString TrackFileGeneralPage::typeText(int count) const
 
 bool TrackFileGeneralPage::isDataValid() const
 {
-    if (!mUrlRequester->isEnabled()) return (true);
-    return (!mUrlRequester->text().isEmpty());
+    if (mUrlRequester->isEnabled() && mUrlRequester->text().isEmpty()) return (false);
+    if (mTimeZoneSel->isEnabled() && mTimeZoneSel->timeZone().isEmpty()) return (false);
+    return (TrackItemGeneralPage::isDataValid());
 }
 
 

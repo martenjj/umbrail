@@ -28,8 +28,8 @@ enum COLUMN
 
 
 
-FilesModel::FilesModel(QObject *parent)
-    : QAbstractItemModel(parent)
+FilesModel::FilesModel(QObject *pnt)
+    : QAbstractItemModel(pnt)
 {
     kDebug();
 
@@ -176,7 +176,7 @@ case COL_NAME:
             {
                 const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
                 if (tdp!=NULL) return (i18n("Point at %1, elevation %2",
-                                            tdp->formattedTime(), tdp->formattedElevation()));
+                                            tdp->formattedTime(true), tdp->formattedElevation()));
             }
             break;
         }

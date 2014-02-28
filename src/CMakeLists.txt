@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		24-Feb-14					#
+#  Edit:		27-Feb-14					#
 #########################################################################
 
 project(navtracks)
@@ -53,6 +53,8 @@ set(navtracks_SRCS
   project.cpp
   settingsdialogue.cpp
   style.cpp
+  timezonedialogue.cpp
+  timezoneselector.cpp
   trackdata.cpp
   trackdatalabel.cpp
   trackpropertiesdialogue.cpp

@@ -11,9 +11,7 @@ class KLineEdit;
 class KTextEdit;
 class ItemTypeCombo;
 class TrackDataItem;
-
-
-
+class TimeZoneSelector;
 
 
 
@@ -29,6 +27,7 @@ public:
     QString newItemName() const;
     QString newItemDesc() const;
     QString newTrackType() const;
+    QString newTimeZone() const;
 
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const;
@@ -39,10 +38,14 @@ protected:
     void addTimeFields(const QList<TrackDataItem *> &items);
     void addTypeDescFields(const QList<TrackDataItem *> &items);
 
+signals:
+    void timeZoneChanged(const QString &zone);
+
 protected:
     KLineEdit *mNameEdit;
     ItemTypeCombo *mTypeCombo;
     KTextEdit *mDescEdit;
+    TimeZoneSelector *mTimeZoneSel;
 };
 
 

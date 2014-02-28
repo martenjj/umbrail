@@ -257,7 +257,7 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
     // <gpx>
     str.writeStartElement("gpx");
     str.writeAttribute("version", "1.1");
-    str.writeAttribute("creator", item->metadata(DataIndexer::self()->index("creator")));
+    str.writeAttribute("creator", item->metadata("creator"));
     str.writeAttribute("xmlns", "http://www.topografix.com/GPX/1/1");
     str.writeNamespace("http://www.garmin.com/xmlschemas/GpxExtensions/v3", "gpxx");
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");

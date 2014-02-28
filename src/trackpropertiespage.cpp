@@ -1,12 +1,15 @@
 
 #include "trackpropertiesdetailpages.h"
 
+#include "time.h"
+
 #include <qformlayout.h>
 #include <qgroupbox.h>
 
 #include <kdebug.h>
 #include <kdialog.h>
 #include <klocale.h>
+#include <ksystemtimezone.h>
 
 
 
@@ -19,7 +22,15 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> items, QWi
     Q_ASSERT(!items.isEmpty());
     mFormLayout = new QFormLayout(this);
 
+    mTimeZone = NULL;
+}
 
+
+
+
+TrackPropertiesPage::~TrackPropertiesPage()
+{
+    delete mTimeZone;
 }
 
 
@@ -49,3 +60,12 @@ void TrackPropertiesPage::addSeparatorField(const QString &title)
     }
 }
 
+
+
+void TrackPropertiesPage::setTimeZone(const QString &name)
+{
+    kDebug() << name;
+    mTimeZone = new KTimeZone(KSystemTimeZones::zone(name));
+    kDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
+    emit updateTimeZones(timeZone());
+}

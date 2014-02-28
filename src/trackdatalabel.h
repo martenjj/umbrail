@@ -3,10 +3,10 @@
 #define TRACKDATALABEL_H
 
 #include <qlabel.h>
+#include <qdatetime.h>
 
-class QDateTime;
+class KTimeZone;
 class TrackDataItem;
-
 
 
 
@@ -24,8 +24,14 @@ public:
 
     virtual ~TrackDataLabel()					{}
 
+private slots:
+    void slotTimeZoneChanged(const KTimeZone *tz);
+
 private:
     void init();
+
+private:
+    QDateTime mDateTime;
 };
 
 

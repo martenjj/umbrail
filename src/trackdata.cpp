@@ -8,8 +8,11 @@
 #include <kglobal.h>
 #include <klocale.h>
 #include <kmimetype.h>
+#include <ktimezone.h>
+#include <ksystemtimezone.h>
 
 #include "style.h"
+#include "dataindexer.h"
 
 
 static const double DEGREES_TO_RADIANS = (2*M_PI)/360;	// multiplier
@@ -216,10 +219,14 @@ QString TrackData::formattedDuration(unsigned t)
 
 
 
-QString TrackData::formattedTime(const QDateTime &dt)
+QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
 {
     if (!dt.isValid()) return (i18nc("an unknown quantity", "unknown"));
-    return (KGlobal::locale()->formatDateTime(dt, KLocale::ShortDate, true));
+    if (tz==NULL) return (KGlobal::locale()->formatDateTime(dt, KLocale::ShortDate, true));
+
+    QDateTime tzdt = tz->toZoneTime(dt);
+    //kDebug() << dt << "->" << tzdt << tz->abbreviation(dt);
+    return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
 }
 
 
@@ -273,26 +280,6 @@ TrackDataItem *TrackDataItem::takeFirstChildItem()
     TrackDataItem *data = mChildItems.takeFirst();
     data->mParent = NULL;				// now no longer has parent
     return (data);
-}
-
-
-
-
-const Style *TrackDataDisplayable::style() const
-{
-    return ((mStyle!=NULL) ? mStyle : &Style::null);
-}
-
-
-
-void TrackDataDisplayable::setStyle(const Style &s)
-{
-    if (mStyle==NULL)
-    {
-        kDebug() << "set style for" << name();
-        mStyle = new Style(s);
-    }
-    else *mStyle = s;
 }
 
 
@@ -369,6 +356,13 @@ QString TrackDataDisplayable::metadata(int idx) const
 
 
 
+QString TrackDataDisplayable::metadata(const QString &key) const
+{
+    return (metadata(DataIndexer::self()->index(key)));
+}
+
+
+
 void TrackDataDisplayable::copyMetadata(const TrackDataDisplayable *other, bool overwrite)
 {
     for (int idx = 0; idx<other->mMetadata.size(); ++idx)
@@ -380,6 +374,40 @@ void TrackDataDisplayable::copyMetadata(const TrackDataDisplayable *other, bool 
         this->setMetadata(idx, om);
     }
 }
+
+
+
+const Style *TrackDataDisplayable::style() const
+{
+    return ((mStyle!=NULL) ? mStyle : &Style::null);
+}
+
+
+
+void TrackDataDisplayable::setStyle(const Style &s)
+{
+    if (mStyle==NULL)
+    {
+        kDebug() << "set style for" << name();
+        mStyle = new Style(s);
+    }
+    else *mStyle = s;
+}
+
+
+
+QString TrackDataDisplayable::timeZone() const
+{
+    const TrackDataItem *parentItem = this;
+    while (parentItem!=NULL)
+    {
+        const TrackDataFile *parentFile = dynamic_cast<const TrackDataFile *>(parentItem);
+        if (parentFile!=NULL) return (parentFile->metadata("timezone"));
+        parentItem = parentItem->parent();
+    }
+    return (QString::null);
+}
+
 
 
 
@@ -465,8 +493,18 @@ QString TrackDataPoint::formattedElevation() const
 
 
 
-QString TrackDataPoint::formattedTime() const
+QString TrackDataPoint::formattedTime(bool withZone) const
 {
+    if (withZone)
+    {
+        QString zoneName = timeZone();
+        if (!zoneName.isEmpty())
+        {
+            const KTimeZone tz = KSystemTimeZones::zone(zoneName);
+            return (TrackData::formattedTime(mDateTime, &tz));
+        }
+    }
+
     return (TrackData::formattedTime(mDateTime));
 }
 

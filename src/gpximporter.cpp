@@ -368,6 +368,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         if (mCurrentPoint!=NULL)			// check properly nested
         {
+            // The time spec of the decoded date/time is UTC, which is what we want.
             mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
         }
         else if (mWithinMetadata)

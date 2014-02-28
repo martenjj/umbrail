@@ -22,7 +22,6 @@
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
 #include "style.h"
-#include "dataindexer.h"
 
 #define GROUP_FILES		"Files"
 
@@ -333,6 +332,15 @@ void FilesController::slotTrackProperties()
         cmd1->setNewName(newItemName);
     }
 
+    QString newTimeZone = d.newTimeZone();
+    kDebug() << "new timezone" << newTimeZone;
+    if (newTimeZone!=dispItem->metadata("timezone"))
+    {
+        ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
+        cmd2->setDataItem(dispItem);
+        cmd2->setNewData("timezone", newTimeZone);
+    }
+
     const Style newStyle = d.newStyle();		// item style
     kDebug() << "new style" << newStyle;
     if (newStyle!=*dispItem->style())			// changing the style
@@ -346,7 +354,7 @@ void FilesController::slotTrackProperties()
     if (newType!="-")					// new type is applicable
     {
         kDebug() << "new type" << newType;
-        if (newType!=dispItem->metadata(DataIndexer::self()->index("type")))
+        if (newType!=dispItem->metadata("type"))
         {
             ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
             cmd4->setDataItem(dispItem);
@@ -358,7 +366,7 @@ void FilesController::slotTrackProperties()
     if (newDesc!="-")					// new description is applicable
     {
         kDebug() << "new description" << newDesc;
-        if (newDesc!=dispItem->metadata(DataIndexer::self()->index("desc")))
+        if (newDesc!=dispItem->metadata("desc"))
         {
             ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
             cmd5->setDataItem(dispItem);

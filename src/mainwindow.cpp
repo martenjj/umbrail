@@ -378,7 +378,7 @@ bool MainWindow::load(const KUrl &from)
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf!=NULL)
     {
-        QString s = tdf->metadata(DataIndexer::self()->index("position"));
+        QString s = tdf->metadata("position");
         kDebug() << "pos metadata" << s;
         if (!s.isEmpty())
         {						// no status bar update from zooming

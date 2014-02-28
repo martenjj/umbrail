@@ -12,6 +12,7 @@
 #include <kurl.h>
 
 
+class KTimeZone;
 class Style;
 class TrackDataItem;
 class TrackPropertiesPage;
@@ -99,7 +100,7 @@ namespace TrackData
 
     QString formattedLatLong(double lat, double lon);
     QString formattedDuration(unsigned t);
-    QString formattedTime(const QDateTime &dt);
+    QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
 };
 
 
@@ -160,6 +161,7 @@ public:
 
     void setMetadata(int idx, const QString &value);
     QString metadata(int idx) const;
+    QString metadata(const QString &key) const;
     void copyMetadata(const TrackDataDisplayable *other, bool overwrite = false);
 
     unsigned long selectionId() const			{ return (mSelectionId); }
@@ -167,6 +169,8 @@ public:
 
     const Style *style() const;
     void setStyle(const Style &s);
+
+    QString timeZone() const;
 
     virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
     virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) = 0;
@@ -287,7 +291,7 @@ public:
     double longitude() const				{ return (mLongitude); }
 
     QString formattedElevation() const;
-    QString formattedTime() const;
+    QString formattedTime(bool withZone = false) const;
     QString formattedPosition() const;
 
     BoundingArea boundingArea() const;
