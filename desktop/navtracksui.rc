@@ -25,6 +25,10 @@
       <Separator/>
       <Action name="map_go_selection"/>
       <Separator/>
+      <Action name="track_split"/>
+      <Action name="track_merge"/>
+      <Action name="track_promote"/>
+      <Separator/>
       <Action name="track_properties"/>
     </Menu>
 

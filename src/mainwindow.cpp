@@ -162,6 +162,21 @@ void MainWindow::setupActions()
     a->setShortcut(Qt::CTRL+Qt::Key_Comma);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
 
+    mSplitTrackAction = actionCollection()->addAction("track_split");
+    mSplitTrackAction->setText(i18n("Split Segment"));
+    mSplitTrackAction->setIcon(KIcon("split"));
+    connect(mSplitTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotSplitSegment()));
+
+    mMergeTrackAction = actionCollection()->addAction("track_merge");
+    mMergeTrackAction->setText(i18n("Merge Segments"));
+    mMergeTrackAction->setIcon(KIcon("merge"));
+    connect(mMergeTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMergeSegments()));
+
+    mPromoteTrackAction = actionCollection()->addAction("track_promote");
+    mPromoteTrackAction->setText(i18n("Promote Segment to Track"));
+    mPromoteTrackAction->setIcon(KIcon("go-up"));
+    connect(mPromoteTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotPromoteSegment()));
+
     mPropertiesAction = actionCollection()->addAction("track_properties");
     // text set in slotUpdateActionState() below
     mPropertiesAction->setShortcut(KShortcut(Qt::CTRL+Qt::Key_Return, Qt::CTRL+Qt::Key_Enter));
@@ -640,6 +655,10 @@ default:
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
+
+    mSplitTrackAction->setEnabled(selCount==1 && selType==TrackData::Point);
+    mPromoteTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
+    mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
 }
 
 

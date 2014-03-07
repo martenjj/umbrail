@@ -4,6 +4,7 @@
 #include <qmetaobject.h>
 
 #include <kdebug.h>
+#include <klocale.h>
 
 #include "filesmodel.h"
 #include "style.h"
@@ -42,7 +43,7 @@ void ImportFileCommand::redo()
     mSavedCount = mTrackData->childCount();		// how many tracks contained
     kDebug() << "file" << mTrackData->name() << "count" << mSavedCount;
 
-    model()->addFile(mTrackData);			// add data tree to model
+    model()->addToplevelItem(mTrackData);		// add data tree to model
     Q_ASSERT(mTrackData->childCount()==0);		// should have taken all tracks
 							// retain original for undo
     updateMap();
@@ -53,10 +54,10 @@ void ImportFileCommand::undo()
 {
     Q_ASSERT(mTrackData!=NULL);
     for (int i = 0; i<mSavedCount; ++i)			// how many tracks added last time
-    {
-        TrackDataItem *item = model()->removeLast();	// remove each from model
+    {							// remove each from model
+        TrackDataItem *item = model()->removeLastToplevelItem();
         if (item==NULL) continue;			// and re-add to saved file item
-        mTrackData->addChildItem(item, true);		// in the original order of course
+        mTrackData->addChildItem(item, 0);		// in the original order of course
     }
 
     kDebug() << "saved" << mTrackData->name() << "children" << mTrackData->childCount();
@@ -165,3 +166,60 @@ void ChangeItemDataCommand::undo()
 }
 
 
+
+SplitSegmentCommand::SplitSegmentCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mParentSegment = NULL;				// nothing set at present
+    mSplitIndex = -1;
+}
+
+
+
+
+static QString makeSplitName(const QString &orig)
+{
+    QString name = orig;
+    if (name.contains(' ')) name += i18n(" (split)");
+    else name += i18n("_split");
+    return (name);
+}
+
+
+
+
+
+
+void SplitSegmentCommand::redo()
+{
+    Q_ASSERT(mParentSegment!=NULL);
+    Q_ASSERT(mSplitIndex>0 && mSplitIndex<(mParentSegment->childCount()-1));
+
+    mNewSegment = new TrackDataSegment(makeSplitName(mParentSegment->name()));
+    mNewSegment->copyMetadata(mParentSegment);
+    // TODO: copy style
+
+    TrackDataPoint *splitPoint = dynamic_cast<TrackDataPoint *>(mParentSegment->childAt(mSplitIndex));
+    Q_ASSERT(splitPoint!=NULL);
+
+    TrackDataPoint *copyPoint = new TrackDataPoint(makeSplitName(splitPoint->name()));
+    copyPoint->copyData(splitPoint);
+    copyPoint->copyMetadata(splitPoint);
+    // TODO: copy style
+    mNewSegment->addChildItem(copyPoint);
+
+    model()->splitItem(mParentSegment, mSplitIndex, mNewSegment);
+    updateMap();
+}
+
+
+
+void SplitSegmentCommand::undo()
+{
+    Q_ASSERT(mNewSegment!=NULL);
+    Q_ASSERT(mParentSegment!=NULL);
+
+    model()->mergeItems(mParentSegment, mNewSegment);
+    delete mNewSegment;					// new segment and copied point
+    updateMap();
+}

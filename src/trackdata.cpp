@@ -255,10 +255,11 @@ TrackDataItem::~TrackDataItem()
 
 
 
-void TrackDataItem::addChildItem(TrackDataItem *data, bool atStart)
+void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 {
-    if (atStart) mChildItems.prepend(data);
-    else mChildItems.append(data);			// take ownership of child
+    if (idx>=0) mChildItems.insert(idx, data);		// insert at specified place
+    else mChildItems.append(data);			// default is to append
+							// have taken ownership of child
     data->mParent = this;				// set child item parent
 }
 
@@ -280,6 +281,18 @@ TrackDataItem *TrackDataItem::takeFirstChildItem()
     TrackDataItem *data = mChildItems.takeFirst();
     data->mParent = NULL;				// now no longer has parent
     return (data);
+}
+
+
+
+
+TrackDataItem *TrackDataItem::takeChildItem(int idx)
+{
+    Q_ASSERT(idx>=0 && idx<mChildItems.count());
+    TrackDataItem *data = mChildItems.takeAt(idx);
+    data->mParent = NULL;				// now no longer has parent
+    return (data);
+
 }
 
 
@@ -574,4 +587,13 @@ double TrackDataPoint::bearingTo(const TrackDataPoint *other) const
 int TrackDataPoint::timeTo(const TrackDataPoint *other) const
 {
     return (time().secsTo(other->time()));
+}
+
+
+void TrackDataPoint::copyData(const TrackDataPoint *other)
+{
+    mLatitude = other->mLatitude;
+    mLongitude = other->mLongitude;
+    mElevation = other->mElevation;
+    mDateTime = other->mDateTime;
 }

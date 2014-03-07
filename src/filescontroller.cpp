@@ -126,7 +126,7 @@ bool FilesController::importFile(const KUrl &importFrom)
 
     if (model()->isEmpty())				// any data held so far?
     {							// no, pass to model directly
-        model()->addFile(tdf);				// takes ownership of tracks
+        model()->addToplevelItem(tdf);			// takes ownership of tracks
         delete tdf;					// not needed any more
         emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.pathOrUrl()));
     }
@@ -383,6 +383,63 @@ void FilesController::slotTrackProperties()
     cmd->setText(act!=NULL ? act->data().toString() : i18n("Properties"));
     mainWindow()->executeCommand(cmd);
 }
+
+
+
+
+
+void FilesController::slotSplitSegment()
+{
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+    const TrackDataItem *item = items.first();
+
+    TrackDataSegment *pnt = dynamic_cast<TrackDataSegment *>(item->parent());
+    if (pnt==NULL) return;
+    kDebug() << "split" << pnt->name() << "at" << item->name();
+
+    int idx = pnt->childIndex(item);
+    if (idx==0 || idx>=(pnt->childCount()-1))
+    {
+        KMessageBox::sorry(mainWindow(),
+                           i18n("<qt>Cannot split the segment here<br>(at its start or end point)"),
+                           i18n("Cannot split segment"));
+        return;
+    }
+
+    SplitSegmentCommand *cmd = new SplitSegmentCommand(this);
+    cmd->setText(i18n("Split Segment"));
+    cmd->setSplitAt(pnt, idx);
+    mainWindow()->executeCommand(cmd);
+}
+
+
+
+void FilesController::slotMergeSegments()
+{
+    kDebug();
+
+
+
+}
+
+
+
+void FilesController::slotPromoteSegment()
+{
+    kDebug();
+
+
+
+}
+
+
+
+
+
+
+
+
 
 
 

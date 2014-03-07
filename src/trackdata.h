@@ -122,9 +122,10 @@ public:
     int childIndex(const TrackDataItem *data) const	{ return (mChildItems.indexOf(const_cast<TrackDataItem *>(data))); }
     TrackDataItem *parent() const			{ return (mParent); }
 
-    void addChildItem(TrackDataItem *data, bool atStart = false);
-    TrackDataItem *takeLastChildItem();
+    void addChildItem(TrackDataItem *data, int idx = -1);
     TrackDataItem *takeFirstChildItem();
+    TrackDataItem *takeLastChildItem();
+    TrackDataItem *takeChildItem(int idx);
 
 // TODO: can move to Displayable?
     virtual BoundingArea boundingArea() const;
@@ -300,6 +301,7 @@ public:
     double bearingTo(const TrackDataPoint *other) const;
     int timeTo(const TrackDataPoint *other) const;
 
+    void copyData(const TrackDataPoint *other);
 
 private:
     static int sCounter;

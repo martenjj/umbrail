@@ -42,6 +42,9 @@ public:
 
 public slots:               
     void slotTrackProperties();
+    void slotSplitSegment();
+    void slotMergeSegments();
+    void slotPromoteSegment();
 
 protected slots:
 

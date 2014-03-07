@@ -31,8 +31,8 @@ public:
     void clear();
     bool isEmpty() const;
 
-    void addFile(TrackDataFile *tdf);
-    TrackDataItem *removeLast();
+    void addToplevelItem(TrackDataFile *tdf);
+    TrackDataItem *removeLastToplevelItem();
 
     void clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods);
 
@@ -48,6 +48,9 @@ public:
 //
     // in place
     void changedItem(const TrackDataItem *item);
+
+    void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr);
+    void mergeItems(TrackDataItem *item, TrackDataItem *src);
 
     TrackDataFile *rootFileItem() const;
 

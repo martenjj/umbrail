@@ -217,7 +217,7 @@ void FilesModel::clear()
 }
 
 
-void FilesModel::addFile(TrackDataFile *tdf)
+void FilesModel::addToplevelItem(TrackDataFile *tdf)
 {
     emit layoutAboutToBeChanged();
 
@@ -266,13 +266,13 @@ void FilesModel::addFile(TrackDataFile *tdf)
 
 
 
-TrackDataItem *FilesModel::removeLast()
+TrackDataItem *FilesModel::removeLastToplevelItem()
 {
     // Remove and return the last track item child of the root file item.
     // TODO: need to make this work for removing the root file item?
     if (rootFileItem()->childCount()==0)
     {
-        kDebug() << "!!!!!!!!!!!!!!!!!!!!!!! no tracks to remove";
+        kDebug() << "nothing to remove";
         return (NULL);
     }
 
@@ -322,6 +322,54 @@ void FilesModel::changedItem(const TrackDataItem *item)
     QModelIndex idx = indexForData(item);
     emit dataChanged(idx, idx);
 }
+
+
+
+
+void FilesModel::splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr)
+{
+    kDebug() << "from" << item->name() << "->" << rcvr->name();
+    emit layoutAboutToBeChanged();
+
+    // Move child items following the split index to the receiving item
+    int takeFrom = idx+1;
+    while (item->childCount()>takeFrom)
+    {
+        TrackDataItem *movedItem = item->takeChildItem(takeFrom);
+        rcvr->addChildItem(movedItem);
+    }
+
+    // Adopt the receiving item as the next sibling of the split item
+    TrackDataItem *parentItem = item->parent();
+    Q_ASSERT(parentItem!=NULL);
+    parentItem->addChildItem(rcvr, parentItem->childIndex(item)+1);
+
+    emit layoutChanged();
+}
+
+
+
+void FilesModel::mergeItems(TrackDataItem *item, TrackDataItem *src)
+{
+    kDebug() << "from" << src->name() << "->" << item->name();
+    emit layoutAboutToBeChanged();
+
+    // Append all the source's child items, apart from the first,
+    // to the receiving item
+    while (src->childCount()>1)
+    {
+        TrackDataItem *movedItem = src->takeChildItem(1);
+        item->addChildItem(movedItem);
+    }
+
+    // Remove and orphan the now (effectively) empty source item
+    TrackDataItem *parentItem = item->parent();
+    Q_ASSERT(parentItem!=NULL);
+    (void) parentItem->takeChildItem(parentItem->childIndex(src));
+
+    emit layoutChanged();
+}
+
 
 
 void FilesModel::clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods)
