@@ -15,7 +15,7 @@ class MapThemeDialogue : public KDialog
     Q_OBJECT
 
 public:
-    MapThemeDialogue(QStandardItemModel *model, QWidget *parent = NULL);
+    MapThemeDialogue(QStandardItemModel *model, QWidget *pnt = NULL);
     virtual ~MapThemeDialogue();
 
     void setThemeId(const QString &id);

@@ -13,8 +13,8 @@
 #define PIXMAP_SIZE		40			// size of preview pixmap
 
 
-MapThemeDialogue::MapThemeDialogue(QStandardItemModel *model, QWidget *parent)
-    : KDialog(parent)
+MapThemeDialogue::MapThemeDialogue(QStandardItemModel *model, QWidget *pnt)
+    : KDialog(pnt)
 {
     setObjectName("MapThemeDialogue");
 
