@@ -326,13 +326,15 @@ void FilesModel::changedItem(const TrackDataItem *item)
 
 
 
-void FilesModel::splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr)
+void FilesModel::splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr,
+                           TrackDataItem *newParent, int newIndex)
 {
-    kDebug() << "from" << item->name() << "->" << rcvr->name();
     emit layoutAboutToBeChanged();
 
-    // Move child items following the split index to the receiving item
     int takeFrom = idx+1;
+    kDebug() << "from" << item->name() << "->" << rcvr->name() << "from" << takeFrom;
+
+    // Move child items following the split index to the receiving item
     while (item->childCount()>takeFrom)
     {
         TrackDataItem *movedItem = item->takeChildItem(takeFrom);
@@ -341,31 +343,40 @@ void FilesModel::splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr)
 
     // Adopt the receiving item as the next sibling of the split item
     TrackDataItem *parentItem = item->parent();
+    int parentIndex = (newIndex!=-1 ? newIndex : (parentItem->childIndex(item)+1));
+    if (newParent!=NULL) parentItem = newParent;
     Q_ASSERT(parentItem!=NULL);
-    parentItem->addChildItem(rcvr, parentItem->childIndex(item)+1);
+    kDebug() << "add to" << parentItem->name() << "as index" << newIndex;
+    parentItem->addChildItem(rcvr, newIndex);
 
     emit layoutChanged();
 }
 
 
 
-void FilesModel::mergeItems(TrackDataItem *item, TrackDataItem *src)
+void FilesModel::mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems)
 {
-    kDebug() << "from" << src->name() << "->" << item->name();
     emit layoutAboutToBeChanged();
 
-    // Append all the source's child items, apart from the first,
+    const int startIndex = (allItems ? 0 : 1);
+    kDebug() << "from" << src->name() << "->" << item->name()
+             << "start" << startIndex << "count" << src->childCount();
+
+    // Append all the source's child items, either all (where 'allItems'
+    // is true) or all apart from the first (where 'allItems' is false),
     // to the receiving item
-    while (src->childCount()>1)
+    while (src->childCount()>startIndex)
     {
-        TrackDataItem *movedItem = src->takeChildItem(1);
+        TrackDataItem *movedItem = src->takeChildItem(startIndex);
         item->addChildItem(movedItem);
     }
 
     // Remove and orphan the now (effectively) empty source item
-    TrackDataItem *parentItem = item->parent();
+    TrackDataItem *parentItem = src->parent();
     Q_ASSERT(parentItem!=NULL);
-    (void) parentItem->takeChildItem(parentItem->childIndex(src));
+    int formerIndex = parentItem->childIndex(src);
+    kDebug() << "remove from" << parentItem->name() << "at" << formerIndex;
+    (void) parentItem->takeChildItem(formerIndex);
 
     emit layoutChanged();
 }

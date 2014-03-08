@@ -161,9 +161,9 @@ class SplitSegmentCommand : public FilesCommandBase
 {
 public:
     SplitSegmentCommand(FilesController *fc, QUndoCommand *parent = NULL);
-    virtual ~SplitSegmentCommand()		{}
+    virtual ~SplitSegmentCommand();
 
-    void setSplitAt(TrackDataSegment *pnt, int idx)	{ mParentSegment = pnt; mSplitIndex = idx; }
+    void setSplitAt(TrackDataSegment *pnt, int idx);
 
     void redo();
     void undo();
@@ -172,6 +172,27 @@ private:
     TrackDataSegment *mParentSegment;
     int mSplitIndex;
     TrackDataSegment *mNewSegment;
+};
+
+
+
+class MergeSegmentsCommand : public FilesCommandBase
+{
+public:
+    MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~MergeSegmentsCommand();
+
+    void setMergeSegments(TrackDataSegment *master, const QList<TrackDataItem *> &others);
+
+    void redo();
+    void undo();
+
+private:
+    TrackDataSegment *mMasterSegment;
+    QList<TrackDataItem *> mOtherSegments;
+    QVector<TrackDataItem *> mOtherParents;
+    QVector<int> mOtherCounts;
+    QVector<int> mOtherIndexes;
 };
 
 

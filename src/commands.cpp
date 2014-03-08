@@ -12,6 +12,33 @@
 
 
 
+
+// These are intended to be used in a destructor to clean up data that
+// we may be holding.  If the 'item' has a parent then it means that
+// it is part of the main data structure, so it should not be deleted.
+// If it has no parent then it is owned by us and can safely be deleted.
+
+template<typename T>
+static void deleteData(T *item)
+{
+    if (item==NULL) return;
+    if (item->parent()!=NULL) return;
+    kDebug() << "deleting" << item->name();
+    delete item;
+}
+
+
+template<typename C>
+static void deleteData(const C &list)
+{
+    for (int i = 0; i<list.count(); ++i) deleteData(list[i]);
+}
+
+
+
+
+
+
 void FilesCommandBase::updateMap() const
 {
     // Cannot emit a signal directly, because we are not a QObject.
@@ -32,7 +59,7 @@ ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
 
 ImportFileCommand::~ImportFileCommand()
 {
-    if (mTrackData!=NULL) delete mTrackData;		// delete if we hold data
+    deleteData(mTrackData);
 }
 
 
@@ -172,8 +199,26 @@ SplitSegmentCommand::SplitSegmentCommand(FilesController *fc, QUndoCommand *pare
 {
     mParentSegment = NULL;				// nothing set at present
     mSplitIndex = -1;
+    mNewSegment = NULL;
 }
 
+
+
+SplitSegmentCommand::~SplitSegmentCommand()
+{
+    deleteData(mParentSegment);
+    deleteData(mNewSegment);
+}
+
+
+
+
+
+void SplitSegmentCommand::setSplitAt(TrackDataSegment *pnt, int idx)
+{
+    mParentSegment = pnt;
+    mSplitIndex = idx;
+}
 
 
 
@@ -221,5 +266,94 @@ void SplitSegmentCommand::undo()
 
     model()->mergeItems(mParentSegment, mNewSegment);
     delete mNewSegment;					// new segment and copied point
+    mNewSegment = NULL;
+    updateMap();
+}
+
+
+
+
+
+MergeSegmentsCommand::MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mMasterSegment = NULL;
+}
+
+
+
+MergeSegmentsCommand::~MergeSegmentsCommand()
+{
+    deleteData(mMasterSegment);
+    deleteData(mOtherSegments);
+    deleteData(mOtherParents);
+}
+
+
+
+
+void MergeSegmentsCommand::setMergeSegments(TrackDataSegment *master, const QList<TrackDataItem *> &others)
+{
+    mMasterSegment = master;
+    mOtherSegments = others;
+}
+
+
+
+
+void MergeSegmentsCommand::redo()
+{
+    Q_ASSERT(mMasterSegment!=NULL);
+    Q_ASSERT(!mOtherSegments.isEmpty());
+
+    int num = mOtherSegments.count();
+    mOtherCounts.resize(num);
+    mOtherIndexes.resize(num);
+    mOtherParents.resize(num);
+
+    for (int i = 0; i<mOtherSegments.count(); ++i)
+    {
+        TrackDataItem *item = mOtherSegments[i];
+        mOtherCounts[i] = item->childCount();
+
+        TrackDataItem *parent = item->parent();
+        Q_ASSERT(parent!=NULL);
+        mOtherParents[i] = parent;
+        mOtherIndexes[i] = parent->childIndex(item);
+
+        model()->mergeItems(mMasterSegment, item, true);
+    }
+
+    updateMap();
+}
+
+
+
+void MergeSegmentsCommand::undo()
+{
+    Q_ASSERT(mMasterSegment!=NULL);
+    Q_ASSERT(!mOtherSegments.isEmpty());
+    Q_ASSERT(mOtherSegments.count()==mOtherCounts.count());
+    Q_ASSERT(mOtherIndexes.count()==mOtherCounts.count());
+    Q_ASSERT(mOtherParents.count()==mOtherCounts.count());
+
+    for (int i = mOtherSegments.count()-1; i>=0; --i)
+    {
+        int num = mOtherCounts[i];
+        TrackDataItem *item = mOtherSegments[i];
+        int idx = mOtherIndexes[i];
+        TrackDataItem *parent = mOtherParents[i];
+
+        // The last 'num' points of the 'mMasterSegment' are those that
+        // belong to the former 'item' segment, which was at index 'idx'
+        // under parent 'parent'.
+        model()->splitItem(mMasterSegment, mMasterSegment->childCount()-num-1,
+                           item, parent, idx);
+    }
+
+    mOtherCounts.clear();
+    mOtherIndexes.clear();
+    mOtherParents.clear();
+
     updateMap();
 }

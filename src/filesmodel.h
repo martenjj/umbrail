@@ -49,8 +49,8 @@ public:
     // in place
     void changedItem(const TrackDataItem *item);
 
-    void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr);
-    void mergeItems(TrackDataItem *item, TrackDataItem *src);
+    void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr, TrackDataItem *newParent = NULL, int newIndex = -1);
+    void mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems = false);
 
     TrackDataFile *rootFileItem() const;
 

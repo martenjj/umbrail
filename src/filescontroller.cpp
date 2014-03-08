@@ -249,6 +249,8 @@ case TrackData::Segment:    if (selCount==1) emit statusMessage(i18n("Selected s
 case TrackData::Point:      if (selCount==1) emit statusMessage(i18n("Selected point '%1'", name));
                             else emit statusMessage(i18np("Selected %1 point", "Selected %1 points", selCount));
                             break;
+
+default:                    break;
         }
     }
 
@@ -408,19 +410,68 @@ void FilesController::slotSplitSegment()
     }
 
     SplitSegmentCommand *cmd = new SplitSegmentCommand(this);
-    cmd->setText(i18n("Split Segment"));
+    QAction *act = static_cast<QAction *>(sender());
+    if (act!=NULL) cmd->setText(KGlobal::locale()->removeAcceleratorMarker(act->text()));
     cmd->setSplitAt(pnt, idx);
     mainWindow()->executeCommand(cmd);
 }
 
 
 
+static bool compareSegmentTimes(const TrackDataItem *item1, const TrackDataItem *item2)
+{
+    if (item1->childCount()==0) return (true);		// empty always sorts first
+    if (item2->childCount()==0) return (false);
+
+    const TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(item1->childAt(0));
+    Q_ASSERT(pnt1!=NULL);
+    const TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(item2->childAt(0));
+    Q_ASSERT(pnt2!=NULL);
+
+    return (pnt1->time()<pnt2->time());
+}
+
+
+
 void FilesController::slotMergeSegments()
 {
-    kDebug();
+    // There may be more than two segments selected.  They will all be merged
+    // in time order, which must still result in a strict monotonic ordering
+    // of the segment points.  In other words, the master segment will be the
+    // one with the earliest start time and each segment merged into it in turn
+    // must have a start time after the current end of the master.
 
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()<2) return;
+    qSort(items.begin(), items.end(), &compareSegmentTimes);
 
+    kDebug() << "sorted segments:";
+    QDateTime prevEnd;
+    for (int i = 0; i<items.count(); ++i)
+    {
+        const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
+        const TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(tds->childAt(0));
+        const TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(tds->childAt(tds->childCount()-1));
+        kDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
 
+        if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
+        {						// all apart from first
+            KMessageBox::sorry(mainWindow(), i18n("<qt>Cannot merge these segments<p>Start time of segment \"%1\"<br>overlaps the previous \"%2\"",
+                                                  tds->name(), items[i-1]->name()),
+                               i18n("Cannot merge segments"));
+            return;
+        }
+
+        prevEnd = pnt2->time();;			// note end for next time
+    }
+
+    TrackDataSegment *masterSeg = dynamic_cast<TrackDataSegment *>(items.takeFirst());
+
+    MergeSegmentsCommand *cmd = new MergeSegmentsCommand(this);
+    QAction *act = static_cast<QAction *>(sender());
+    if (act!=NULL) cmd->setText(KGlobal::locale()->removeAcceleratorMarker(act->text()));
+    cmd->setMergeSegments(masterSeg, items);
+    mainWindow()->executeCommand(cmd);
 }
 
 
