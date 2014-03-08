@@ -13,6 +13,7 @@
 #include "mainwindow.h"
 #include "autotooltipdelegate.h"
 #include "settings.h"
+#include "filesmodel.h"
 
 
 FilesView::FilesView(QWidget *pnt)
@@ -324,4 +325,15 @@ void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
     selectionModel()->select(QItemSelection(index, index),
                              static_cast<QItemSelectionModel::SelectionFlags>(flags));
     scrollTo(index);
+}
+
+
+void FilesView::selectItem(const TrackDataItem *item, bool combine)
+{
+    QModelIndex idx = qobject_cast<FilesModel *>(model())->indexForItem(item);
+    kDebug() << "index" << idx << "combine?" << combine;
+    if (!idx.isValid()) return;
+
+    if (!combine) selectionModel()->clear();
+    selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
 }

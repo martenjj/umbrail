@@ -7,6 +7,7 @@
 #include <klocale.h>
 
 #include "filesmodel.h"
+#include "filesview.h"
 #include "style.h"
 #include "dataindexer.h"
 
@@ -73,6 +74,7 @@ void ImportFileCommand::redo()
     model()->addToplevelItem(mTrackData);		// add data tree to model
     Q_ASSERT(mTrackData->childCount()==0);		// should have taken all tracks
 							// retain original for undo
+    controller()->view()->clearSelection();
     updateMap();
 }
 
@@ -88,6 +90,8 @@ void ImportFileCommand::undo()
     }
 
     kDebug() << "saved" << mTrackData->name() << "children" << mTrackData->childCount();
+
+    controller()->view()->clearSelection();
     updateMap();
 }
 
@@ -254,6 +258,9 @@ void SplitSegmentCommand::redo()
     mNewSegment->addChildItem(copyPoint);
 
     model()->splitItem(mParentSegment, mSplitIndex, mNewSegment);
+
+    controller()->view()->selectItem(mParentSegment);
+    controller()->view()->selectItem(mNewSegment, true);
     updateMap();
 }
 
@@ -267,6 +274,8 @@ void SplitSegmentCommand::undo()
     model()->mergeItems(mParentSegment, mNewSegment);
     delete mNewSegment;					// new segment and copied point
     mNewSegment = NULL;
+
+    controller()->view()->selectItem(mParentSegment);
     updateMap();
 }
 
@@ -324,6 +333,7 @@ void MergeSegmentsCommand::redo()
         model()->mergeItems(mMasterSegment, item, true);
     }
 
+    controller()->view()->selectItem(mMasterSegment);
     updateMap();
 }
 
@@ -337,6 +347,7 @@ void MergeSegmentsCommand::undo()
     Q_ASSERT(mOtherIndexes.count()==mOtherCounts.count());
     Q_ASSERT(mOtherParents.count()==mOtherCounts.count());
 
+    controller()->view()->selectItem(mMasterSegment);
     for (int i = mOtherSegments.count()-1; i>=0; --i)
     {
         int num = mOtherCounts[i];
@@ -349,6 +360,7 @@ void MergeSegmentsCommand::undo()
         // under parent 'parent'.
         model()->splitItem(mMasterSegment, mMasterSegment->childCount()-num-1,
                            item, parent, idx);
+        controller()->view()->selectItem(item, true);
     }
 
     mOtherCounts.clear();

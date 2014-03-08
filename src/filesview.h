@@ -27,6 +27,8 @@ public:
     const TrackDataItem *selectedItem() const	{ return (mSelectedItem); }
     QList<TrackDataItem *> selectedItems() const;
 
+    void selectItem(const TrackDataItem *item, bool combine = false);
+
     unsigned long selectionId() const		{ return (mSelectionId); }
 
 public slots:

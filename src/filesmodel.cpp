@@ -78,7 +78,7 @@ TrackDataItem *FilesModel::dataPointer(const QModelIndex &idx) const
 
 
 
-QModelIndex FilesModel::indexForData(const TrackDataItem *tdi) const
+QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 {
     /////////////////////// Sometimes happens with crash after undo of import
     Q_ASSERT(tdi!=NULL);
@@ -108,7 +108,7 @@ QModelIndex FilesModel::parent(const QModelIndex &idx) const
 {
     const TrackDataItem *tdi = dataPointer(idx);
     if (tdi->parent()==NULL) return (QModelIndex());
-    return (indexForData(tdi->parent()));
+    return (indexForItem(tdi->parent()));
 }
 
 
@@ -319,7 +319,7 @@ TrackDataItem *FilesModel::removeLastToplevelItem()
 
 void FilesModel::changedItem(const TrackDataItem *item)
 {
-    QModelIndex idx = indexForData(item);
+    QModelIndex idx = indexForItem(item);
     emit dataChanged(idx, idx);
 }
 
@@ -390,6 +390,6 @@ void FilesModel::clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers m
     else if (mods==Qt::ControlModifier) selFlags = QItemSelectionModel::Toggle;
     else return;
 
-    kDebug() << "click for" << indexForData(tdp) << "flags" << selFlags;
-    emit clickedItem(indexForData(tdp), static_cast<unsigned int>(selFlags));
+    kDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
+    emit clickedItem(indexForItem(tdp), static_cast<unsigned int>(selFlags));
 }

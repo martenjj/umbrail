@@ -52,6 +52,7 @@ public:
     void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr, TrackDataItem *newParent = NULL, int newIndex = -1);
     void mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems = false);
 
+    QModelIndex indexForItem(const TrackDataItem *tdi) const;
     TrackDataFile *rootFileItem() const;
 
 signals:
@@ -59,7 +60,6 @@ signals:
 
 private:
     TrackDataItem *dataPointer(const QModelIndex &idx) const;
-    QModelIndex indexForData(const TrackDataItem *tdi) const;
 
 private:
     TrackDataItem *mRootItem;
