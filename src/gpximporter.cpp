@@ -276,7 +276,8 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     qDebug() << indent().constData() << "END  " << localName;
 #endif
 
-    if (localName==mRestartTag) mRestartTag.clear();	// found tag, can now restart
+    const bool canRestart = (localName==mRestartTag);	// found tag, can now restart
+    if (canRestart) mRestartTag.clear();		// restart tag now found
 
 // handle end of element here even if it had some errors
 
@@ -351,7 +352,8 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         return (true);
     }
 
-    if (!parsing()) return (true);
+    if (canRestart) return (true);			// end tag now handled
+    if (!parsing()) return (true);			// still ignoring until restart
 
 // handle end of element only if it was error free
 
