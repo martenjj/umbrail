@@ -97,9 +97,10 @@ namespace TrackData
 
     double sumTotalTravelDistance(const QList<TrackDataItem *> &items);
     unsigned sumTotalTravelTime(const QList<TrackDataItem *> &items);
+    unsigned sumTotalChildCount(const QList<TrackDataItem *> &items);
 
-    QString formattedLatLong(double lat, double lon);
-    QString formattedDuration(unsigned t);
+    QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
+    QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
 };
 
@@ -126,6 +127,7 @@ public:
     TrackDataItem *takeFirstChildItem();
     TrackDataItem *takeLastChildItem();
     TrackDataItem *takeChildItem(int idx);
+    void takeChildItem(TrackDataItem *item);
 
 // TODO: can move to Displayable?
     virtual BoundingArea boundingArea() const;

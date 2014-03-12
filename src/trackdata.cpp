@@ -165,6 +165,15 @@ unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
 
 
 
+unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> &items)
+{
+    int num = 0;
+    for (int i = 0; i<items.count(); ++i) num += items[i]->childCount();
+    return (num);
+}
+
+
+
 
 
 static QString toDMS(double d, int degWidth, char posMark, char negMark)
@@ -190,9 +199,14 @@ static QString toDMS(double d, int degWidth, char posMark, char negMark)
 
 
 
-QString TrackData::formattedLatLong(double lat, double lon)
+QString TrackData::formattedLatLong(double lat, double lon, bool blankIfUnknown)
 {
-    if (isnan(lat) || isnan(lon)) return (i18nc("an unknown quantity", "unknown"));
+    if (isnan(lat) || isnan(lon))
+    {
+        if (blankIfUnknown) return (QString::null);
+        return (i18nc("an unknown quantity", "unknown"));
+    }
+
     QString latStr = toDMS(lat, 2, 'N', 'S');
     QString lonStr = toDMS(lon, 3, 'E', 'W');
     return (latStr+" "+lonStr);
@@ -201,8 +215,10 @@ QString TrackData::formattedLatLong(double lat, double lon)
 
 
 
-QString TrackData::formattedDuration(unsigned t)
+QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
 {
+    if (t==0 && blankIfZero) return (QString::null);
+
     int sec = t % 60;					// seconds
     t -= sec;
     t /= 60;
@@ -295,6 +311,12 @@ TrackDataItem *TrackDataItem::takeChildItem(int idx)
 
 }
 
+
+
+void TrackDataItem::takeChildItem(TrackDataItem *item)
+{
+    takeChildItem(mChildItems.indexOf(item));
+}
 
 
 

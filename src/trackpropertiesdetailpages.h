@@ -35,6 +35,8 @@ protected:
     void addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText);
     void addMetadataField(const TrackDataDisplayable *tdd, const QString &key, const QString &label);
 
+protected:
+    bool mIsEmpty;
 };
 
 

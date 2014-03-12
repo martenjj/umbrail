@@ -21,6 +21,7 @@ public:
     TrackDataLabel(int i, QWidget *pnt = NULL);
     TrackDataLabel(const QDateTime &dt, QWidget *pnt = NULL);
     TrackDataLabel(double lat, double lon, QWidget *pnt = NULL);
+    TrackDataLabel(double lat, double lon, bool blankIfUnknown, QWidget *pnt = NULL);
 
     virtual ~TrackDataLabel()					{}
 

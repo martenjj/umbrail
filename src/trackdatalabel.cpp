@@ -50,6 +50,14 @@ TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *pnt)
 
 
 
+TrackDataLabel::TrackDataLabel(double lat, double lon, bool blankIfUnknown, QWidget *pnt)
+    : QLabel(TrackData::formattedLatLong(lat, lon, blankIfUnknown), pnt)
+{
+    init();
+}
+
+
+
 TrackDataLabel::TrackDataLabel(int i, QWidget *pnt)
     : QLabel(QString::number(i), pnt)
 {
