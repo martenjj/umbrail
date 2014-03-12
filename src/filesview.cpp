@@ -28,6 +28,7 @@ FilesView::FilesView(QWidget *pnt)
     setRootIsDecorated(true);
     setSortingEnabled(true);
     setAlternatingRowColors(true);
+    setUniformRowHeights(true);
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setAllColumnsShowFocus(true);

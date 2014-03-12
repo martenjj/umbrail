@@ -22,6 +22,9 @@ public:
     virtual void undo() = 0;
     virtual void redo() = 0;
 
+    static QString senderText(const QObject *sdr);
+    void setSenderText(const QObject *sdr);
+
 protected:
     CommandBase(QUndoCommand *parent = NULL) : QUndoCommand(parent)	{};
 };
@@ -59,7 +62,7 @@ public:
     ImportFileCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~ImportFileCommand();
 
-    void setTrackData(TrackDataFile *tdf)		{ mTrackData = tdf; }
+    void setData(TrackDataFile *tdf)			{ mTrackData = tdf; }
 
     void redo();
     void undo();
@@ -98,10 +101,10 @@ class ChangeItemNameCommand : public ChangeItemCommand
 {
 public:
     ChangeItemNameCommand(FilesController *fc, QUndoCommand *parent = NULL)
-        : ChangeItemCommand(fc, parent)		{}
-    virtual ~ChangeItemNameCommand()		{}
+        : ChangeItemCommand(fc, parent)			{}
+    virtual ~ChangeItemNameCommand()			{}
 
-    void setNewName(const QString &name)	{ mNewName = name; }
+    void setData(const QString &name)			{ mNewName = name; }
 
     void redo();
     void undo();
@@ -118,10 +121,10 @@ class ChangeItemStyleCommand : public ChangeItemCommand
 {
 public:
     ChangeItemStyleCommand(FilesController *fc, QUndoCommand *parent = NULL)
-        : ChangeItemCommand(fc, parent)		{}
-    virtual ~ChangeItemStyleCommand()		{}
+        : ChangeItemCommand(fc, parent)			{}
+    virtual ~ChangeItemStyleCommand()			{}
 
-    void setNewStyle(const Style &style)	{ mNewStyle = style; }
+    void setData(const Style &style)			{ mNewStyle = style; }
 
     void redo();
     void undo();
@@ -138,11 +141,11 @@ class ChangeItemDataCommand : public ChangeItemCommand
 {
 public:
     ChangeItemDataCommand(FilesController *fc, QUndoCommand *parent = NULL)
-        : ChangeItemCommand(fc, parent)		{}
-    virtual ~ChangeItemDataCommand()		{}
+        : ChangeItemCommand(fc, parent)			{}
+    virtual ~ChangeItemDataCommand()			{}
 
-    void setNewData(const QString &key,
-                    const QString &value)	{ mKey = key; mNewValue = value; }
+    void setData(const QString &key,
+                 const QString &value)			{ mKey = key; mNewValue = value; }
 
     void redo();
     void undo();
@@ -163,7 +166,7 @@ public:
     SplitSegmentCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~SplitSegmentCommand();
 
-    void setSplitAt(TrackDataSegment *pnt, int idx);
+    void setData(TrackDataSegment *pnt, int idx);
 
     void redo();
     void undo();
@@ -182,7 +185,7 @@ public:
     MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~MergeSegmentsCommand();
 
-    void setMergeSegments(TrackDataSegment *master, const QList<TrackDataItem *> &others);
+    void setData(TrackDataSegment *master, const QList<TrackDataItem *> &others);
 
     void redo();
     void undo();
@@ -193,6 +196,42 @@ private:
     QVector<TrackDataItem *> mOtherParents;
     QVector<int> mOtherCounts;
     QVector<int> mOtherIndexes;
+};
+
+
+
+class AddTrackCommand : public FilesCommandBase
+{
+public:
+    AddTrackCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~AddTrackCommand();
+
+    void redo();
+    void undo();
+
+private:
+    TrackDataTrack *mNewTrack;
+};
+
+
+
+
+class MoveSegmentCommand : public FilesCommandBase
+{
+public:
+    MoveSegmentCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~MoveSegmentCommand();
+
+    void setData(TrackDataSegment *tds, TrackDataTrack *destTrack);
+
+    void redo();
+    void undo();
+
+private:
+    TrackDataSegment *mMoveSegment;
+    TrackDataItem *mOrigTrack;
+    TrackDataTrack *mDestTrack;
+    int mOrigIndex;
 };
 
 

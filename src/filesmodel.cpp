@@ -69,7 +69,7 @@ bool FilesModel::isEmpty() const
 
 
 
-TrackDataItem *FilesModel::dataPointer(const QModelIndex &idx) const
+TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
 {
     TrackDataItem *tdi = static_cast<TrackDataItem *>(idx.internalPointer());
     if (tdi==NULL) tdi = mRootItem;
@@ -93,7 +93,7 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 {
-    const TrackDataItem *tdi = dataPointer(pnt);
+    const TrackDataItem *tdi = itemForIndex(pnt);
     if (row>=tdi->childCount())				// only during initialisation
     {							// without SORTABLE_VIEW
         kDebug() << "requested index for nonexistent row!";
@@ -106,7 +106,7 @@ QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 
 QModelIndex FilesModel::parent(const QModelIndex &idx) const
 {
-    const TrackDataItem *tdi = dataPointer(idx);
+    const TrackDataItem *tdi = itemForIndex(idx);
     if (tdi->parent()==NULL) return (QModelIndex());
     return (indexForItem(tdi->parent()));
 }
@@ -114,7 +114,7 @@ QModelIndex FilesModel::parent(const QModelIndex &idx) const
 
 int FilesModel::rowCount(const QModelIndex &pnt) const
 {
-   const TrackDataItem *tdi = dataPointer(pnt);
+   const TrackDataItem *tdi = itemForIndex(pnt);
    return (tdi->childCount());
 }
 
@@ -129,7 +129,7 @@ int FilesModel::columnCount(const QModelIndex &pnt) const
 
 QVariant FilesModel::data(const QModelIndex &idx, int role) const
 {
-    const TrackDataItem *tdi = dataPointer(idx);
+    const TrackDataItem *tdi = itemForIndex(idx);
     switch (role)
     {
 case Qt::DisplayRole:
@@ -277,7 +277,7 @@ TrackDataItem *FilesModel::removeLastToplevelItem()
     }
 
     emit layoutAboutToBeChanged();
-    TrackDataFile *tdf = static_cast<TrackDataFile *>(rootFileItem()->takeLastChildItem());
+    TrackDataItem *tdf = rootFileItem()->takeLastChildItem();
     emit layoutChanged();
     return (tdf);
 }
@@ -346,8 +346,8 @@ void FilesModel::splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr,
     int parentIndex = (newIndex!=-1 ? newIndex : (parentItem->childIndex(item)+1));
     if (newParent!=NULL) parentItem = newParent;
     Q_ASSERT(parentItem!=NULL);
-    kDebug() << "add to" << parentItem->name() << "as index" << newIndex;
-    parentItem->addChildItem(rcvr, newIndex);
+    kDebug() << "add to" << parentItem->name() << "as index" << parentIndex;
+    parentItem->addChildItem(rcvr, parentIndex);
 
     emit layoutChanged();
 }
@@ -374,12 +374,29 @@ void FilesModel::mergeItems(TrackDataItem *item, TrackDataItem *src, bool allIte
     // Remove and orphan the now (effectively) empty source item
     TrackDataItem *parentItem = src->parent();
     Q_ASSERT(parentItem!=NULL);
-    int formerIndex = parentItem->childIndex(src);
-    kDebug() << "remove from" << parentItem->name() << "at" << formerIndex;
-    (void) parentItem->takeChildItem(formerIndex);
+    kDebug() << "remove from" << parentItem->name();
+    (void) parentItem->takeChildItem(src);
 
     emit layoutChanged();
 }
+
+
+
+void FilesModel::moveItem(TrackDataItem *item, TrackDataItem *dest, int destIndex)
+{
+    emit layoutAboutToBeChanged();
+
+    TrackDataItem *pnt = item->parent();
+    Q_ASSERT(pnt!=NULL);
+    pnt->takeChildItem(item);
+    dest->addChildItem(item, destIndex);
+
+    emit layoutChanged();
+}
+
+
+
+
 
 
 

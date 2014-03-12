@@ -51,15 +51,16 @@ public:
 
     void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr, TrackDataItem *newParent = NULL, int newIndex = -1);
     void mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems = false);
+    void moveItem(TrackDataItem *item, TrackDataItem *dest, int destIndex = -1);
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
+    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     TrackDataFile *rootFileItem() const;
 
 signals:
     void clickedItem(const QModelIndex &index, unsigned int flags);
 
 private:
-    TrackDataItem *dataPointer(const QModelIndex &idx) const;
 
 private:
     TrackDataItem *mRootItem;

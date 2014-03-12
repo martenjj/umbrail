@@ -29,7 +29,6 @@
 
 #include <marble/AbstractFloatItem.h>
 
-
 #include "filescontroller.h"
 #include "filesview.h"
 #include "filesmodel.h"
@@ -115,6 +114,9 @@ MainWindow::~MainWindow()
 
 
 
+
+
+
 void MainWindow::setupActions()
 {
 //    KStandardAction::quit(this, SLOT(close()), actionCollection());
@@ -162,6 +164,11 @@ void MainWindow::setupActions()
     a->setShortcut(Qt::CTRL+Qt::Key_Comma);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
 
+    mAddTrackAction = actionCollection()->addAction("edit_add_track");
+    mAddTrackAction->setText(i18n("Add Track"));
+    mAddTrackAction->setIcon(KIcon("list-add"));
+    connect(mAddTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotAddTrack()));
+
     mSplitTrackAction = actionCollection()->addAction("track_split");
     mSplitTrackAction->setText(i18n("Split Segment"));
     mSplitTrackAction->setIcon(KIcon("split"));
@@ -172,10 +179,10 @@ void MainWindow::setupActions()
     mMergeTrackAction->setIcon(KIcon("merge"));
     connect(mMergeTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMergeSegments()));
 
-    mPromoteTrackAction = actionCollection()->addAction("track_promote");
-    mPromoteTrackAction->setText(i18n("Promote Segment to Track"));
-    mPromoteTrackAction->setIcon(KIcon("go-up"));
-    connect(mPromoteTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotPromoteSegment()));
+    mMoveTrackAction = actionCollection()->addAction("track_promote");
+    mMoveTrackAction->setText(i18n("Move Segment..."));
+    mMoveTrackAction->setIcon(KIcon("go-up"));
+    connect(mMoveTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveSegment()));
 
     mPropertiesAction = actionCollection()->addAction("track_properties");
     // text set in slotUpdateActionState() below
@@ -645,20 +652,15 @@ default:
     }
     mPropertiesAction->setEnabled(propsEnabled);
     mPropertiesAction->setText(propsText);
-    // used in FilesController::slotTrackProperties()
-    // the "..." is I18N'ed so that translations can change it to something that
-    // will never match, if the target language does not use "..."
-    QString dotdotdot = i18nc("as added to strings above", "...");
-    if (propsText.endsWith(dotdotdot)) propsText.chop(dotdotdot.length());
-    mPropertiesAction->setData(propsText);
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
 
     mSplitTrackAction->setEnabled(selCount==1 && selType==TrackData::Point);
-    mPromoteTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
+    mMoveTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
+    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
 }
 
 

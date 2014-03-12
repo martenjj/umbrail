@@ -21,6 +21,7 @@
 #include "gpxexporter.h"
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
+#include "movesegmentdialogue.h"
 #include "style.h"
 
 #define GROUP_FILES		"Files"
@@ -134,7 +135,7 @@ bool FilesController::importFile(const KUrl &importFrom)
     {							// make the operation undo'able
         ImportFileCommand *cmd = new ImportFileCommand(this);
         cmd->setText(i18n("Import"));
-        cmd->setTrackData(tdf);				// takes ownership of tree
+        cmd->setData(tdf);				// takes ownership of tree
         mainWindow()->executeCommand(cmd);
 
         emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.pathOrUrl()));
@@ -310,12 +311,8 @@ void FilesController::slotTrackProperties()
     if (items.count()==0) return;
 
     TrackPropertiesDialogue d(items, view());
-
-    // Using the action's text() directly will include any '&' accelerators
-    // if they have been added.  So we use the original text, which will have
-    // been stored in the action's data(), instead.
-    QAction *act = static_cast<QAction *>(sender());
-    if (act!=NULL) d.setCaption(act->data().toString());
+    QString actText = CommandBase::senderText(sender());
+    d.setCaption(actText);
 
     if (!d.exec()) return;
 
@@ -331,7 +328,7 @@ void FilesController::slotTrackProperties()
     {							// changing the name
         ChangeItemNameCommand *cmd1 = new ChangeItemNameCommand(this, cmd);
         cmd1->setDataItem(dispItem);
-        cmd1->setNewName(newItemName);
+        cmd1->setData(newItemName);
     }
 
     QString newTimeZone = d.newTimeZone();
@@ -340,7 +337,7 @@ void FilesController::slotTrackProperties()
     {
         ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
         cmd2->setDataItem(dispItem);
-        cmd2->setNewData("timezone", newTimeZone);
+        cmd2->setData("timezone", newTimeZone);
     }
 
     const Style newStyle = d.newStyle();		// item style
@@ -349,7 +346,7 @@ void FilesController::slotTrackProperties()
     {
         ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
         cmd3->setDataItem(dispItem);
-        cmd3->setNewStyle(newStyle);
+        cmd3->setData(newStyle);
     }
 
     QString newType = d.newTrackType();
@@ -360,7 +357,7 @@ void FilesController::slotTrackProperties()
         {
             ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
             cmd4->setDataItem(dispItem);
-            cmd4->setNewData("type", newType);
+            cmd4->setData("type", newType);
         }
     }
 
@@ -372,7 +369,7 @@ void FilesController::slotTrackProperties()
         {
             ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
             cmd5->setDataItem(dispItem);
-            cmd5->setNewData("desc", newDesc);
+            cmd5->setData("desc", newDesc);
         }
     }
 
@@ -382,7 +379,7 @@ void FilesController::slotTrackProperties()
         return;
     }
 
-    cmd->setText(act!=NULL ? act->data().toString() : i18n("Properties"));
+    cmd->setText(actText);
     mainWindow()->executeCommand(cmd);
 }
 
@@ -410,9 +407,8 @@ void FilesController::slotSplitSegment()
     }
 
     SplitSegmentCommand *cmd = new SplitSegmentCommand(this);
-    QAction *act = static_cast<QAction *>(sender());
-    if (act!=NULL) cmd->setText(KGlobal::locale()->removeAcceleratorMarker(act->text()));
-    cmd->setSplitAt(pnt, idx);
+    cmd->setSenderText(sender());
+    cmd->setData(pnt, idx);
     mainWindow()->executeCommand(cmd);
 }
 
@@ -468,23 +464,52 @@ void FilesController::slotMergeSegments()
     TrackDataSegment *masterSeg = dynamic_cast<TrackDataSegment *>(items.takeFirst());
 
     MergeSegmentsCommand *cmd = new MergeSegmentsCommand(this);
-    QAction *act = static_cast<QAction *>(sender());
-    if (act!=NULL) cmd->setText(KGlobal::locale()->removeAcceleratorMarker(act->text()));
-    cmd->setMergeSegments(masterSeg, items);
+    cmd->setSenderText(sender());
+    cmd->setData(masterSeg, items);
     mainWindow()->executeCommand(cmd);
 }
 
 
 
-void FilesController::slotPromoteSegment()
+void FilesController::slotMoveSegment()
 {
     kDebug();
 
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+    TrackDataSegment *tds = dynamic_cast<TrackDataSegment *>(items.first());
+    Q_ASSERT(tds!=NULL);
 
+    MoveSegmentDialogue d(this, view());
+    d.setSegment(tds);
 
+    if (!d.exec()) return;
+
+    TrackDataTrack *tdt = d.selectedTrack();
+
+    TrackDataTrack *sourceTrack = dynamic_cast<TrackDataTrack *>(tds->parent());
+    if (tdt==sourceTrack)
+    {
+        KMessageBox::sorry(mainWindow(), i18n("<qt>Segment \"%1\" is already part of track \"%2\"",
+                                              tds->name(), tdt->name()),
+                           i18n("Cannot move track"));
+        return;
+    }
+
+    MoveSegmentCommand *cmd = new MoveSegmentCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(tds, tdt);
+    mainWindow()->executeCommand(cmd);
 }
 
 
+
+void FilesController::slotAddTrack()
+{
+    AddTrackCommand *cmd = new AddTrackCommand(this);
+    cmd->setSenderText(sender());
+    mainWindow()->executeCommand(cmd);
+}
 
 
 

@@ -16,6 +16,7 @@
       <Action name="edit_select_all"/>
       <Action name="edit_deselect"/>
       <Separator/>
+      <Action name="edit_add_track"/>
     </Menu>
 
     <Menu name="data">

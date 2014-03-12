@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		27-Feb-14					#
+#  Edit:		11-Mar-14					#
 #########################################################################
 
 project(navtracks)
@@ -50,6 +50,7 @@ set(navtracks_SRCS
   mapcontroller.cpp
   mapthemedialogue.cpp
   mapview.cpp
+  movesegmentdialogue.cpp
   project.cpp
   settingsdialogue.cpp
   style.cpp
@@ -57,6 +58,7 @@ set(navtracks_SRCS
   timezoneselector.cpp
   trackdata.cpp
   trackdatalabel.cpp
+  trackfiltermodel.cpp
   trackpropertiesdialogue.cpp
   trackpropertiespage.cpp
   trackpropertiesdetailpages.cpp

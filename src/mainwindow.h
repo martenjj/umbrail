@@ -96,10 +96,11 @@ private:
 
     KAction *mSelectAllAction;
     KAction *mClearSelectAction;
+    KAction *mAddTrackAction;
 
     KAction *mSplitTrackAction;
     KAction *mMergeTrackAction;
-    KAction *mPromoteTrackAction;
+    KAction *mMoveTrackAction;
     KAction *mPropertiesAction;
 
     KAction *mMapZoomInAction;

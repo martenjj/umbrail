@@ -1,10 +1,14 @@
 
 #include "commands.h"
 
+#include <qaction.h>
 #include <qmetaobject.h>
 
 #include <kdebug.h>
 #include <klocale.h>
+#include <kglobal.h>
+#include <kcomponentdata.h>
+#include <kaboutdata.h>
 
 #include "filesmodel.h"
 #include "filesview.h"
@@ -36,6 +40,29 @@ static void deleteData(const C &list)
 }
 
 
+
+
+
+
+QString CommandBase::senderText(const QObject *sdr)
+{
+    const QAction *act = static_cast<const QAction *>(sdr);
+    if (act==NULL) return (i18n("Action"));		// not called by action
+    QString t = act->text();				// GUI text of action
+
+    // the "..." is I18N'ed so that translations can change it to something that
+    // will never match, if the target language does not use "..."
+    QString dotdotdot = i18nc("as added to actions", "...");
+    if (t.endsWith(dotdotdot)) t.chop(dotdotdot.length());
+    return (KGlobal::locale()->removeAcceleratorMarker(t));
+}
+
+
+
+void CommandBase::setSenderText(const QObject *sdr)
+{
+    setText(senderText(sdr));
+}
 
 
 
@@ -218,7 +245,7 @@ SplitSegmentCommand::~SplitSegmentCommand()
 
 
 
-void SplitSegmentCommand::setSplitAt(TrackDataSegment *pnt, int idx)
+void SplitSegmentCommand::setData(TrackDataSegment *pnt, int idx)
 {
     mParentSegment = pnt;
     mSplitIndex = idx;
@@ -301,7 +328,7 @@ MergeSegmentsCommand::~MergeSegmentsCommand()
 
 
 
-void MergeSegmentsCommand::setMergeSegments(TrackDataSegment *master, const QList<TrackDataItem *> &others)
+void MergeSegmentsCommand::setData(TrackDataSegment *master, const QList<TrackDataItem *> &others)
 {
     mMasterSegment = master;
     mOtherSegments = others;
@@ -367,5 +394,122 @@ void MergeSegmentsCommand::undo()
     mOtherIndexes.clear();
     mOtherParents.clear();
 
+    updateMap();
+}
+
+
+
+
+
+AddTrackCommand::AddTrackCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mNewTrack = NULL;
+}
+
+
+
+AddTrackCommand::~AddTrackCommand()
+{
+    deleteData(mNewTrack);
+}
+
+
+
+
+void AddTrackCommand::redo()
+{
+    if (mNewTrack==NULL)				// need to create new track
+    {
+        mNewTrack = new TrackDataTrack(QString::null);
+        mNewTrack->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+        kDebug() << "created" << mNewTrack->name();
+    }
+
+    TrackDataFile tdf(QString::null);
+    tdf.addChildItem(mNewTrack);
+    model()->addToplevelItem(&tdf);
+
+    controller()->view()->selectItem(mNewTrack);
+    updateMap();
+}
+
+
+
+void AddTrackCommand::undo()
+{
+    controller()->view()->clearSelection();
+    mNewTrack = dynamic_cast<TrackDataTrack *>(model()->removeLastToplevelItem());
+
+    updateMap();
+}
+
+
+
+
+
+
+
+
+
+MoveSegmentCommand::MoveSegmentCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mMoveSegment = NULL;
+    mOrigTrack = NULL;
+    mDestTrack = NULL;
+}
+
+
+
+MoveSegmentCommand::~MoveSegmentCommand()
+{
+    deleteData(mMoveSegment);
+}
+
+
+
+void MoveSegmentCommand::setData(TrackDataSegment *tds, TrackDataTrack *destTrack)
+{
+    mMoveSegment = tds;
+    mDestTrack = destTrack;
+}
+
+
+
+
+void MoveSegmentCommand::redo()
+{
+    Q_ASSERT(mMoveSegment!=NULL);
+    Q_ASSERT(mDestTrack!=NULL);
+
+    mOrigTrack = mMoveSegment->parent();
+    Q_ASSERT(mOrigTrack!=NULL);
+    mOrigIndex = mOrigTrack->childIndex(mMoveSegment);
+
+    kDebug() << "move" << mMoveSegment->name()
+             << "from" << mOrigTrack->name() << "index" << mOrigIndex
+             << "->" << mDestTrack->name();
+
+    model()->moveItem(mMoveSegment, mDestTrack);
+    controller()->view()->selectItem(mMoveSegment);
+    updateMap();
+}
+
+
+
+
+void MoveSegmentCommand::undo()
+{
+    Q_ASSERT(mMoveSegment!=NULL);
+    Q_ASSERT(mDestTrack!=NULL);
+    Q_ASSERT(mOrigTrack!=NULL);
+
+    kDebug() << "move" << mMoveSegment->name()
+             << "from" << mDestTrack->name()
+             << "->" << mOrigTrack->name() << "index" << mOrigIndex;
+
+    model()->moveItem(mMoveSegment, mOrigTrack, mOrigIndex);
+    controller()->view()->selectItem(mMoveSegment);
     updateMap();
 }
