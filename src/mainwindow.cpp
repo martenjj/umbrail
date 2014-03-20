@@ -380,7 +380,9 @@ bool MainWindow::save(const KUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
-    return (filesController()->exportFile(savePath, tdf));
+    if (!filesController()->exportFile(savePath, tdf)) return (false);
+    slotStatusMessage(i18n("<qt>Saved <filename>%1</filename>", savePath));
+    return (true);					// more appropriate message
 }
 
 
