@@ -110,9 +110,9 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items
 
 
 
-void TrackItemDetailPage::addMetadataField(const TrackDataDisplayable *tdd, const QString &key, const QString &label)
+void TrackItemDetailPage::addMetadataField(const TrackDataItem *tdi, const QString &key, const QString &label)
 {
-    QString s = tdd->metadata(DataIndexer::self()->index(key));
+    QString s = tdi->metadata(DataIndexer::self()->index(key));
     if (s.isEmpty()) return;				// nothing to display
 
     TrackDataLabel *l;
@@ -333,25 +333,25 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
 
 
 
-TrackPropertiesPage *TrackDataFile::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataFile::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackFileDetailPage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataTrack::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataTrack::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackTrackDetailPage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataSegment::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataSegment::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackSegmentDetailPage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataPoint::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataPoint::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackPointDetailPage(items, pnt));
 }

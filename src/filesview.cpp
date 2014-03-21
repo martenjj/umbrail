@@ -157,18 +157,17 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     // Mark the current selection with the current selection ID.
     for (int i = 0; i<mSelectedCount; ++i)
     {
-        TrackDataItem *tdi = static_cast<TrackDataItem *>(selIndexes[i].internalPointer());
-        TrackDataDisplayable *tdd = dynamic_cast<TrackDataDisplayable *>(tdi);
-        Q_ASSERT(tdd!=NULL);
-        tdd->setSelectionId(mSelectionId);
+        TrackDataItem *tdi = static_cast<FilesModel *>(model())->itemForIndex(selIndexes[i]);
+        Q_ASSERT(tdi!=NULL);
+        tdi->setSelectionId(mSelectionId);
 
         // Selecting a point automatically sets its parent container
         // (normally a segment, but this is not enforced) to be selected
         // also.  Only for drawing purposes, not for any user operations.
-        TrackDataPoint *tdp = dynamic_cast<TrackDataPoint *>(tdd);
+        TrackDataPoint *tdp = dynamic_cast<TrackDataPoint *>(tdi);
         if (tdp!=NULL)					// this is a point
         {
-            TrackDataDisplayable *par = dynamic_cast<TrackDataDisplayable *>(tdp->parent());
+            TrackDataItem *par = tdp->parent();
             Q_ASSERT(par!=NULL);
             par->setSelectionId(mSelectionId);		// select its parent
         }

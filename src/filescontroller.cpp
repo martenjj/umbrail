@@ -317,8 +317,6 @@ void FilesController::slotTrackProperties()
     if (!d.exec()) return;
 
     TrackDataItem *item = items.first();
-    TrackDataDisplayable *dispItem = dynamic_cast<TrackDataDisplayable *>(item);
-    Q_ASSERT(dispItem!=NULL);
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
 
@@ -327,25 +325,25 @@ void FilesController::slotTrackProperties()
     if (!newItemName.isEmpty() && newItemName!=item->name())
     {							// changing the name
         ChangeItemNameCommand *cmd1 = new ChangeItemNameCommand(this, cmd);
-        cmd1->setDataItem(dispItem);
+        cmd1->setDataItem(item);
         cmd1->setData(newItemName);
     }
 
     QString newTimeZone = d.newTimeZone();
     kDebug() << "new timezone" << newTimeZone;
-    if (newTimeZone!=dispItem->metadata("timezone"))
+    if (newTimeZone!=item->metadata("timezone"))
     {
         ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
-        cmd2->setDataItem(dispItem);
+        cmd2->setDataItem(item);
         cmd2->setData("timezone", newTimeZone);
     }
 
     const Style newStyle = d.newStyle();		// item style
     kDebug() << "new style" << newStyle;
-    if (newStyle!=*dispItem->style())			// changing the style
+    if (newStyle!=*item->style())			// changing the style
     {
         ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
-        cmd3->setDataItem(dispItem);
+        cmd3->setDataItem(item);
         cmd3->setData(newStyle);
     }
 
@@ -353,10 +351,10 @@ void FilesController::slotTrackProperties()
     if (newType!="-")					// new type is applicable
     {
         kDebug() << "new type" << newType;
-        if (newType!=dispItem->metadata("type"))
+        if (newType!=item->metadata("type"))
         {
             ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-            cmd4->setDataItem(dispItem);
+            cmd4->setDataItem(item);
             cmd4->setData("type", newType);
         }
     }
@@ -365,10 +363,10 @@ void FilesController::slotTrackProperties()
     if (newDesc!="-")					// new description is applicable
     {
         kDebug() << "new description" << newDesc;
-        if (newDesc!=dispItem->metadata("desc"))
+        if (newDesc!=item->metadata("desc"))
         {
             ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
-            cmd5->setDataItem(dispItem);
+            cmd5->setDataItem(item);
             cmd5->setData("desc", newDesc);
         }
     }

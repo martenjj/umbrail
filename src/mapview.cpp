@@ -147,16 +147,16 @@ void MapView::customPaint(GeoPainter *painter)
 }
 
 
-void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter, 
+void MapView::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, 
                             bool doSelected, bool parentSelected)
 {
-    if (tdd==NULL) return;				// nothing to paint
-    int cnt = tdd->childCount();
+    if (tdi==NULL) return;				// nothing to paint
+    int cnt = tdi->childCount();
     if (cnt==0) return;					// quick escape if no children
 
-    bool isSelected = parentSelected || (tdd->selectionId()==mSelectionId);
+    bool isSelected = parentSelected || (tdi->selectionId()==mSelectionId);
 #ifdef DEBUG_PAINTING
-    kDebug() << tdd->name() << "isselected" << isSelected << "doselected" << doSelected;
+    kDebug() << tdi->name() << "isselected" << isSelected << "doselected" << doSelected;
 #endif
 
     // What is actually drawn on the map is a polyline representing a sequence
@@ -165,13 +165,13 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
     // data tree to the individual points, we can stop at the level above if the
     // first child item (assumed to be representative of the others) is a point.
 
-    const TrackDataItem *firstChild = tdd->childAt(0);
+    const TrackDataItem *firstChild = tdi->childAt(0);
     if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
     {							// is first child a point?
         if (!(isSelected ^ doSelected))			// check selected or not
         {
 #ifdef DEBUG_PAINTING
-            kDebug() << "points for" << tdd->name() << "count" << cnt;
+            kDebug() << "points for" << tdi->name() << "count" << cnt;
 #endif
             // Scan along the segment, assembling the coordinates into a list,
             // and draw them as a polyline.
@@ -181,7 +181,7 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
             // Split the drawing up if there are too many - this may make clipping
             // more efficient too.
 
-            QColor col = resolveLineColour(tdd);
+            QColor col = resolveLineColour(tdi);
             painter->setBrush(Qt::NoBrush);
             painter->setPen(QPen(col, 4));
 
@@ -196,7 +196,7 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
                 int sofar = 0;				// points so far this block
                 for (int i = start; i<cnt; ++i)		// up to end of list
                 {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdd->childAt(i));
+                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
                     GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
                                              0, GeoDataCoordinates::Degree);
                     lines.append(coord);		// add point to list
@@ -226,7 +226,7 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
 
                 for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdd->childAt(i));
+                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
                     GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
                                              0, GeoDataCoordinates::Degree);
                     painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
@@ -249,7 +249,7 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
 
                 for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdd->childAt(i));
+                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
                     if (tdp->selectionId()==mSelectionId)
                     {
                         GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
@@ -264,7 +264,7 @@ void MapView::paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter
     {							// so we are higher container
         for (int i = 0; i<cnt; ++i)			// just recurse to paint children
         {
-            const TrackDataDisplayable *childItem = static_cast<TrackDataDisplayable *>(tdd->childAt(i));
+            const TrackDataItem *childItem = tdi->childAt(i);
             paintDataTree(childItem, painter, doSelected, isSelected);
         }
     }
@@ -385,7 +385,7 @@ void MapView::slotShowOverlay()
 
 
 
-QColor MapView::resolveLineColour(const TrackDataDisplayable *tdd)
+QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 {
     // Resolving the line colour (in the case where it is not selected) could
     // potentially be an expensive operation - needing to examine not only the
@@ -395,17 +395,17 @@ QColor MapView::resolveLineColour(const TrackDataDisplayable *tdd)
     // is expected that there will be at most a few tens of them existing within
     // a typical project.  So the overhead here is not likely to be significant.
 
-    while (tdd!=NULL)					// search to root of tree
+    while (tdi!=NULL)					// search to root of tree
     {
-        const Style *s = tdd->style();			// get style from item
+        const Style *s = tdi->style();			// get style from item
         //kDebug() << "style for" << tdi->name() << "is" << *s;
         if (s->hasLineColour())				// has a style set?
         {
             //kDebug() << "inherited from" << tdi->name();
             return (s->lineColour());			// use colour from that
         }
-        tdd = dynamic_cast<const TrackDataDisplayable *>(tdd->parent());
-    }							// up to parent item
+        tdi = tdi->parent();				// up to parent item
+    }
 
     return (Style::globalStyle()->lineColour());	// finally application default
 }
@@ -420,11 +420,11 @@ void MapView::slotSystemPaletteChanged()
 
 
 
-const TrackDataPoint *MapView::findClickedPoint(const TrackDataDisplayable *tdd)
+const TrackDataPoint *MapView::findClickedPoint(const TrackDataItem *tdi)
 {
-    if (tdd==NULL) return (NULL);			// nothing to do
+    if (tdi==NULL) return (NULL);			// nothing to do
 
-    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdd);
+    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
     if (tdp!=NULL)					// is this a point?
     {
         const double lat = tdp->latitude();
@@ -438,9 +438,9 @@ const TrackDataPoint *MapView::findClickedPoint(const TrackDataDisplayable *tdd)
     }
     else						// not a point, so a container
     {
-        for (int i = 0; i<tdd->childCount(); ++i)	// recurse to search children
+        for (int i = 0; i<tdi->childCount(); ++i)	// recurse to search children
         {
-            const TrackDataDisplayable *childItem = static_cast<TrackDataDisplayable *>(tdd->childAt(i));
+            const TrackDataItem *childItem = tdi->childAt(i);
             const TrackDataPoint *childPoint = findClickedPoint(childItem);
             if (childPoint!=NULL) return (childPoint);
         }

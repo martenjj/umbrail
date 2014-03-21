@@ -30,7 +30,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidg
 
     addSeparatorField();
 
-    const TrackDataDisplayable *item = dynamic_cast<const TrackDataDisplayable *>(items.first());
+    const TrackDataItem *item = items.first();
     const Style *s = item->style();
     kDebug() << "initial style" << *s;
 
@@ -129,25 +129,25 @@ TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWi
 
 
 
-TrackPropertiesPage *TrackDataFile::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataFile::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackFileStylePage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataTrack::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataTrack::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackTrackStylePage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataSegment::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataSegment::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackSegmentStylePage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataPoint::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataPoint::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackPointStylePage(items, pnt));
 }

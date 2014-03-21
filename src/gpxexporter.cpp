@@ -67,7 +67,7 @@ static void endExtensions(QXmlStreamWriter &str)
 
 
 
-static void writeStyle(const TrackDataDisplayable *item, QXmlStreamWriter &str)
+static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
 {
     const Style *s = item->style();
     if (s->isEmpty()) return;
@@ -83,7 +83,7 @@ static void writeStyle(const TrackDataDisplayable *item, QXmlStreamWriter &str)
 
 
 
-static bool shouldBeInExtensions(const TrackDataDisplayable *item, const QString &name)
+static bool shouldBeInExtensions(const TrackDataItem *item, const QString &name)
 {
     if (dynamic_cast<const TrackDataPoint *>(item)!=NULL)
     {							// point - these not in extensions
@@ -102,7 +102,7 @@ static bool shouldBeInExtensions(const TrackDataDisplayable *item, const QString
 
 
 
-static void writeMetadata(const TrackDataDisplayable *item, QXmlStreamWriter &str, bool wantExtensions)
+static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool wantExtensions)
 {
     for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
     {

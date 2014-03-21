@@ -33,33 +33,19 @@ FilesModel::FilesModel(QObject *pnt)
 {
     kDebug();
 
-    mRootItem = NULL;
+    mRootFileItem = NULL;
     clear();
 }
 
 
 FilesModel::~FilesModel()
 {
-    delete mRootItem;
+    delete mRootFileItem;
     kDebug() << "done";
 }
 
 
 
-
-
-// Actually, the first (and normally only) file item child of the root item.
-TrackDataFile *FilesModel::rootFileItem() const
-{
-    if (isEmpty()) return (NULL);
-    return (dynamic_cast<TrackDataFile *>(mRootItem->childAt(0)));
-}
-
-
-bool FilesModel::isEmpty() const
-{
-    return (mRootItem==NULL || mRootItem->childCount()==0);
-}
 
 
 
@@ -71,20 +57,18 @@ bool FilesModel::isEmpty() const
 
 TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
 {
-    TrackDataItem *tdi = static_cast<TrackDataItem *>(idx.internalPointer());
-    if (tdi==NULL) tdi = mRootItem;
-    return (tdi);
+    return (static_cast<TrackDataItem *>(idx.internalPointer()));
 }
 
 
 
 QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 {
-    /////////////////////// Sometimes happens with crash after undo of import
     Q_ASSERT(tdi!=NULL);
+    const TrackDataItem *pnt = tdi->parent();
+    if (pnt==NULL) Q_ASSERT(tdi==mRootFileItem);
 
-    if (tdi->parent()==NULL) return (QModelIndex());
-    int row = tdi->parent()->childIndex(tdi);
+    int row = (pnt==NULL ? 0 : pnt->childIndex(tdi));
     // static_cast will not work here due to const'ness
     return (row==-1 ? QModelIndex() : createIndex(row, 0, (void *) tdi));
 }
@@ -94,11 +78,19 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 {
     const TrackDataItem *tdi = itemForIndex(pnt);
+    if (tdi==NULL)
+    {
+        if (isEmpty()) return (QModelIndex());
+        if (row>0) return (QModelIndex());
+        return (createIndex(row, col, mRootFileItem));
+    }
+
     if (row>=tdi->childCount())				// only during initialisation
     {							// without SORTABLE_VIEW
-        kDebug() << "requested index for nonexistent row!";
+        kDebug() << "requested index for nonexistent row" << row << "of" << tdi->childCount();
         return (QModelIndex());
     }
+
     return (createIndex(row, col, tdi->childAt(row)));
 }
 
@@ -114,7 +106,9 @@ QModelIndex FilesModel::parent(const QModelIndex &idx) const
 
 int FilesModel::rowCount(const QModelIndex &pnt) const
 {
+   if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
    const TrackDataItem *tdi = itemForIndex(pnt);
+   Q_ASSERT(tdi!=NULL);
    return (tdi->childCount());
 }
 
@@ -130,6 +124,7 @@ int FilesModel::columnCount(const QModelIndex &pnt) const
 QVariant FilesModel::data(const QModelIndex &idx, int role) const
 {
     const TrackDataItem *tdi = itemForIndex(idx);
+
     switch (role)
     {
 case Qt::DisplayRole:
@@ -142,11 +137,7 @@ case COL_NAME:     return (tdi->name());
 case Qt::DecorationRole:
         switch (idx.column())
         {
-case COL_NAME:     
-            {
-                const TrackDataDisplayable *tdd = dynamic_cast<const TrackDataDisplayable *>(tdi);
-                if (tdd!=NULL) return (KIcon(tdd->iconName()));
-            }
+case COL_NAME:     return (KIcon(tdi->iconName()));
         }
         break;
 
@@ -211,8 +202,7 @@ default:		return (QVariant());
 void FilesModel::clear()
 {
     emit layoutAboutToBeChanged();
-    delete mRootItem;					// delete any existing
-    mRootItem = new TrackDataRoot("ROOT");		// create new root item
+    delete mRootFileItem;				// delete any existing
     emit layoutChanged();
 }
 
@@ -221,9 +211,8 @@ void FilesModel::addToplevelItem(TrackDataFile *tdf)
 {
     emit layoutAboutToBeChanged();
 
-    TrackDataFile *fileRoot = NULL;
-
-    if (isEmpty())
+    TrackDataFile *fileRoot = rootFileItem();
+    if (fileRoot==NULL)
     {
         // If the model is currently empty, then first we add a file item
         // immediately under the (invisible) root item.  The input tracks
@@ -233,18 +222,11 @@ void FilesModel::addToplevelItem(TrackDataFile *tdf)
         // contained tracks by the importer.
 
         kDebug() << "adding root file item" << tdf->name();
-        fileRoot = new TrackDataFile(tdf->name());
-        fileRoot->setFileName(tdf->fileName());
-        fileRoot->copyMetadata(tdf);
-
-        mRootItem->addChildItem(fileRoot);
+        mRootFileItem = new TrackDataFile(tdf->name());
+        mRootFileItem->setFileName(tdf->fileName());
+        mRootFileItem->copyMetadata(tdf);
+        fileRoot = mRootFileItem;
     }
-    else
-    {
-        // Get the file root, the first (and only) child of the root item.
-        fileRoot = dynamic_cast<TrackDataFile *>(mRootItem->childAt(0));
-    }
-    Q_ASSERT(fileRoot!=NULL);
 
     // Now, the tracks contained in the new file are adopted as children
     // of the file root.

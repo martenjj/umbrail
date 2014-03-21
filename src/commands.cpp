@@ -231,7 +231,7 @@ void ChangeItemNameCommand::undo()
 
 void ChangeItemStyleCommand::redo()
 {
-    TrackDataDisplayable *item = mDataItem;
+    TrackDataItem *item = mDataItem;
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "->" << mNewStyle.toString();
 
@@ -247,7 +247,7 @@ void ChangeItemStyleCommand::redo()
 
 void ChangeItemStyleCommand::undo()
 {
-    TrackDataDisplayable *item = mDataItem;
+    TrackDataItem *item = mDataItem;
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
 
@@ -263,7 +263,7 @@ void ChangeItemStyleCommand::undo()
 
 void ChangeItemDataCommand::redo()
 {
-    TrackDataDisplayable *item = mDataItem;
+    TrackDataItem *item = mDataItem;
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
 
@@ -277,7 +277,7 @@ void ChangeItemDataCommand::redo()
 
 void ChangeItemDataCommand::undo()
 {
-    TrackDataDisplayable *item = mDataItem;
+    TrackDataItem *item = mDataItem;
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "data" << mKey << "back to" << mSavedValue;
     int idx = DataIndexer::self()->index(mKey);

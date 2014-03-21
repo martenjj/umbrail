@@ -260,7 +260,9 @@ TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter
 void TrackDataItem::init()
 {
     mParent = NULL;					// not attached to parent
-    mRefCount = 0;
+    mRefCount = 0;					// no references to this
+    mStyle = NULL;					// no style set yet
+    mSelectionId = 1;					// nothing selected yet
 }
 
 
@@ -268,6 +270,7 @@ void TrackDataItem::init()
 TrackDataItem::~TrackDataItem()
 {
     qDeleteAll(mChildItems);
+    delete mStyle;
 }
 
 
@@ -352,31 +355,7 @@ unsigned int TrackDataItem::totalTravelTime() const
 
 
 
-
-TrackDataRoot::TrackDataRoot(const QString &nm)
-    : TrackDataItem(nm)
-{
-}
-
-
-
-
-TrackDataDisplayable::TrackDataDisplayable(const QString &nm, const char *format, int *counter)
-    : TrackDataItem(nm, format, counter)
-{
-    mStyle = NULL;					// no style set yet
-    mSelectionId = 1;					// nothing selected yet
-}
-
-
-TrackDataDisplayable::~TrackDataDisplayable()
-{
-    delete mStyle;
-}
-
-
-
-void TrackDataDisplayable::setMetadata(int idx, const QString &value)
+void TrackDataItem::setMetadata(int idx, const QString &value)
 {
     int cnt = mMetadata.count();
     if (idx>=cnt) mMetadata.resize(idx+1);
@@ -385,7 +364,7 @@ void TrackDataDisplayable::setMetadata(int idx, const QString &value)
 
 
 
-QString TrackDataDisplayable::metadata(int idx) const
+QString TrackDataItem::metadata(int idx) const
 {
     int cnt = mMetadata.count();
     if (idx<0 || idx>=cnt) return (QString::null);
@@ -394,14 +373,14 @@ QString TrackDataDisplayable::metadata(int idx) const
 
 
 
-QString TrackDataDisplayable::metadata(const QString &key) const
+QString TrackDataItem::metadata(const QString &key) const
 {
     return (metadata(DataIndexer::self()->index(key)));
 }
 
 
 
-void TrackDataDisplayable::copyMetadata(const TrackDataDisplayable *other, bool overwrite)
+void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
 {
     for (int idx = 0; idx<other->mMetadata.size(); ++idx)
     {
@@ -415,14 +394,14 @@ void TrackDataDisplayable::copyMetadata(const TrackDataDisplayable *other, bool 
 
 
 
-const Style *TrackDataDisplayable::style() const
+const Style *TrackDataItem::style() const
 {
     return ((mStyle!=NULL) ? mStyle : &Style::null);
 }
 
 
 
-void TrackDataDisplayable::setStyle(const Style &s)
+void TrackDataItem::setStyle(const Style &s)
 {
     if (mStyle==NULL)
     {
@@ -434,7 +413,7 @@ void TrackDataDisplayable::setStyle(const Style &s)
 
 
 
-QString TrackDataDisplayable::timeZone() const
+QString TrackDataItem::timeZone() const
 {
     const TrackDataItem *parentItem = this;
     while (parentItem!=NULL)
@@ -455,7 +434,7 @@ QString TrackDataDisplayable::timeZone() const
 int TrackDataFile::sCounter = 0;
 
 TrackDataFile::TrackDataFile(const QString &nm)
-    : TrackDataDisplayable(nm, "file_%02d", &TrackDataFile::sCounter)
+    : TrackDataItem(nm, "file_%02d", &TrackDataFile::sCounter)
 {
 }
 
@@ -476,7 +455,7 @@ QString TrackDataFile::iconName() const
 int TrackDataTrack::sCounter = 0;
 
 TrackDataTrack::TrackDataTrack(const QString &nm)
-    : TrackDataDisplayable(nm, "track_%02d", &TrackDataTrack::sCounter)
+    : TrackDataItem(nm, "track_%02d", &TrackDataTrack::sCounter)
 {
 }
 
@@ -486,7 +465,7 @@ TrackDataTrack::TrackDataTrack(const QString &nm)
 int TrackDataSegment::sCounter = 0;
 
 TrackDataSegment::TrackDataSegment(const QString &nm)
-    : TrackDataDisplayable(nm, "segment_%02d", &TrackDataSegment::sCounter)
+    : TrackDataItem(nm, "segment_%02d", &TrackDataSegment::sCounter)
 {
 }
 
@@ -516,7 +495,7 @@ TimeRange TrackDataSegment::timeSpan() const
 int TrackDataPoint::sCounter = 0;
 
 TrackDataPoint::TrackDataPoint(const QString &nm)
-    : TrackDataDisplayable(nm, "point_%04d", &TrackDataPoint::sCounter)
+    : TrackDataItem(nm, "point_%04d", &TrackDataPoint::sCounter)
 {
     mLatitude = mLongitude = NAN;
     mElevation = NAN;

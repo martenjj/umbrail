@@ -63,7 +63,7 @@ bool ImporterBase::prepareLoadFile(const KUrl &file)
 
 
 #ifdef DEBUG_IMPORT
-static void dumpMetadata(const TrackDataDisplayable *tdd, const QString &source)
+static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
 {
     kDebug() << source.toLatin1().constData();
     for (int i = 0; i<DataIndexer::self()->count(); ++i)

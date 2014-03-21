@@ -27,7 +27,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     showButtonSeparator(false);
 
     Q_ASSERT(!items.isEmpty());
-    TrackDataDisplayable *item = dynamic_cast<TrackDataDisplayable *>(items.first());
+    const TrackDataItem *item = items.first();
     Q_ASSERT(item!=NULL);
     QString zoneName = item->timeZone();
 

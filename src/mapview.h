@@ -15,7 +15,6 @@ class FilesModel;
 class FilesView;
 class MainWindow;
 class TrackDataItem;
-class TrackDataDisplayable;
 class TrackDataPoint;
 
 
@@ -40,7 +39,7 @@ public:
     KAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);
 
-    static QColor resolveLineColour(const TrackDataDisplayable *tdd);
+    static QColor resolveLineColour(const TrackDataItem *tdd);
 
 public slots:               
     void slotRmbRequest(int mx, int my);
@@ -57,9 +56,9 @@ private:
     FilesView *filesView() const		{ return (mFilesView); }
 
     bool mouseCoordinates(GeoDataCoordinates *coords);
-    const TrackDataPoint *findClickedPoint(const TrackDataDisplayable *tdd);
+    const TrackDataPoint *findClickedPoint(const TrackDataItem *tdi);
 
-    void paintDataTree(const TrackDataDisplayable *tdd, GeoPainter *painter, bool doSelected, bool parentSelected);
+    void paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool doSelected, bool parentSelected);
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);

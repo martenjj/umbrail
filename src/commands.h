@@ -81,13 +81,13 @@ class ChangeItemCommand : public FilesCommandBase
 public:
     virtual ~ChangeItemCommand()			{}
 
-    void setDataItem(TrackDataDisplayable *item)	{ mDataItem = item; }
+    void setDataItem(TrackDataItem *item)		{ mDataItem = item; }
 
 protected:
     ChangeItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
 
 protected:
-    TrackDataDisplayable *mDataItem;
+    TrackDataItem *mDataItem;
     bool mFileWasModified;
 };
 

@@ -113,9 +113,9 @@ void GpxImporter::setDocumentLocator(QXmlLocator *locator)
 
 
 
-TrackDataDisplayable *GpxImporter::currentItem() const
+TrackDataItem *GpxImporter::currentItem() const
 {
-    TrackDataDisplayable *item = mCurrentPoint;		// find innermost current element
+    TrackDataItem *item = mCurrentPoint;		// find innermost current element
     if (item==NULL) item = mCurrentSegment;
     if (item==NULL) item = mCurrentTrack;
     return (item);
@@ -381,30 +381,14 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
-        TrackDataDisplayable *item = currentItem();	// find innermost current element
+        TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=NULL) item->setName(mContainedChars);	// assign its name
         else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
         else warning(makeXmlException("NAME not within TRK, TRKSEG, TKKPT or METADATA"));
     }
-//    else if (localName=="desc")				// end of a DESC element
-//    {							// may belong to any container
-//        TrackDataDisplayable *item = currentItem();	// find innermost current element
-//        if (item!=NULL) item->setDesc(mContainedChars);	// assign the description
-//        else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
-//        else warning(makeXmlException("DESC end not within TRK, TRKSEG, TKKPT or METADATA"));
-//    }
-//    else if (localName=="hdop" || localName=="speed")	// end of a HDOP or SPEED element
-//    {							// not currently interpreted
-//        if (mCurrentPoint==NULL)			// check properly nested
-//        {
-//            return (error(makeXmlException("HDOP/SPEED end not within TRKPT")));
-//        }
-//
-//        mCurrentPoint->setMetadata(DataIndexer::self()->index(localName, mWithinExtensions), mContainedChars);
-//    }
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
-        TrackDataDisplayable *item = currentItem();	// find innermost current element
+        TrackDataItem *item = currentItem();		// find innermost current element
         if (item==NULL)
         {
             return (error(makeXmlException("COLOR end not within TRK, TRKSEG or TKKPT")));
@@ -423,7 +407,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     }
     else						// Unknown tag, save as metadata
     {
-        TrackDataDisplayable *item = currentItem();	// find innermost current element
+        TrackDataItem *item = currentItem();		// find innermost current element
         int idx = DataIndexer::self()->index(localName);
         if (item!=NULL) item->setMetadata(idx, mContainedChars);
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);

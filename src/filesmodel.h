@@ -7,7 +7,6 @@
 
 
 class FilesController;
-class TrackDataDisplayable;
 class TrackDataItem;
 class TrackDataFile;
 class TrackDataPoint;
@@ -29,7 +28,8 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     void clear();
-    bool isEmpty() const;
+    TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
+    bool isEmpty() const				{ return (mRootFileItem==NULL); }
 
     void addToplevelItem(TrackDataFile *tdf);
     TrackDataItem *removeLastToplevelItem();
@@ -55,16 +55,12 @@ public:
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
     TrackDataItem *itemForIndex(const QModelIndex &idx) const;
-    TrackDataFile *rootFileItem() const;
 
 signals:
     void clickedItem(const QModelIndex &index, unsigned int flags);
 
 private:
-
-private:
-    TrackDataItem *mRootItem;
-//    int mTrackId;
+    TrackDataFile *mRootFileItem;
 };
  
 #endif							// FILESMODEL_H

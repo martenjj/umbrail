@@ -114,17 +114,17 @@ void TrackItemGeneralPage::addTypeDescFields(const QList<TrackDataItem *> &items
 
     if (items.count()==1)
     {
-        TrackDataDisplayable *tdd = dynamic_cast<TrackDataDisplayable *>(items.first());
-        Q_ASSERT(tdd!=NULL);
+        const TrackDataItem *tdi = items.first();
+        Q_ASSERT(tdi!=NULL);
 
-        mTypeCombo->setType(tdd->metadata("type"));
+        mTypeCombo->setType(tdi->metadata("type"));
         connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
         connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
 
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
 
-        QString d = tdd->metadata("desc");
+        QString d = tdi->metadata("desc");
         if (!d.endsWith('\n')) d += "\n";
         mDescEdit->setPlainText(d);
 
@@ -310,25 +310,25 @@ QString TrackPointGeneralPage::typeText(int count) const
 
 
 
-TrackPropertiesPage *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackFileGeneralPage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackTrackGeneralPage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackSegmentGeneralPage(items, pnt));
 }
 
 
-TrackPropertiesPage *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
 {
     return (new TrackPointGeneralPage(items, pnt));
 }
