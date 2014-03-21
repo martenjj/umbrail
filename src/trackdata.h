@@ -11,12 +11,16 @@
 
 #include <kurl.h>
 
-
 class KTimeZone;
 class Style;
 class TrackDataItem;
 class TrackPropertiesPage;
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TimeRange								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class TimeRange
 {
@@ -41,9 +45,11 @@ private:
     QDateTime mFinish;
 };
 
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  BoundingArea							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class BoundingArea
 {
@@ -73,9 +79,11 @@ private:
     double mLonEast;
 };
 
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackData								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 namespace TrackData
 {
@@ -104,8 +112,11 @@ namespace TrackData
     QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
 };
 
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataItem							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class TrackDataItem
 {
@@ -172,12 +183,11 @@ private:
     Style *mStyle;
 };
 
-
-
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataFile							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class TrackDataFile : public TrackDataItem
 {
@@ -194,15 +204,14 @@ public:
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
 
 private:
-    static int sCounter;
-
     KUrl mFileName;
 };
 
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataTrack							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class TrackDataTrack : public TrackDataItem
 {
@@ -215,12 +224,13 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-
-private:
-    static int sCounter;
 };
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataSegment							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class TrackDataSegment : public TrackDataItem
 {
@@ -235,12 +245,13 @@ public:
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
 
     TimeRange timeSpan() const;
-
-private:
-    static int sCounter;
 };
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataPoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class TrackDataPoint : public TrackDataItem
 {
@@ -276,15 +287,10 @@ public:
     void copyData(const TrackDataPoint *other);
 
 private:
-    static int sCounter;
-
     double mLatitude;
     double mLongitude;
     double mElevation;
     QDateTime mDateTime;
 };
-
-
-
 
 #endif							// TRACKDATA_H

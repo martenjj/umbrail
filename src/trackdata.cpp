@@ -14,14 +14,43 @@
 #include "style.h"
 #include "dataindexer.h"
 
+#undef MEMORY_TRACKING
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Insternal constants							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 static const double DEGREES_TO_RADIANS = (2*M_PI)/360;	// multiplier
 
 const TimeRange TimeRange::null = TimeRange();
 const BoundingArea BoundingArea::null = BoundingArea();
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Internal static							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
+static int counterFile = 0;
+static int counterTrack = 0;
+static int counterSegment = 0;
+static int counterPoint = 0;
 
+#ifdef MEMORY_TRACKING
+static int allocFile = 0;
+static int allocTrack = 0;
+static int allocSegment = 0;
+static int allocPoint = 0;
+static int allocStyle = 0;
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TimeRange								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TimeRange TimeRange::united(const TimeRange &other) const
 {
@@ -35,10 +64,11 @@ TimeRange TimeRange::united(const TimeRange &other) const
     return (result);
 }
 
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  BoundingArea							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 BoundingArea BoundingArea::united(const BoundingArea &other) const
 {
@@ -54,11 +84,11 @@ BoundingArea BoundingArea::united(const BoundingArea &other) const
     return (result);
 }
 
-
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackData								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> &items)
 {
@@ -77,15 +107,6 @@ TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> &items)
 }
 
 
-
-
-
-
-
-
-
-
-
 BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> &items)
 {
     int num = items.count();
@@ -101,7 +122,6 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> &items)
 
     return (result);
 }
-
 
 
 double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items)
@@ -134,10 +154,6 @@ double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items)
 }
 
 
-
-
-
-
 unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
 {
     int num = items.count();
@@ -163,17 +179,12 @@ unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
 }
 
 
-
-
 unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> &items)
 {
     int num = 0;
     for (int i = 0; i<items.count(); ++i) num += items[i]->childCount();
     return (num);
 }
-
-
-
 
 
 static QString toDMS(double d, int degWidth, char posMark, char negMark)
@@ -195,10 +206,6 @@ static QString toDMS(double d, int degWidth, char posMark, char negMark)
 }
 
 
-
-
-
-
 QString TrackData::formattedLatLong(double lat, double lon, bool blankIfUnknown)
 {
     if (isnan(lat) || isnan(lon))
@@ -211,8 +218,6 @@ QString TrackData::formattedLatLong(double lat, double lon, bool blankIfUnknown)
     QString lonStr = toDMS(lon, 3, 'E', 'W');
     return (latStr+" "+lonStr);
 }
-
-
 
 
 QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
@@ -234,7 +239,6 @@ QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
 }
 
 
-
 QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
 {
     if (!dt.isValid()) return (i18nc("an unknown quantity", "unknown"));
@@ -245,8 +249,11 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
     return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
 }
 
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataItem							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter)
 {
@@ -254,7 +261,6 @@ TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter
     if (nm.isEmpty() && format!=NULL) mName.sprintf(format, ++(*counter));
     init();
 }
-
 
 
 void TrackDataItem::init()
@@ -266,13 +272,11 @@ void TrackDataItem::init()
 }
 
 
-
 TrackDataItem::~TrackDataItem()
 {
     qDeleteAll(mChildItems);
     delete mStyle;
 }
-
 
 
 void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
@@ -286,7 +290,6 @@ void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 }
 
 
-
 TrackDataItem *TrackDataItem::takeLastChildItem()
 {
     Q_ASSERT(!mChildItems.isEmpty());
@@ -296,7 +299,6 @@ TrackDataItem *TrackDataItem::takeLastChildItem()
 }
 
 
-
 TrackDataItem *TrackDataItem::takeFirstChildItem()
 {
     Q_ASSERT(!mChildItems.isEmpty());
@@ -304,8 +306,6 @@ TrackDataItem *TrackDataItem::takeFirstChildItem()
     data->mParent = NULL;				// now no longer has parent
     return (data);
 }
-
-
 
 
 TrackDataItem *TrackDataItem::takeChildItem(int idx)
@@ -318,13 +318,10 @@ TrackDataItem *TrackDataItem::takeChildItem(int idx)
 }
 
 
-
 void TrackDataItem::takeChildItem(TrackDataItem *item)
 {
     takeChildItem(mChildItems.indexOf(item));
 }
-
-
 
 
 BoundingArea TrackDataItem::boundingArea() const
@@ -333,12 +330,10 @@ BoundingArea TrackDataItem::boundingArea() const
 }
 
 
-
 TimeRange TrackDataItem::timeSpan() const
 {
     return (TrackData::unifyTimeSpans(mChildItems));
 }
-
 
 
 double TrackDataItem::totalTravelDistance() const
@@ -353,15 +348,12 @@ unsigned int TrackDataItem::totalTravelTime() const
 }
 
 
-
-
 void TrackDataItem::setMetadata(int idx, const QString &value)
 {
     int cnt = mMetadata.count();
     if (idx>=cnt) mMetadata.resize(idx+1);
     mMetadata[idx] = value;
 }
-
 
 
 QString TrackDataItem::metadata(int idx) const
@@ -372,12 +364,10 @@ QString TrackDataItem::metadata(int idx) const
 }
 
 
-
 QString TrackDataItem::metadata(const QString &key) const
 {
     return (metadata(DataIndexer::self()->index(key)));
 }
-
 
 
 void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
@@ -393,12 +383,10 @@ void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
 }
 
 
-
 const Style *TrackDataItem::style() const
 {
     return ((mStyle!=NULL) ? mStyle : &Style::null);
 }
-
 
 
 void TrackDataItem::setStyle(const Style &s)
@@ -407,10 +395,12 @@ void TrackDataItem::setStyle(const Style &s)
     {
         kDebug() << "set style for" << name();
         mStyle = new Style(s);
+#ifdef MEMORY_TRACKING
+        ++allocStyle;
+#endif
     }
     else *mStyle = s;
 }
-
 
 
 QString TrackDataItem::timeZone() const
@@ -425,20 +415,19 @@ QString TrackDataItem::timeZone() const
     return (QString::null);
 }
 
-
-
-
-
-
-
-int TrackDataFile::sCounter = 0;
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataFile							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackDataFile::TrackDataFile(const QString &nm)
-    : TrackDataItem(nm, "file_%02d", &TrackDataFile::sCounter)
+    : TrackDataItem(nm, "file_%02d", &counterFile)
 {
+#ifdef MEMORY_TRACKING
+    ++allocFile;
+#endif
 }
-
-
 
 
 QString TrackDataFile::iconName() const
@@ -446,29 +435,33 @@ QString TrackDataFile::iconName() const
     return (KMimeType::iconNameForUrl(mFileName));
 }
 
-
-
-
-
-
-
-int TrackDataTrack::sCounter = 0;
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataTrack							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackDataTrack::TrackDataTrack(const QString &nm)
-    : TrackDataItem(nm, "track_%02d", &TrackDataTrack::sCounter)
+    : TrackDataItem(nm, "track_%02d", &counterTrack)
 {
+#ifdef MEMORY_TRACKING
+    ++allocTrack;
+#endif
 }
 
-
-
-
-int TrackDataSegment::sCounter = 0;
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataSegment							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackDataSegment::TrackDataSegment(const QString &nm)
-    : TrackDataItem(nm, "segment_%02d", &TrackDataSegment::sCounter)
+    : TrackDataItem(nm, "segment_%02d", &counterSegment)
 {
+#ifdef MEMORY_TRACKING
+    ++allocSegment;
+#endif
 }
-
 
 
 // Optimisation, assumes that points are in chronological order
@@ -486,19 +479,20 @@ TimeRange TrackDataSegment::timeSpan() const
     return (TimeRange(firstPoint->time(), lastPoint->time()));
 }
 
-
-
-
-
-
-
-int TrackDataPoint::sCounter = 0;
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataPoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackDataPoint::TrackDataPoint(const QString &nm)
-    : TrackDataItem(nm, "point_%04d", &TrackDataPoint::sCounter)
+    : TrackDataItem(nm, "point_%04d", &counterPoint)
 {
     mLatitude = mLongitude = NAN;
     mElevation = NAN;
+#ifdef MEMORY_TRACKING
+    ++allocPoint;
+#endif
 }
 
 
@@ -507,7 +501,6 @@ QString TrackDataPoint::formattedElevation() const
     if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
     return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
 }
-
 
 
 QString TrackDataPoint::formattedTime(bool withZone) const
@@ -532,7 +525,6 @@ QString TrackDataPoint::formattedPosition() const
 }
 
 
-
 BoundingArea TrackDataPoint::boundingArea() const
 {
     return (BoundingArea(mLatitude, mLongitude));
@@ -543,7 +535,6 @@ TimeRange TrackDataPoint::timeSpan() const
 {
     return (TimeRange(time(), time()));
 }
-
 
 
 double TrackDataPoint::distanceTo(const TrackDataPoint *other, bool accurate) const
@@ -586,8 +577,6 @@ double TrackDataPoint::bearingTo(const TrackDataPoint *other) const
 }
 
 
-
-
 int TrackDataPoint::timeTo(const TrackDataPoint *other) const
 {
     return (time().secsTo(other->time()));
@@ -601,3 +590,46 @@ void TrackDataPoint::copyData(const TrackDataPoint *other)
     mElevation = other->mElevation;
     mDateTime = other->mDateTime;
 }
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Memory tracking							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#ifdef MEMORY_TRACKING
+
+struct MemoryTracker
+{
+    MemoryTracker();
+    ~MemoryTracker();
+};
+
+static MemoryTracker sTracker;
+
+
+MemoryTracker::MemoryTracker()
+{
+    qDebug() << "*********** Structure sizes:";
+    qDebug() << "item" << sizeof(TrackDataItem) << "bytes";
+    qDebug() << "file" << sizeof(TrackDataFile) << "bytes";
+    qDebug() << "track" << sizeof(TrackDataTrack) << "bytes";
+    qDebug() << "segment" << sizeof(TrackDataSegment) << "bytes";
+    qDebug() << "point" << sizeof(TrackDataPoint) << "bytes";
+    qDebug() << "style" << sizeof(Style) << "bytes";
+    qDebug() << "***********";
+}
+
+
+MemoryTracker::~MemoryTracker()
+{
+    qDebug() << "*********** Memory statistics:";
+    qDebug() << "file allocated" << allocFile << "items, total" << allocFile*sizeof(TrackDataFile) << "bytes";
+    qDebug() << "track allocated" << allocTrack << "items, total" << allocTrack*sizeof(TrackDataTrack) << "bytes";
+    qDebug() << "segment allocated" << allocSegment << "items, total" << allocSegment*sizeof(TrackDataSegment) << "bytes";
+    qDebug() << "point allocated" << allocPoint << "items, total" << allocPoint*sizeof(TrackDataPoint) << "bytes";
+    qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
+    qDebug() << "***********";
+}
+
+#endif
