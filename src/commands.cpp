@@ -16,28 +16,93 @@
 #include "dataindexer.h"
 
 
+#undef DEBUG_ITEMS
 
 
-// These are intended to be used in a destructor to clean up data that
-// we may be holding.  If the 'item' has a parent then it means that
-// it is part of the main data structure, so it should not be deleted.
-// If it has no parent then it is owned by us and can safely be deleted.
+// TrackDataItem's passed in to here may well refer to parts of the main
+// model data tree, or items intending to be added to or removed from it.
+// Because of that, we need to be very careful when holding on to items,
+// or deleting them when they may appear to be not needed.
+//
+// The rules to be followed are:
+//
+//   - Any pointer to an item passed in must be copied by using acceptItem().
+//     This increments its reference count to indicate that we are holding a
+//     pointer to it.
+//
+//   - A list of items passed in must be copied and then acceptList() used.
+//     This increments each contained item's reference count as above.
+//
+//   - Any item that we create must either use acceptItem() or be added as
+//     a child of another item.
+//
+//   - Any item or list of items that either was passed in and copied as above,
+//     or created by us, must be deleted using deleteItem() or deleteList() as
+//     appropriate.  The item, or the list's contained items, will not actually
+//     be deleted if there are any other references to it.  Note that the item
+//     having a parent (i.e. being a child of another) automatically counts as
+//     a reference.
+//
+//     An item created by us may be deleted either when it is no longer
+//     required, or in a destructor.  If not done in a destructor, the pointer
+//     must be immediately set to NULL to avoid a possible double deletion
+//     in the destructor.
+//
+// Not following these rules and deleting anything without these checks may result
+// in double-deletion crashes, or deleting something that is still in use as part
+// of the model's data tree.  Not deleting anything will probably have no
+// ill effects apart from memory leaks.  Your choice...
 
-template<typename T>
-static void deleteData(T *item)
+
+// Needs to be a template, so that the type of the returned item is
+// the same as the input.
+template <typename T>
+static inline T *acceptItem(T *item)
+{
+    item->ref();
+#ifdef DEBUG_ITEMS
+    kDebug() << "accepting item" << item << item->name();
+#endif
+    return (item);
+}
+
+
+// A template, so that it will work for any collection.
+template<typename C>
+static void acceptList(C &list)
+{
+    for (int i = 0; i<list.count(); ++i) acceptItem(list[i]);
+}
+
+
+// Can be generic, will work using the virtual destructor.
+static void deleteItem(TrackDataItem *item)
 {
     if (item==NULL) return;
-    if (item->parent()!=NULL) return;
-    kDebug() << "deleting" << item->name();
-    delete item;
+    if (item->deref())
+    {
+#ifdef DEBUG_ITEMS
+        kDebug() << "deleting" << item << "=" << item->name();
+#endif
+        delete item;
+    }
+#ifdef DEBUG_ITEMS
+    else
+    {
+        kDebug() << "keeping" << item << "=" << item->name();
+    }
+#endif
 }
 
 
+// A template, so that it will work for any collection.
 template<typename C>
-static void deleteData(const C &list)
+static void deleteList(C &list)
 {
-    for (int i = 0; i<list.count(); ++i) deleteData(list[i]);
+    for (int i = 0; i<list.count(); ++i) deleteItem(list[i]);
 }
+
+
 
 
 
@@ -87,7 +152,7 @@ ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
 
 ImportFileCommand::~ImportFileCommand()
 {
-    deleteData(mTrackData);
+    deleteItem(mTrackData);
 }
 
 
@@ -210,8 +275,6 @@ void ChangeItemDataCommand::redo()
 }
 
 
-
-
 void ChangeItemDataCommand::undo()
 {
     TrackDataDisplayable *item = mDataItem;
@@ -234,23 +297,30 @@ SplitSegmentCommand::SplitSegmentCommand(FilesController *fc, QUndoCommand *pare
 }
 
 
-
 SplitSegmentCommand::~SplitSegmentCommand()
 {
-    deleteData(mParentSegment);
-    deleteData(mNewSegment);
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    deleteItem(mParentSegment);
+    deleteItem(mNewSegment);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
-
-
-
 
 
 void SplitSegmentCommand::setData(TrackDataSegment *pnt, int idx)
 {
-    mParentSegment = pnt;
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    mParentSegment = acceptItem(pnt);
     mSplitIndex = idx;
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
-
 
 
 static QString makeSplitName(const QString &orig)
@@ -262,27 +332,29 @@ static QString makeSplitName(const QString &orig)
 }
 
 
-
-
-
-
 void SplitSegmentCommand::redo()
 {
     Q_ASSERT(mParentSegment!=NULL);
     Q_ASSERT(mSplitIndex>0 && mSplitIndex<(mParentSegment->childCount()-1));
 
-    mNewSegment = new TrackDataSegment(makeSplitName(mParentSegment->name()));
-    mNewSegment->copyMetadata(mParentSegment);
-    // TODO: copy style
+    controller()->view()->clearSelection();
 
     TrackDataPoint *splitPoint = dynamic_cast<TrackDataPoint *>(mParentSegment->childAt(mSplitIndex));
     Q_ASSERT(splitPoint!=NULL);
 
-    TrackDataPoint *copyPoint = new TrackDataPoint(makeSplitName(splitPoint->name()));
-    copyPoint->copyData(splitPoint);
-    copyPoint->copyMetadata(splitPoint);
-    // TODO: copy style
-    mNewSegment->addChildItem(copyPoint);
+    if (mNewSegment==NULL)
+    {
+        mNewSegment = new TrackDataSegment(makeSplitName(mParentSegment->name()));
+        mNewSegment->copyMetadata(mParentSegment);
+        acceptItem(mNewSegment);
+        // TODO: copy style
+
+        TrackDataPoint *copyPoint = new TrackDataPoint(makeSplitName(splitPoint->name()));
+        copyPoint->copyData(splitPoint);
+        copyPoint->copyMetadata(splitPoint);
+        // TODO: copy style
+        mNewSegment->addChildItem(copyPoint);
+    }
 
     model()->splitItem(mParentSegment, mSplitIndex, mNewSegment);
 
@@ -292,14 +364,15 @@ void SplitSegmentCommand::redo()
 }
 
 
-
 void SplitSegmentCommand::undo()
 {
     Q_ASSERT(mNewSegment!=NULL);
     Q_ASSERT(mParentSegment!=NULL);
 
+    controller()->view()->clearSelection();
+
     model()->mergeItems(mParentSegment, mNewSegment);
-    delete mNewSegment;					// new segment and copied point
+    deleteItem(mNewSegment);
     mNewSegment = NULL;
 
     controller()->view()->selectItem(mParentSegment);
@@ -317,30 +390,39 @@ MergeSegmentsCommand::MergeSegmentsCommand(FilesController *fc, QUndoCommand *pa
 }
 
 
-
 MergeSegmentsCommand::~MergeSegmentsCommand()
 {
-    deleteData(mMasterSegment);
-    deleteData(mOtherSegments);
-    deleteData(mOtherParents);
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    deleteItem(mMasterSegment);
+    deleteList(mOtherSegments);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
-
-
 
 
 void MergeSegmentsCommand::setData(TrackDataSegment *master, const QList<TrackDataItem *> &others)
 {
-    mMasterSegment = master;
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    mMasterSegment = acceptItem(master);
     mOtherSegments = others;
+    acceptList(mOtherSegments);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
-
-
 
 
 void MergeSegmentsCommand::redo()
 {
     Q_ASSERT(mMasterSegment!=NULL);
     Q_ASSERT(!mOtherSegments.isEmpty());
+
+    controller()->view()->clearSelection();
 
     int num = mOtherSegments.count();
     mOtherCounts.resize(num);
@@ -363,7 +445,6 @@ void MergeSegmentsCommand::redo()
     controller()->view()->selectItem(mMasterSegment);
     updateMap();
 }
-
 
 
 void MergeSegmentsCommand::undo()
@@ -408,20 +489,26 @@ AddTrackCommand::AddTrackCommand(FilesController *fc, QUndoCommand *parent)
 }
 
 
-
 AddTrackCommand::~AddTrackCommand()
 {
-    deleteData(mNewTrack);
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    deleteItem(mNewTrack);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
-
-
 
 
 void AddTrackCommand::redo()
 {
+    controller()->view()->clearSelection();
+
     if (mNewTrack==NULL)				// need to create new track
     {
         mNewTrack = new TrackDataTrack(QString::null);
+        acceptItem(mNewTrack);
         mNewTrack->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
         kDebug() << "created" << mNewTrack->name();
     }
@@ -464,15 +551,27 @@ MoveSegmentCommand::MoveSegmentCommand(FilesController *fc, QUndoCommand *parent
 
 MoveSegmentCommand::~MoveSegmentCommand()
 {
-    deleteData(mMoveSegment);
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    deleteItem(mMoveSegment);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
 
 
 
 void MoveSegmentCommand::setData(TrackDataSegment *tds, TrackDataTrack *destTrack)
 {
-    mMoveSegment = tds;
-    mDestTrack = destTrack;
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    mMoveSegment = acceptItem(tds);
+    mDestTrack = acceptItem(destTrack);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
 }
 
 
@@ -482,6 +581,8 @@ void MoveSegmentCommand::redo()
 {
     Q_ASSERT(mMoveSegment!=NULL);
     Q_ASSERT(mDestTrack!=NULL);
+
+    controller()->view()->clearSelection();
 
     mOrigTrack = mMoveSegment->parent();
     Q_ASSERT(mOrigTrack!=NULL);
@@ -509,6 +610,7 @@ void MoveSegmentCommand::undo()
              << "from" << mDestTrack->name()
              << "->" << mOrigTrack->name() << "index" << mOrigIndex;
 
+    controller()->view()->clearSelection();
     model()->moveItem(mMoveSegment, mOrigTrack, mOrigIndex);
     controller()->view()->selectItem(mMoveSegment);
     updateMap();

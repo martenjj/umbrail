@@ -107,9 +107,6 @@ namespace TrackData
 
 
 
-
-
-
 class TrackDataItem
 {
 public:
@@ -135,6 +132,9 @@ public:
     virtual double totalTravelDistance() const;
     virtual unsigned int totalTravelTime() const;
 
+    void ref()						{ ++mRefCount; }
+    bool deref()					{ return ((--mRefCount)<=0 && mParent==NULL); }
+
 protected:
     TrackDataItem(const QString &nm, const char *format = NULL, int *counter = NULL);
 
@@ -148,6 +148,7 @@ private:
     // TODO: can this list be lazy allocated?
     QList<TrackDataItem *> mChildItems;
     TrackDataItem *mParent;
+    int mRefCount;
 };
 
 

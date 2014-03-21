@@ -260,6 +260,7 @@ TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter
 void TrackDataItem::init()
 {
     mParent = NULL;					// not attached to parent
+    mRefCount = 0;
 }
 
 
@@ -273,6 +274,8 @@ TrackDataItem::~TrackDataItem()
 
 void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 {
+    if (data->parent()!=NULL) kWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
+
     if (idx>=0) mChildItems.insert(idx, data);		// insert at specified place
     else mChildItems.append(data);			// default is to append
 							// have taken ownership of child
