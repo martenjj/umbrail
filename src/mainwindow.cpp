@@ -169,6 +169,11 @@ void MainWindow::setupActions()
     mAddTrackAction->setIcon(KIcon("list-add"));
     connect(mAddTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotAddTrack()));
 
+    mDeleteItemsAction = actionCollection()->addAction("edit_delete_track");
+    mDeleteItemsAction->setText(i18n("Delete"));
+    mDeleteItemsAction->setIcon(KIcon("edit-delete"));
+    connect(mDeleteItemsAction, SIGNAL(triggered()), filesController(), SLOT(slotDeleteItems()));
+
     mSplitTrackAction = actionCollection()->addAction("track_split");
     mSplitTrackAction->setText(i18n("Split Segment"));
     mSplitTrackAction->setIcon(KIcon("split"));
@@ -623,37 +628,50 @@ void MainWindow::slotUpdateActionState()
 
     bool propsEnabled = false;
     QString propsText = i18nc("@action:inmenu", "Properties...");
+    bool delEnabled = true;
+    QString delText = i18nc("@action:inmenu", "Delete");
+
     switch (selType)
     {
 case TrackData::File:
         propsText = i18ncp("@action:inmenu", "File Properties...", "Files Properties...", selCount);
         propsEnabled = true;
+        delEnabled = false;
         break;
 
 case TrackData::Track:
         propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
         propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
         break;
 
 case TrackData::Segment:
         propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
         propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         break;
 
 case TrackData::Point:
         propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
         propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
         break;
 
 case TrackData::Mixed:
         propsText = i18nc("@action:inmenu", "Selection Properties...");
+        delText = i18nc("@action:inmenu", "Delete Selection");
+        delEnabled = false;
         break;
 
 default:
+        delEnabled = false;
         break;
     }
+
     mPropertiesAction->setEnabled(propsEnabled);
     mPropertiesAction->setText(propsText);
+    mDeleteItemsAction->setEnabled(delEnabled);
+    mDeleteItemsAction->setText(delText);
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);

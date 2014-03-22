@@ -215,7 +215,6 @@ private:
 
 
 
-
 class MoveSegmentCommand : public FilesCommandBase
 {
 public:
@@ -236,37 +235,22 @@ private:
 
 
 
+class DeleteItemsCommand : public FilesCommandBase
+{
+public:
+    DeleteItemsCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~DeleteItemsCommand();
 
+    void setData(const QList<TrackDataItem *> &items);
 
+    void redo();
+    void undo();
 
-
-//class DeletePointsCommand : public PointsCommandBase
-//{
-//public:
-//    DeletePointsCommand(PointsController *pc, QUndoCommand *parent = NULL)
-//        : PointsCommandBase(pc, parent)
-//    {};
-//
-//    void setRowList(QList<int> rows)		{ mRowList = rows; }
-//
-//    void redo();
-//    void undo();
-//
-//private:
-//    QList<int> mRowList;
-//    QList<PointData> mSavedPoints;
-//};
-
-
-
-
-
-
-
-
-
-
-
+private:
+    QList<TrackDataItem *> mItems;
+    QVector<TrackDataItem *> mParentItems;
+    QVector<int> mParentIndexes;
+};
 
 
 #endif							// COMMANDS_H

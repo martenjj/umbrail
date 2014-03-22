@@ -471,8 +471,6 @@ void FilesController::slotMergeSegments()
 
 void FilesController::slotMoveSegment()
 {
-    kDebug();
-
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()!=1) return;
     TrackDataSegment *tds = dynamic_cast<TrackDataSegment *>(items.first());
@@ -508,6 +506,47 @@ void FilesController::slotAddTrack()
     cmd->setSenderText(sender());
     mainWindow()->executeCommand(cmd);
 }
+
+
+
+
+void FilesController::slotDeleteItems()
+{
+    QList<TrackDataItem *> items = view()->selectedItems();
+    int num = items.count();
+    if (num==0) return;
+
+    QString query;
+    if (num==1)
+    {
+        const TrackDataItem *tdi = items.first();
+        if (tdi->childCount()==0)
+        {
+            query = i18n("Delete the selected item \"%1\"?", tdi->name());
+        }
+        else
+        {
+            query = i18n("<qt>Delete the selected item \"%1\"<br>and everything under it?", tdi->name());
+        }
+    }
+    else
+    {
+        query = i18np("Delete the selected item?", "Delete the %1 selected items?", num);
+    }
+
+    int result = KMessageBox::warningContinueCancel(mainWindow(), query,
+                                                    i18n("Confirm Delete"),
+                                                    KStandardGuiItem::del());
+    if (result!=KMessageBox::Continue) return;
+
+    DeleteItemsCommand *cmd = new DeleteItemsCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(items);
+    mainWindow()->executeCommand(cmd);
+}
+
+
+
 
 
 

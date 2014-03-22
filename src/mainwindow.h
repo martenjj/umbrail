@@ -97,6 +97,7 @@ private:
     KAction *mSelectAllAction;
     KAction *mClearSelectAction;
     KAction *mAddTrackAction;
+    KAction *mDeleteItemsAction;
 
     KAction *mSplitTrackAction;
     KAction *mMergeTrackAction;

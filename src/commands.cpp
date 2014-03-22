@@ -615,3 +615,94 @@ void MoveSegmentCommand::undo()
     controller()->view()->selectItem(mMoveSegment);
     updateMap();
 }
+
+
+
+
+
+
+
+
+
+
+
+DeleteItemsCommand::DeleteItemsCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+}
+
+
+DeleteItemsCommand::~DeleteItemsCommand()
+{
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    deleteList(mItems);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
+}
+
+
+void DeleteItemsCommand::setData(const QList<TrackDataItem *> &items)
+{
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    mItems = items;
+    acceptList(mItems);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
+}
+
+
+void DeleteItemsCommand::redo()
+{
+    Q_ASSERT(!mItems.isEmpty());
+
+    controller()->view()->clearSelection();
+
+    int num = mItems.count();
+    mParentIndexes.resize(num);
+    mParentItems.resize(num);
+
+    TrackDataTrack tempItem(QString::null);
+    for (int i = 0; i<mItems.count(); ++i)
+    {
+        TrackDataItem *item = mItems[i];
+        TrackDataItem *parent = item->parent();
+        Q_ASSERT(parent!=NULL);
+        mParentItems[i] = parent;
+        mParentIndexes[i] = parent->childIndex(item);
+
+        model()->moveItem(item, &tempItem);
+        tempItem.takeFirstChildItem();
+    }
+
+    updateMap();
+}
+
+
+void DeleteItemsCommand::undo()
+{
+    Q_ASSERT(!mItems.isEmpty());
+    Q_ASSERT(mParentItems.count()==mItems.count());
+    Q_ASSERT(mParentIndexes.count()==mItems.count());
+
+    controller()->view()->clearSelection();
+
+    TrackDataTrack tempItem(QString::null);
+    for (int i = mItems.count()-1; i>=0; --i)
+    {
+        TrackDataItem *item = mItems[i];
+        tempItem.addChildItem(item);
+        model()->moveItem(item, mParentItems[i], mParentIndexes[i]);
+        controller()->view()->selectItem(item, true);
+    }
+
+    mParentItems.clear();
+    mParentIndexes.clear();
+
+    updateMap();
+}
