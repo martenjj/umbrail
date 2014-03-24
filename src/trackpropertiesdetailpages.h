@@ -31,9 +31,6 @@ protected:
     void addBoundingAreaField(const QList<TrackDataItem *> &items);
     void addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText);
     void addMetadataField(const TrackDataItem *tdi, const QString &key, const QString &label);
-
-protected:
-    bool mIsEmpty;
 };
 
 

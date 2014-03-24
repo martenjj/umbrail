@@ -25,8 +25,6 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWi
     setObjectName("TrackItemDetailPage");
 
     addSeparatorField();
-
-    mIsEmpty = false;
 }
 
 
@@ -38,23 +36,23 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), l);
-    if (mIsEmpty) mFormLayout->labelForField(l)->setEnabled(false);
+    disableIfEmpty(l);
 
     l = new TrackDataLabel(tsp.finish(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
-    if (mIsEmpty) mFormLayout->labelForField(l)->setEnabled(false);
+    disableIfEmpty(l);
 
     unsigned tt = tsp.timeSpan();
-    l = new TrackDataLabel(TrackData::formattedDuration(tt, mIsEmpty), this);
+    l = new TrackDataLabel(TrackData::formattedDuration(tt, isEmpty()), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time span:"), l);
-    if (mIsEmpty) mFormLayout->labelForField(l)->setEnabled(false);
+    disableIfEmpty(l);
 
     if (bothTimes)
     {
         tt = TrackData::sumTotalTravelTime(items);
-        l = new TrackDataLabel(TrackData::formattedDuration(tt, mIsEmpty), this);
+        l = new TrackDataLabel(TrackData::formattedDuration(tt, isEmpty()), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
-        if (mIsEmpty) mFormLayout->labelForField(l)->setEnabled(false);
+        disableIfEmpty(l);
     }
 
     addSeparatorField();
@@ -64,22 +62,14 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
     vl->setSaveId("totaltraveldistance");
     vl->setValue(dist);
     mFormLayout->addRow(i18nc("@label:textbox", "Travel distance:"), vl);
-    if (mIsEmpty)
-    {
-        mFormLayout->labelForField(vl)->setEnabled(false);
-        vl->setEnabled(false);
-    }
+    disableIfEmpty(vl);
 
     double averageSpeed = dist/(tt/3600.0);
     vl = new VariableUnitDisplay(VariableUnitDisplay::Speed, this);
     vl->setSaveId("averagespeed");
     vl->setValue(averageSpeed);
     mFormLayout->addRow(i18nc("@label:textbox", "Average speed:"), vl);
-    if (mIsEmpty)
-    {
-        mFormLayout->labelForField(vl)->setEnabled(false);
-        vl->setEnabled(false);
-    }
+    disableIfEmpty(vl);
 }
 
 
@@ -89,7 +79,7 @@ void TrackItemDetailPage::addBoundingAreaField(const QList<TrackDataItem *> &ite
     BoundingArea bb = TrackData::unifyBoundingAreas(items);
     TrackDataLabel *l = new TrackDataLabel(bb.north(), bb.west(), true, this);
     mFormLayout->addRow(i18nc("@label:textbox", "Bounding area:"), l);
-    if (mIsEmpty) mFormLayout->labelForField(l)->setEnabled(false);
+    disableIfEmpty(l);
     l = new TrackDataLabel(bb.south(), bb.east(), true, this);
     mFormLayout->addRow(QString::null, l);
 }
@@ -101,8 +91,6 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items
     int num = TrackData::sumTotalChildCount(items);
     TrackDataLabel *l = new TrackDataLabel(num, this);
     mFormLayout->addRow(labelText, l);
-
-    mIsEmpty = (num==0);
 }
 
 

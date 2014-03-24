@@ -22,6 +22,7 @@ public:
     virtual bool isDataValid() const				{ return (true); }
 
     KTimeZone *timeZone() const					{ return (mTimeZone); }
+    bool isEmpty() const					{ return (mIsEmpty); }
 
 public slots:
     void setTimeZone(const QString &name);
@@ -30,6 +31,7 @@ protected:
     TrackPropertiesPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
     void addSeparatorField(const QString &title = QString::null);
+    void disableIfEmpty(QWidget *field);
 
 protected:
     QFormLayout *mFormLayout;
@@ -42,6 +44,7 @@ signals:
     void updateTimeZones(const KTimeZone *tz);
 
 private:
+    bool mIsEmpty;
     KTimeZone *mTimeZone;
 };
 

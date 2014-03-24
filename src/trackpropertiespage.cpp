@@ -11,6 +11,7 @@
 #include <klocale.h>
 #include <ksystemtimezone.h>
 
+#include "trackdata.h"
 
 
 
@@ -23,6 +24,7 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> items, QWi
     mFormLayout = new QFormLayout(this);
 
     mTimeZone = NULL;
+    mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
 }
 
 
@@ -68,4 +70,14 @@ void TrackPropertiesPage::setTimeZone(const QString &name)
     mTimeZone = new KTimeZone(KSystemTimeZones::zone(name));
     kDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
     emit updateTimeZones(timeZone());
+}
+
+
+
+
+void TrackPropertiesPage::disableIfEmpty(QWidget *field)
+{
+    if (!isEmpty()) return;
+    mFormLayout->labelForField(field)->setEnabled(false);
+    field->setEnabled(false);
 }
