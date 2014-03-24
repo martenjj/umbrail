@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	24-Feb-14						//
+//  Edit:	23-Mar-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -37,14 +37,17 @@ static DataIndexer *sInstance = NULL;
 
 DataIndexer::DataIndexer()
 {
-    kDebug();
     mNextIndex = 0;
 }
 
 
 DataIndexer *DataIndexer::self()
 {
-    if (sInstance==NULL) sInstance = new DataIndexer();
+    if (sInstance==NULL)
+    {
+        sInstance = new DataIndexer();
+        kDebug() << "allocated global instance";
+    }
     return (sInstance);
 }
 

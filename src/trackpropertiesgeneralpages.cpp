@@ -93,12 +93,16 @@ QString TrackItemGeneralPage::newTimeZone() const
 
 void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
 {
+    bool isEmpty = (TrackData::sumTotalChildCount(items)==0);
+
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), l);
+    if (isEmpty) mFormLayout->labelForField(l)->setEnabled(false);
 
     l = new TrackDataLabel(tsp.finish(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
+    if (isEmpty) mFormLayout->labelForField(l)->setEnabled(false);
 }
 
 
