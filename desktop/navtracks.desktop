@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+#TryExec=navtracks
+Exec=navtracks -f %f
+Name=NavTracks
+#NoDisplay=true
+GenericName=GPX Track Viewer/Editor
+MimeType=application/x-gpx+xml;
+Icon=marble
+Terminal=false
+Categories=Qt;KDE;Education;Geography;
