@@ -248,6 +248,14 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
     if (items.count()==0) return;
 
     BoundingArea bb = TrackData::unifyBoundingAreas(items);
+    if (!bb.isValid())					// empty container
+    {
+        KMessageBox::sorry(mainWindow(),
+                           i18n("No valid position to show"),
+                           i18n("No Position"));
+        return;
+    }
+
     GeoDataLatLonBox ll(bb.north(), bb.south(),
                         bb.east(), bb.west(), GeoDataCoordinates::Degree);
     view()->centerOn(ll, true);
