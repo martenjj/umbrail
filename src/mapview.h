@@ -33,6 +33,7 @@ public:
     QStringList overlays(bool visibleOnly) const;
     KAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);
+    void setMovePointsMode(bool on);
 
     static QColor resolveLineColour(const TrackDataItem *tdd);
 

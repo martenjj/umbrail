@@ -82,6 +82,7 @@ TracksLayer::TracksLayer(QWidget *pnt)
     mClickedPoint = NULL;
     mDraggingPoints = NULL;
     mClickTimer = new QElapsedTimer;
+    mMovePointsMode = false;
 
     mapView()->installEventFilter(this);
 }
@@ -432,6 +433,12 @@ void TracksLayer::findSelectionInTree(const TrackDataItem *tdi)
 }
 
 
+void TracksLayer::setMovePointsMode(bool on)
+{
+    mMovePointsMode = on;
+}
+
+
 bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
 {
     if (ev->type()==QEvent::MouseButtonPress)
@@ -512,6 +519,8 @@ bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
     }
     else if (ev->type()==QEvent::MouseMove)
     {
+        if (!mMovePointsMode) return (false);
+
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
         if (mouseEvent->buttons()!=Qt::LeftButton) return (false);
         if (mClickedPoint==NULL) return (false);	// no point clicked to start

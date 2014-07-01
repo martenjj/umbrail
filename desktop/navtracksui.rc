@@ -18,6 +18,8 @@
       <Separator/>
       <Action name="edit_add_track"/>
       <Action name="edit_delete_track"/>
+      <Separator/>
+      <Action name="map_move_points"/>
     </Menu>
 
     <Menu name="data">
@@ -82,6 +84,8 @@
     <Action name="file_save"/>
     <Action name="file_import"/>
     <Action name="file_export"/>
+    <Separator/>
+    <Action name="map_move_points"/>
     <Separator/>
     <Action name="map_zoom_in"/>
     <Action name="map_zoom_standard"/>

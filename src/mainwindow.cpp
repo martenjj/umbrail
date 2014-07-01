@@ -17,6 +17,7 @@
 #include <kapplication.h>
 #include <kaboutdata.h>
 #include <kaction.h>
+#include <ktoggleaction.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
 #include <kstatusbar.h>
@@ -98,6 +99,8 @@ void MainWindow::init()
     setupActions();
 
     readProperties(Settings::self()->config()->group(CONFIG_GROUP));
+
+    mSelectedSegment = NULL;
 
     slotSetModified(false);
     slotUpdateActionState();
@@ -265,6 +268,11 @@ void MainWindow::setupActions()
     }
     a = actionCollection()->addAction("map_show_overlays", itemsMenu);
     a->setText(i18n("Show Overlays"));
+
+    mMapDragAction = new KToggleAction(KIcon("transform-move"), i18n("Move Points"), this);
+    mMapDragAction->setShortcut(Qt::CTRL+Qt::Key_M);
+    connect(mMapDragAction, SIGNAL(triggered()), SLOT(slotMapMovePoints()));
+    actionCollection()->addAction("map_move_points", mMapDragAction);
 
     a = KStandardAction::preferences(this, SLOT(slotPreferences()), actionCollection());
 
@@ -631,6 +639,7 @@ void MainWindow::slotUpdateActionState()
     bool delEnabled = true;
     QString delText = i18nc("@action:inmenu", "Delete");
 
+    const TrackDataSegment *selectedSegment = NULL;
     switch (selType)
     {
 case TrackData::File:
@@ -649,12 +658,14 @@ case TrackData::Segment:
         propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
+        selectedSegment = dynamic_cast<const TrackDataSegment *>(filesController()->view()->selectedItem());
         break;
 
 case TrackData::Point:
         propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
+        selectedSegment = dynamic_cast<const TrackDataSegment *>(filesController()->view()->selectedItem()->parent());
         break;
 
 case TrackData::Mixed:
@@ -681,6 +692,31 @@ default:
     mMoveTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+
+    // If there is a selected segment or point(s), then move points mode
+    // is allowed to be entered;  otherwise, it is disabled.
+    //
+    // If there is a selected segment and it is the same as the currently
+    // selected segment, then move points mode can stay at the same state
+    // as it currently is.  Otherwise, it is forced off.
+
+    if (selectedSegment!=NULL)
+    {
+        if (selectedSegment!=mSelectedSegment)
+        {
+            mMapDragAction->setChecked(false);
+            slotMapMovePoints();
+        }
+        mMapDragAction->setEnabled(true);
+    }
+    else
+    {
+        mMapDragAction->setChecked(false);
+        slotMapMovePoints();
+        mMapDragAction->setEnabled(false);
+    }
+
+    mSelectedSegment = selectedSegment;
 }
 
 
@@ -734,6 +770,11 @@ void MainWindow::slotPreferences()
     if (d.exec()) mapController()->view()->update();
 }
 
+
+void MainWindow::slotMapMovePoints()
+{
+    mapController()->view()->setMovePointsMode(mMapDragAction->isChecked());
+}
 
 
 void MainWindow::executeCommand(QUndoCommand *cmd)

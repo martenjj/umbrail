@@ -30,6 +30,8 @@ public:
 
     bool eventFilter(QObject *obj, QEvent *ev);
 
+    void setMovePointsMode(bool on);
+
 signals:
     void draggedPoints(qreal latOff, qreal lonOff);
 
@@ -46,6 +48,7 @@ private:
     MapView *mMapView;
 
     unsigned long mSelectionId;
+    bool mMovePointsMode;
 
     QElapsedTimer *mClickTimer;
     int mClickX;

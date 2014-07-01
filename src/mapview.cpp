@@ -255,6 +255,13 @@ void MapView::slotSystemPaletteChanged()
 }
 
 
+void MapView::setMovePointsMode(bool on)
+{
+    kDebug() << on;
+    mTracksLayer->setMovePointsMode(on);
+}
+
+
 bool MapView::eventFilter(QObject *obj, QEvent *ev)
 {
     if (ev->type()==QEvent::CursorChange)

@@ -13,12 +13,14 @@ class QUndoCommand;
 class QSplitter;
 
 class KAction;
+class KToggleAction;
 class KSqueezedTextLabel;
 class KUrl;
 
 class FilesController;
 class MapController;
 class Project;
+class TrackDataSegment;
 
 
 class MainWindow : public KXmlGuiWindow
@@ -63,6 +65,7 @@ protected slots:
 
     void slotMapZoomChanged(bool canZoomIn, bool canZoomOut);
     void slotMapGotoSelection();
+    void slotMapMovePoints();
 
 private:
     void init();
@@ -107,9 +110,12 @@ private:
     KAction *mMapZoomInAction;
     KAction *mMapZoomOutAction;
     KAction *mMapGoToAction;
+    KToggleAction *mMapDragAction;
 
     QSplitter *mSplitter;
     QUndoStack *mUndoStack;
+
+    const TrackDataSegment *mSelectedSegment;
 };
  
 #endif							// MAINWINDOW_H
