@@ -253,4 +253,33 @@ private:
 };
 
 
+
+
+class MovePointsCommand : public FilesCommandBase
+{
+public:
+    MovePointsCommand(FilesController *fc, QUndoCommand *parent = NULL)
+        : FilesCommandBase(fc, parent)			{}
+    virtual ~MovePointsCommand()			{}
+
+    void setDataItems(const QList<TrackDataItem *> &items);
+    void setData(qreal latOff, qreal lonOff)		{ mLatOff = latOff; mLonOff = lonOff; }
+
+    void redo();
+    void undo();
+
+private:
+    QList<TrackDataItem *> mItems;
+    qreal mLatOff;
+    qreal mLonOff;
+};
+
+
+
+
+
+
+
+
+
 #endif							// COMMANDS_H

@@ -43,7 +43,7 @@
 //     having a parent (i.e. being a child of another) automatically counts as
 //     a reference.
 //
-//     An item created by us may be deleted either when it is no longer
+//   - An item created by us may be deleted either when it is no longer
 //     required, or in a destructor.  If not done in a destructor, the pointer
 //     must be immediately set to NULL to avoid a possible double deletion
 //     in the destructor.
@@ -703,6 +703,46 @@ void DeleteItemsCommand::undo()
 
     mParentItems.clear();
     mParentIndexes.clear();
+
+    updateMap();
+}
+
+
+
+
+void MovePointsCommand::setDataItems(const QList<TrackDataItem *> &items)
+{
+    // Not accepting them here, because we only use the points in place
+    // and never retain or delete them.
+    mItems = items;
+}
+
+
+void MovePointsCommand::redo()
+{
+    Q_ASSERT(!mItems.isEmpty());
+    for (int i = 0; i<mItems.count(); ++i)
+    {
+        TrackDataPoint *item = dynamic_cast<TrackDataPoint *>(mItems[i]);
+        if (item==NULL) continue;
+        item->setLatLong(item->latitude()+mLatOff, item->longitude()+mLonOff);
+        model()->changedItem(item);
+    }
+
+    updateMap();
+}
+
+
+void MovePointsCommand::undo()
+{
+    Q_ASSERT(!mItems.isEmpty());
+    for (int i = 0; i<mItems.count(); ++i)
+    {
+        TrackDataPoint *item = dynamic_cast<TrackDataPoint *>(mItems[i]);
+        if (item==NULL) continue;
+        item->setLatLong(item->latitude()-mLatOff, item->longitude()-mLonOff);
+        model()->changedItem(item);
+    }
 
     updateMap();
 }

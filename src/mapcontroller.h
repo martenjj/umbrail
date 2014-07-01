@@ -5,8 +5,6 @@
  
 #include <qobject.h>
 
-//#include "pointdata.h"
-
 #include <marble/MapThemeManager.h>
 
 using namespace Marble;
@@ -16,7 +14,6 @@ class KConfig;
 class MapView;
 class MainWindow;
 class TrackDataItem;
-
 
 
 class MapController : public QObject
@@ -51,6 +48,7 @@ public slots:
 protected slots:
     void slotShowPosition( const QString &pos);
     void slotZoomChanged(int zoom);
+    void slotDraggedPoints(qreal latOff, qreal lonOff);
 
 signals:
     void statusMessage(const QString &text);

@@ -15,10 +15,8 @@
 #include "mapthemedialogue.h"
 #include "mainwindow.h"
 #include "settings.h"
-
-
-
-
+#include "commands.h"
+#include "filesview.h"
 
 
 MapController::MapController(QObject *pnt)
@@ -30,6 +28,7 @@ MapController::MapController(QObject *pnt)
     connect(mView, SIGNAL(mouseMoveGeoPosition(const QString &)),
             SLOT(slotShowPosition(const QString &)));
     connect(mView, SIGNAL(zoomChanged(int)), SLOT(slotZoomChanged(int)));
+    connect(mView, SIGNAL(draggedPoints(qreal,qreal)), SLOT(slotDraggedPoints(qreal,qreal)));
 
     mHomeLat = 51.436019;				// default to here
     mHomeLong = -0.352764;
@@ -259,4 +258,16 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
     GeoDataLatLonBox ll(bb.north(), bb.south(),
                         bb.east(), bb.west(), GeoDataCoordinates::Degree);
     view()->centerOn(ll, true);
+}
+
+
+void MapController::slotDraggedPoints(qreal latOff, qreal lonOff)
+{
+    kDebug() << latOff << lonOff;
+
+    MovePointsCommand *cmd = new MovePointsCommand(mainWindow()->filesController());
+    cmd->setText(i18n("Move Points"));
+    cmd->setDataItems(mainWindow()->filesController()->view()->selectedItems());
+    cmd->setData(latOff, lonOff);
+    mainWindow()->executeCommand(cmd);
 }
