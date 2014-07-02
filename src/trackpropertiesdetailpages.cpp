@@ -82,6 +82,7 @@ void TrackItemDetailPage::addBoundingAreaField(const QList<TrackDataItem *> &ite
     disableIfEmpty(l);
     l = new TrackDataLabel(bb.south(), bb.east(), true, this);
     mFormLayout->addRow(QString::null, l);
+    disableIfEmpty(l);
 }
 
 
