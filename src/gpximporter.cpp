@@ -249,7 +249,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     {							// start of a TIME element
         if (mCurrentPoint==NULL && !mWithinMetadata)
         {						// check properly nested
-            return (error(makeXmlException(localName.toUpper()+" start not within TRKPT or METADATA", localName)));
+            warning(makeXmlException(localName.toUpper()+" start not within TRKPT or METADATA"));
         }
     }
     else if (localName=="wpt")				// start of an WPT element
@@ -373,11 +373,19 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // The time spec of the decoded date/time is UTC, which is what we want.
             mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
         }
-        else if (mWithinMetadata)
+        else
         {
+            // GPSbabel does not enclose TIME within METADATA:
+            //
+            // <?xml version="1.0" encoding="UTF-8"?>
+            // <gpx version="1.0" ... >
+            // <time>2010-04-18T16:28:47Z</time>
+            // <bounds minlat="46.827816667" minlon="8.370250000" maxlat="46.850700000" maxlon="8.391166667"/>
+            // <wpt> ...
+            //
+            if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRKPT or METADATA"));
             mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
         }
-        else return (error(makeXmlException("TIME end not within TRKPT or METADATA")));
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
