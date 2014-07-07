@@ -307,30 +307,7 @@ QString TrackPointGeneralPage::typeText(int count) const
 }
 
 
-
-
-
-
-
-TrackPropertiesPage *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackFileGeneralPage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataTrack::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackTrackGeneralPage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataSegment::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackSegmentGeneralPage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataPoint::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackPointGeneralPage(items, pnt));
-}
+CREATE_PROPERTIES_PAGE(File, General);
+CREATE_PROPERTIES_PAGE(Track, General);
+CREATE_PROPERTIES_PAGE(Segment, General);
+CREATE_PROPERTIES_PAGE(Point, General);

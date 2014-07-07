@@ -317,30 +317,7 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
 }
 
 
-
-
-
-
-
-TrackPropertiesPage *TrackDataFile::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackFileDetailPage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataTrack::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackTrackDetailPage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataSegment::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackSegmentDetailPage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataPoint::createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackPointDetailPage(items, pnt));
-}
+CREATE_PROPERTIES_PAGE(File, Detail);
+CREATE_PROPERTIES_PAGE(Track, Detail);
+CREATE_PROPERTIES_PAGE(Segment, Detail);
+CREATE_PROPERTIES_PAGE(Point, Detail);

@@ -9,7 +9,14 @@ class KTimeZone;
 class TrackDataItem;
 
 
-
+#define CREATE_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
+    TrackPropertiesPage *								\
+        TrackData ## ITEMTYPE::createProperties ## PAGETYPE ## Page(			\
+            const QList<TrackDataItem *> items,                         		\
+            QWidget *pnt) const                                         		\
+    {											\
+        return (new Track ## ITEMTYPE ## PAGETYPE ## Page(items, pnt));			\
+    }
 
 
 class TrackPropertiesPage : public QWidget

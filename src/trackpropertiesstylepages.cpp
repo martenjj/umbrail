@@ -128,26 +128,7 @@ TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWi
 }
 
 
-
-TrackPropertiesPage *TrackDataFile::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackFileStylePage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataTrack::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackTrackStylePage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataSegment::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackSegmentStylePage(items, pnt));
-}
-
-
-TrackPropertiesPage *TrackDataPoint::createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt) const
-{
-    return (new TrackPointStylePage(items, pnt));
-}
+CREATE_PROPERTIES_PAGE(File, Style);
+CREATE_PROPERTIES_PAGE(Track, Style);
+CREATE_PROPERTIES_PAGE(Segment, Style);
+CREATE_PROPERTIES_PAGE(Point, Style);
