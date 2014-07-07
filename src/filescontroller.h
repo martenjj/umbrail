@@ -48,8 +48,6 @@ public slots:
     void slotAddTrack();
     void slotDeleteItems();
 
-protected slots:
-
 signals:
     void statusMessage(const QString &text);
     void modified();

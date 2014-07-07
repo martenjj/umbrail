@@ -7,6 +7,7 @@
 class QFormLayout;
 class KTimeZone;
 class TrackDataItem;
+class QLabel;
 
 
 
@@ -26,6 +27,7 @@ public:
 
 public slots:
     void setTimeZone(const QString &name);
+    void slotPointPositionChanged(double newLat, double newLon);
 
 protected:
     TrackPropertiesPage(const QList<TrackDataItem *> items, QWidget *pnt);
@@ -35,6 +37,7 @@ protected:
 
 protected:
     QFormLayout *mFormLayout;
+    QLabel *mPositionLabel;
 
 protected slots:
     virtual void slotDataChanged();

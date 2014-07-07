@@ -317,7 +317,6 @@ void FilesController::slotTrackProperties()
     if (!d.exec()) return;
 
     TrackDataItem *item = items.first();
-
     QUndoCommand *cmd = new QUndoCommand();		// parent command
 
     QString newItemName = d.newItemName();		// new name for item
@@ -371,6 +370,17 @@ void FilesController::slotTrackProperties()
         }
     }
 
+    double newLat;
+    double newLon;
+    if (d.newPointPosition(&newLat, &newLon))
+    {
+        TrackDataPoint *p = dynamic_cast<TrackDataPoint *>(item);
+        Q_ASSERT(p!=NULL);
+        MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
+        cmd6->setDataItems((QList<TrackDataItem *>() << p));
+        cmd6->setData(newLat-p->latitude(), newLon-p->longitude());
+    }
+
     if (cmd->childCount()==0)				// anything to actually do?
     {							// no changes above, so
         delete cmd;					// don't need this after all
@@ -380,9 +390,6 @@ void FilesController::slotTrackProperties()
     cmd->setText(actText);
     mainWindow()->executeCommand(cmd);
 }
-
-
-
 
 
 void FilesController::slotSplitSegment()
@@ -456,7 +463,7 @@ void FilesController::slotMergeSegments()
             return;
         }
 
-        prevEnd = pnt2->time();;			// note end for next time
+        prevEnd = pnt2->time();				// note end for next time
     }
 
     TrackDataSegment *masterSeg = dynamic_cast<TrackDataSegment *>(items.takeFirst());

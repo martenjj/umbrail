@@ -2,6 +2,8 @@
 #include "trackpropertiesgeneralpages.h"
 
 #include <qformlayout.h>
+#include <qpushbutton.h>
+#include <qlayout.h>
 
 #include <kdebug.h>
 #include <kdialog.h>
@@ -18,7 +20,7 @@
 #include "variableunitdisplay.h"
 #include "itemtypecombo.h"
 #include "timezoneselector.h"
-
+#include "latlongdialogue.h"
 
 
 
@@ -42,8 +44,6 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
     mDescEdit = NULL;
     mTimeZoneSel = NULL;
 }
-
-
 
 
 bool TrackItemGeneralPage::isDataValid() const
@@ -265,38 +265,37 @@ TrackPointGeneralPage::TrackPointGeneralPage(const QList<TrackDataItem *> items,
     kDebug();
     setObjectName("TrackPointGeneralPage");
 
+    mPositionPoint = NULL;
+    mPositionChanged = false;
+
     if (items.count()==1)				// single selection
     {
-        const TrackDataPoint *p = dynamic_cast<const TrackDataPoint *>(items.first());
+        TrackDataPoint *p = dynamic_cast<TrackDataPoint *>(items.first());
         Q_ASSERT(p!=NULL);
+        mPositionPoint = p;
 
+        QWidget *hb = new QWidget(this);
+        QHBoxLayout *hlay = new QHBoxLayout(hb);
+        hlay->setMargin(0);
+        hlay->setSpacing(KDialog::spacingHint());
         TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
-        mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
+        hlay->addWidget(l);
+        hlay->addStretch(1);
+        mPositionLabel = l;
+
+        QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
+        connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
+        hb->setFocusProxy(b);
+        hb->setFocusPolicy(Qt::StrongFocus);
+        hlay->addWidget(b);
+        mFormLayout->addRow(i18nc("@label:textbox", "Position:"), hb);
 
         l = new TrackDataLabel(p->time(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
     }
     else						// multiple selection
     {
-        const TrackDataItem *seg = items.first()->parent();
-        Q_ASSERT(seg!=NULL);				// find parent segment
-        int firstIdx = seg->childIndex(items.first());	// its index of first item
-        int num = items.count();
-
-        bool contiguousSelection = true;		// assume so at start
-        for (int i = 1; i<num; ++i)			// look at following items
-        {
-            if (seg->childAt(firstIdx+i)!=items.at(i))	// mismatch children/selection
-            {
-                contiguousSelection = false;
-                break;
-            }
-        }
-
-        if (contiguousSelection)			// selection is contiguous
-        {
-            addTimeFields(items);
-        }
+        addTimeFields(items);
     }
 }
 
@@ -307,9 +306,31 @@ QString TrackPointGeneralPage::typeText(int count) const
 }
 
 
+void TrackPointGeneralPage::slotChangePosition()
+{
+    Q_ASSERT(mPositionPoint!=NULL);
+
+    LatLongDialogue d(this);
+    d.setLatLong(mPositionPoint->latitude(), mPositionPoint->longitude());
+    d.setButtonText(KDialog::Ok, i18nc("@action:button", "Set"));
+
+    if (d.exec())
+    {
+        mPositionChanged = true;
+        mPositionLatitude = d.latitude();
+        mPositionLongitude = d.longitude();
+        emit pointPositionChanged(mPositionLatitude, mPositionLongitude);
+    }
+}
 
 
-
+bool TrackPointGeneralPage::newPointPosition(double *newLat, double *newLon)
+{
+    if (!mPositionChanged) return (false);
+    *newLat = mPositionLatitude;
+    *newLon = mPositionLongitude;
+    return (true);
+}
 
 
 TrackPropertiesPage *TrackDataFile::createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt) const

@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		30-Jun-14					#
+#  Edit:		03-Jul-14					#
 #########################################################################
 
 project(navtracks)
@@ -46,6 +46,7 @@ set(navtracks_SRCS
   importerexporterbase.cpp
   importerbase.cpp
   itemtypecombo.cpp
+  latlongdialogue.cpp
   mainwindow.cpp
   mapcontroller.cpp
   mapthemedialogue.cpp

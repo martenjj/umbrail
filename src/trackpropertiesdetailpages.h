@@ -81,6 +81,4 @@ public:
 };
 
 
-
-
 #endif							// TRACKPROPERTIESDETAILPAGES_H
