@@ -28,9 +28,6 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWi
 }
 
 
-
-
-
 void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
@@ -224,6 +221,7 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
 
         TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
+        mPositionLabel = l;
 
         l = new TrackDataLabel(tdp->time(), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);

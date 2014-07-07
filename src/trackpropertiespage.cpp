@@ -5,11 +5,13 @@
 
 #include <qformlayout.h>
 #include <qgroupbox.h>
+#include <qlabel.h>
 
 #include <kdebug.h>
 #include <kdialog.h>
 #include <klocale.h>
 #include <ksystemtimezone.h>
+#include <kcolorscheme.h>
 
 #include "trackdata.h"
 
@@ -24,6 +26,7 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> items, QWi
     mFormLayout = new QFormLayout(this);
 
     mTimeZone = NULL;
+    mPositionLabel = NULL;
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
     if (mIsEmpty && !items.isEmpty())
     {
@@ -77,6 +80,18 @@ void TrackPropertiesPage::setTimeZone(const QString &name)
 }
 
 
+void TrackPropertiesPage::slotPointPositionChanged(double newLat, double newLon)
+{
+    if (mPositionLabel==NULL) return;
+    kDebug() << newLat << newLon;
+
+    mPositionLabel->setText(TrackData::formattedLatLong(newLat, newLon));
+
+    KColorScheme sch(QPalette::Normal);
+    QPalette pal(mPositionLabel->palette());
+    pal.setColor(QPalette::WindowText, sch.foreground(KColorScheme::NeutralText).color());
+    mPositionLabel->setPalette(pal);
+}
 
 
 void TrackPropertiesPage::disableIfEmpty(QWidget *field)

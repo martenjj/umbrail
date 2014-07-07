@@ -63,6 +63,9 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     connect(mGeneralPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
     connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
             mGeneralPage, SLOT(setTimeZone(const QString &)));
+    connect(mGeneralPage, SIGNAL(pointPositionChanged(double,double)),
+            mGeneralPage, SLOT(slotPointPositionChanged(double,double)));
+
     mTabWidget->addTab(page, i18nc("@title:tab", "General"));
 
     typeLabel->setText(mGeneralPage->typeText(items.count()));
@@ -74,6 +77,9 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     connect(mDetailPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
     connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
             mDetailPage, SLOT(setTimeZone(const QString &)));
+    connect(mGeneralPage, SIGNAL(pointPositionChanged(double,double)),
+            mDetailPage, SLOT(slotPointPositionChanged(double,double)));
+
     mTabWidget->addTab(page, i18nc("@title:tab", "Details"));
 
     page = item->createPropertiesStylePage(items, this);
@@ -115,7 +121,6 @@ void TrackPropertiesDialogue::slotDataChanged()
 }
 
 
-
 QString TrackPropertiesDialogue::newItemName() const
 {
     return (mGeneralPage->newItemName());
@@ -140,6 +145,13 @@ Style TrackPropertiesDialogue::newStyle() const
     return (mStylePage->newStyle());				// style from page
 }
 
+
+bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon)
+{
+    TrackPointGeneralPage *pointPage = qobject_cast<TrackPointGeneralPage *>(mGeneralPage);
+    if (pointPage==NULL) return (false);
+    return (pointPage->newPointPosition(newLat, newLon));
+}
 
 
 QString TrackPropertiesDialogue::newTrackType() const

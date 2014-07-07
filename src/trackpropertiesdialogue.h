@@ -32,6 +32,7 @@ public:
     Style newStyle() const;
     QString newTrackType() const;
     QString newTimeZone() const;
+    bool newPointPosition(double *newLat, double *newLon);
 
 protected slots:
     void slotDataChanged();
@@ -42,9 +43,6 @@ private:
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;
     TrackItemStylePage *mStylePage;
-
-
-
 };
 
 #endif							// TRACKPROPERTIESDIALOGUE_H
