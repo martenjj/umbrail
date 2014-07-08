@@ -5,6 +5,6 @@ Exec=navtracks -f %f
 Name=NavTracks
 GenericName=GPX Track Viewer/Editor
 MimeType=application/x-gpx+xml;
-Icon=marble
+Icon=navtracks
 Terminal=false
 Categories=Qt;KDE;Education;Geography;
