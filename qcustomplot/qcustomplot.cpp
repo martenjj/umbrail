@@ -6419,8 +6419,8 @@ QByteArray QCPAxisPainterPrivate::generateLabelParameterHash() const
   result.append(QByteArray::number(tickLabelRotation));
   result.append(QByteArray::number((int)substituteExponent));
   result.append(QByteArray::number((int)numberMultiplyCross));
-  result.append(tickLabelColor.name()+QByteArray::number(tickLabelColor.alpha(), 16));
-  result.append(tickLabelFont.toString());
+  result.append(tickLabelColor.name().toLatin1()+QByteArray::number(tickLabelColor.alpha(), 16));
+  result.append(tickLabelFont.toString().toLatin1());
   return result;
 }
 
