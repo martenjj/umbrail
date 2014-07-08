@@ -52,6 +52,8 @@ public:
     void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr, TrackDataItem *newParent = NULL, int newIndex = -1);
     void mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems = false);
     void moveItem(TrackDataItem *item, TrackDataItem *dest, int destIndex = -1);
+    void insertItem(TrackDataItem *item, TrackDataItem *dest, int destIndex);
+    void removeItem(TrackDataItem *item);
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
     TrackDataItem *itemForIndex(const QModelIndex &idx) const;

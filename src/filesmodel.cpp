@@ -377,9 +377,22 @@ void FilesModel::moveItem(TrackDataItem *item, TrackDataItem *dest, int destInde
 }
 
 
+void FilesModel::insertItem(TrackDataItem *item, TrackDataItem *dest, int destIndex)
+{
+    emit layoutAboutToBeChanged();
+    dest->addChildItem(item, destIndex);
+    emit layoutChanged();
+}
 
 
-
+void FilesModel::removeItem(TrackDataItem *item)
+{
+    emit layoutAboutToBeChanged();
+    TrackDataItem *pnt = item->parent();
+    Q_ASSERT(pnt!=NULL);
+    pnt->takeChildItem(item);
+    emit layoutChanged();
+}
 
 
 void FilesModel::clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods)

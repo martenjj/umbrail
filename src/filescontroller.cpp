@@ -517,6 +517,20 @@ void FilesController::slotAddTrack()
 
 
 
+void FilesController::slotAddPoint()
+{
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+
+    AddPointCommand *cmd = new AddPointCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(items.first());
+    mainWindow()->executeCommand(cmd);
+}
+
+
+
+
 void FilesController::slotDeleteItems()
 {
     QList<TrackDataItem *> items = view()->selectedItems();

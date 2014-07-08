@@ -215,6 +215,24 @@ private:
 
 
 
+class AddPointCommand : public FilesCommandBase
+{
+public:
+    AddPointCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~AddPointCommand();
+
+    void redo();
+    void undo();
+
+    void setData(TrackDataItem *item);
+
+private:
+    TrackDataPoint *mNewPoint;
+    TrackDataPoint *mAtPoint;
+};
+
+
+
 class MoveSegmentCommand : public FilesCommandBase
 {
 public:

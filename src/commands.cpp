@@ -537,6 +537,80 @@ void AddTrackCommand::undo()
 
 
 
+AddPointCommand::AddPointCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mNewPoint = NULL;
+    mAtPoint = NULL;
+}
+
+
+AddPointCommand::~AddPointCommand()
+{
+#ifdef DEBUG_ITEMS
+    kDebug() << "start";
+#endif
+    deleteItem(mNewPoint);
+    deleteItem(mAtPoint);
+#ifdef DEBUG_ITEMS
+    kDebug() << "done";
+#endif
+}
+
+
+void AddPointCommand::setData(TrackDataItem *item)
+{
+    mAtPoint = dynamic_cast<TrackDataPoint *>(item);
+    Q_ASSERT(mAtPoint!=NULL);
+    acceptItem(mAtPoint);
+}
+
+
+void AddPointCommand::redo()
+{
+    Q_ASSERT(mAtPoint!=NULL);
+
+    controller()->view()->clearSelection();
+    TrackDataItem *pnt = mAtPoint->parent();
+    Q_ASSERT(pnt!=NULL);
+
+    if (mNewPoint==NULL)				// need to create new point
+    {
+        mNewPoint = new TrackDataPoint(QString::null);
+        acceptItem(mNewPoint);
+
+        int i = pnt->childIndex(mAtPoint);
+        Q_ASSERT(i>0);					// not allowed at first point
+        const TrackDataPoint *prevPoint = dynamic_cast<const TrackDataPoint *>(pnt->childAt(i-1));
+        Q_ASSERT(prevPoint!=NULL);
+
+        double lat = (mAtPoint->latitude()+prevPoint->latitude())/2;
+        double lon = (mAtPoint->longitude()+prevPoint->longitude())/2;
+        mNewPoint->setLatLong(lat, lon);		// interpolate position
+
+        kDebug() << "created" << mNewPoint->name();
+    }
+
+    model()->insertItem(mNewPoint, pnt, pnt->childIndex(mAtPoint));
+    controller()->view()->selectItem(mNewPoint);
+    updateMap();
+}
+
+
+void AddPointCommand::undo()
+{
+    controller()->view()->clearSelection();
+    model()->removeItem(mNewPoint);
+    controller()->view()->selectItem(mAtPoint);
+    updateMap();
+}
+
+
+
+
+
+
+
 
 
 MoveSegmentCommand::MoveSegmentCommand(FilesController *fc, QUndoCommand *parent)

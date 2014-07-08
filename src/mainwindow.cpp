@@ -172,6 +172,11 @@ void MainWindow::setupActions()
     mAddTrackAction->setIcon(KIcon("list-add"));
     connect(mAddTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotAddTrack()));
 
+    mAddPointAction = actionCollection()->addAction("edit_add_point");
+    mAddPointAction->setText(i18n("Add Point"));
+    mAddPointAction->setIcon(KIcon("list-add"));
+    connect(mAddPointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddPoint()));
+
     mDeleteItemsAction = actionCollection()->addAction("edit_delete_track");
     mDeleteItemsAction->setText(i18n("Delete"));
     mDeleteItemsAction->setIcon(KIcon("edit-delete"));
@@ -692,6 +697,13 @@ default:
     mMoveTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+
+    if (selCount==1 && selType==TrackData::Point)
+    {
+        const QModelIndex idx = filesController()->model()->indexForItem(filesController()->view()->selectedItem());
+        mAddPointAction->setEnabled(idx.row()>0);	// not first point in segment
+    }
+    else mAddPointAction->setEnabled(false);
 
     // If there is a selected segment or point(s), then move points mode
     // is allowed to be entered;  otherwise, it is disabled.
