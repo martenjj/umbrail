@@ -541,23 +541,22 @@ double TrackDataPoint::distanceTo(const TrackDataPoint *other, bool accurate) co
 {
     // See http://www.movable-type.co.uk/scripts/latlong.html
 
-    double lat1 = latitude()*DEGREES_TO_RADIANS;
-    double lon1 = longitude()*DEGREES_TO_RADIANS;
-    double lat2 = other->latitude()*DEGREES_TO_RADIANS;
-    double lon2 = other->longitude()*DEGREES_TO_RADIANS;
+    const double lat1 = latitude()*DEGREES_TO_RADIANS;
+    const double lon1 = longitude()*DEGREES_TO_RADIANS;
+    const double lat2 = other->latitude()*DEGREES_TO_RADIANS;
+    const double lon2 = other->longitude()*DEGREES_TO_RADIANS;
 
     if (accurate)
     {
         // Spherical cosines for maximum accuracy
-        return (acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2)*cos(lon2-lon1)));
+        const double d = (acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2)*cos(lon2-lon1)));
+        if (!isnan(d)) return (d);
     }
-    else
-    {
-        // Pythagoras is good enough for small distances
-        double x = (lon2-lon1)*cos((lat1+lat2)/2.0);
-        double y = (lat2-lat1);
-        return (sqrt(x*x + y*y));
-    }
+
+    // Pythagoras is good enough for small distances
+    const double x = (lon2-lon1)*cos((lat1+lat2)/2.0);
+    const double y = (lat2-lat1);
+    return (sqrt(x*x + y*y));
 }
 
 
