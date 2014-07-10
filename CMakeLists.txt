@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		20-Jan-14					#
+#  Edit:		08-Jul-14					#
 #########################################################################
 #									#
 #									#
@@ -22,8 +22,10 @@ find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
 
+set(QCUSTOMPLOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
+
 add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS} )
-include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES})
+include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES} ${QCUSTOMPLOT_DIR})
 
 #########################################################################
 #									#

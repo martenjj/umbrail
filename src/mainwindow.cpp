@@ -40,6 +40,7 @@
 #include "settings.h"
 #include "style.h"
 #include "settingsdialogue.h"
+#include "profilewidget.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -202,6 +203,11 @@ void MainWindow::setupActions()
     mPropertiesAction->setShortcut(KShortcut(Qt::CTRL+Qt::Key_Return, Qt::CTRL+Qt::Key_Enter));
     mPropertiesAction->setIcon(KIcon("document-properties"));
     connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
+
+    mProfileAction = actionCollection()->addAction("track_profile");
+    mProfileAction->setText(i18n("Elevation/Speed Profile..."));
+    mProfileAction->setIcon(KIcon("office-chart-line-stacked"));
+    connect(mProfileAction, SIGNAL(triggered()), SLOT(slotTrackProfile()));
 
     a = actionCollection()->addAction("map_save");
     a->setText(i18n("Save As Image..."));
@@ -640,6 +646,7 @@ void MainWindow::slotUpdateActionState()
     kDebug() << "selected" << selCount << "type" << selType;
 
     bool propsEnabled = false;
+    bool profileEnabled = false;
     QString propsText = i18nc("@action:inmenu", "Properties...");
     bool delEnabled = true;
     QString delText = i18nc("@action:inmenu", "Delete");
@@ -651,12 +658,14 @@ case TrackData::File:
         propsText = i18ncp("@action:inmenu", "File Properties...", "Files Properties...", selCount);
         propsEnabled = true;
         delEnabled = false;
+        profileEnabled = true;
         break;
 
 case TrackData::Track:
         propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
+        profileEnabled = true;
         break;
 
 case TrackData::Segment:
@@ -664,6 +673,7 @@ case TrackData::Segment:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         selectedSegment = dynamic_cast<const TrackDataSegment *>(filesController()->view()->selectedItem());
+        profileEnabled = true;
         break;
 
 case TrackData::Point:
@@ -671,6 +681,7 @@ case TrackData::Point:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
         selectedSegment = dynamic_cast<const TrackDataSegment *>(filesController()->view()->selectedItem()->parent());
+        profileEnabled = (selCount>1);
         break;
 
 case TrackData::Mixed:
@@ -688,6 +699,7 @@ default:
     mPropertiesAction->setText(propsText);
     mDeleteItemsAction->setEnabled(delEnabled);
     mDeleteItemsAction->setText(delText);
+    mProfileAction->setEnabled(profileEnabled);
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
@@ -786,6 +798,16 @@ void MainWindow::slotPreferences()
 void MainWindow::slotMapMovePoints()
 {
     mapController()->view()->setMovePointsMode(mMapDragAction->isChecked());
+}
+
+
+void MainWindow::slotTrackProfile()
+{
+    ProfileWidget *w = new ProfileWidget(this);
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setModal(false);
+    w->setCaption(i18n("Track Profile"));
+    w->show();
 }
 
 

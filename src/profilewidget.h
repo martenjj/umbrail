@@ -1,0 +1,57 @@
+// -*-mode:c++ -*-
+
+#ifndef PROFILEWIDGET_H
+#define PROFILEWIDGET_H
+ 
+#include <qvector.h>
+#include <kdialog.h>
+
+
+class QCheckBox;
+class QRadioButton;
+class MainWindow;
+class TrackDataItem;
+class TrackDataPoint;
+class QCustomPlot;
+
+
+class ProfileWidget : public KDialog
+{
+    Q_OBJECT
+
+public:
+    explicit ProfileWidget(QWidget *pnt = NULL);
+    virtual ~ProfileWidget();
+
+private slots:
+    void slotUpdatePlot();
+
+private:
+    MainWindow *mainWindow() const		{ return (mMainWindow); }
+    void getPlotData(const TrackDataItem *item);
+
+private:
+    MainWindow *mMainWindow;
+
+    QCheckBox *mElevationCheck;
+    QCheckBox *mSpeedCheck;
+    QRadioButton *mSpeedGpsRadio;
+    QRadioButton *mSpeedTrackRadio;
+    QRadioButton *mReferenceTimeRadio;
+    QRadioButton *mReferenceDistRadio;
+    QRadioButton *mScaleAutoRadio;
+    QRadioButton *mScaleZeroRadio;
+
+    QVector<double> mRefData;
+    QVector<double> mElevData;
+    QVector<double> mSpeedData;
+
+    QCustomPlot *mPlot;
+
+    bool mUseGpsSpeed;
+    bool mUseTravelDistance;
+    double mCumulativeTravel;
+    const TrackDataPoint *mPrevPoint;
+};
+
+#endif							// PROFILEWIDGET_H

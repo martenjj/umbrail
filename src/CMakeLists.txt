@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		03-Jul-14					#
+#  Edit:		08-Jul-14					#
 #########################################################################
 
 project(navtracks)
@@ -52,6 +52,7 @@ set(navtracks_SRCS
   mapthemedialogue.cpp
   mapview.cpp
   movesegmentdialogue.cpp
+  profilewidget.cpp
   project.cpp
   settingsdialogue.cpp
   style.cpp
@@ -67,6 +68,7 @@ set(navtracks_SRCS
   trackpropertiesstylepages.cpp
   trackslayer.cpp
   variableunitdisplay.cpp
+  ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
 
 kde4_add_kcfg_files(navtracks_SRCS settings.kcfgc)

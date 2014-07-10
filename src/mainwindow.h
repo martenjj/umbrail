@@ -66,6 +66,7 @@ protected slots:
     void slotMapZoomChanged(bool canZoomIn, bool canZoomOut);
     void slotMapGotoSelection();
     void slotMapMovePoints();
+    void slotTrackProfile();
 
 private:
     void init();
@@ -107,6 +108,7 @@ private:
     KAction *mMergeTrackAction;
     KAction *mMoveTrackAction;
     KAction *mPropertiesAction;
+    KAction *mProfileAction;
 
     KAction *mMapZoomInAction;
     KAction *mMapZoomOutAction;
