@@ -695,11 +695,11 @@ protected:
   // introduced virtual methods:
   virtual int calculateAutoMargin(QCP::MarginSide side);
   // events:
-  virtual void mousePressEvent(QMouseEvent *event) {Q_UNUSED(event)}
-  virtual void mouseMoveEvent(QMouseEvent *event) {Q_UNUSED(event)}
-  virtual void mouseReleaseEvent(QMouseEvent *event) {Q_UNUSED(event)}
-  virtual void mouseDoubleClickEvent(QMouseEvent *event) {Q_UNUSED(event)}
-  virtual void wheelEvent(QWheelEvent *event) {Q_UNUSED(event)}
+  virtual void mousePressEvent(QMouseEvent *ev) {Q_UNUSED(ev)}
+  virtual void mouseMoveEvent(QMouseEvent *ev) {Q_UNUSED(ev)}
+  virtual void mouseReleaseEvent(QMouseEvent *ev) {Q_UNUSED(ev)}
+  virtual void mouseDoubleClickEvent(QMouseEvent *ev) {Q_UNUSED(ev)}
+  virtual void wheelEvent(QWheelEvent *ev) {Q_UNUSED(ev)}
   
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const { Q_UNUSED(painter) }
