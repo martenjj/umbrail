@@ -41,6 +41,7 @@
 #include "style.h"
 #include "settingsdialogue.h"
 #include "profilewidget.h"
+#include "statisticswidget.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -208,6 +209,11 @@ void MainWindow::setupActions()
     mProfileAction->setText(i18n("Elevation/Speed Profile..."));
     mProfileAction->setIcon(KIcon("office-chart-line-stacked"));
     connect(mProfileAction, SIGNAL(triggered()), SLOT(slotTrackProfile()));
+
+    mStatisticsAction = actionCollection()->addAction("track_statistics");
+    mStatisticsAction->setText(i18n("Statistics/Quality..."));
+    mStatisticsAction->setIcon(KIcon("kt-check-data"));
+    connect(mStatisticsAction, SIGNAL(triggered()), SLOT(slotTrackStatistics()));
 
     a = actionCollection()->addAction("map_save");
     a->setText(i18n("Save As Image..."));
@@ -700,6 +706,7 @@ default:
     mDeleteItemsAction->setEnabled(delEnabled);
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
+    mStatisticsAction->setEnabled(profileEnabled);
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
@@ -807,6 +814,16 @@ void MainWindow::slotTrackProfile()
     w->setAttribute(Qt::WA_DeleteOnClose);
     w->setModal(false);
     w->setCaption(i18n("Track Profile"));
+    w->show();
+}
+
+
+void MainWindow::slotTrackStatistics()
+{
+    StatisticsWidget *w = new StatisticsWidget(this);
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    w->setModal(false);
+    w->setCaption(i18n("Track Statistics/Quality"));
     w->show();
 }
 

@@ -36,6 +36,7 @@
       <Separator/>
       <Action name="track_properties"/>
       <Action name="track_profile"/>
+      <Action name="track_statistics"/>
     </Menu>
 
     <Menu name="map">

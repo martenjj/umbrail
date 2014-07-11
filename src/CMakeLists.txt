@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		08-Jul-14					#
+#  Edit:		11-Jul-14					#
 #########################################################################
 
 project(navtracks)
@@ -55,6 +55,7 @@ set(navtracks_SRCS
   profilewidget.cpp
   project.cpp
   settingsdialogue.cpp
+  statisticswidget.cpp
   style.cpp
   timezonedialogue.cpp
   timezoneselector.cpp
