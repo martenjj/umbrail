@@ -131,7 +131,7 @@ void StatisticsWidget::getPointData(const TrackDataItem *item)
         if (dt.isValid()) ++mWithTime;
 
         const double ele = tdp->elevation();		// elevation available
-        if (!isnan(ele)) ++mWithElevation;
+        if (!isnan(ele) && ele!=0) ++mWithElevation;	// (and also nozero)
 
         const QString speedMeta = tdp->metadata("speed");
         if (!speedMeta.isEmpty()) ++mWithGpsSpeed;	// GPS speed recorded
