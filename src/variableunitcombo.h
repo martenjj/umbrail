@@ -25,44 +25,44 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef VARIABLEUNITDISPLAY_H
-#define VARIABLEUNITDISPLAY_H
+#ifndef VARIABLEUNITCOMBO_H
+#define VARIABLEUNITCOMBO_H
 
 
-#include <khbox.h>
-
-#include "variableunitcombo.h"
+#include <qcombobox.h>
 
 
-class QLabel;
-class QShowEvent;
-
-
-class VariableUnitDisplay : public KHBox
+class VariableUnitCombo : public QComboBox
 {
     Q_OBJECT
 
 public:
-    explicit VariableUnitDisplay(VariableUnitCombo::DisplayType displayType, QWidget *pnt = NULL);
-    virtual ~VariableUnitDisplay();
+    enum DisplayType
+    {
+        Distance,
+        Speed,
+        Elevation,
+        Bearing
+    };
 
-    void setValue(double v);
-    void setSaveId(const QString &id);
+    enum BearingType
+    {
+        Absolute,
+        Relative,
+        Nautical
+    };
 
-protected:
-    void showEvent(QShowEvent *ev);
+    explicit VariableUnitCombo(VariableUnitCombo::DisplayType displayType, QWidget *pnt = NULL);
+    virtual ~VariableUnitCombo();
 
-protected slots:
-    void slotUpdateDisplay();
+    VariableUnitCombo::DisplayType type() const		{ return (mType); }
+    double factor() const;
+    int precision() const;
 
 private:
-    QLabel *mValueLabel;
-    VariableUnitCombo *mUnitCombo;
-    int mComboIndex;
-
-    double mValue;
-
-    QString mSaveId;
+    int mPrecision;
+    VariableUnitCombo::DisplayType mType;
 };
 
-#endif							// VARIABLEUNITDISPLAY_H
+ 
+#endif							// VARIABLEUNITCOMBO_H

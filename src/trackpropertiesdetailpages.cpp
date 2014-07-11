@@ -55,14 +55,14 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
     addSeparatorField();
 
     double dist = TrackData::sumTotalTravelDistance(items);
-    VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
+    VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
     vl->setSaveId("totaltraveldistance");
     vl->setValue(dist);
     mFormLayout->addRow(i18nc("@label:textbox", "Travel distance:"), vl);
     disableIfEmpty(vl);
 
     double averageSpeed = dist/(tt/3600.0);
-    vl = new VariableUnitDisplay(VariableUnitDisplay::Speed, this);
+    vl = new VariableUnitDisplay(VariableUnitCombo::Speed, this);
     vl->setSaveId("averagespeed");
     vl->setValue(averageSpeed);
     mFormLayout->addRow(i18nc("@label:textbox", "Average speed:"), vl);
@@ -231,7 +231,7 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
         {
             addSeparatorField();
 
-            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
             vl->setSaveId("elevation");
             vl->setValue(ele);
             mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
@@ -288,14 +288,14 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
             TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));
             Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
 
-            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitDisplay::Bearing, this);
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Bearing, this);
             vl->setSaveId("bearing");
             vl->setValue(pnt1->bearingTo(pnt2));
             mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
 
             if (!contiguousSelection)
             {
-                vl = new VariableUnitDisplay(VariableUnitDisplay::Distance, this);
+                vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
                 vl->setSaveId("crowflies");
                 vl->setValue(pnt1->distanceTo(pnt2, true));
                 mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
@@ -305,7 +305,7 @@ TrackPointDetailPage::TrackPointDetailPage(const QList<TrackDataItem *> items, Q
             double ele2 = pnt2->elevation();
             if (!isnan(ele1) && !isnan(ele2))
             {
-                vl = new VariableUnitDisplay(VariableUnitDisplay::Elevation, this);
+                vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
                 vl->setSaveId("elediff");
                 vl->setValue(ele2-ele1);
                 mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);

@@ -69,6 +69,7 @@ set(navtracks_SRCS
   trackpropertiesstylepages.cpp
   trackslayer.cpp
   variableunitdisplay.cpp
+  variableunitcombo.cpp
   ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
 

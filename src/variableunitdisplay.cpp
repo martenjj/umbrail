@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	26-Feb-14						//
+//  Edit:	11-Jul-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,7 +27,6 @@
 
 #include "variableunitdisplay.h"
 
-#include <qcombobox.h>
 #include <qlabel.h>
 
 #include <kdebug.h>
@@ -36,17 +35,7 @@
 #include <kconfiggroup.h>
 
 
-
-static const double EARTH_RADIUS_KM = 6371;		// kilometres
-static const double EARTH_RADIUS_MI = 3959;		// statute miles
-static const double EARTH_RADIUS_NM = 3440;		// nautical miles
-
-static const double ELEVATION_METRE = 1;		// metres
-static const double ELEVATION_FEET = 3.2808;		// feet
-
-
-
-VariableUnitDisplay::VariableUnitDisplay(VariableUnitDisplay::DisplayType type, QWidget *pnt)
+VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QWidget *pnt)
     : KHBox(pnt)
 {
     kDebug() << "type" << type;
@@ -55,49 +44,11 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitDisplay::DisplayType type, 
     setSpacing(-1);					// default layout spacing
 
     mValue = 0.0;
-    mPrecision = 1;
-    mType = type;
 
     mValueLabel = new QLabel("---", this);
     mValueLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
 
-    mUnitCombo = new QComboBox(this);
-    // TODO: global preference
-    mUnitCombo->setCurrentIndex(0);
-
-    switch (type)
-    {
-case VariableUnitDisplay::Distance:
-        mUnitCombo->addItem(i18n("kilometres"), EARTH_RADIUS_KM);
-        mUnitCombo->addItem(i18n("miles"), EARTH_RADIUS_MI);
-        mUnitCombo->addItem(i18n("nautical miles"), EARTH_RADIUS_NM);
-        // synchronise this with index in slotUpdateDisplay() below
-        mUnitCombo->addItem(i18n("metres"), EARTH_RADIUS_KM*1000);
-        mPrecision = 2;
-        break;
-
-case VariableUnitDisplay::Speed:
-        mUnitCombo->addItem(i18n("km/h"), EARTH_RADIUS_KM);
-        mUnitCombo->addItem(i18n("mph"), EARTH_RADIUS_MI);
-        mUnitCombo->addItem(i18n("knots"), EARTH_RADIUS_NM);
-        break;
-
-case VariableUnitDisplay::Elevation:
-        mUnitCombo->addItem(i18n("metres"), ELEVATION_METRE);
-        mUnitCombo->addItem(i18n("feet"), ELEVATION_FEET);
-        mPrecision = 0;
-        break;
-
-case VariableUnitDisplay::Bearing:
-        mUnitCombo->addItem(i18n("absolute"), 0);
-        mUnitCombo->addItem(i18n("relative"), 1);
-        mUnitCombo->addItem(i18n("nautical"), 2);
-        mPrecision = 0;
-        break;
-
-default:
-        break;
-    }
+    mUnitCombo = new VariableUnitCombo(type, this);
     connect(mUnitCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdateDisplay()));
 
     setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
@@ -129,14 +80,12 @@ void VariableUnitDisplay::slotUpdateDisplay()
     // has been destroyed by then.
     mComboIndex = mUnitCombo->currentIndex();
 
-    if (mType==VariableUnitDisplay::Bearing)
+    double v = mValue*mUnitCombo->factor();
+    if (mUnitCombo->type()==VariableUnitCombo::Bearing)
     {
-        int brgType = mUnitCombo->itemData(mComboIndex).toInt();
-        int v = qRound(mValue);
-
         QString sign;
         QString degs(QLatin1Char(0xB0));
-        switch (brgType)
+        switch (qRound(v))
         {
 case 0:     if (v<0) v += 360;				// absolute
             break;
@@ -151,13 +100,11 @@ case 2:     sign = (v<0 ? "R " : "G ");			// nautical
             break;
         }
 
-        mValueLabel->setText(sign+QString::number(v, 'f', mPrecision)+degs);
+        mValueLabel->setText(sign+QString::number(v, 'f', mUnitCombo->precision())+degs);
     }
     else
     {
-        double v = mValue*mUnitCombo->itemData(mComboIndex).toDouble();
-        int p = (mComboIndex==3 ? 0 : mPrecision);
-        mValueLabel->setText(QString::number(v, 'f', p));
+        mValueLabel->setText(QString::number(v, 'f', mUnitCombo->precision()));
     }
 }
 
@@ -172,7 +119,7 @@ void VariableUnitDisplay::showEvent(QShowEvent *ev)
 
     QList<VariableUnitDisplay *> siblings = pnt->findChildren<VariableUnitDisplay *>();
     if (siblings.isEmpty()) return;			// should never happen
-    if (this!=siblings.first()) return;			// only do this once per chain
+    if (siblings.first()!=this) return;			// only do this once per chain
 
     // Run through the sibling chain, and find the longest display
     // width of all their combo boxes.
