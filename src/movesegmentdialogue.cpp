@@ -30,6 +30,7 @@ MoveSegmentDialogue::MoveSegmentDialogue(FilesController *fc, QWidget *pnt)
     setButtons(KDialog::Ok|KDialog::Cancel);
     showButtonSeparator(true);
     enableButtonOk(false);
+    setButtonText(KDialog::Ok, i18nc("@action:button", "Move"));
 
     mTrackList = new QTreeView(this);
     mTrackList->setRootIsDecorated(true);
@@ -104,6 +105,9 @@ MoveSegmentDialogue::~MoveSegmentDialogue()
 void MoveSegmentDialogue::setSegment(const TrackDataSegment *seg)
 {
     mSegment = seg;
+
+    TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mTrackList->model());
+    trackModel->setSourceSegment(seg);
 }
 
 

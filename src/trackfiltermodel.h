@@ -6,6 +6,9 @@
 #include <qsortfilterproxymodel.h>
 
 
+class TrackDataSegment;
+
+
 class TrackFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -17,8 +20,11 @@ public:
     virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const;
     virtual Qt::ItemFlags flags(const QModelIndex &idx) const;
 
-private:
+    virtual QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const;
+    void setSourceSegment(const TrackDataSegment *tds);
 
+private:
+    const TrackDataSegment *mSourceSegment;
 };
 
  
