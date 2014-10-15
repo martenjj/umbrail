@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	11-Jul-14						//
+//  Edit:	15-Oct-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -80,21 +80,24 @@ void VariableUnitDisplay::slotUpdateDisplay()
     // has been destroyed by then.
     mComboIndex = mUnitCombo->currentIndex();
 
-    double v = mValue*mUnitCombo->factor();
+    double v = mValue;
     if (mUnitCombo->type()==VariableUnitCombo::Bearing)
     {
         QString sign;
         QString degs(QLatin1Char(0xB0));
-        switch (qRound(v))
+        switch (qRound(mUnitCombo->factor()))
         {
-case 0:     if (v<0) v += 360;				// absolute
+case VariableUnitCombo::BrgAbsolute:
+            if (v<0) v += 360;
             break;
 
-case 1:	    sign = (v<0 ? "-" : "+");			// relative
+case VariableUnitCombo::BrgRelative:
+            sign = (v<0 ? "-" : "+");
             if (v<0) v = -v;
             break;
 
-case 2:     sign = (v<0 ? "R " : "G ");			// nautical
+case VariableUnitCombo::BrgNautical:
+            sign = (v<0 ? "R " : "G ");
             if (v<0) v = -v;
             degs = QString::null;
             break;
@@ -104,6 +107,7 @@ case 2:     sign = (v<0 ? "R " : "G ");			// nautical
     }
     else
     {
+        v *= mUnitCombo->factor();
         mValueLabel->setText(QString::number(v, 'f', mUnitCombo->precision()));
     }
 }
