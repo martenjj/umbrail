@@ -434,12 +434,16 @@ bool MainWindow::load(const KUrl &from)
     {
         QString s = tdf->metadata("position");
         kDebug() << "pos metadata" << s;
+        mapController()->view()->blockSignals(true);	// no status bar update from zooming
         if (!s.isEmpty())
-        {						// no status bar update from zooming
-            mapController()->view()->blockSignals(true);
+        {
             mapController()->view()->setCurrentPosition(s);
-            mapController()->view()->blockSignals(false);
         }
+        else
+        {
+            mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
+        }
+        mapController()->view()->blockSignals(false);
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments
