@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	11-Jul-14						//
+//  Edit:	15-Oct-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -42,14 +42,21 @@ public:
         Distance,
         Speed,
         Elevation,
-        Bearing
+        Bearing,
+        Time
     };
 
     enum BearingType
     {
-        Absolute,
-        Relative,
-        Nautical
+        BrgAbsolute,
+        BrgRelative,
+        BrgNautical
+    };
+
+    enum TimeType
+    {
+        TimeAbsolute,
+        TimeRelative
     };
 
     explicit VariableUnitCombo(VariableUnitCombo::DisplayType displayType, QWidget *pnt = NULL);
@@ -58,6 +65,8 @@ public:
     VariableUnitCombo::DisplayType type() const		{ return (mType); }
     double factor() const;
     int precision() const;
+
+    static double distanceFromMetres(double m);
 
 private:
     int mPrecision;

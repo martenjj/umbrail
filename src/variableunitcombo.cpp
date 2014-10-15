@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	11-Jul-14						//
+//  Edit:	15-Oct-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -66,6 +66,8 @@ case VariableUnitCombo::Speed:
         addItem(i18n("km/h"), EARTH_RADIUS_KM);
         addItem(i18n("mph"), EARTH_RADIUS_MI);
         addItem(i18n("knots"), EARTH_RADIUS_NM);
+        // synchronise this with index in precision() below
+        addItem(i18n("m/s"), EARTH_RADIUS_KM*1000/3600);
         break;
 
 case VariableUnitCombo::Elevation:
@@ -75,10 +77,15 @@ case VariableUnitCombo::Elevation:
         break;
 
 case VariableUnitCombo::Bearing:
-        addItem(i18n("absolute"), VariableUnitCombo::Absolute);
-        addItem(i18n("relative"), VariableUnitCombo::Relative);
-        addItem(i18n("nautical"), VariableUnitCombo::Nautical);
+        addItem(i18n("absolute"), VariableUnitCombo::BrgAbsolute);
+        addItem(i18n("relative"), VariableUnitCombo::BrgRelative);
+        addItem(i18n("nautical"), VariableUnitCombo::BrgNautical);
         mPrecision = 0;
+        break;
+
+case VariableUnitCombo::Time:
+        addItem(i18n("absolute"), VariableUnitCombo::TimeAbsolute);
+        addItem(i18n("relative"), VariableUnitCombo::TimeRelative);
         break;
 
 default:
@@ -99,7 +106,14 @@ double VariableUnitCombo::factor() const
 
 
 int VariableUnitCombo::precision() const
+{						// force for distance/speed in metres
+    if (mType==VariableUnitCombo::Distance && currentIndex()==3) return (0);
+    if (mType==VariableUnitCombo::Speed && currentIndex()==3) return (1);
+    return (mPrecision);
+}
+
+
+double VariableUnitCombo::distanceFromMetres(double m)
 {
-    if (!(mType==VariableUnitCombo::Distance && currentIndex()==3)) return (mPrecision);
-    return (0);						// force 0 for distance in metres
+    return (m/(1000*EARTH_RADIUS_KM));
 }
