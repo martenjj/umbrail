@@ -12,6 +12,7 @@ class QRadioButton;
 class MainWindow;
 class TrackDataItem;
 class TrackDataPoint;
+class VariableUnitCombo;
 class QCustomPlot;
 
 
@@ -41,6 +42,10 @@ private:
     QRadioButton *mReferenceDistRadio;
     QRadioButton *mScaleAutoRadio;
     QRadioButton *mScaleZeroRadio;
+    VariableUnitCombo *mElevationUnit;
+    VariableUnitCombo *mSpeedUnit;
+    VariableUnitCombo *mDistanceUnit;
+    VariableUnitCombo *mTimeUnit;
 
     QVector<double> mRefData;
     QVector<double> mElevData;
@@ -52,6 +57,7 @@ private:
     bool mUseTravelDistance;
     double mCumulativeTravel;
     const TrackDataPoint *mPrevPoint;
+    time_t mBaseTime;
 };
 
 #endif							// PROFILEWIDGET_H
