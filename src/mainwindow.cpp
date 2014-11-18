@@ -493,24 +493,26 @@ void MainWindow::slotOpenProject()
     else
     {
         MainWindow *w = new MainWindow(NULL);
-        w->loadProject(d.selectedUrl());
-        w->show();
+        const bool ok = w->loadProject(d.selectedUrl());
+        if (ok) w->show();
+        else w->deleteLater();
     }
 }
 
 
-void MainWindow::loadProject(const KUrl &loadFrom)
+bool MainWindow::loadProject(const KUrl &loadFrom)
 {
-    if (!loadFrom.isValid()) return;
+    if (!loadFrom.isValid()) return (false);
     kDebug() << "from" << loadFrom;
 
     clear();						// clear storage
-    if (load(loadFrom))					// load in data file
-    {
-        mProject->setFileName(loadFrom);
-        mUndoStack->clear();				// clear undo history
-        slotSetModified(false);				// ensure window title updated
-    }
+
+    if (!load(loadFrom)) return (false);		// load in data file
+
+    mProject->setFileName(loadFrom);
+    mUndoStack->clear();				// clear undo history
+    slotSetModified(false);				// ensure window title updated
+    return (true);
 }
 
 

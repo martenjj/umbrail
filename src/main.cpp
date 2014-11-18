@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	13-Feb-14						//
+//  Edit:	18-Nov-14						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -80,7 +80,11 @@ int main(int argc,char *argv[])
     MainWindow *w = new MainWindow(NULL);
 
     KUrl u = args->getOption("f");			// load a project file?
-    if (u.isValid()) w->loadProject(u);
+    if (u.isValid())
+    {
+        const bool ok = w->loadProject(u);
+        if (!ok) w->deleteLater();
+    }
 
     w->show();
     return (app.exec());

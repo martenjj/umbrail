@@ -34,7 +34,7 @@ public:
     MapController *mapController() const	{ return (mMapController); }
     FilesController *filesController() const	{ return (mFilesController); }
 
-    void loadProject(const KUrl &loadFrom);
+    bool loadProject(const KUrl &loadFrom);
 
     void executeCommand(QUndoCommand *cmd);
 
