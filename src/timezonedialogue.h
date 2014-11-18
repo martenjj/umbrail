@@ -25,6 +25,9 @@ protected slots:
     void slotUseUTC();
     void slotUseSystem();
 
+private slots:
+    void slotTimeZoneChanged();
+
 private:
     KTimeZoneWidget *mTimeZoneWidget;
     bool mReturnUTC;

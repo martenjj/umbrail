@@ -38,6 +38,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 
     mTimeZoneWidget = new KTimeZoneWidget(this);
     mTimeZoneWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    connect(mTimeZoneWidget, SIGNAL(itemSelectionChanged()), SLOT(slotTimeZoneChanged()));
     gl->addWidget(mTimeZoneWidget, 1, 0, 1, -1);
 
     KTreeWidgetSearchLine *sl = new KTreeWidgetSearchLine(this, mTimeZoneWidget);
@@ -55,6 +56,8 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     if (!colStates.isEmpty()) mTimeZoneWidget->header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
 
     mReturnUTC = false;
+    slotTimeZoneChanged();
+    sl->setFocus(Qt::ActiveWindowFocusReason);
 }
 
 
@@ -98,4 +101,10 @@ void TimeZoneDialogue::slotUseSystem()
 {
     mTimeZoneWidget->setSelected(KSystemTimeZones::local().name(), true);
     accept();
+}
+
+
+void TimeZoneDialogue::slotTimeZoneChanged()
+{
+    enableButtonOk(!mTimeZoneWidget->selectedItems().isEmpty());
 }
