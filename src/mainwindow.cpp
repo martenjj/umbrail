@@ -696,6 +696,18 @@ case TrackData::Point:
         profileEnabled = (selCount>1);
         break;
 
+case TrackData::Folder:
+        propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
+        propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
+        break;
+
+case TrackData::Waypoint:
+        propsText = i18ncp("@action:inmenu", "Waypoint Properties...", "Waypoints Properties...", selCount);
+        propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Waypoint", "Delete Waypoints", selCount);
+        break;
+
 case TrackData::Mixed:
         propsText = i18nc("@action:inmenu", "Selection Properties...");
         delText = i18nc("@action:inmenu", "Delete Selection");

@@ -97,10 +97,12 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     int idx = grp.readEntry("Index", -1);
     if (idx!=-1) mTabWidget->setCurrentIndex(idx);
 
-    if (items.count()>1 || dynamic_cast<const TrackDataPoint *>(items.first())!=NULL)
-    {							// "Style" not applicable here
-        mTabWidget->setTabEnabled(2, false);
-    }
+    // TODO: hasStyle() a virtual of TrackDataItem
+    bool styleEnabled = (items.count()==1);		// whether "Style" is applicable here
+    if (styleEnabled && dynamic_cast<const TrackDataPoint *>(items.first())!=NULL) styleEnabled = false;
+    if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items.first())!=NULL) styleEnabled = false;
+    if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items.first())!=NULL) styleEnabled = false;
+    mTabWidget->setTabEnabled(2, styleEnabled);
 }
 
 
