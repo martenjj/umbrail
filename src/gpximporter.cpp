@@ -469,7 +469,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         int idx = DataIndexer::self()->index(localName);
         if (item!=NULL) item->setMetadata(idx, mContainedChars);
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);
-        else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TKKPT or METADATA"));
+        else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TKKPT, WPT or METADATA"));
     }
 
     return (true);
@@ -483,19 +483,9 @@ bool GpxImporter::endDocument()
     qDebug() << indent().constData() << "END DOCUMENT" << endl;
 #endif
 
-    if (mCurrentTrack!=NULL)				// check terminated
+    if (currentItem()!=NULL)				// check terminated
     {
-        return (error(makeXmlException(QString("TRK not terminated"))));
-    }
-
-    if (mCurrentSegment!=NULL)				// check terminated
-    {
-        return (error(makeXmlException(QString("TRKSEG not terminated"))));
-    }
-
-    if (mCurrentPoint!=NULL)				// check terminated
-    {
-        return (error(makeXmlException(QString("TRKPT not terminated"))));
+        return (error(makeXmlException(QString("TRK, TRKSEG, TRKPT or WPT not terminated"))));
     }
 
     if (mWithinMetadata || mWithinExtensions)		// check terminated
