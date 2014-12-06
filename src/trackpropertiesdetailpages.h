@@ -81,4 +81,26 @@ public:
 };
 
 
+
+class TrackFolderDetailPage : public TrackItemDetailPage
+{
+    Q_OBJECT
+
+public:
+    TrackFolderDetailPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackFolderDetailPage()				{}
+};
+
+
+
+class TrackWaypointDetailPage : public TrackItemDetailPage
+{
+    Q_OBJECT
+
+public:
+    TrackWaypointDetailPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackWaypointDetailPage()				{}
+};
+
+
 #endif							// TRACKPROPERTIESDETAILPAGES_H

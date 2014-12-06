@@ -154,7 +154,7 @@ case Qt::ToolTipRole:
 case COL_NAME:
             {
                 const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                if (tdf!=NULL) return (i18np("File %2 with %1 track", "File %2 with %1 tracks", tdf->childCount(), tdf->fileName().pathOrUrl()));
+                if (tdf!=NULL) return (i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().pathOrUrl()));
             }
             {
                 const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(tdi);
@@ -168,6 +168,14 @@ case COL_NAME:
                 const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
                 if (tdp!=NULL) return (i18n("Point at %1, elevation %2",
                                             tdp->formattedTime(true), tdp->formattedElevation()));
+            }
+            {
+                const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(tdi);
+                if (tdf!=NULL) return (i18np("Folder with %1 item", "Folder with %1 items", tdf->childCount()));
+            }
+            {
+                const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi);
+                if (tdw!=NULL) return (i18n("Waypoint, elevation %1", tdw->formattedElevation()));
             }
             break;
         }
@@ -228,13 +236,13 @@ void FilesModel::addToplevelItem(TrackDataFile *tdf)
         fileRoot = mRootFileItem;
     }
 
-    // Now, the tracks contained in the new file are adopted as children
-    // of the file root.
-    kDebug() << "adding from" << tdf->name() << tdf->childCount() << "tracks";
+    // Now, all items (expected to be tracks or folders) contained in
+    // the new file are adopted as children of the file root.
+    kDebug() << "adding from" << tdf->name() << tdf->childCount() << "items";
     while (tdf->childCount()>0)
     {
-        TrackDataTrack *tdt = dynamic_cast<TrackDataTrack *>(tdf->takeFirstChildItem());
-        if (tdt!=NULL) fileRoot->addChildItem(tdt);
+        TrackDataItem *tdi = tdf->takeFirstChildItem();
+        if (tdi!=NULL) fileRoot->addChildItem(tdi);
     }
 
     emit layoutChanged();

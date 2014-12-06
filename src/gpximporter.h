@@ -12,6 +12,8 @@ class TrackDataItem;
 class TrackDataTrack;
 class TrackDataSegment;
 class TrackDataPoint;
+class TrackDataFolder;
+class TrackDataWaypoint;
 
 
 
@@ -45,11 +47,14 @@ private:
     inline bool parsing() const;
     QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString::null);
     TrackDataItem *currentItem() const;
+    TrackDataFolder *waypointFolder();
 
 private:
     TrackDataTrack *mCurrentTrack;
     TrackDataSegment *mCurrentSegment;
     TrackDataPoint *mCurrentPoint;
+    TrackDataWaypoint *mCurrentWaypoint;
+    TrackDataFolder *mWaypointFolder;
 
     bool mWithinMetadata;
     bool mWithinExtensions;

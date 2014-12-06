@@ -50,6 +50,8 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
     mCurrentTrack = NULL;
     mCurrentSegment = NULL;
     mCurrentPoint = NULL;
+    mCurrentWaypoint = NULL;
+    mWaypointFolder = NULL;
 
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(this);
@@ -118,9 +120,25 @@ TrackDataItem *GpxImporter::currentItem() const
     TrackDataItem *item = mCurrentPoint;		// find innermost current element
     if (item==NULL) item = mCurrentSegment;
     if (item==NULL) item = mCurrentTrack;
+    if (item==NULL) item = mCurrentWaypoint;
     return (item);
 }
 
+
+TrackDataFolder *GpxImporter::waypointFolder()
+{
+    if (mWaypointFolder==NULL)				// not allocated/found yet
+    {
+        // TODO: strategy
+        //   if only one folder exists, use that
+        //   if more than one folder exists and one is named "Waypoints", use it
+        //   otherwise, create "Waypoints" and use that
+        mWaypointFolder = new TrackDataFolder("Waypoints");
+        mDataRoot->addChildItem(mWaypointFolder);
+    }
+
+    return (mWaypointFolder);
+}
 
 
 bool GpxImporter::startDocument()
@@ -175,7 +193,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 
         if (currentItem()==NULL)			// must be within element
         {
-            return (error(makeXmlException("EXTENSIONS not within TRK, TRKSEG or TRKPT", "extensions")));
+            return (error(makeXmlException("EXTENSIONS not within TRK, TRKSEG, TRKPT or WPT", "extensions")));
         }
 
         mWithinExtensions = true;			// just note for contents
@@ -240,9 +258,9 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="ele")				// start of an ELEvation element
     {
-        if (mCurrentPoint==NULL)
+        if (mCurrentPoint==NULL && mCurrentWaypoint==NULL)
         {						// check properly nested
-            return (error(makeXmlException(localName.toUpper()+" start not within TRKPT", localName)));
+            return (error(makeXmlException(localName.toUpper()+" start not within TRKPT or WPT", localName)));
         }
     }
     else if (localName=="time")
@@ -254,14 +272,31 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="wpt")				// start of an WPT element
     {
-        if (mCurrentTrack==NULL)			// check properly nested
-        {
-            return (warning(makeXmlException("WPT element ignored", "wpt")));
-        }
-        else
+        if (mCurrentTrack!=NULL)
         {
             return (error(makeXmlException("WPT start within track", "wpt")));
         }
+
+        if (mCurrentWaypoint!=NULL)			// check not nested
+        {
+            return (error(makeXmlException("nested WPT elements", "wpt")));
+        }
+							// start new track
+        mCurrentWaypoint = new TrackDataWaypoint(QString::null);
+
+        double lat = NAN;				// get coordinates
+        double lon = NAN;
+        for (int i = 0; i<atts.count(); ++i)
+        {
+            QString attrName = atts.localName(i);
+            QString attrValue = atts.value(i);
+            if (attrName=="lat") lat = attrValue.toDouble();
+            else if (attrName=="lon") lon = attrValue.toDouble();
+            else warning(makeXmlException(attrName.toUpper()+" unexpected attribute on WPT element"));
+        }
+
+        if (!isnan(lat) && !isnan(lon)) mCurrentWaypoint->setLatLong(lat, lon);
+        else warning(makeXmlException("missing lat/lon on WPT element"));
     }
 
     mContainedChars = QString::null;			// clear contained data
@@ -351,6 +386,23 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         mCurrentPoint = NULL;				// finished with temporary
         return (true);
     }
+    else if (localName=="wpt")				// end of a WPT element
+    {
+        if (mCurrentWaypoint==NULL)			// check must have started
+        {
+            return (error(makeXmlException("WPT element not started", "Wpt")));
+        }
+
+#ifdef DEBUG_IMPORT
+        kDebug() << "got a WPT:" << mCurrentWaypoint->name();
+#endif
+
+        TrackDataFolder *folder = waypointFolder();
+        Q_ASSERT(folder!=NULL);
+        folder->addChildItem(mCurrentWaypoint);
+        mCurrentWaypoint = NULL;				// finished with temporary
+        return (true);
+    }
 
     if (canRestart) return (true);			// end tag now handled
     if (!parsing()) return (true);			// still ignoring until restart
@@ -359,12 +411,10 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
 
     if (localName=="ele")				// end of an ELE element
     {
-        if (mCurrentPoint==NULL)			// check properly nested
-        {
-            return (error(makeXmlException("ELE end not within TRKPT")));
-        }
-
-        mCurrentPoint->setElevation(mContainedChars.toDouble());
+        const double ele = mContainedChars.toDouble();
+        if (mCurrentPoint!=NULL) mCurrentPoint->setElevation(ele);
+        else if (mCurrentWaypoint!=NULL) mCurrentWaypoint->setElevation(ele);
+        else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
     }
     else if (localName=="time")				// end of a TIME element
     {
@@ -392,7 +442,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=NULL) item->setName(mContainedChars);	// assign its name
         else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
-        else warning(makeXmlException("NAME not within TRK, TRKSEG, TKKPT or METADATA"));
+        else warning(makeXmlException("NAME not within TRK, TRKSEG, TKKPT, WPT or METADATA"));
     }
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS

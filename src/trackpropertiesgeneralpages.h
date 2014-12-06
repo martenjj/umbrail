@@ -120,4 +120,41 @@ private:
 };
 
 
+class TrackFolderGeneralPage : public TrackItemGeneralPage
+{
+    Q_OBJECT
+
+public:
+    TrackFolderGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackFolderGeneralPage()				{}
+
+    QString typeText(int count) const;
+
+private:
+};
+
+
+class TrackWaypointGeneralPage : public TrackItemGeneralPage
+{
+    Q_OBJECT
+
+// protected slots:
+//     void slotChangePosition();
+
+public:
+    TrackWaypointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackWaypointGeneralPage()				{}
+
+    QString typeText(int count) const;
+
+//     bool newPointPosition(double *newLat, double *newLon);
+
+private:
+//     const TrackDataPoint *mPositionPoint;
+//     bool mPositionChanged;
+//     double mPositionLatitude;
+//     double mPositionLongitude;
+};
+
+
 #endif							// TRACKPROPERTIESGENERALPAGES_H

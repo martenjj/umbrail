@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		11-Jul-14					#
+#  Edit:		06-Dec-14					#
 #########################################################################
 
 project(navtracks)
@@ -70,6 +70,7 @@ set(navtracks_SRCS
   trackslayer.cpp
   variableunitdisplay.cpp
   variableunitcombo.cpp
+  waypointslayer.cpp
   ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
 

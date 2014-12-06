@@ -1,5 +1,5 @@
 
-#include "trackslayer.h"
+#include "waypointslayer.h"
 
 #include <qelapsedtimer.h>
 #include <qapplication.h>
@@ -8,6 +8,7 @@
 #include <kdebug.h>
 #include <klocale.h>
 #include <kcolorscheme.h>
+#include <kiconloader.h>
 
 #include <marble/GeoPainter.h>
 #include <marble/GeoDataPlacemark.h>
@@ -15,7 +16,6 @@
 #include "filesmodel.h"
 #include "filesview.h"
 #include "mainwindow.h"
-#include "style.h"
 #include "settings.h"
 #include "mapview.h"
 
@@ -27,52 +27,11 @@
 
 static const double RADIANS_TO_DEGREES = 360/(2*M_PI);	// multiplier
 
-static const int POINTS_PER_BLOCK = 50;			// points drawn per polyline
-static const int POINT_CIRCLE_SIZE = 10;		// size of point circle
+static const int POINT_CIRCLE_SIZE = 20;		// size of selected circle
 static const int POINT_SELECTED_WIDTH = 3;		// line width for selected points
 
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
 
-class SelectionRun
-{
-public:
-    SelectionRun()				{}
-    ~SelectionRun()				{}
-
-    void addPoint(const GeoDataCoordinates &coord)	{ mThesePoints.append(coord); }
-    void setPrevPoint(const GeoDataCoordinates &coord)	{ mPrevPoint = coord; }
-    void setNextPoint(const GeoDataCoordinates &coord)	{ mNextPoint = coord; }
-
-    void clear();
-    bool isEmpty() const				{ return (mThesePoints.isEmpty()); }
-
-    const GeoDataCoordinates *prevPoint() const		{ return (&mPrevPoint); }
-    const GeoDataCoordinates *nextPoint() const		{ return (&mNextPoint); }
-    const GeoDataLineString *thesePoints() const	{ return (&mThesePoints); }
-
-private:
-    GeoDataCoordinates mPrevPoint;
-    GeoDataLineString mThesePoints;
-    GeoDataCoordinates mNextPoint;
-};
-
-
-void SelectionRun::clear()
-{
-    mPrevPoint = mNextPoint = GeoDataCoordinates();
-    mThesePoints.clear();
-}
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-TracksLayer::TracksLayer(QWidget *pnt)
+WaypointsLayer::WaypointsLayer(QWidget *pnt)
     : QObject(pnt)
 {
     kDebug();
@@ -80,7 +39,7 @@ TracksLayer::TracksLayer(QWidget *pnt)
     mMapView = qobject_cast<MapView *>(pnt);
 
     mClickedPoint = NULL;
-    mDraggingPoints = NULL;
+//     mDraggingPoints = NULL;
     mClickTimer = new QElapsedTimer;
     mMovePointsMode = false;
 
@@ -88,22 +47,22 @@ TracksLayer::TracksLayer(QWidget *pnt)
 }
 
 
-TracksLayer::~TracksLayer()
+WaypointsLayer::~WaypointsLayer()
 {
-    delete mDraggingPoints;
+//     delete mDraggingPoints;
     kDebug() << "done";
 }
 
 
-QStringList TracksLayer::renderPosition() const
+QStringList WaypointsLayer::renderPosition() const
 {
     return (QStringList("HOVERS_ABOVE_SURFACE"));
 }
 
 
-qreal TracksLayer::zValue() const
+qreal WaypointsLayer::zValue() const
 {
-    return (1.0);
+    return (2.0);
 }
 
 
@@ -115,8 +74,8 @@ static inline GeoDataCoordinates applyOffset(const GeoDataCoordinates &coords, q
 }
 
 
-bool TracksLayer::render(GeoPainter *painter, ViewportParams *viewport,
-                         const QString &renderPos, GeoSceneLayer *layer)
+bool WaypointsLayer::render(GeoPainter *painter, ViewportParams *viewport,
+                            const QString &renderPos, GeoSceneLayer *layer)
 {
     const FilesModel *filesModel = mapView()->filesModel();
     if (filesModel==NULL) return (false);		// no data to use!
@@ -124,14 +83,15 @@ bool TracksLayer::render(GeoPainter *painter, ViewportParams *viewport,
     const FilesView *filesView = mapView()->filesView();
     mSelectionId = (filesView!=NULL ? filesView->selectionId() : 0);
 
-    // Paint the data in two passes.  The first does all non-selected tracks,
-    // the second selected ones.  This is so that selected tracks show up
+    // Paint the data in two passes.  The first does all non-selected waypoints,
+    // the second selected ones.  This is so that selected waypoints show up
     // on top of all non-selected ones.  In the absence of any selection,
-    // all tracks will be painted in file and then time order (i.e. later
+    // all waypoints will be painted in file and then time order (i.e. later
     // track segments on top of earlier ones).
     paintDataTree(filesModel->rootFileItem(), painter, false, false);
     paintDataTree(filesModel->rootFileItem(), painter, true, false);
 
+#if 0
     if (mDraggingPoints!=NULL)
     {
 #ifdef DEBUG_DRAGGING
@@ -175,138 +135,92 @@ bool TracksLayer::render(GeoPainter *painter, ViewportParams *viewport,
             }
         }
     }
+#endif
 
     return (true);
 }
 
 
-void TracksLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, 
-                                bool doSelected, bool parentSelected)
+void WaypointsLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, 
+                                   bool doSelected, bool parentSelected)
 {
     if (tdi==NULL) return;				// nothing to paint
-    int cnt = tdi->childCount();
-    if (cnt==0) return;					// quick escape if no children
 
     bool isSelected = parentSelected || (tdi->selectionId()==mSelectionId);
 #ifdef DEBUG_PAINTING
     kDebug() << tdi->name() << "isselected" << isSelected << "doselected" << doSelected;
 #endif
 
-    // What is actually drawn on the map is a polyline representing a sequence
-    // of points (with their parent container normally a track segment, but this
-    // is not mandated).  So it is not necessary to recurse all the way down the
-    // data tree to the individual points, we can stop at the level above if the
-    // first child item (assumed to be representative of the others) is a point.
-
-    const TrackDataItem *firstChild = tdi->childAt(0);
-    if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
-    {							// is first child a point?
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi);
+    if (tdw!=NULL)
+    {
         if (!(isSelected ^ doSelected))			// check selected or not
         {
-#ifdef DEBUG_PAINTING
-            kDebug() << "points for" << tdi->name() << "count" << cnt;
-#endif
-            // Scan along the segment, assembling the coordinates into a list,
-            // and draw them as a polyline.
-            //
-            // Some polyline segments appear to be not drawn if there are too many
-            // of them at high magnifications - is this a limitation in Marble?
-            // Split the drawing up if there are too many - this may make clipping
-            // more efficient too.
-
-            QColor col = MapView::resolveLineColour(tdi);
-            painter->setBrush(Qt::NoBrush);
-            painter->setPen(QPen(col, 4));
-
-            GeoDataLineString lines;			// generated coordinate list
-            int start = 0;				// start point in list
-            while (start<(cnt-1))			// while more blocks to do
-            {
-#ifdef DEBUG_PAINTING
-                kDebug() << "starting at" << start;
-#endif
-                lines.clear();				// empty the list
-                int sofar = 0;				// points so far this block
-                for (int i = start; i<cnt; ++i)		// up to end of list
-                {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
-                    GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                             0, GeoDataCoordinates::Degree);
-                    lines.append(coord);		// add point to list
-                    ++sofar;				// count how many this block
-                    if (sofar>=POINTS_PER_BLOCK) break;	// too many, draw and start again
-                }
 
 #ifdef DEBUG_PAINTING
-                kDebug() << "block of" << sofar << "points";
+            kDebug() << "draw waypoint" << tdw->name();
 #endif
-                if (lines.size()<2) break;		// nothing more to draw
-                painter->drawPolyline(lines);		// draw track in its colour
+            GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
+                                     0, GeoDataCoordinates::Degree);
 
-                // Step back one point from the last one drawn, so that
-                // the line connecting the last point of the previous
-                // block to the first of the next is drawn.
-                start += sofar-1;
-            }
-
+            // First the selection marker
             if (isSelected)
             {
-                // Next, if the line is selected, draw the point markers.  In the
-                // same track colour, circled with a black cosmetic line.
-
-                painter->setPen(QPen(Qt::black, 0));
-                painter->setBrush(col);
-
-                for (int i = 0; i<cnt; ++i)
-                {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
-                    GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                             0, GeoDataCoordinates::Degree);
-                    painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
-                }
-
-                // Finally, draw the selected points along the line, if there are any.
-                // Do this last so that the selection markers always show up on top.
-
                 if (Settings::selectedUseSystemColours())
                 {					// use system selection colours
                     KColorScheme sch(QPalette::Active, KColorScheme::Selection);
                     painter->setPen(QPen(sch.background().color(), POINT_SELECTED_WIDTH));
-                    painter->setBrush(sch.foreground());
+                    //painter->setBrush(sch.foreground());
                 }
                 else					// our own custom colours
                 {
                     painter->setPen(QPen(Settings::selectedMarkOuter(), POINT_SELECTED_WIDTH));
-                    painter->setBrush(Settings::selectedMarkInner());
+                    //painter->setBrush(Settings::selectedMarkInner());
                 }
 
-                for (int i = 0; i<cnt; ++i)
-                {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
-                    if (tdp->selectionId()==mSelectionId)
-                    {
-                        GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
-                                                 0, GeoDataCoordinates::Degree);
-                        painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
-                    }
-                }
+                painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
             }
+
+            // Then the waypoint icon image
+            const QPixmap img = KIconLoader::global()->loadIcon("favorites", KIconLoader::NoGroup, KIconLoader::SizeSmall,
+                                                                KIconLoader::DefaultState, QStringList(), NULL, true);
+            if (!img.isNull())				// icon image available
+            {
+                painter->drawPixmap(coord, img);
+            }
+            else					// draw our own marker
+            {
+                painter->setPen(QPen(Qt::red, 2));
+                painter->setBrush(Qt::yellow);
+                painter->drawEllipse(coord, 12, 12);
+            }
+
+            // Finally the waypoint text
+            painter->save();
+            painter->translate(15, 3);			// offset text from point
+            painter->setPen(Qt::gray);			// draw with drop shadow
+            painter->drawText(coord, tdw->name());
+            painter->translate(-1, -1);
+            painter->setPen(Qt::black);
+            painter->drawText(coord, tdw->name());
+            painter->restore();
         }
     }
-    else						// first child not a point,
-    {							// so we are higher container
+    else						// not a waypoint,
+    {							// so we are a higher container
+        const int cnt = tdi->childCount();
         for (int i = 0; i<cnt; ++i)			// just recurse to paint children
         {
             const TrackDataItem *childItem = tdi->childAt(i);
-            if (dynamic_cast<const TrackDataFolder *>(childItem)!=NULL) continue;
-							// no need to look into folders
+            if (dynamic_cast<const TrackDataTrack *>(childItem)!=NULL) continue;
+							// no need to look into tracks
             paintDataTree(childItem, painter, doSelected, isSelected);
         }
     }
 }
 
 
-const TrackDataPoint *TracksLayer::findClickedPoint(const TrackDataItem *tdi)
+const TrackDataPoint *WaypointsLayer::findClickedPoint(const TrackDataItem *tdi)
 {
     if (tdi==NULL) return (NULL);			// nothing to do
 
@@ -338,7 +252,7 @@ const TrackDataPoint *TracksLayer::findClickedPoint(const TrackDataItem *tdi)
 }
 
 
-bool TracksLayer::testClickTolerance(const QMouseEvent *mev) const
+bool WaypointsLayer::testClickTolerance(const QMouseEvent *mev) const
 {
     const int dragStart = qApp->startDragDistance();
     return (qAbs(mev->pos().x()-mClickX)<dragStart &&
@@ -347,12 +261,13 @@ bool TracksLayer::testClickTolerance(const QMouseEvent *mev) const
 }
 
 
-void TracksLayer::findSelectionInTree(const TrackDataItem *tdi)
+void WaypointsLayer::findSelectionInTree(const TrackDataItem *tdi)
 {
     if (tdi==NULL) return;				// nothing to paint
     int cnt = tdi->childCount();
     if (cnt==0) return;					// quick escape if no children
 
+#if 0
     const TrackDataItem *firstChild = tdi->childAt(0);
     if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
     {							// is first child a point?
@@ -432,17 +347,19 @@ void TracksLayer::findSelectionInTree(const TrackDataItem *tdi)
             findSelectionInTree(tdi->childAt(i));
         }
     }
+#endif
 }
 
 
-void TracksLayer::setMovePointsMode(bool on)
+void WaypointsLayer::setMovePointsMode(bool on)
 {
     mMovePointsMode = on;
 }
 
 
-bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
+bool WaypointsLayer::eventFilter(QObject *obj, QEvent *ev)
 {
+#if 0
     if (ev->type()==QEvent::MouseButtonPress)
     {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
@@ -566,6 +483,8 @@ bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
 
         return (true);					// event consumed
     }
+
+#endif
 
     return (false);					// pass event on
 }

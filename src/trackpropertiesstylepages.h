@@ -94,5 +94,30 @@ public:
 
 
 
+class TrackFolderStylePage : public TrackItemStylePage
+{
+    Q_OBJECT
+
+public:
+    TrackFolderStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackFolderStylePage()				{}
+
+
+};
+
+
+
+class TrackWaypointStylePage : public TrackItemStylePage
+{
+    Q_OBJECT
+
+public:
+    TrackWaypointStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackWaypointStylePage()				{}
+
+
+};
+
+
 
 #endif							// TRACKPROPERTIESSTYLEPAGES_H

@@ -128,7 +128,27 @@ TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWi
 }
 
 
+
+TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+    : TrackItemStylePage(items, pnt)
+{
+    kDebug();
+    setObjectName("TrackFolderStylePage");
+}
+
+
+
+TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+    : TrackItemStylePage(items, pnt)
+{
+    kDebug();
+    setObjectName("TrackWaypointStylePage");
+}
+
+
 CREATE_PROPERTIES_PAGE(File, Style);
 CREATE_PROPERTIES_PAGE(Track, Style);
 CREATE_PROPERTIES_PAGE(Segment, Style);
 CREATE_PROPERTIES_PAGE(Point, Style);
+CREATE_PROPERTIES_PAGE(Folder, Style);
+CREATE_PROPERTIES_PAGE(Waypoint, Style);

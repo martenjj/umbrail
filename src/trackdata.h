@@ -97,7 +97,9 @@ namespace TrackData
         File,
         Track,
         Segment,
-        Point
+        Point,
+        Folder,
+        Waypoint
     };
 
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> &items);
@@ -292,5 +294,78 @@ private:
     double mElevation;
     QDateTime mDateTime;
 };
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataFolder							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataFolder : public TrackDataItem
+{
+public:
+    TrackDataFolder(const QString &nm);
+    virtual ~TrackDataFolder()				{}
+
+    QString iconName() const				{ return ("folder-favorites"); }
+
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataWaypoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataWaypoint : public TrackDataItem
+{
+public:
+    TrackDataWaypoint(const QString &nm);
+    virtual ~TrackDataWaypoint()			{}
+
+    QString iconName() const				{ return ("favorites"); }
+
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+
+    void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
+    void setElevation(double ele)			{ mElevation = ele; }
+//     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
+// 
+    double elevation() const				{ return (mElevation); }
+//     QDateTime time() const				{ return (mDateTime); }
+    double latitude() const				{ return (mLatitude); }
+    double longitude() const				{ return (mLongitude); }
+
+    QString formattedElevation() const;
+//     QString formattedTime(bool withZone = false) const;
+//     QString formattedPosition() const;
+
+    BoundingArea boundingArea() const;
+//     TimeRange timeSpan() const;
+//     double distanceTo(const TrackDataPoint *other, bool accurate = false) const;
+//     double bearingTo(const TrackDataPoint *other) const;
+//     int timeTo(const TrackDataPoint *other) const;
+// 
+//     void copyData(const TrackDataPoint *other);
+
+private:
+    double mLatitude;
+    double mLongitude;
+    double mElevation;
+//     QDateTime mDateTime;
+};
+
+
+
+
+
+
+
+
 
 #endif							// TRACKDATA_H

@@ -15,6 +15,7 @@
 #include "dataindexer.h"
 
 #undef MEMORY_TRACKING
+#define MEMORY_TRACKING
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -37,12 +38,16 @@ static int counterFile = 0;
 static int counterTrack = 0;
 static int counterSegment = 0;
 static int counterPoint = 0;
+static int counterFolder = 0;
+static int counterWaypoint = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
 static int allocTrack = 0;
 static int allocSegment = 0;
 static int allocPoint = 0;
+static int allocFolder = 0;
+static int allocWaypoint = 0;
 static int allocStyle = 0;
 #endif
 
@@ -592,6 +597,49 @@ void TrackDataPoint::copyData(const TrackDataPoint *other)
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataFolder							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataFolder::TrackDataFolder(const QString &nm)
+    : TrackDataItem(nm, "folder_%02d", &counterFolder)
+{
+#ifdef MEMORY_TRACKING
+    ++allocFolder;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataWaypoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
+    : TrackDataItem(nm, "wpt_%04d", &counterWaypoint)
+{
+//     mLatitude = mLongitude = NAN;
+//     mElevation = NAN;
+#ifdef MEMORY_TRACKING
+    ++allocWaypoint;
+#endif
+}
+
+
+BoundingArea TrackDataWaypoint::boundingArea() const
+{
+    return (BoundingArea(mLatitude, mLongitude));
+}
+
+
+QString TrackDataWaypoint::formattedElevation() const
+{
+    if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
+    return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  Memory tracking							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -615,6 +663,8 @@ MemoryTracker::MemoryTracker()
     qDebug() << "track" << sizeof(TrackDataTrack) << "bytes";
     qDebug() << "segment" << sizeof(TrackDataSegment) << "bytes";
     qDebug() << "point" << sizeof(TrackDataPoint) << "bytes";
+    qDebug() << "folder" << sizeof(TrackDataFolder) << "bytes";
+    qDebug() << "wpt" << sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
@@ -627,6 +677,8 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "track allocated" << allocTrack << "items, total" << allocTrack*sizeof(TrackDataTrack) << "bytes";
     qDebug() << "segment allocated" << allocSegment << "items, total" << allocSegment*sizeof(TrackDataSegment) << "bytes";
     qDebug() << "point allocated" << allocPoint << "items, total" << allocPoint*sizeof(TrackDataPoint) << "bytes";
+    qDebug() << "folder allocated" << allocFolder << "items, total" << allocFolder*sizeof(TrackDataFolder) << "bytes";
+    qDebug() << "wpt allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "***********";
 }

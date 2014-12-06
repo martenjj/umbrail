@@ -23,6 +23,7 @@
 #include "style.h"
 #include "settings.h"
 #include "trackslayer.h"
+#include "waypointslayer.h"
 
 
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
@@ -60,6 +61,11 @@ MapView::MapView(QWidget *pnt)
     mTracksLayer = new TracksLayer(this);
     connect(mTracksLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
     addLayer(mTracksLayer);
+
+    // Waypoints display layer
+    mWaypointsLayer = new WaypointsLayer(this);
+    connect(mWaypointsLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
+    addLayer(mWaypointsLayer);
 }
 
 

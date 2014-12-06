@@ -14,6 +14,7 @@ class FilesView;
 class MainWindow;
 class TrackDataItem;
 class TracksLayer;
+class WaypointsLayer;
 
 
 class MapView : public MarbleWidget
@@ -71,6 +72,7 @@ private:
     int mPopupY;
 
     TracksLayer *mTracksLayer;
+    WaypointsLayer *mWaypointsLayer;
 };
 
 
