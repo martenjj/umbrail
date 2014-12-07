@@ -9,7 +9,7 @@
 class FilesController;
 class TrackDataItem;
 class TrackDataFile;
-class TrackDataPoint;
+class TrackDataAbstractPoint;
 
 
 class FilesModel : public QAbstractItemModel
@@ -34,7 +34,7 @@ public:
     void addToplevelItem(TrackDataFile *tdf);
     TrackDataItem *removeLastToplevelItem();
 
-    void clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods);
+    void clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods);
 
 //    void addPoint(const PointData *point);
 //    void addFiles(const FilesList *files, bool clear = false);

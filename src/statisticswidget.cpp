@@ -122,7 +122,7 @@ void StatisticsWidget::addRow(const QString &text, int num, bool withPercent)
 
 void StatisticsWidget::getPointData(const TrackDataItem *item)
 {
-    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(item);
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     if (tdp!=NULL)					// is this a point?
     {
         ++mTotalPoints;					// count up total points

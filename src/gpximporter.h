@@ -11,7 +11,7 @@
 class TrackDataItem;
 class TrackDataTrack;
 class TrackDataSegment;
-class TrackDataPoint;
+class TrackDataTrackpoint;
 class TrackDataFolder;
 class TrackDataWaypoint;
 
@@ -52,7 +52,7 @@ private:
 private:
     TrackDataTrack *mCurrentTrack;
     TrackDataSegment *mCurrentSegment;
-    TrackDataPoint *mCurrentPoint;
+    TrackDataTrackpoint *mCurrentPoint;
     TrackDataWaypoint *mCurrentWaypoint;
     TrackDataFolder *mWaypointFolder;
 

@@ -85,7 +85,7 @@ static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
 
 static bool shouldBeInExtensions(const TrackDataItem *item, const QString &name)
 {
-    if (dynamic_cast<const TrackDataPoint *>(item)!=NULL)
+    if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=NULL)
     {							// point - these not in extensions
         return (!(name=="name" || name=="ele" || name=="time" || name=="hdop"));
     }
@@ -150,7 +150,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     // what sort of element?
     const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
     const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
-    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(item);
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
 
     // start tag
     if (tdt!=NULL)

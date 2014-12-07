@@ -227,8 +227,8 @@ public:
     void setData(TrackDataItem *item);
 
 private:
-    TrackDataPoint *mNewPoint;
-    TrackDataPoint *mAtPoint;
+    TrackDataTrackpoint *mNewPoint;
+    TrackDataTrackpoint *mAtPoint;
 };
 
 

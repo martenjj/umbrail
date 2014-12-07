@@ -99,7 +99,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
 
     // TODO: hasStyle() a virtual of TrackDataItem
     bool styleEnabled = (items.count()==1);		// whether "Style" is applicable here
-    if (styleEnabled && dynamic_cast<const TrackDataPoint *>(items.first())!=NULL) styleEnabled = false;
+    if (styleEnabled && dynamic_cast<const TrackDataTrackpoint *>(items.first())!=NULL) styleEnabled = false;
     if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items.first())!=NULL) styleEnabled = false;
     if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items.first())!=NULL) styleEnabled = false;
     mTabWidget->setTabEnabled(2, styleEnabled);
@@ -150,7 +150,7 @@ Style TrackPropertiesDialogue::newStyle() const
 
 bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon)
 {
-    TrackPointGeneralPage *pointPage = qobject_cast<TrackPointGeneralPage *>(mGeneralPage);
+    TrackTrackpointGeneralPage *pointPage = qobject_cast<TrackTrackpointGeneralPage *>(mGeneralPage);
     if (pointPage==NULL) return (false);
     return (pointPage->newPointPosition(newLat, newLon));
 }

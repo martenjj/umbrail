@@ -374,7 +374,7 @@ void FilesController::slotTrackProperties()
     double newLon;
     if (d.newPointPosition(&newLat, &newLon))
     {
-        TrackDataPoint *p = dynamic_cast<TrackDataPoint *>(item);
+        TrackDataTrackpoint *p = dynamic_cast<TrackDataTrackpoint *>(item);
         Q_ASSERT(p!=NULL);
         MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
         cmd6->setDataItems((QList<TrackDataItem *>() << p));
@@ -424,9 +424,9 @@ static bool compareSegmentTimes(const TrackDataItem *item1, const TrackDataItem 
     if (item1->childCount()==0) return (true);		// empty always sorts first
     if (item2->childCount()==0) return (false);
 
-    const TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(item1->childAt(0));
+    const TrackDataAbstractPoint *pnt1 = dynamic_cast<TrackDataAbstractPoint *>(item1->childAt(0));
     Q_ASSERT(pnt1!=NULL);
-    const TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(item2->childAt(0));
+    const TrackDataAbstractPoint *pnt2 = dynamic_cast<TrackDataAbstractPoint *>(item2->childAt(0));
     Q_ASSERT(pnt2!=NULL);
 
     return (pnt1->time()<pnt2->time());
@@ -451,8 +451,8 @@ void FilesController::slotMergeSegments()
     for (int i = 0; i<items.count(); ++i)
     {
         const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
-        const TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(tds->childAt(0));
-        const TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(tds->childAt(tds->childCount()-1));
+        const TrackDataTrackpoint *pnt1 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(0));
+        const TrackDataTrackpoint *pnt2 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(tds->childCount()-1));
         kDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
 
         if (i>0 && pnt1->time()<prevEnd)		// check no time overlap

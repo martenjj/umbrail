@@ -10,7 +10,7 @@ using namespace Marble;
 class QMouseEvent;
 class QElapsedTimer;
 class TrackDataItem;
-class TrackDataPoint;
+class TrackDataTrackpoint;
 class MapView;
 // class SelectionRun;
 
@@ -40,7 +40,7 @@ private:
 
     void paintDataTree(const TrackDataItem *tdi, GeoPainter *painter, bool doSelected, bool parentSelected);
 
-    const TrackDataPoint *findClickedPoint(const TrackDataItem *tdi);
+    const TrackDataTrackpoint *findClickedPoint(const TrackDataItem *tdi);
     bool testClickTolerance(const QMouseEvent *mev) const;
     void findSelectionInTree(const TrackDataItem *tdi);
 
@@ -53,7 +53,7 @@ private:
     QElapsedTimer *mClickTimer;
     int mClickX;
     int mClickY;
-    const TrackDataPoint *mClickedPoint;
+    const TrackDataTrackpoint *mClickedPoint;
 //     QList<SelectionRun> *mDraggingPoints;
     double mLatOff, mLonOff;
 

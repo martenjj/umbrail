@@ -339,7 +339,7 @@ void SplitSegmentCommand::redo()
 
     controller()->view()->clearSelection();
 
-    TrackDataPoint *splitPoint = dynamic_cast<TrackDataPoint *>(mParentSegment->childAt(mSplitIndex));
+    TrackDataTrackpoint *splitPoint = dynamic_cast<TrackDataTrackpoint *>(mParentSegment->childAt(mSplitIndex));
     Q_ASSERT(splitPoint!=NULL);
 
     if (mNewSegment==NULL)
@@ -349,7 +349,8 @@ void SplitSegmentCommand::redo()
         acceptItem(mNewSegment);
         // TODO: copy style
 
-        TrackDataPoint *copyPoint = new TrackDataPoint(makeSplitName(splitPoint->name()));
+        // TODO: can eliminate copyData with a copy constructor?
+        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint(makeSplitName(splitPoint->name()));
         copyPoint->copyData(splitPoint);
         copyPoint->copyMetadata(splitPoint);
         // TODO: copy style
@@ -560,7 +561,7 @@ AddPointCommand::~AddPointCommand()
 
 void AddPointCommand::setData(TrackDataItem *item)
 {
-    mAtPoint = dynamic_cast<TrackDataPoint *>(item);
+    mAtPoint = dynamic_cast<TrackDataTrackpoint *>(item);
     Q_ASSERT(mAtPoint!=NULL);
     acceptItem(mAtPoint);
 }
@@ -576,12 +577,12 @@ void AddPointCommand::redo()
 
     if (mNewPoint==NULL)				// need to create new point
     {
-        mNewPoint = new TrackDataPoint(QString::null);
+        mNewPoint = new TrackDataTrackpoint(QString::null);
         acceptItem(mNewPoint);
 
         int i = pnt->childIndex(mAtPoint);
         Q_ASSERT(i>0);					// not allowed at first point
-        const TrackDataPoint *prevPoint = dynamic_cast<const TrackDataPoint *>(pnt->childAt(i-1));
+        const TrackDataTrackpoint *prevPoint = dynamic_cast<const TrackDataTrackpoint *>(pnt->childAt(i-1));
         Q_ASSERT(prevPoint!=NULL);
 
         double lat = (mAtPoint->latitude()+prevPoint->latitude())/2;
@@ -797,7 +798,7 @@ void MovePointsCommand::redo()
     Q_ASSERT(!mItems.isEmpty());
     for (int i = 0; i<mItems.count(); ++i)
     {
-        TrackDataPoint *item = dynamic_cast<TrackDataPoint *>(mItems[i]);
+        TrackDataTrackpoint *item = dynamic_cast<TrackDataTrackpoint *>(mItems[i]);
         if (item==NULL) continue;
         item->setLatLong(item->latitude()+mLatOff, item->longitude()+mLonOff);
         model()->changedItem(item);
@@ -812,7 +813,7 @@ void MovePointsCommand::undo()
     Q_ASSERT(!mItems.isEmpty());
     for (int i = 0; i<mItems.count(); ++i)
     {
-        TrackDataPoint *item = dynamic_cast<TrackDataPoint *>(mItems[i]);
+        TrackDataTrackpoint *item = dynamic_cast<TrackDataTrackpoint *>(mItems[i]);
         if (item==NULL) continue;
         item->setLatLong(item->latitude()-mLatOff, item->longitude()-mLonOff);
         model()->changedItem(item);

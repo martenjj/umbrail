@@ -199,7 +199,7 @@ void TracksLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
     // first child item (assumed to be representative of the others) is a point.
 
     const TrackDataItem *firstChild = tdi->childAt(0);
-    if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
+    if (dynamic_cast<const TrackDataTrackpoint *>(firstChild)!=NULL)
     {							// is first child a point?
         if (!(isSelected ^ doSelected))			// check selected or not
         {
@@ -229,7 +229,7 @@ void TracksLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
                 int sofar = 0;				// points so far this block
                 for (int i = start; i<cnt; ++i)		// up to end of list
                 {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
+                    const TrackDataTrackpoint *tdp = static_cast<const TrackDataTrackpoint *>(tdi->childAt(i));
                     GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
                                              0, GeoDataCoordinates::Degree);
                     lines.append(coord);		// add point to list
@@ -259,7 +259,7 @@ void TracksLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
 
                 for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
+                    const TrackDataTrackpoint *tdp = static_cast<const TrackDataTrackpoint *>(tdi->childAt(i));
                     GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
                                              0, GeoDataCoordinates::Degree);
                     painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
@@ -282,7 +282,7 @@ void TracksLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
 
                 for (int i = 0; i<cnt; ++i)
                 {
-                    const TrackDataPoint *tdp = static_cast<const TrackDataPoint *>(tdi->childAt(i));
+                    const TrackDataTrackpoint *tdp = static_cast<const TrackDataTrackpoint *>(tdi->childAt(i));
                     if (tdp->selectionId()==mSelectionId)
                     {
                         GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
@@ -306,11 +306,11 @@ void TracksLayer::paintDataTree(const TrackDataItem *tdi, GeoPainter *painter,
 }
 
 
-const TrackDataPoint *TracksLayer::findClickedPoint(const TrackDataItem *tdi)
+const TrackDataTrackpoint *TracksLayer::findClickedPoint(const TrackDataItem *tdi)
 {
     if (tdi==NULL) return (NULL);			// nothing to do
 
-    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(tdi);
     if (tdp!=NULL)					// is this a point?
     {
         const double lat = tdp->latitude();
@@ -329,7 +329,7 @@ const TrackDataPoint *TracksLayer::findClickedPoint(const TrackDataItem *tdi)
         for (int i = 0; i<tdi->childCount(); ++i)	// recurse to search children
         {
             const TrackDataItem *childItem = tdi->childAt(i);
-            const TrackDataPoint *childPoint = findClickedPoint(childItem);
+            const TrackDataTrackpoint *childPoint = findClickedPoint(childItem);
             if (childPoint!=NULL) return (childPoint);
         }
     }
@@ -354,7 +354,7 @@ void TracksLayer::findSelectionInTree(const TrackDataItem *tdi)
     if (cnt==0) return;					// quick escape if no children
 
     const TrackDataItem *firstChild = tdi->childAt(0);
-    if (dynamic_cast<const TrackDataPoint *>(firstChild)!=NULL)
+    if (dynamic_cast<const TrackDataTrackpoint *>(firstChild)!=NULL)
     {							// is first child a point?
 #ifdef DEBUG_SELECTING
         kDebug() << "###" << tdi->name();
@@ -365,7 +365,7 @@ void TracksLayer::findSelectionInTree(const TrackDataItem *tdi)
         SelectionRun run;
         for (int i = 0; i<tdi->childCount(); ++i)
         {
-            const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i));
+            const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(tdi->childAt(i));
 #ifdef DEBUG_SELECTING
             kDebug() << "  " << i << tdp->name() << "selected?" << (tdp->selectionId()==mSelectionId);
 #endif
@@ -378,7 +378,7 @@ void TracksLayer::findSelectionInTree(const TrackDataItem *tdi)
 #endif
                     if (i>0)				// not first point in segment
                     {
-                        const TrackDataPoint *prev = dynamic_cast<const TrackDataPoint *>(tdi->childAt(i-1));
+                        const TrackDataTrackpoint *prev = dynamic_cast<const TrackDataTrackpoint *>(tdi->childAt(i-1));
                         Q_ASSERT(prev!=NULL);
 #ifdef DEBUG_SELECTING
                         kDebug() << "    setting prev point" << prev->name();
@@ -475,7 +475,7 @@ bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
         kDebug() << "tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
 #endif
-        const TrackDataPoint *tdp = findClickedPoint(mapView()->filesModel()->rootFileItem());
+        const TrackDataTrackpoint *tdp = findClickedPoint(mapView()->filesModel()->rootFileItem());
         if (tdp!=NULL)					// a point was found
         {
             mClickedPoint = tdp;			// record for release event
@@ -493,7 +493,7 @@ bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
         kDebug() << "release at" << mouseEvent->pos();
 #endif
-        const TrackDataPoint *clickedPoint = mClickedPoint;
+        const TrackDataTrackpoint *clickedPoint = mClickedPoint;
         mClickedPoint = NULL;
 
         if (mDraggingPoints!=NULL)
@@ -536,7 +536,7 @@ bool TracksLayer::eventFilter(QObject *obj, QEvent *ev)
 #endif
                 mClickTimer->invalidate();
 
-                const TrackDataPoint *tdp = findClickedPoint(mapView()->filesModel()->rootFileItem());
+                const TrackDataTrackpoint *tdp = findClickedPoint(mapView()->filesModel()->rootFileItem());
                 if (tdp!=NULL && tdp->selectionId()!=mSelectionId)
                 {
 #ifdef DEBUG_DRAGGING

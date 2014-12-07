@@ -240,7 +240,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             mCurrentSegment = new TrackDataSegment(QString::null);
         }
 							// start new point
-        mCurrentPoint = new TrackDataPoint(QString::null);
+        mCurrentPoint = new TrackDataTrackpoint(QString::null);
 
         double lat = NAN;				// get coordinates
         double lon = NAN;

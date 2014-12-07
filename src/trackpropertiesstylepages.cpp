@@ -120,7 +120,7 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> items,
 
 
 
-TrackPointStylePage::TrackPointStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
@@ -149,6 +149,6 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> item
 CREATE_PROPERTIES_PAGE(File, Style);
 CREATE_PROPERTIES_PAGE(Track, Style);
 CREATE_PROPERTIES_PAGE(Segment, Style);
-CREATE_PROPERTIES_PAGE(Point, Style);
+CREATE_PROPERTIES_PAGE(Trackpoint, Style);
 CREATE_PROPERTIES_PAGE(Folder, Style);
 CREATE_PROPERTIES_PAGE(Waypoint, Style);

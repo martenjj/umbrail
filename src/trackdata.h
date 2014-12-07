@@ -251,52 +251,6 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  TrackDataPoint							//
-//									//
-//////////////////////////////////////////////////////////////////////////
-
-class TrackDataPoint : public TrackDataItem
-{
-public:
-    TrackDataPoint(const QString &nm);
-    virtual ~TrackDataPoint()				{}
-
-    QString iconName() const				{ return ("chart_point"); }
-
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-
-    void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
-    void setElevation(double ele)			{ mElevation = ele; }
-    void setTime(const QDateTime &dt)			{ mDateTime = dt; }
-
-    double elevation() const				{ return (mElevation); }
-    QDateTime time() const				{ return (mDateTime); }
-    double latitude() const				{ return (mLatitude); }
-    double longitude() const				{ return (mLongitude); }
-
-    QString formattedElevation() const;
-    QString formattedTime(bool withZone = false) const;
-    QString formattedPosition() const;
-
-    BoundingArea boundingArea() const;
-    TimeRange timeSpan() const;
-    double distanceTo(const TrackDataPoint *other, bool accurate = false) const;
-    double bearingTo(const TrackDataPoint *other) const;
-    int timeTo(const TrackDataPoint *other) const;
-
-    void copyData(const TrackDataPoint *other);
-
-private:
-    double mLatitude;
-    double mLongitude;
-    double mElevation;
-    QDateTime mDateTime;
-};
-
-//////////////////////////////////////////////////////////////////////////
-//									//
 //  TrackDataFolder							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -316,11 +270,75 @@ public:
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataAbstractPoint						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataAbstractPoint : public TrackDataItem
+{
+public:
+    TrackDataAbstractPoint(const QString &nm, const char *format, int *counter);
+    virtual ~TrackDataAbstractPoint()				{}
+
+//     QString iconName() const = 0;
+//     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
+//     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
+//     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
+
+    void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
+    void setElevation(double ele)			{ mElevation = ele; }
+    void setTime(const QDateTime &dt)			{ mDateTime = dt; }
+
+    double elevation() const				{ return (mElevation); }
+    QDateTime time() const				{ return (mDateTime); }
+    double latitude() const				{ return (mLatitude); }
+    double longitude() const				{ return (mLongitude); }
+
+    QString formattedElevation() const;
+    QString formattedTime(bool withZone = false) const;
+    QString formattedPosition() const;
+
+    BoundingArea boundingArea() const;
+    TimeRange timeSpan() const;
+    double distanceTo(const TrackDataAbstractPoint *other, bool accurate = false) const;
+    double bearingTo(const TrackDataAbstractPoint *other) const;
+    int timeTo(const TrackDataAbstractPoint *other) const;
+
+    void copyData(const TrackDataAbstractPoint *other);
+
+private:
+    double mLatitude;
+    double mLongitude;
+    double mElevation;
+    QDateTime mDateTime;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataTrackpoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataTrackpoint : public TrackDataAbstractPoint
+{
+public:
+    TrackDataTrackpoint(const QString &nm);
+    virtual ~TrackDataTrackpoint()			{}
+
+    QString iconName() const				{ return ("chart_point"); }
+
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  TrackDataWaypoint							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataWaypoint : public TrackDataItem
+class TrackDataWaypoint : public TrackDataAbstractPoint
 {
 public:
     TrackDataWaypoint(const QString &nm);
@@ -331,33 +349,6 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-
-    void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
-    void setElevation(double ele)			{ mElevation = ele; }
-//     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
-// 
-    double elevation() const				{ return (mElevation); }
-//     QDateTime time() const				{ return (mDateTime); }
-    double latitude() const				{ return (mLatitude); }
-    double longitude() const				{ return (mLongitude); }
-
-    QString formattedElevation() const;
-//     QString formattedTime(bool withZone = false) const;
-//     QString formattedPosition() const;
-
-    BoundingArea boundingArea() const;
-//     TimeRange timeSpan() const;
-//     double distanceTo(const TrackDataPoint *other, bool accurate = false) const;
-//     double bearingTo(const TrackDataPoint *other) const;
-//     int timeTo(const TrackDataPoint *other) const;
-// 
-//     void copyData(const TrackDataPoint *other);
-
-private:
-    double mLatitude;
-    double mLongitude;
-    double mElevation;
-//     QDateTime mDateTime;
 };
 
 

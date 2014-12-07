@@ -11,7 +11,7 @@ class QCheckBox;
 class QRadioButton;
 class MainWindow;
 class TrackDataItem;
-class TrackDataPoint;
+class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
 
@@ -56,7 +56,7 @@ private:
     bool mUseGpsSpeed;
     bool mUseTravelDistance;
     double mCumulativeTravel;
-    const TrackDataPoint *mPrevPoint;
+    const TrackDataTrackpoint *mPrevPoint;
     time_t mBaseTime;
 };
 

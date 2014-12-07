@@ -71,13 +71,13 @@ public:
 
 
 
-class TrackPointDetailPage : public TrackItemDetailPage
+class TrackTrackpointDetailPage : public TrackItemDetailPage
 {
     Q_OBJECT
 
 public:
-    TrackPointDetailPage(const QList<TrackDataItem *> items, QWidget *pnt);
-    virtual ~TrackPointDetailPage()				{}
+    TrackTrackpointDetailPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackTrackpointDetailPage()			{}
 };
 
 

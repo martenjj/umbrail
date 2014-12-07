@@ -11,7 +11,7 @@ class KLineEdit;
 class KTextEdit;
 class ItemTypeCombo;
 class TrackDataItem;
-class TrackDataPoint;
+class TrackDataTrackpoint;
 class TimeZoneSelector;
 
 
@@ -97,7 +97,7 @@ public:
 
 
 
-class TrackPointGeneralPage : public TrackItemGeneralPage
+class TrackTrackpointGeneralPage : public TrackItemGeneralPage
 {
     Q_OBJECT
 
@@ -105,15 +105,15 @@ protected slots:
     void slotChangePosition();
 
 public:
-    TrackPointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
-    virtual ~TrackPointGeneralPage()				{}
+    TrackTrackpointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    virtual ~TrackTrackpointGeneralPage()				{}
 
     QString typeText(int count) const;
 
     bool newPointPosition(double *newLat, double *newLon);
 
 private:
-    const TrackDataPoint *mPositionPoint;
+    const TrackDataTrackpoint *mPositionPoint;
     bool mPositionChanged;
     double mPositionLatitude;
     double mPositionLongitude;

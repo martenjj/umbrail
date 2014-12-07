@@ -37,7 +37,7 @@ const BoundingArea BoundingArea::null = BoundingArea();
 static int counterFile = 0;
 static int counterTrack = 0;
 static int counterSegment = 0;
-static int counterPoint = 0;
+static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
 
@@ -45,7 +45,7 @@ static int counterWaypoint = 0;
 static int allocFile = 0;
 static int allocTrack = 0;
 static int allocSegment = 0;
-static int allocPoint = 0;
+static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
 static int allocStyle = 0;
@@ -135,12 +135,12 @@ double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items)
     if (num==0) return (0.0);
 
     double dist = 0.0;					// running total
-    const TrackDataPoint *prev = dynamic_cast<const TrackDataPoint *>(items.first());
+    const TrackDataAbstractPoint *prev = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
     if (prev!=NULL)					// a list of points
     {
         for (int i = 1; i<num; ++i)
         {
-            const TrackDataPoint *next = dynamic_cast<const TrackDataPoint *>(items[i]);
+            const TrackDataAbstractPoint *next = dynamic_cast<const TrackDataAbstractPoint *>(items[i]);
             Q_ASSERT(next!=NULL);			// next point in sequence
 
             dist += prev->distanceTo(next);		// from previous point to this
@@ -165,10 +165,10 @@ unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
     if (num==0) return (0);
 
     unsigned int tot = 0;				// running total
-    const TrackDataPoint *first = dynamic_cast<const TrackDataPoint *>(items.first());
+    const TrackDataAbstractPoint *first = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
     if (first!=NULL)					// a list of points
     {
-        const TrackDataPoint *last = dynamic_cast<const TrackDataPoint *>(items.last());
+        const TrackDataAbstractPoint *last = dynamic_cast<const TrackDataAbstractPoint *>(items.last());
         Q_ASSERT(last!=NULL);				// last point in sequence
         tot = first->timeTo(last);
     }
@@ -475,40 +475,37 @@ TimeRange TrackDataSegment::timeSpan() const
     int num = childCount();
     if (num==0) return (TimeRange::null);
 
-    const TrackDataPoint *firstPoint = dynamic_cast<const TrackDataPoint *>(childAt(0));
+    const TrackDataTrackpoint *firstPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(0));
     Q_ASSERT(firstPoint!=NULL);
     if (num==1) return (TimeRange(firstPoint->time(), firstPoint->time()));
 
-    const TrackDataPoint *lastPoint = dynamic_cast<const TrackDataPoint *>(childAt(num-1));
+    const TrackDataTrackpoint *lastPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(num-1));
     Q_ASSERT(lastPoint!=NULL);
     return (TimeRange(firstPoint->time(), lastPoint->time()));
 }
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  TrackDataPoint							//
+//  TrackDataAbstractPoint						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataPoint::TrackDataPoint(const QString &nm)
-    : TrackDataItem(nm, "point_%04d", &counterPoint)
+TrackDataAbstractPoint::TrackDataAbstractPoint(const QString &nm, const char *format, int *counter)
+    : TrackDataItem(nm, format, counter)
 {
     mLatitude = mLongitude = NAN;
     mElevation = NAN;
-#ifdef MEMORY_TRACKING
-    ++allocPoint;
-#endif
 }
 
 
-QString TrackDataPoint::formattedElevation() const
+QString TrackDataAbstractPoint::formattedElevation() const
 {
     if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
     return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
 }
 
 
-QString TrackDataPoint::formattedTime(bool withZone) const
+QString TrackDataAbstractPoint::formattedTime(bool withZone) const
 {
     if (withZone)
     {
@@ -524,25 +521,25 @@ QString TrackDataPoint::formattedTime(bool withZone) const
 }
 
 
-QString TrackDataPoint::formattedPosition() const
+QString TrackDataAbstractPoint::formattedPosition() const
 {
     return (TrackData::formattedLatLong(mLatitude, mLongitude));
 }
 
 
-BoundingArea TrackDataPoint::boundingArea() const
+BoundingArea TrackDataAbstractPoint::boundingArea() const
 {
     return (BoundingArea(mLatitude, mLongitude));
 }
 
 
-TimeRange TrackDataPoint::timeSpan() const
+TimeRange TrackDataAbstractPoint::timeSpan() const
 {
     return (TimeRange(time(), time()));
 }
 
 
-double TrackDataPoint::distanceTo(const TrackDataPoint *other, bool accurate) const
+double TrackDataAbstractPoint::distanceTo(const TrackDataAbstractPoint *other, bool accurate) const
 {
     // See http://www.movable-type.co.uk/scripts/latlong.html
 
@@ -565,7 +562,7 @@ double TrackDataPoint::distanceTo(const TrackDataPoint *other, bool accurate) co
 }
 
 
-double TrackDataPoint::bearingTo(const TrackDataPoint *other) const
+double TrackDataAbstractPoint::bearingTo(const TrackDataAbstractPoint *other) const
 {
     // Rhumb line distance/bearing as per reference above
 
@@ -581,13 +578,13 @@ double TrackDataPoint::bearingTo(const TrackDataPoint *other) const
 }
 
 
-int TrackDataPoint::timeTo(const TrackDataPoint *other) const
+int TrackDataAbstractPoint::timeTo(const TrackDataAbstractPoint *other) const
 {
     return (time().secsTo(other->time()));
 }
 
 
-void TrackDataPoint::copyData(const TrackDataPoint *other)
+void TrackDataAbstractPoint::copyData(const TrackDataAbstractPoint *other)
 {
     mLatitude = other->mLatitude;
     mLongitude = other->mLongitude;
@@ -611,32 +608,44 @@ TrackDataFolder::TrackDataFolder(const QString &nm)
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataTrackpoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataTrackpoint::TrackDataTrackpoint(const QString &nm)
+    : TrackDataAbstractPoint(nm, "point_%04d", &counterTrackpoint)
+{
+#ifdef MEMORY_TRACKING
+    ++allocTrackpoint;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  TrackDataWaypoint							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
-    : TrackDataItem(nm, "wpt_%04d", &counterWaypoint)
+    : TrackDataAbstractPoint(nm, "wpt_%03d", &counterWaypoint)
 {
-//     mLatitude = mLongitude = NAN;
-//     mElevation = NAN;
 #ifdef MEMORY_TRACKING
     ++allocWaypoint;
 #endif
 }
 
 
-BoundingArea TrackDataWaypoint::boundingArea() const
-{
-    return (BoundingArea(mLatitude, mLongitude));
-}
-
-
-QString TrackDataWaypoint::formattedElevation() const
-{
-    if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
-    return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
-}
+// BoundingArea TrackDataWaypoint::boundingArea() const
+// {
+//     return (BoundingArea(mLatitude, mLongitude));
+// }
+// 
+// 
+// QString TrackDataWaypoint::formattedElevation() const
+// {
+//     if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
+//     return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
+// }
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -662,9 +671,10 @@ MemoryTracker::MemoryTracker()
     qDebug() << "file" << sizeof(TrackDataFile) << "bytes";
     qDebug() << "track" << sizeof(TrackDataTrack) << "bytes";
     qDebug() << "segment" << sizeof(TrackDataSegment) << "bytes";
-    qDebug() << "point" << sizeof(TrackDataPoint) << "bytes";
+    qDebug() << "point" << sizeof(TrackDataAbstractPoint) << "bytes";
     qDebug() << "folder" << sizeof(TrackDataFolder) << "bytes";
-    qDebug() << "wpt" << sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
+    qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
@@ -676,9 +686,9 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "file allocated" << allocFile << "items, total" << allocFile*sizeof(TrackDataFile) << "bytes";
     qDebug() << "track allocated" << allocTrack << "items, total" << allocTrack*sizeof(TrackDataTrack) << "bytes";
     qDebug() << "segment allocated" << allocSegment << "items, total" << allocSegment*sizeof(TrackDataSegment) << "bytes";
-    qDebug() << "point allocated" << allocPoint << "items, total" << allocPoint*sizeof(TrackDataPoint) << "bytes";
     qDebug() << "folder allocated" << allocFolder << "items, total" << allocFolder*sizeof(TrackDataFolder) << "bytes";
-    qDebug() << "wpt allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
+    qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "***********";
 }

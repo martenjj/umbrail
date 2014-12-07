@@ -165,7 +165,7 @@ case COL_NAME:
                 if (tds!=NULL) return (i18np("Segment with %1 point", "Segment with %1 points", tds->childCount()));
             }
             {
-                const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(tdi);
+                const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(tdi);
                 if (tdp!=NULL) return (i18n("Point at %1, elevation %2",
                                             tdp->formattedTime(true), tdp->formattedElevation()));
             }
@@ -403,7 +403,7 @@ void FilesModel::removeItem(TrackDataItem *item)
 }
 
 
-void FilesModel::clickedPoint(const TrackDataPoint *tdp, Qt::KeyboardModifiers mods)
+void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods)
 {
     QItemSelectionModel::SelectionFlags selFlags;
     if (mods==Qt::NoModifier) selFlags = QItemSelectionModel::ClearAndSelect;

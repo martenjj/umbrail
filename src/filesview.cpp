@@ -147,7 +147,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
             Q_ASSERT(mSelectedItem!=NULL);
 
             // TODO: mSelectedItem->itemType() a virtual of TrackDataItem
-            if (dynamic_cast<const TrackDataPoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Point;
+            if (dynamic_cast<const TrackDataTrackpoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Point;
             else if (dynamic_cast<const TrackDataSegment *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Segment;
             else if (dynamic_cast<const TrackDataTrack *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Track;
             else if (dynamic_cast<const TrackDataFile *>(mSelectedItem)!=NULL) mSelectedType = TrackData::File;
@@ -167,7 +167,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
         // Selecting a point automatically sets its parent container
         // (normally a segment, but this is not enforced) to be selected
         // also.  Only for drawing purposes, not for any user operations.
-        TrackDataPoint *tdp = dynamic_cast<TrackDataPoint *>(tdi);
+        TrackDataTrackpoint *tdp = dynamic_cast<TrackDataTrackpoint *>(tdi);
         if (tdp!=NULL)					// this is a point
         {
             TrackDataItem *par = tdp->parent();

@@ -197,7 +197,7 @@ ProfileWidget::~ProfileWidget()
 
 void ProfileWidget::getPlotData(const TrackDataItem *item)
 {
-    const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(item);
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     if (tdp!=NULL)					// is this a point?
     {
         double distStep = 0;
