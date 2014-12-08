@@ -213,8 +213,6 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
 
 
 
-
-
 void FilesController::slotUpdateActionState()
 {
     TrackData::Type selType = view()->selectedType();
@@ -231,76 +229,44 @@ void FilesController::slotUpdateActionState()
     else
     {
         const TrackDataItem *tdi = view()->selectedItem();
-        QString name = tdi->name();
+        const QString name = tdi->name();
+        QString msg = QString::null;
 
         switch (selType)
         {
-case TrackData::File:       if (selCount==1) emit statusMessage(i18n("Selected file '%1'", name));
-                            else emit statusMessage(i18np("Selected %1 file", "Selected %1 files", selCount));
+case TrackData::File:       if (selCount==1) msg = i18n("Selected file '%1'", name);
+                            else msg = i18np("Selected %1 file", "Selected %1 files", selCount);
                             break;
 
-case TrackData::Track:      if (selCount==1) emit statusMessage(i18n("Selected track '%1'", name));
-                            else emit statusMessage(i18np("Selected %1 track", "Selected %1 tracks", selCount));
+case TrackData::Track:      if (selCount==1) msg = i18n("Selected track '%1'", name);
+                            else msg = i18np("Selected %1 track", "Selected %1 tracks", selCount);
                             break;
 
-case TrackData::Segment:    if (selCount==1) emit statusMessage(i18n("Selected segment '%1'", name));
-                            else emit statusMessage(i18np("Selected %1 segment", "Selected %1 segments", selCount));
+case TrackData::Segment:    if (selCount==1) msg = i18n("Selected segment '%1'", name);
+                            else msg = i18np("Selected %1 segment", "Selected %1 segments", selCount);
                             break;
 
-case TrackData::Point:      if (selCount==1) emit statusMessage(i18n("Selected point '%1'", name));
-                            else emit statusMessage(i18np("Selected %1 point", "Selected %1 points", selCount));
+case TrackData::Point:      if (selCount==1) msg = i18n("Selected point '%1'", name);
+                            else msg = i18np("Selected %1 point", "Selected %1 points", selCount);
+                            break;
+
+case TrackData::Waypoint:   if (selCount==1) msg = i18n("Selected waypoint '%1'", name);
+                            else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", selCount);
+                            break;
+
+case TrackData::Folder:     if (selCount==1) msg = i18n("Selected folder '%1'", name);
+                            else msg = i18np("Selected %1 folder", "Selected %1 folders", selCount);
                             break;
 
 default:                    break;
         }
+
+        if (!msg.isEmpty()) emit statusMessage(msg);
     }
 
     emit updateActionState();
 }
 
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//void FilesController::slotDeleteSelection()
-//{
-//    FilesView::RowList rows = view()->selectedRows();
-//    int cnt = rows.count();
-//    if (cnt==0) return;
-//    kDebug() << cnt << "rows";
-//
-//    QString name = model()->pointAt(rows.first())->name();
-//
-//    QString query;
-//    if (cnt==1)
-//    {
-//        query = i18n("Delete the selected point '%1'?", name);
-//        emit statusMessage(i18n("Deleting point '%1'", name));
-//    }
-//    else
-//    {
-//        query = i18n("Delete the %1 selected files?", cnt);
-//        emit statusMessage(i18n("Deleting %1 files", cnt));
-//    }
-//        
-//    if (KMessageBox::warningContinueCancel(mainWindow(), query,
-//                                           i18n("Delete Files"),
-//                                           KStandardGuiItem::del())!=KMessageBox::Continue)
-//    {
-//        emit statusMessage(i18n("Delete cancelled"));
-//        return;
-//    }
-//
-//    DeleteFilesCommand *cmd = new DeleteFilesCommand(this);
-//    cmd->setText(i18np("Delete point", "Delete %1 files", cnt));
-//    cmd->setRowList(rows);
-//    executeCommand(cmd);
-//
-//    slotUpdateActionState();
-//    if (cnt==1) emit statusMessage(i18n("Deleted point '%1'", name));
-//    else emit statusMessage(i18n("Deleted %1 files", cnt));
-//}
-//
 
 
 void FilesController::slotTrackProperties()
