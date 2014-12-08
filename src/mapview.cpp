@@ -265,6 +265,7 @@ void MapView::setMovePointsMode(bool on)
 {
     kDebug() << on;
     mTracksLayer->setMovePointsMode(on);
+    mWaypointsLayer->setMovePointsMode(on);
 }
 
 

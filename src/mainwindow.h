@@ -20,7 +20,7 @@ class KUrl;
 class FilesController;
 class MapController;
 class Project;
-class TrackDataSegment;
+class TrackDataItem;
 
 
 class MainWindow : public KXmlGuiWindow
@@ -120,7 +120,7 @@ private:
     QSplitter *mSplitter;
     QUndoStack *mUndoStack;
 
-    const TrackDataSegment *mSelectedSegment;
+    const TrackDataItem *mSelectedContainer;
 };
  
 #endif							// MAINWINDOW_H

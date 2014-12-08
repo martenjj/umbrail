@@ -165,9 +165,10 @@ void FilesView::selectionChanged(const QItemSelection &sel,
         tdi->setSelectionId(mSelectionId);
 
         // Selecting a point automatically sets its parent container
-        // (normally a segment, but this is not enforced) to be selected
-        // also.  Only for drawing purposes, not for any user operations.
-        TrackDataTrackpoint *tdp = dynamic_cast<TrackDataTrackpoint *>(tdi);
+        // (normally a segment for trackpoints or folder for waypoints, but
+        // this is not enforced) to be selected also.  Only for drawing
+        // purposes, not for any user operations.
+        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(tdi);
         if (tdp!=NULL)					// this is a point
         {
             TrackDataItem *par = tdp->parent();

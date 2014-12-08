@@ -102,7 +102,7 @@ void MainWindow::init()
 
     readProperties(Settings::self()->config()->group(CONFIG_GROUP));
 
-    mSelectedSegment = NULL;
+    mSelectedContainer = NULL;
 
     slotSetModified(false);
     slotUpdateActionState();
@@ -663,7 +663,7 @@ void MainWindow::slotUpdateActionState()
     bool delEnabled = true;
     QString delText = i18nc("@action:inmenu", "Delete");
 
-    const TrackDataSegment *selectedSegment = NULL;
+    const TrackDataItem *selectedContainer = NULL;
     switch (selType)
     {
 case TrackData::File:
@@ -684,7 +684,7 @@ case TrackData::Segment:
         propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
-        selectedSegment = dynamic_cast<const TrackDataSegment *>(filesController()->view()->selectedItem());
+        selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
 
@@ -692,7 +692,7 @@ case TrackData::Point:
         propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
-        selectedSegment = dynamic_cast<const TrackDataSegment *>(filesController()->view()->selectedItem()->parent());
+        selectedContainer = filesController()->view()->selectedItem()->parent();
         profileEnabled = (selCount>1);
         break;
 
@@ -700,12 +700,14 @@ case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
+        selectedContainer = filesController()->view()->selectedItem();
         break;
 
 case TrackData::Waypoint:
         propsText = i18ncp("@action:inmenu", "Waypoint Properties...", "Waypoints Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Waypoint", "Delete Waypoints", selCount);
+        selectedContainer = filesController()->view()->selectedItem()->parent();
         break;
 
 case TrackData::Mixed:
@@ -742,16 +744,16 @@ default:
     }
     else mAddPointAction->setEnabled(false);
 
-    // If there is a selected segment or point(s), then move points mode
+    // If there is a selected container or point(s), then move points mode
     // is allowed to be entered;  otherwise, it is disabled.
     //
-    // If there is a selected segment and it is the same as the currently
-    // selected segment, then move points mode can stay at the same state
+    // If there is a selected container and it is the same as the currently
+    // selected container, then move points mode can stay at the same state
     // as it currently is.  Otherwise, it is forced off.
 
-    if (selectedSegment!=NULL)
+    if (selectedContainer!=NULL)
     {
-        if (selectedSegment!=mSelectedSegment)
+        if (selectedContainer!=mSelectedContainer)
         {
             mMapDragAction->setChecked(false);
             slotMapMovePoints();
@@ -765,7 +767,7 @@ default:
         mMapDragAction->setEnabled(false);
     }
 
-    mSelectedSegment = selectedSegment;
+    mSelectedContainer = selectedContainer;
 }
 
 

@@ -798,7 +798,7 @@ void MovePointsCommand::redo()
     Q_ASSERT(!mItems.isEmpty());
     for (int i = 0; i<mItems.count(); ++i)
     {
-        TrackDataTrackpoint *item = dynamic_cast<TrackDataTrackpoint *>(mItems[i]);
+        TrackDataAbstractPoint *item = dynamic_cast<TrackDataAbstractPoint *>(mItems[i]);
         if (item==NULL) continue;
         item->setLatLong(item->latitude()+mLatOff, item->longitude()+mLonOff);
         model()->changedItem(item);
@@ -813,7 +813,7 @@ void MovePointsCommand::undo()
     Q_ASSERT(!mItems.isEmpty());
     for (int i = 0; i<mItems.count(); ++i)
     {
-        TrackDataTrackpoint *item = dynamic_cast<TrackDataTrackpoint *>(mItems[i]);
+        TrackDataAbstractPoint *item = dynamic_cast<TrackDataAbstractPoint *>(mItems[i]);
         if (item==NULL) continue;
         item->setLatLong(item->latitude()-mLatOff, item->longitude()-mLonOff);
         model()->changedItem(item);
