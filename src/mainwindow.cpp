@@ -479,8 +479,6 @@ void MainWindow::slotNewProject()
 
 void MainWindow::slotOpenProject()
 {
-    if (!queryClose()) return;
-
     KFileDialog d(QString("kfiledialog:///project/"), FilesController::allProjectFilters(true), this);
     d.setCaption(i18n("Open Tracks File"));
     d.setOperationMode(KFileDialog::Opening);
