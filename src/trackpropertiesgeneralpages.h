@@ -11,7 +11,7 @@ class KLineEdit;
 class KTextEdit;
 class ItemTypeCombo;
 class TrackDataItem;
-class TrackDataTrackpoint;
+class TrackDataAbstractPoint;
 class TimeZoneSelector;
 
 
@@ -33,11 +33,18 @@ public:
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const;
 
+    bool newPointPosition(double *newLat, double *newLon);
+
 protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
-    void addTimeFields(const QList<TrackDataItem *> &items);
-    void addTypeDescFields(const QList<TrackDataItem *> &items);
+    void addTimeSpanFields(const QList<TrackDataItem *> &items);
+    void addTypeField(const QList<TrackDataItem *> &items);
+    void addDescField(const QList<TrackDataItem *> &items);
+    void addPositionTimeFields(const QList<TrackDataItem *> &items);
+
+protected slots:
+    void slotChangePosition();
 
 signals:
     void timeZoneChanged(const QString &zone);
@@ -48,6 +55,11 @@ protected:
     ItemTypeCombo *mTypeCombo;
     KTextEdit *mDescEdit;
     TimeZoneSelector *mTimeZoneSel;
+
+    const TrackDataAbstractPoint *mPositionPoint;
+    bool mPositionChanged;
+    double mPositionLatitude;
+    double mPositionLongitude;
 };
 
 
@@ -101,22 +113,14 @@ class TrackTrackpointGeneralPage : public TrackItemGeneralPage
 {
     Q_OBJECT
 
-protected slots:
-    void slotChangePosition();
-
 public:
     TrackTrackpointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackTrackpointGeneralPage()				{}
 
     QString typeText(int count) const;
 
-    bool newPointPosition(double *newLat, double *newLon);
 
 private:
-    const TrackDataTrackpoint *mPositionPoint;
-    bool mPositionChanged;
-    double mPositionLatitude;
-    double mPositionLongitude;
 };
 
 
@@ -138,22 +142,11 @@ class TrackWaypointGeneralPage : public TrackItemGeneralPage
 {
     Q_OBJECT
 
-// protected slots:
-//     void slotChangePosition();
-
 public:
     TrackWaypointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt);
     virtual ~TrackWaypointGeneralPage()				{}
 
     QString typeText(int count) const;
-
-//     bool newPointPosition(double *newLat, double *newLon);
-
-private:
-//     const TrackDataPoint *mPositionPoint;
-//     bool mPositionChanged;
-//     double mPositionLatitude;
-//     double mPositionLongitude;
 };
 
 

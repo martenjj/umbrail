@@ -24,7 +24,6 @@
 
 
 
-
 TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
@@ -43,7 +42,11 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, Q
     mTypeCombo = NULL;					// not applicable yet
     mDescEdit = NULL;
     mTimeZoneSel = NULL;
+
+    mPositionPoint = NULL;
+    mPositionChanged = false;
 }
+
 
 
 bool TrackItemGeneralPage::isDataValid() const
@@ -91,7 +94,36 @@ QString TrackItemGeneralPage::newTimeZone() const
 
 
 
-void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
+bool TrackItemGeneralPage::newPointPosition(double *newLat, double *newLon)
+{
+    if (!mPositionChanged) return (false);
+    *newLat = mPositionLatitude;
+    *newLon = mPositionLongitude;
+    return (true);
+}
+
+
+
+void TrackItemGeneralPage::slotChangePosition()
+{
+    Q_ASSERT(mPositionPoint!=NULL);
+
+    LatLongDialogue d(this);
+    d.setLatLong(mPositionPoint->latitude(), mPositionPoint->longitude());
+    d.setButtonText(KDialog::Ok, i18nc("@action:button", "Set"));
+
+    if (d.exec())
+    {
+        mPositionChanged = true;
+        mPositionLatitude = d.latitude();
+        mPositionLongitude = d.longitude();
+        emit pointPositionChanged(mPositionLatitude, mPositionLongitude);
+    }
+}
+
+
+
+void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> &items)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
@@ -105,14 +137,9 @@ void TrackItemGeneralPage::addTimeFields(const QList<TrackDataItem *> &items)
 
 
 
-
-
-void TrackItemGeneralPage::addTypeDescFields(const QList<TrackDataItem *> &items)
+void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> &items)
 {
     mTypeCombo = new ItemTypeCombo(this);
-
-    mDescEdit = new KTextEdit(this);
-    mDescEdit->setMaximumHeight(100);
 
     if (items.count()==1)
     {
@@ -122,6 +149,23 @@ void TrackItemGeneralPage::addTypeDescFields(const QList<TrackDataItem *> &items
         mTypeCombo->setType(tdi->metadata("type"));
         connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
         connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
+    }
+    else mTypeCombo->setEnabled(false);
+
+    mFormLayout->addRow(i18nc("@label:listbox", "Type:"), mTypeCombo);
+}
+
+
+
+void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> &items)
+{
+    mDescEdit = new KTextEdit(this);
+    mDescEdit->setMaximumHeight(100);
+
+    if (items.count()==1)
+    {
+        const TrackDataItem *tdi = items.first();
+        Q_ASSERT(tdi!=NULL);
 
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
@@ -132,20 +176,40 @@ void TrackItemGeneralPage::addTypeDescFields(const QList<TrackDataItem *> &items
 
         connect(mDescEdit, SIGNAL(textChanged()), SLOT(slotDataChanged()));
     }
-    else
-    {
-        mTypeCombo->setEnabled(false);
-        mDescEdit->setEnabled(false);
-    }
+    else mDescEdit->setEnabled(false);
 
-    mFormLayout->addRow(i18nc("@label:listbox", "Type:"), mTypeCombo);
     mFormLayout->addRow(i18nc("@label:listbox", "Description:"), mDescEdit);
 }
 
 
 
+void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> &items)
+{
+    if (items.count()!=1) return;			// only for single selection
 
+    TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items.first());
+    Q_ASSERT(p!=NULL);
+    mPositionPoint = p;
 
+    QWidget *hb = new QWidget(this);
+    QHBoxLayout *hlay = new QHBoxLayout(hb);
+    hlay->setMargin(0);
+    hlay->setSpacing(KDialog::spacingHint());
+    TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
+    hlay->addWidget(l);
+    hlay->addStretch(1);
+    mPositionLabel = l;
+
+    QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
+    connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
+    hb->setFocusProxy(b);
+    hb->setFocusPolicy(Qt::StrongFocus);
+    hlay->addWidget(b);
+    mFormLayout->addRow(i18nc("@label:textbox", "Position:"), hb);
+
+    l = new TrackDataLabel(p->time(), this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
+}
 
 
 
@@ -183,7 +247,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
     mFormLayout->insertRow(mFormLayout->rowCount()-1, i18nc("@label:textbox", "File:"), mUrlRequester);
     mFormLayout->addRow(i18nc("@label:textbox", "Time zone:"), mTimeZoneSel);
 
-    addTimeFields(items);
+    addTimeSpanFields(items);
 }
 
 
@@ -192,7 +256,6 @@ QString TrackFileGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>File</b>", "<b>%1 files</b>", count));
 }
-
 
 
 
@@ -205,21 +268,17 @@ bool TrackFileGeneralPage::isDataValid() const
 
 
 
-
-
-
-
 TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackTrackGeneralPage");
 
-    addTimeFields(items);
+    addTimeSpanFields(items);
     addSeparatorField();
-    addTypeDescFields(items);
+    addTypeField(items);
+    addDescField(items);
 }
-
 
 
 
@@ -230,23 +289,18 @@ QString TrackTrackGeneralPage::typeText(int count) const
 
 
 
-
-
-
-
-
-
-
 TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackSegmentGeneralPage");
 
-    addTimeFields(items);
+    addTimeSpanFields(items);
     addSeparatorField();
-    addTypeDescFields(items);
+    addTypeField(items);
+    addDescField(items);
 }
+
 
 
 QString TrackSegmentGeneralPage::typeText(int count) const
@@ -256,80 +310,21 @@ QString TrackSegmentGeneralPage::typeText(int count) const
 
 
 
-
-
-
 TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackPointGeneralPage");
 
-    mPositionPoint = NULL;
-    mPositionChanged = false;
-
-    if (items.count()==1)				// single selection
-    {
-        TrackDataTrackpoint *p = dynamic_cast<TrackDataTrackpoint *>(items.first());
-        Q_ASSERT(p!=NULL);
-        mPositionPoint = p;
-
-        QWidget *hb = new QWidget(this);
-        QHBoxLayout *hlay = new QHBoxLayout(hb);
-        hlay->setMargin(0);
-        hlay->setSpacing(KDialog::spacingHint());
-        TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
-        hlay->addWidget(l);
-        hlay->addStretch(1);
-        mPositionLabel = l;
-
-        QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
-        connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
-        hb->setFocusProxy(b);
-        hb->setFocusPolicy(Qt::StrongFocus);
-        hlay->addWidget(b);
-        mFormLayout->addRow(i18nc("@label:textbox", "Position:"), hb);
-
-        l = new TrackDataLabel(p->time(), this);
-        mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
-    }
-    else						// multiple selection
-    {
-        addTimeFields(items);
-    }
+    addPositionTimeFields(items);
+    if (items.count()>1) addTimeSpanFields(items);
 }
+
 
 
 QString TrackTrackpointGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", count));
-}
-
-
-void TrackTrackpointGeneralPage::slotChangePosition()
-{
-    Q_ASSERT(mPositionPoint!=NULL);
-
-    LatLongDialogue d(this);
-    d.setLatLong(mPositionPoint->latitude(), mPositionPoint->longitude());
-    d.setButtonText(KDialog::Ok, i18nc("@action:button", "Set"));
-
-    if (d.exec())
-    {
-        mPositionChanged = true;
-        mPositionLatitude = d.latitude();
-        mPositionLongitude = d.longitude();
-        emit pointPositionChanged(mPositionLatitude, mPositionLongitude);
-    }
-}
-
-
-bool TrackTrackpointGeneralPage::newPointPosition(double *newLat, double *newLon)
-{
-    if (!mPositionChanged) return (false);
-    *newLat = mPositionLatitude;
-    *newLon = mPositionLongitude;
-    return (true);
 }
 
 
@@ -339,41 +334,6 @@ TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> item
 {
     kDebug();
     setObjectName("TrackFolderGeneralPage");
-
-#if 0
-//     mPositionPoint = NULL;
-//     mPositionChanged = false;
-// 
-//     if (items.count()==1)				// single selection
-//     {
-//         TrackDataPoint *p = dynamic_cast<TrackDataPoint *>(items.first());
-//         Q_ASSERT(p!=NULL);
-//         mPositionPoint = p;
-// 
-//         QWidget *hb = new QWidget(this);
-//         QHBoxLayout *hlay = new QHBoxLayout(hb);
-//         hlay->setMargin(0);
-//         hlay->setSpacing(KDialog::spacingHint());
-//         TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
-//         hlay->addWidget(l);
-//         hlay->addStretch(1);
-//         mPositionLabel = l;
-// 
-//         QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
-//         connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
-//         hb->setFocusProxy(b);
-//         hb->setFocusPolicy(Qt::StrongFocus);
-//         hlay->addWidget(b);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), hb);
-// 
-//         l = new TrackDataLabel(p->time(), this);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
-//     }
-//     else						// multiple selection
-//     {
-//         addTimeFields(items);
-//     }
-#endif
 }
 
 
@@ -385,48 +345,17 @@ QString TrackFolderGeneralPage::typeText(int count) const
 
 
 
-
-
 TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackWaypointGeneralPage");
 
-#if 0
-//     mPositionPoint = NULL;
-//     mPositionChanged = false;
-// 
-//     if (items.count()==1)				// single selection
-//     {
-//         TrackDataPoint *p = dynamic_cast<TrackDataPoint *>(items.first());
-//         Q_ASSERT(p!=NULL);
-//         mPositionPoint = p;
-// 
-//         QWidget *hb = new QWidget(this);
-//         QHBoxLayout *hlay = new QHBoxLayout(hb);
-//         hlay->setMargin(0);
-//         hlay->setSpacing(KDialog::spacingHint());
-//         TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
-//         hlay->addWidget(l);
-//         hlay->addStretch(1);
-//         mPositionLabel = l;
-// 
-//         QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
-//         connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
-//         hb->setFocusProxy(b);
-//         hb->setFocusPolicy(Qt::StrongFocus);
-//         hlay->addWidget(b);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), hb);
-// 
-//         l = new TrackDataLabel(p->time(), this);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
-//     }
-//     else						// multiple selection
-//     {
-//         addTimeFields(items);
-//     }
-#endif
+    addPositionTimeFields(items);
+    if (items.count()>1) addTimeSpanFields(items);
+
+    addSeparatorField();
+    addDescField(items);
 }
 
 
@@ -435,13 +364,6 @@ QString TrackWaypointGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Waypoint</b>", "<b>%1 waypoints</b>", count));
 }
-
-
-
-
-
-
-
 
 
 

@@ -374,7 +374,7 @@ void FilesController::slotTrackProperties()
     double newLon;
     if (d.newPointPosition(&newLat, &newLon))
     {
-        TrackDataTrackpoint *p = dynamic_cast<TrackDataTrackpoint *>(item);
+        TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(item);
         Q_ASSERT(p!=NULL);
         MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
         cmd6->setDataItems((QList<TrackDataItem *>() << p));

@@ -15,9 +15,6 @@
 
 
 
-
-
-
 TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
@@ -26,6 +23,7 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWi
 
     addSeparatorField();
 }
+
 
 
 void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes)
@@ -93,9 +91,6 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items
 
 
 
-
-
-
 void TrackItemDetailPage::addMetadataField(const TrackDataItem *tdi, const QString &key, const QString &label)
 {
     QString s = tdi->metadata(DataIndexer::self()->index(key));
@@ -121,14 +116,30 @@ void TrackItemDetailPage::addMetadataField(const TrackDataItem *tdi, const QStri
 
 
 
-
 TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackFileDetailPage");
 
-    addChildCountField(items, i18nc("@label:textbox", "Tracks:"));
+    int nTracks = 0;
+    int nFolders = 0;
+    for (int i = 0; i<items.count(); ++i)
+    {
+        const TrackDataItem *item = items[i];
+        for (int j = 0; j<item->childCount(); ++j)
+        {
+            const TrackDataItem *childItem = item->childAt(j);
+            if (dynamic_cast<const TrackDataTrack *>(childItem)!=NULL) ++nTracks;
+            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=NULL) ++nFolders;
+        }
+    }
+
+    TrackDataLabel *l = new TrackDataLabel(nTracks, this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Tracks:"), l);
+    l = new TrackDataLabel(nFolders, this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Folders:"), l);
+
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
 
@@ -142,10 +153,6 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWi
         addMetadataField(tdf, "time", i18nc("@label:textbox", "Save time:"));
     }
 }
-
-
-
-
 
 
 
@@ -169,9 +176,6 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> items, Q
         addMetadataField(tdt, "time", i18nc("@label:textbox", "Time:"));
     }
 }
-
-
-
 
 
 
@@ -202,9 +206,6 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> item
         }
     }
 }
-
-
-
 
 
 
@@ -316,119 +317,30 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 
 
 
-
-
-
-
-
 TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackFolderDetailPage");
 
-#if 0
-//     if (items.count()==1)				// single selection
-//     {
-//         const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(items.first());
-//         Q_ASSERT(tdp!=NULL);
-// 
-//         TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
-//         mPositionLabel = l;
-// 
-//         l = new TrackDataLabel(tdp->time(), this);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
-// 
-//         double ele = tdp->elevation();
-//         if (!isnan(ele))
-//         {
-//             addSeparatorField();
-// 
-//             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
-//             vl->setSaveId("elevation");
-//             vl->setValue(ele);
-//             mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
-//         }
-// 
-//         addSeparatorField();
-// 
-//         addMetadataField(tdp, "hdop", i18nc("@label:textbox", "GPS HDOP:"));
-//         addMetadataField(tdp, "speed", i18nc("@label:textbox", "GPS speed:"));
-//     }
-//     else						// multiple selection
-//     {
-//         addBoundingAreaField(items);
-// 
-//         const TrackDataItem *seg = items.first()->parent();
-//         Q_ASSERT(seg!=NULL);				// find parent segment
-//         int firstIdx = seg->childIndex(items.first());	// its index of first item
-//         int num = items.count();
-// 
-//         bool contiguousSelection = true;		// assume so at start
-//         for (int i = 1; i<num; ++i)			// look at following items
-//         {
-//             if (seg->childAt(firstIdx+i)!=items.at(i))	// mismatch children/selection
-//             {
-//                 contiguousSelection = false;
-//                 break;
-//             }
-//         }
-// 
-//         if (contiguousSelection)			// selection is contiguous
-//         {
-//             addTimeDistanceSpeedFields(items, false);
-//         }
-// 
-//         if (items.count()==2)				// exactly two points selected
-//         {						// (nocontiguous doesn't matter)
-//             TrackDataItem *item1 = items.first();
-//             TrackDataItem *item2 = items.last();
-// 
-//             int idx1 = seg->childIndex(item1);
-//             int idx2 = seg->childIndex(item2);
-//             if (idx1>idx2) qSwap(idx1, idx2);		// order by index = time
-// 
-//             QList<TrackDataItem *> items2;
-//             for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
-// 
-//             if (!contiguousSelection)			// not already added above
-//             {
-//                 addTimeDistanceSpeedFields(items2, false);
-//             }
-//             addSeparatorField();
-// 
-//             TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx1));
-//             TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));
-//             Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
-// 
-//             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Bearing, this);
-//             vl->setSaveId("bearing");
-//             vl->setValue(pnt1->bearingTo(pnt2));
-//             mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
-// 
-//             if (!contiguousSelection)
-//             {
-//                 vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
-//                 vl->setSaveId("crowflies");
-//                 vl->setValue(pnt1->distanceTo(pnt2, true));
-//                 mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
-//             }
-// 
-//             double ele1 = pnt1->elevation();
-//             double ele2 = pnt2->elevation();
-//             if (!isnan(ele1) && !isnan(ele2))
-//             {
-//                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
-//                 vl->setSaveId("elediff");
-//                 vl->setValue(ele2-ele1);
-//                 mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
-//             }
-//         }
-//     }
-#endif
-}
+    int nWaypoints = 0;
+    int nFolders = 0;
+    for (int i = 0; i<items.count(); ++i)
+    {
+        const TrackDataItem *item = items[i];
+        for (int j = 0; j<item->childCount(); ++j)
+        {
+            const TrackDataItem *childItem = item->childAt(j);
+            if (dynamic_cast<const TrackDataWaypoint *>(childItem)!=NULL) ++nWaypoints;
+            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=NULL) ++nFolders;
+        }
+    }
 
+    TrackDataLabel *l = new TrackDataLabel(nWaypoints, this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Waypoints:"), l);
+    l = new TrackDataLabel(nFolders, this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Folders:"), l);
+}
 
 
 
@@ -438,107 +350,101 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> it
     kDebug();
     setObjectName("TrackWaypointDetailPage");
 
-#if 0
-//     if (items.count()==1)				// single selection
-//     {
-//         const TrackDataPoint *tdp = dynamic_cast<const TrackDataPoint *>(items.first());
-//         Q_ASSERT(tdp!=NULL);
-// 
-//         TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
-//         mPositionLabel = l;
-// 
-//         l = new TrackDataLabel(tdp->time(), this);
-//         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
-// 
-//         double ele = tdp->elevation();
-//         if (!isnan(ele))
-//         {
-//             addSeparatorField();
-// 
-//             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
-//             vl->setSaveId("elevation");
-//             vl->setValue(ele);
-//             mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
-//         }
-// 
-//         addSeparatorField();
-// 
-//         addMetadataField(tdp, "hdop", i18nc("@label:textbox", "GPS HDOP:"));
-//         addMetadataField(tdp, "speed", i18nc("@label:textbox", "GPS speed:"));
-//     }
-//     else						// multiple selection
-//     {
-//         addBoundingAreaField(items);
-// 
-//         const TrackDataItem *seg = items.first()->parent();
-//         Q_ASSERT(seg!=NULL);				// find parent segment
-//         int firstIdx = seg->childIndex(items.first());	// its index of first item
-//         int num = items.count();
-// 
-//         bool contiguousSelection = true;		// assume so at start
-//         for (int i = 1; i<num; ++i)			// look at following items
-//         {
-//             if (seg->childAt(firstIdx+i)!=items.at(i))	// mismatch children/selection
-//             {
-//                 contiguousSelection = false;
-//                 break;
-//             }
-//         }
-// 
-//         if (contiguousSelection)			// selection is contiguous
-//         {
-//             addTimeDistanceSpeedFields(items, false);
-//         }
-// 
-//         if (items.count()==2)				// exactly two points selected
-//         {						// (nocontiguous doesn't matter)
-//             TrackDataItem *item1 = items.first();
-//             TrackDataItem *item2 = items.last();
-// 
-//             int idx1 = seg->childIndex(item1);
-//             int idx2 = seg->childIndex(item2);
-//             if (idx1>idx2) qSwap(idx1, idx2);		// order by index = time
-// 
-//             QList<TrackDataItem *> items2;
-//             for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
-// 
-//             if (!contiguousSelection)			// not already added above
-//             {
-//                 addTimeDistanceSpeedFields(items2, false);
-//             }
-//             addSeparatorField();
-// 
-//             TrackDataPoint *pnt1 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx1));
-//             TrackDataPoint *pnt2 = dynamic_cast<TrackDataPoint *>(seg->childAt(idx2));
-//             Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
-// 
-//             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Bearing, this);
-//             vl->setSaveId("bearing");
-//             vl->setValue(pnt1->bearingTo(pnt2));
-//             mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
-// 
-//             if (!contiguousSelection)
-//             {
-//                 vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
-//                 vl->setSaveId("crowflies");
-//                 vl->setValue(pnt1->distanceTo(pnt2, true));
-//                 mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
-//             }
-// 
-//             double ele1 = pnt1->elevation();
-//             double ele2 = pnt2->elevation();
-//             if (!isnan(ele1) && !isnan(ele2))
-//             {
-//                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
-//                 vl->setSaveId("elediff");
-//                 vl->setValue(ele2-ele1);
-//                 mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
-//             }
-//         }
-//     }
-#endif
+    if (items.count()==1)				// single selection
+    {
+        const TrackDataWaypoint *tdp = dynamic_cast<const TrackDataWaypoint *>(items.first());
+        Q_ASSERT(tdp!=NULL);
+
+        TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
+        mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
+        mPositionLabel = l;
+
+        l = new TrackDataLabel(tdp->time(), this);
+        mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
+
+        double ele = tdp->elevation();
+        if (!isnan(ele))
+        {
+            addSeparatorField();
+
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
+            vl->setSaveId("elevation");
+            vl->setValue(ele);
+            mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
+        }
+    }
+    else						// multiple selection
+    {
+        addBoundingAreaField(items);
+
+        const TrackDataItem *seg = items.first()->parent();
+        Q_ASSERT(seg!=NULL);				// find parent segment
+        int firstIdx = seg->childIndex(items.first());	// its index of first item
+        int num = items.count();
+
+        bool contiguousSelection = true;		// assume so at start
+        for (int i = 1; i<num; ++i)			// look at following items
+        {
+            if (seg->childAt(firstIdx+i)!=items.at(i))	// mismatch children/selection
+            {
+                contiguousSelection = false;
+                break;
+            }
+        }
+
+        if (contiguousSelection)			// selection is contiguous
+        {
+            addTimeDistanceSpeedFields(items, false);
+        }
+
+        if (items.count()==2)				// exactly two points selected
+        {						// (nocontiguous doesn't matter)
+            TrackDataItem *item1 = items.first();
+            TrackDataItem *item2 = items.last();
+
+            int idx1 = seg->childIndex(item1);
+            int idx2 = seg->childIndex(item2);
+            if (idx1>idx2) qSwap(idx1, idx2);		// order by index = time
+
+            QList<TrackDataItem *> items2;
+            for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
+
+            if (!contiguousSelection)			// not already added above
+            {
+                addTimeDistanceSpeedFields(items2, false);
+            }
+            addSeparatorField();
+
+            TrackDataWaypoint *pnt1 = dynamic_cast<TrackDataWaypoint *>(seg->childAt(idx1));
+            TrackDataWaypoint *pnt2 = dynamic_cast<TrackDataWaypoint *>(seg->childAt(idx2));
+            Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
+
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Bearing, this);
+            vl->setSaveId("bearing");
+            vl->setValue(pnt1->bearingTo(pnt2));
+            mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
+
+            if (!contiguousSelection)
+            {
+                vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
+                vl->setSaveId("crowflies");
+                vl->setValue(pnt1->distanceTo(pnt2, true));
+                mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
+            }
+
+            double ele1 = pnt1->elevation();
+            double ele2 = pnt2->elevation();
+            if (!isnan(ele1) && !isnan(ele2))
+            {
+                vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
+                vl->setSaveId("elediff");
+                vl->setValue(ele2-ele1);
+                mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
+            }
+        }
+    }
 }
+
 
 
 CREATE_PROPERTIES_PAGE(File, Detail);

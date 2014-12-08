@@ -150,9 +150,7 @@ Style TrackPropertiesDialogue::newStyle() const
 
 bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon)
 {
-    TrackTrackpointGeneralPage *pointPage = qobject_cast<TrackTrackpointGeneralPage *>(mGeneralPage);
-    if (pointPage==NULL) return (false);
-    return (pointPage->newPointPosition(newLat, newLon));
+    return (mGeneralPage->newPointPosition(newLat, newLon));
 }
 
 

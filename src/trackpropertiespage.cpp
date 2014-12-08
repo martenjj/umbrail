@@ -30,7 +30,7 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> items, QWi
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
     if (mIsEmpty && !items.isEmpty())
     {
-        if (dynamic_cast<const TrackDataTrackpoint *>(items.first())!=NULL) mIsEmpty = false;
+        if (dynamic_cast<const TrackDataAbstractPoint *>(items.first())!=NULL) mIsEmpty = false;
     }
 }
 
