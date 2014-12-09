@@ -26,9 +26,11 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWi
 
 
 
-void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes)
+void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes, bool tracksOnly)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
+    const bool blankIfZero = (isEmpty() || !tsp.isValid());
+
     TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), l);
     disableIfEmpty(l);
@@ -38,33 +40,39 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
     disableIfEmpty(l);
 
     unsigned tt = tsp.timeSpan();
-    l = new TrackDataLabel(TrackData::formattedDuration(tt, isEmpty()), this);
+    l = new TrackDataLabel(TrackData::formattedDuration(tt, blankIfZero), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time span:"), l);
     disableIfEmpty(l);
 
     if (bothTimes)
     {
         tt = TrackData::sumTotalTravelTime(items);
-        l = new TrackDataLabel(TrackData::formattedDuration(tt, isEmpty()), this);
+        l = new TrackDataLabel(TrackData::formattedDuration(tt, blankIfZero), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
         disableIfEmpty(l);
     }
 
     addSeparatorField();
 
-    double dist = TrackData::sumTotalTravelDistance(items);
+    double dist = TrackData::sumTotalTravelDistance(items, tracksOnly);
     VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
     vl->setSaveId("totaltraveldistance");
     vl->setValue(dist);
     mFormLayout->addRow(i18nc("@label:textbox", "Travel distance:"), vl);
     disableIfEmpty(vl);
 
-    double averageSpeed = dist/(tt/3600.0);
-    vl = new VariableUnitDisplay(VariableUnitCombo::Speed, this);
-    vl->setSaveId("averagespeed");
-    vl->setValue(averageSpeed);
-    mFormLayout->addRow(i18nc("@label:textbox", "Average speed:"), vl);
-    disableIfEmpty(vl);
+    QWidget *w;
+    if (tt>0)
+    {
+        double averageSpeed = dist/(tt/3600.0);
+        vl = new VariableUnitDisplay(VariableUnitCombo::Speed, this);
+        vl->setSaveId("averagespeed");
+        vl->setValue(averageSpeed);
+        w = vl;
+    }
+    else w = new QLabel(i18nc("Not available", "N/A"), this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Average speed:"), w);
+    disableIfEmpty(w);
 }
 
 
@@ -394,7 +402,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> it
 
         if (contiguousSelection)			// selection is contiguous
         {
-            addTimeDistanceSpeedFields(items, false);
+            addTimeDistanceSpeedFields(items, false, false);
         }
 
         if (items.count()==2)				// exactly two points selected
@@ -411,7 +419,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> it
 
             if (!contiguousSelection)			// not already added above
             {
-                addTimeDistanceSpeedFields(items2, false);
+                addTimeDistanceSpeedFields(items2, false, false);
             }
             addSeparatorField();
 

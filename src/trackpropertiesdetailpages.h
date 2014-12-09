@@ -27,7 +27,7 @@ public:
 protected:
     TrackItemDetailPage(const QList<TrackDataItem *> items, QWidget *pnt);
 
-    void addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes = true);
+    void addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes = true, bool tracksOnly = true);
     void addBoundingAreaField(const QList<TrackDataItem *> &items);
     void addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText);
     void addMetadataField(const TrackDataItem *tdi, const QString &key, const QString &label);

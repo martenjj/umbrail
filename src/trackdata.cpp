@@ -15,11 +15,10 @@
 #include "dataindexer.h"
 
 #undef MEMORY_TRACKING
-#define MEMORY_TRACKING
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Insternal constants							//
+//  Internal constants							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
@@ -129,14 +128,15 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> &items)
 }
 
 
-double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items)
+double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items, bool tracksOnly)
 {
     int num = items.count();
     if (num==0) return (0.0);
 
     double dist = 0.0;					// running total
-    const TrackDataAbstractPoint *prev = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
-    if (prev!=NULL)					// a list of points
+    const TrackDataAbstractPoint *prev = (tracksOnly ? dynamic_cast<const TrackDataTrackpoint *>(items.first()) :
+                                                       dynamic_cast<const TrackDataAbstractPoint *>(items.first()));
+    if (prev!=NULL)					// a list of (applicable) points
     {
         for (int i = 1; i<num; ++i)
         {

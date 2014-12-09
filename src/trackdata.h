@@ -105,7 +105,7 @@ namespace TrackData
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> &items);
     TimeRange unifyTimeSpans(const QList<TrackDataItem *> &items);
 
-    double sumTotalTravelDistance(const QList<TrackDataItem *> &items);
+    double sumTotalTravelDistance(const QList<TrackDataItem *> &items, bool tracksOnly = true);
     unsigned sumTotalTravelTime(const QList<TrackDataItem *> &items);
     unsigned sumTotalChildCount(const QList<TrackDataItem *> &items);
 
