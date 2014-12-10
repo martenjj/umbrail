@@ -24,7 +24,7 @@ class TrackPropertiesDialogue : public KDialog
     Q_OBJECT
 
 public:
-    TrackPropertiesDialogue(const QList<TrackDataItem *> &items, QWidget *pnt = NULL);
+    TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt = NULL);
     virtual ~TrackPropertiesDialogue();
 
     QString newItemName() const;

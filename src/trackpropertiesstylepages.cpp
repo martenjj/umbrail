@@ -22,7 +22,7 @@
 
 
 
-TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
     kDebug();
@@ -30,7 +30,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> items, QWidg
 
     addSeparatorField();
 
-    const TrackDataItem *item = items.first();
+    const TrackDataItem *item = items->first();
     const Style *s = item->style();
     kDebug() << "initial style" << *s;
 
@@ -81,7 +81,7 @@ const Style TrackItemStylePage::newStyle() const
 
 
 
-TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
@@ -96,7 +96,7 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> items, QWidg
 
 
 
-TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
@@ -108,7 +108,7 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> items, QWi
 
 
 
-TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
@@ -120,7 +120,7 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> items,
 
 
 
-TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
@@ -129,7 +129,7 @@ TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> 
 
 
 
-TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
@@ -138,7 +138,7 @@ TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> items, Q
 
 
 
-TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();

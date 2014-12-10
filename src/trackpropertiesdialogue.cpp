@@ -17,7 +17,7 @@
 
 
 
-TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &items, QWidget *pnt)
+TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt)
     : KDialog(pnt)
 {
     setObjectName("TrackPropertiesDialogue");
@@ -26,8 +26,8 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     setButtons(KDialog::Ok|KDialog::Cancel);
     showButtonSeparator(false);
 
-    Q_ASSERT(!items.isEmpty());
-    const TrackDataItem *item = items.first();
+    Q_ASSERT(!items->isEmpty());
+    const TrackDataItem *item = items->first();
     Q_ASSERT(item!=NULL);
     QString zoneName = item->timeZone();
 
@@ -68,7 +68,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
 
     mTabWidget->addTab(page, i18nc("@title:tab", "General"));
 
-    typeLabel->setText(mGeneralPage->typeText(items.count()));
+    typeLabel->setText(mGeneralPage->typeText(items->count()));
 
     page = item->createPropertiesDetailPage(items, this);
     mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
@@ -98,10 +98,10 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> &i
     if (idx!=-1) mTabWidget->setCurrentIndex(idx);
 
     // TODO: hasStyle() a virtual of TrackDataItem
-    bool styleEnabled = (items.count()==1);		// whether "Style" is applicable here
-    if (styleEnabled && dynamic_cast<const TrackDataTrackpoint *>(items.first())!=NULL) styleEnabled = false;
-    if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items.first())!=NULL) styleEnabled = false;
-    if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items.first())!=NULL) styleEnabled = false;
+    bool styleEnabled = (items->count()==1);		// whether "Style" is applicable here
+    if (styleEnabled && dynamic_cast<const TrackDataTrackpoint *>(items->first())!=NULL) styleEnabled = false;
+    if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items->first())!=NULL) styleEnabled = false;
+    if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items->first())!=NULL) styleEnabled = false;
     mTabWidget->setTabEnabled(2, styleEnabled);
 }
 

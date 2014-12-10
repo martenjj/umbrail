@@ -246,7 +246,7 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 {
     if (items.count()==0) return;
 
-    BoundingArea bb = TrackData::unifyBoundingAreas(items);
+    BoundingArea bb = TrackData::unifyBoundingAreas(&items);
     if (!bb.isValid())					// empty container
     {
         KMessageBox::sorry(mainWindow(),

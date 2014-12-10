@@ -102,12 +102,11 @@ namespace TrackData
         Waypoint
     };
 
-    BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> &items);
-    TimeRange unifyTimeSpans(const QList<TrackDataItem *> &items);
-
-    double sumTotalTravelDistance(const QList<TrackDataItem *> &items, bool tracksOnly = true);
-    unsigned sumTotalTravelTime(const QList<TrackDataItem *> &items);
-    unsigned sumTotalChildCount(const QList<TrackDataItem *> &items);
+    BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);
+    TimeRange unifyTimeSpans(const QList<TrackDataItem *> *items);
+    double sumTotalTravelDistance(const QList<TrackDataItem *> *items, bool tracksOnly = true);
+    unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items);
+    unsigned sumTotalChildCount(const QList<TrackDataItem *> *items);
 
     QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
     QString formattedDuration(unsigned t, bool blankIfZero = false);
@@ -130,19 +129,16 @@ public:
 
     virtual QString iconName() const = 0;
 
-    int childCount() const				{ return (mChildItems.count()); }
-    TrackDataItem *childAt(int idx) const		{ return (mChildItems[idx]); }
-    int childIndex(const TrackDataItem *data) const	{ return (mChildItems.indexOf(const_cast<TrackDataItem *>(data))); }
+    int childCount() const				{ return (mChildren==NULL ? 0 : mChildren->count()); }
+    TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=NULL); return (mChildren->at(idx)); }
+    int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=NULL); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
     TrackDataItem *parent() const			{ return (mParent); }
 
     void addChildItem(TrackDataItem *data, int idx = -1);
     TrackDataItem *takeFirstChildItem();
     TrackDataItem *takeLastChildItem();
     TrackDataItem *takeChildItem(int idx);
-    void takeChildItem(TrackDataItem *item);
-
-    void ref()						{ ++mRefCount; }
-    bool deref()					{ return ((--mRefCount)<=0 && mParent==NULL); }
+    void removeChildItem(TrackDataItem *item);
 
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
@@ -161,9 +157,9 @@ public:
     virtual unsigned int totalTravelTime() const;
     QString timeZone() const;
 
-    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
-    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
-    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
 
 protected:
     TrackDataItem(const QString &nm, const char *format = NULL, int *counter = NULL);
@@ -175,12 +171,9 @@ private:
     void init();
 
     QString mName;
-    // TODO: can this list be lazy allocated?
-    QList<TrackDataItem *> mChildItems;
-    // TODO: can this list be lazy allocated?
-    QVector<QString> mMetadata;
+    QList<TrackDataItem *> *mChildren;
+    QVector<QString> *mMetadata;
     TrackDataItem *mParent;
-    int mRefCount;
     unsigned long mSelectionId;
     Style *mStyle;
 };
@@ -201,9 +194,9 @@ public:
     void setFileName(const KUrl &file)			{ mFileName = file; }
     QString iconName() const;
 
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 
 private:
     KUrl mFileName;
@@ -223,9 +216,9 @@ public:
 
     QString iconName() const				{ return ("chart_track"); }
 
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -242,9 +235,9 @@ public:
 
     QString iconName() const				{ return ("chart_segment"); }
 
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 
     TimeRange timeSpan() const;
 };
@@ -263,9 +256,9 @@ public:
 
     QString iconName() const				{ return ("folder-favorites"); }
 
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -279,11 +272,6 @@ class TrackDataAbstractPoint : public TrackDataItem
 public:
     TrackDataAbstractPoint(const QString &nm, const char *format, int *counter);
     virtual ~TrackDataAbstractPoint()				{}
-
-//     QString iconName() const = 0;
-//     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
-//     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
-//     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const = 0;
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }
@@ -327,9 +315,9 @@ public:
 
     QString iconName() const				{ return ("chart_point"); }
 
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -346,17 +334,9 @@ public:
 
     QString iconName() const				{ return ("favorites"); }
 
-    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
-    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
-
-
-
-
-
-
-
-
 
 #endif							// TRACKDATA_H

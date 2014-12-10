@@ -29,7 +29,7 @@ public:
     const Style newStyle() const;
 
 protected:
-    TrackItemStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
 protected:
     KColorButton *mLineColourButton;
@@ -48,7 +48,7 @@ class TrackFileStylePage : public TrackItemStylePage
     Q_OBJECT
 
 public:
-    TrackFileStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFileStylePage()				{}
 
 };
@@ -60,7 +60,7 @@ class TrackTrackStylePage : public TrackItemStylePage
     Q_OBJECT
 
 public:
-    TrackTrackStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackTrackStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackStylePage()				{}
 
 
@@ -73,7 +73,7 @@ class TrackSegmentStylePage : public TrackItemStylePage
     Q_OBJECT
 
 public:
-    TrackSegmentStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackSegmentStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackSegmentStylePage()				{}
 
 
@@ -86,7 +86,7 @@ class TrackTrackpointStylePage : public TrackItemStylePage
     Q_OBJECT
 
 public:
-    TrackTrackpointStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackTrackpointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackpointStylePage()				{}
 
 
@@ -99,7 +99,7 @@ class TrackFolderStylePage : public TrackItemStylePage
     Q_OBJECT
 
 public:
-    TrackFolderStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackFolderStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFolderStylePage()				{}
 
 
@@ -112,7 +112,7 @@ class TrackWaypointStylePage : public TrackItemStylePage
     Q_OBJECT
 
 public:
-    TrackWaypointStylePage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointStylePage()				{}
 
 

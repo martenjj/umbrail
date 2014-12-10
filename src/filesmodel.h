@@ -36,24 +36,10 @@ public:
 
     void clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods);
 
-//    void addPoint(const PointData *point);
-//    void addFiles(const FilesList *files, bool clear = false);
-//
-//    void removePoint(int row);
-//    // inclusive
-//    void removeFiles(int fromRow, int toRow);
-//
-//    // the new point becomes row 'row'
-//    void insertPoint(const PointData *pnt, int row);
-//
-    // in place
+    // signal changes from the model
     void changedItem(const TrackDataItem *item);
-
-    void splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr, TrackDataItem *newParent = NULL, int newIndex = -1);
-    void mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems = false);
-    void moveItem(TrackDataItem *item, TrackDataItem *dest, int destIndex = -1);
-    void insertItem(TrackDataItem *item, TrackDataItem *dest, int destIndex);
-    void removeItem(TrackDataItem *item);
+    void startLayoutChange();
+    void endLayoutChange();
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
     TrackDataItem *itemForIndex(const QModelIndex &idx) const;

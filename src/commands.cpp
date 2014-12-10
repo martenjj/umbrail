@@ -18,95 +18,80 @@
 
 #undef DEBUG_ITEMS
 
+//  TrackDataItem's manipulated by these commands may well refer to parts
+//  of the main model data tree, or items intending to be added to or
+//  removed from it.  Because of that, code here needs to be very careful
+//  when holding on to items.
+//
+//  The rules to be followed are:
+//
+//   - If the command only refers to, or changes existing items in place,
+//     and does not copy, delete or move them around in memory any way,
+//     then it may retain a pointer (or any structure or list of pointers)
+//     to them.  In this case, it must not delete the items on destruction;
+//     it is sufficient to just throw away the pointer.
+//
+//   - If the command needs to retain a copy of existing items, because
+//     they are being modified or deleted, then they must be stored in
+//     the child list of an internal ItemContainer;  this is simply a
+//     TrackDataItem that is not abstract so can be allocated.  Items must
+//     be added or removed to/from this container using the functions
+//     provided by TrackDataItem.
+//
+//     This is so that the parent of the item can be tracked as required.
+//     When the ItemContainer is destroyed, any items that still belong to
+//     it will finally be deleted.
 
-// TrackDataItem's passed in to here may well refer to parts of the main
-// model data tree, or items intending to be added to or removed from it.
-// Because of that, we need to be very careful when holding on to items,
-// or deleting them when they may appear to be not needed.
-//
-// The rules to be followed are:
-//
-//   - Any pointer to an item passed in must be copied by using acceptItem().
-//     This increments its reference count to indicate that we are holding a
-//     pointer to it.
-//
-//   - A list of items passed in must be copied and then acceptList() used.
-//     This increments each contained item's reference count as above.
-//
-//   - Any item that we create must either use acceptItem() or be added as
-//     a child of another item.
-//
-//   - Any item or list of items that either was passed in and copied as above,
-//     or created by us, must be deleted using deleteItem() or deleteList() as
-//     appropriate.  The item, or the list's contained items, will not actually
-//     be deleted if there are any other references to it.  Note that the item
-//     having a parent (i.e. being a child of another) automatically counts as
-//     a reference.
-//
-//   - An item created by us may be deleted either when it is no longer
-//     required, or in a destructor.  If not done in a destructor, the pointer
-//     must be immediately set to NULL to avoid a possible double deletion
-//     in the destructor.
-//
-// Not following these rules and deleting anything without these checks may result
-// in double-deletion crashes, or deleting something that is still in use as part
-// of the model's data tree.  Not deleting anything will probably have no
-// ill effects apart from memory leaks.  Your choice...
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  ItemContainer							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
-
-// Needs to be a template, so that the type of the returned item is
-// the same as the input.
-template <typename T>
-static inline T *acceptItem(T *item)
+class ItemContainer : public TrackDataItem
 {
-    item->ref();
+public:
+    ItemContainer();
+    virtual ~ItemContainer();
+
+    virtual QString iconName() const		{ return (QString::null); }
+
+    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
+    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
+    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
+
+private:
+    static int containerCounter;
+};
+
+
+int ItemContainer::containerCounter = 0;
+
+
+ItemContainer::ItemContainer()
+    : TrackDataItem(QString::null, "container_%04d", &containerCounter)
+{
 #ifdef DEBUG_ITEMS
-    kDebug() << "accepting item" << item << item->name();
+    kDebug() << "created" << name();
 #endif
-    return (item);
 }
 
 
-// A template, so that it will work for any collection.
-template<typename C>
-static void acceptList(C &list)
+ItemContainer::~ItemContainer()
 {
-    for (int i = 0; i<list.count(); ++i) acceptItem(list[i]);
-}
-
-
-// Can be generic, will work using the virtual destructor.
-static void deleteItem(TrackDataItem *item)
-{
-    if (item==NULL) return;
-    if (item->deref())
+#ifdef DEBUG_ITEMS
+    kDebug() << "destroying" << name();
+#endif
+    for (int i = 0; i<childCount(); ++i)
     {
 #ifdef DEBUG_ITEMS
-        kDebug() << "deleting" << item << "=" << item->name();
+        kDebug() << "  child" << childAt(i)->name();
 #endif
-        delete item;
     }
 #ifdef DEBUG_ITEMS
-    else
-    {
-        kDebug() << "keeping" << item << "=" << item->name();
-    }
+    kDebug() << "done";
 #endif
 }
-
-
-// A template, so that it will work for any collection.
-template<typename C>
-static void deleteList(C &list)
-{
-    for (int i = 0; i<list.count(); ++i) deleteItem(list[i]);
-}
-
-
-
-
-
-
 
 
 QString CommandBase::senderText(const QObject *sdr)
@@ -131,7 +116,7 @@ void CommandBase::setSenderText(const QObject *sdr)
 
 
 
-
+/////////// TODO: function in controller
 void FilesCommandBase::updateMap() const
 {
     // Cannot emit a signal directly, because we are not a QObject.
@@ -139,7 +124,16 @@ void FilesCommandBase::updateMap() const
     QMetaObject::invokeMethod(controller(), "updateMap");
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Import File								//
+//									//
+//  This command is special.  It is only used for that operation, by	//
+//  FilesController::importFile(), and it takes ownership of the	//
+//  TrackDataFile passed in.  So we can retain a pointer to that,	//
+//  and delete it on destruction.					//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
@@ -149,12 +143,10 @@ ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
 }
 
 
-
 ImportFileCommand::~ImportFileCommand()
 {
-    deleteItem(mTrackData);
+    delete mTrackData;
 }
-
 
 
 void ImportFileCommand::redo()
@@ -187,19 +179,20 @@ void ImportFileCommand::undo()
     updateMap();
 }
 
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Change Item (name, style, metadata)					//
+//									//
+//  All of these simply change the specified item in place, so they	//
+//  can retain a pointer to it.						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 ChangeItemCommand::ChangeItemCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
     mDataItem = NULL;					// nothing set at present
 }
-
-
-
-
 
 
 void ChangeItemNameCommand::redo()
@@ -214,8 +207,6 @@ void ChangeItemNameCommand::redo()
 }
 
 
-
-
 void ChangeItemNameCommand::undo()
 {
     TrackDataItem *item = mDataItem;
@@ -225,8 +216,6 @@ void ChangeItemNameCommand::undo()
     item->setName(mSavedName);
     model()->changedItem(item);
 }
-
-
 
 
 void ChangeItemStyleCommand::redo()
@@ -243,8 +232,6 @@ void ChangeItemStyleCommand::redo()
 }
 
 
-
-
 void ChangeItemStyleCommand::undo()
 {
     TrackDataItem *item = mDataItem;
@@ -256,9 +243,6 @@ void ChangeItemStyleCommand::undo()
     model()->changedItem(item);
     updateMap();
 }
-
-
-
 
 
 void ChangeItemDataCommand::redo()
@@ -283,43 +267,39 @@ void ChangeItemDataCommand::undo()
     int idx = DataIndexer::self()->index(mKey);
     item->setMetadata(idx, mSavedValue);
     model()->changedItem(item);
-//    updateMap();
+    //updateMap();
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Split Segment							//
+//									//
+//  Leave the parent segment in place, and move all its child items	//
+//  after the split point to a new segment.  The parent segment can	//
+//  therefore just keep a pointer.  The new segment is created when	//
+//  required and needs to be stored in a container.			//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 SplitSegmentCommand::SplitSegmentCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
     mParentSegment = NULL;				// nothing set at present
     mSplitIndex = -1;
-    mNewSegment = NULL;
+    mNewSegmentContainer = NULL;
 }
 
 
 SplitSegmentCommand::~SplitSegmentCommand()
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    deleteItem(mParentSegment);
-    deleteItem(mNewSegment);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    delete mNewSegmentContainer;
 }
 
 
 void SplitSegmentCommand::setData(TrackDataSegment *pnt, int idx)
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    mParentSegment = acceptItem(pnt);
+    mParentSegment = pnt;
     mSplitIndex = idx;
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
 }
 
 
@@ -338,111 +318,177 @@ void SplitSegmentCommand::redo()
     Q_ASSERT(mSplitIndex>0 && mSplitIndex<(mParentSegment->childCount()-1));
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
     TrackDataTrackpoint *splitPoint = dynamic_cast<TrackDataTrackpoint *>(mParentSegment->childAt(mSplitIndex));
     Q_ASSERT(splitPoint!=NULL);
 
-    if (mNewSegment==NULL)
+    if (mNewSegmentContainer==NULL)
     {
-        mNewSegment = new TrackDataSegment(makeSplitName(mParentSegment->name()));
-        mNewSegment->copyMetadata(mParentSegment);
-        acceptItem(mNewSegment);
+        mNewSegmentContainer = new ItemContainer;
+
+        TrackDataSegment *copySegment = new TrackDataSegment(makeSplitName(mParentSegment->name()));
+        copySegment->copyMetadata(mParentSegment);
+        mNewSegmentContainer->addChildItem(copySegment);
         // TODO: copy style
 
-        // TODO: can eliminate copyData with a copy constructor?
+        // TODO: can eliminate copyData with a copy constructor? or a clone()?
         TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint(makeSplitName(splitPoint->name()));
         copyPoint->copyData(splitPoint);
         copyPoint->copyMetadata(splitPoint);
         // TODO: copy style
-        mNewSegment->addChildItem(copyPoint);
+        copySegment->addChildItem(copyPoint);
     }
 
-    model()->splitItem(mParentSegment, mSplitIndex, mNewSegment);
+    Q_ASSERT(mNewSegmentContainer->childCount()==1);
+    TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(mNewSegmentContainer->takeFirstChildItem());
+    Q_ASSERT(newSegment!=NULL);
 
+    int takeFrom = mSplitIndex+1;
+    kDebug() << "from" << mParentSegment->name() << "start" << takeFrom << "->" << newSegment->name();
+
+    // Move child items following the split index to the receiving item
+    while (mParentSegment->childCount()>takeFrom)
+    {
+        TrackDataItem *movedItem = mParentSegment->takeChildItem(takeFrom);
+        newSegment->addChildItem(movedItem);
+    }
+
+    // Adopt the receiving item as the next sibling of the split item
+    TrackDataItem *parentItem = mParentSegment->parent();
+    int parentIndex = (parentItem->childIndex(mParentSegment)+1);
+    Q_ASSERT(parentItem!=NULL);
+    kDebug() << "add" << newSegment->name() << "to" << parentItem->name() << "as index" << parentIndex;
+    parentItem->addChildItem(newSegment, parentIndex);
+
+    model()->endLayoutChange();
     controller()->view()->selectItem(mParentSegment);
-    controller()->view()->selectItem(mNewSegment, true);
+    controller()->view()->selectItem(newSegment, true);
     updateMap();
 }
 
 
 void SplitSegmentCommand::undo()
 {
-    Q_ASSERT(mNewSegment!=NULL);
     Q_ASSERT(mParentSegment!=NULL);
+    Q_ASSERT(mNewSegmentContainer->childCount()==0);
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
-    model()->mergeItems(mParentSegment, mNewSegment);
-    deleteItem(mNewSegment);
-    mNewSegment = NULL;
+    // mParentSegment is the original segment that the split items are to be
+    // merged back in to.  The added segment will be its next sibling.
 
+    TrackDataItem *parentItem = mParentSegment->parent();
+    Q_ASSERT(parentItem!=NULL);
+    const int parentIndex = parentItem->childIndex(mParentSegment);
+    TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(parentItem->childAt(parentIndex+1));
+
+    const int startIndex = 1;				// all apart from first point
+    kDebug() << "from" << newSegment->name() << "count" << newSegment->childCount()
+             << "->" << mParentSegment->name();
+
+    // Append all the added segment's child items, apart from the first,
+    // to the original parent item
+    while (newSegment->childCount()>startIndex)
+    {
+        TrackDataItem *movedItem = newSegment->takeChildItem(startIndex);
+        mParentSegment->addChildItem(movedItem);
+    }
+
+    // Remove and reclaim the now (effectively) empty source item
+    kDebug() << "remove" << newSegment->name() << "from" << parentItem->name();
+    parentItem->removeChildItem(newSegment);
+    mNewSegmentContainer->addChildItem(newSegment);
+    Q_ASSERT(mNewSegmentContainer->childCount()==1);
+
+    model()->endLayoutChange();
     controller()->view()->selectItem(mParentSegment);
     updateMap();
 }
 
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Merge Segments							//
+//									//
+//  The master segment is left in place, and the children of all the	//
+//  other source segments are merged into it.  The source segments	//
+//  are then removed from their original place and stored here, along	//
+//  with the information as to where they came from (original parent	//
+//  and index).								//
+//									//
+//  The GUI enforces that the master and all the source segments must	//
+//  have the same parent, but this is not mandated here.		//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 MergeSegmentsCommand::MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
     mMasterSegment = NULL;
+    mSavedSegmentContainer = NULL;
 }
 
 
 MergeSegmentsCommand::~MergeSegmentsCommand()
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    deleteItem(mMasterSegment);
-    deleteList(mOtherSegments);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    delete mSavedSegmentContainer;
 }
 
 
 void MergeSegmentsCommand::setData(TrackDataSegment *master, const QList<TrackDataItem *> &others)
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    mMasterSegment = acceptItem(master);
-    mOtherSegments = others;
-    acceptList(mOtherSegments);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    mMasterSegment = master;
+    mSourceSegments = others;
 }
 
 
 void MergeSegmentsCommand::redo()
 {
     Q_ASSERT(mMasterSegment!=NULL);
-    Q_ASSERT(!mOtherSegments.isEmpty());
+    Q_ASSERT(!mSourceSegments.isEmpty());
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
-    int num = mOtherSegments.count();
-    mOtherCounts.resize(num);
-    mOtherIndexes.resize(num);
-    mOtherParents.resize(num);
+    if (mSavedSegmentContainer==NULL) mSavedSegmentContainer = new ItemContainer;
+    Q_ASSERT(mSavedSegmentContainer->childCount()==0);
 
-    for (int i = 0; i<mOtherSegments.count(); ++i)
+    const int num = mSourceSegments.count();
+    mSourceCounts.resize(num);
+    mSourceIndexes.resize(num);
+    mSourceParents.resize(num);
+
+    for (int i = 0; i<num; ++i)
     {
-        TrackDataItem *item = mOtherSegments[i];
-        mOtherCounts[i] = item->childCount();
+        TrackDataItem *item = mSourceSegments[i];
+        mSourceCounts[i] = item->childCount();
 
         TrackDataItem *parent = item->parent();
         Q_ASSERT(parent!=NULL);
-        mOtherParents[i] = parent;
-        mOtherIndexes[i] = parent->childIndex(item);
+        mSourceParents[i] = parent;
+        mSourceIndexes[i] = parent->childIndex(item);
 
-        model()->mergeItems(mMasterSegment, item, true);
+        kDebug() << "from" << item->name() << "count" << item->childCount()
+                 << "->" << mMasterSegment->name();
+
+        // Append all the source segment's child items to the master segment
+        while (item->childCount()>0)
+        {
+            TrackDataItem *movedItem = item->takeFirstChildItem();
+            mMasterSegment->addChildItem(movedItem);
+        }
+
+        // Remove and adopt the now empty source segment
+        TrackDataItem *parentItem = item->parent();
+        Q_ASSERT(parentItem!=NULL);
+        kDebug() << "remove" << item->name() << "from" << parentItem->name();
+        parentItem->removeChildItem(item);
+        mSavedSegmentContainer->addChildItem(item);
     }
+    Q_ASSERT(mSavedSegmentContainer->childCount()==num);
 
+    model()->endLayoutChange();
     controller()->view()->selectItem(mMasterSegment);
     updateMap();
 }
@@ -451,54 +497,77 @@ void MergeSegmentsCommand::redo()
 void MergeSegmentsCommand::undo()
 {
     Q_ASSERT(mMasterSegment!=NULL);
-    Q_ASSERT(!mOtherSegments.isEmpty());
-    Q_ASSERT(mOtherSegments.count()==mOtherCounts.count());
-    Q_ASSERT(mOtherIndexes.count()==mOtherCounts.count());
-    Q_ASSERT(mOtherParents.count()==mOtherCounts.count());
+    Q_ASSERT(mSavedSegmentContainer!=NULL);
+
+    const int segCount = mSavedSegmentContainer->childCount();
+    Q_ASSERT(segCount>0);
+    Q_ASSERT(mSourceCounts.count()==segCount);
+    Q_ASSERT(mSourceIndexes.count()==segCount);
+    Q_ASSERT(mSourceParents.count()==segCount);
 
     controller()->view()->selectItem(mMasterSegment);
-    for (int i = mOtherSegments.count()-1; i>=0; --i)
+    model()->startLayoutChange();
+
+    for (int i = segCount-1; i>=0; --i)
     {
-        int num = mOtherCounts[i];
-        TrackDataItem *item = mOtherSegments[i];
-        int idx = mOtherIndexes[i];
-        TrackDataItem *parent = mOtherParents[i];
+        const int num = mSourceCounts[i];
+        TrackDataItem *item = mSavedSegmentContainer->takeLastChildItem();
 
         // The last 'num' points of the 'mMasterSegment' are those that
-        // belong to the former 'item' segment, which was at index 'idx'
-        // under parent 'parent'.
-        model()->splitItem(mMasterSegment, mMasterSegment->childCount()-num-1,
-                           item, parent, idx);
-        controller()->view()->selectItem(item, true);
+        // originally belonged to the former 'item' segment.
+
+        int takeFrom = mMasterSegment->childCount()-num;
+        kDebug() << "from" << mMasterSegment->name()  << "start" << takeFrom
+                 << "->" << item->name();
+
+        // Move child items following the split index to the original source item
+        while (mMasterSegment->childCount()>takeFrom)
+        {
+            TrackDataItem *movedItem = mMasterSegment->takeChildItem(takeFrom);
+            item->addChildItem(movedItem);
+        }
+
+        // Put the receiving segment, which was originally at index 'idx'
+        // under parent 'parent', back in its original place.
+        const int idx = mSourceIndexes[i];
+        TrackDataItem *parent = mSourceParents[i];
+        Q_ASSERT(parent!=NULL);
+        kDebug() << "add to" << parent->name() << "as index" << idx;
+        parent->addChildItem(item, idx);
     }
 
-    mOtherCounts.clear();
-    mOtherIndexes.clear();
-    mOtherParents.clear();
+    Q_ASSERT(mSavedSegmentContainer->childCount()==0);
+    mSourceCounts.clear();
+    mSourceIndexes.clear();
+    mSourceParents.clear();
 
+    model()->endLayoutChange();
+    for (int i = 0; i<segCount; ++i)
+    {
+        const TrackDataItem *item = mSourceSegments[i];
+        controller()->view()->selectItem(item, true);
+    }
     updateMap();
 }
 
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Add Track								//
+//									//
+//  We create a new track, and store it when required.			//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 AddTrackCommand::AddTrackCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mNewTrack = NULL;
+    mNewTrackContainer = NULL;
 }
 
 
 AddTrackCommand::~AddTrackCommand()
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    deleteItem(mNewTrack);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    delete mNewTrackContainer;
 }
 
 
@@ -506,56 +575,63 @@ void AddTrackCommand::redo()
 {
     controller()->view()->clearSelection();
 
-    if (mNewTrack==NULL)				// need to create new track
+    if (mNewTrackContainer==NULL)			// need to create new track
     {
-        mNewTrack = new TrackDataTrack(QString::null);
-        acceptItem(mNewTrack);
-        mNewTrack->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
-        kDebug() << "created" << mNewTrack->name();
+        mNewTrackContainer = new ItemContainer;
+
+        TrackDataTrack *copyTrack = new TrackDataTrack(QString::null);
+        copyTrack->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+        kDebug() << "created" << copyTrack->name();
+        mNewTrackContainer->addChildItem(copyTrack);
     }
 
+    Q_ASSERT(mNewTrackContainer->childCount()==1);
+    TrackDataItem *newTrack = mNewTrackContainer->takeFirstChildItem();
+
+    // The TrackDataTrack needs to be enclosed in a temporary TrackDataFile
+    // in order to be passed to the model.
     TrackDataFile tdf(QString::null);
-    tdf.addChildItem(mNewTrack);
+    tdf.addChildItem(newTrack);
     model()->addToplevelItem(&tdf);
 
-    controller()->view()->selectItem(mNewTrack);
+    controller()->view()->selectItem(newTrack);
     updateMap();
 }
-
 
 
 void AddTrackCommand::undo()
 {
+    Q_ASSERT(mNewTrackContainer!=NULL);
+    Q_ASSERT(mNewTrackContainer->childCount()==0);
+
     controller()->view()->clearSelection();
-    mNewTrack = dynamic_cast<TrackDataTrack *>(model()->removeLastToplevelItem());
+
+    TrackDataItem *newTrack = model()->removeLastToplevelItem();
+    mNewTrackContainer->addChildItem(newTrack);
 
     updateMap();
 }
 
-
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Add Point								//
+//									//
+//  We create the new point and store it.  We only refer to the point	//
+//  identifying the add position.					//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 AddPointCommand::AddPointCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mNewPoint = NULL;
+    mNewPointContainer = NULL;
     mAtPoint = NULL;
 }
 
 
 AddPointCommand::~AddPointCommand()
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    deleteItem(mNewPoint);
-    deleteItem(mAtPoint);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    delete mNewPointContainer;
 }
 
 
@@ -563,7 +639,6 @@ void AddPointCommand::setData(TrackDataItem *item)
 {
     mAtPoint = dynamic_cast<TrackDataTrackpoint *>(item);
     Q_ASSERT(mAtPoint!=NULL);
-    acceptItem(mAtPoint);
 }
 
 
@@ -572,47 +647,71 @@ void AddPointCommand::redo()
     Q_ASSERT(mAtPoint!=NULL);
 
     controller()->view()->clearSelection();
-    TrackDataItem *pnt = mAtPoint->parent();
-    Q_ASSERT(pnt!=NULL);
+    model()->startLayoutChange();
 
-    if (mNewPoint==NULL)				// need to create new point
+    TrackDataItem *parent = mAtPoint->parent();
+    Q_ASSERT(parent!=NULL);
+
+    if (mNewPointContainer==NULL)			// need to create new point
     {
-        mNewPoint = new TrackDataTrackpoint(QString::null);
-        acceptItem(mNewPoint);
+        mNewPointContainer = new ItemContainer;
 
-        int i = pnt->childIndex(mAtPoint);
-        Q_ASSERT(i>0);					// not allowed at first point
-        const TrackDataTrackpoint *prevPoint = dynamic_cast<const TrackDataTrackpoint *>(pnt->childAt(i-1));
+        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint(QString::null);
+
+        const int idx = parent->childIndex(mAtPoint);
+        Q_ASSERT(idx>0);				// not allowed at first point
+        const TrackDataTrackpoint *prevPoint = dynamic_cast<const TrackDataTrackpoint *>(parent->childAt(idx-1));
         Q_ASSERT(prevPoint!=NULL);
 
         double lat = (mAtPoint->latitude()+prevPoint->latitude())/2;
         double lon = (mAtPoint->longitude()+prevPoint->longitude())/2;
-        mNewPoint->setLatLong(lat, lon);		// interpolate position
+        copyPoint->setLatLong(lat, lon);		// interpolate position
 
-        kDebug() << "created" << mNewPoint->name();
+        kDebug() << "created" << copyPoint->name();
+        mNewPointContainer->addChildItem(copyPoint);
     }
 
-    model()->insertItem(mNewPoint, pnt, pnt->childIndex(mAtPoint));
-    controller()->view()->selectItem(mNewPoint);
+    Q_ASSERT(mNewPointContainer->childCount()==1);
+    TrackDataItem *newPoint = mNewPointContainer->takeFirstChildItem();
+    parent->addChildItem(newPoint, parent->childIndex(mAtPoint));
+
+    model()->endLayoutChange();
+    controller()->view()->selectItem(newPoint);
     updateMap();
 }
 
 
 void AddPointCommand::undo()
 {
+    Q_ASSERT(mAtPoint!=NULL);
+    Q_ASSERT(mNewPointContainer->childCount()==0);
+
     controller()->view()->clearSelection();
-    model()->removeItem(mNewPoint);
+    model()->startLayoutChange();
+
+    TrackDataItem *parent = mAtPoint->parent();
+    Q_ASSERT(parent!=NULL);
+    const int idx = parent->childIndex(mAtPoint);
+    Q_ASSERT(idx>0);
+
+    TrackDataItem *newPoint = parent->childAt(idx-1);	// the one we added
+    parent->removeChildItem(newPoint);
+    mNewPointContainer->addChildItem(newPoint);
+    Q_ASSERT(mNewPointContainer->childCount()==1);
+
+    model()->endLayoutChange();
     controller()->view()->selectItem(mAtPoint);
     updateMap();
 }
 
-
-
-
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Move Segment							//
+//									//
+//  The segment, origin and destination are only referred to and so	//
+//  can be simple pointers.						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 MoveSegmentCommand::MoveSegmentCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
@@ -623,33 +722,16 @@ MoveSegmentCommand::MoveSegmentCommand(FilesController *fc, QUndoCommand *parent
 }
 
 
-
 MoveSegmentCommand::~MoveSegmentCommand()
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    deleteItem(mMoveSegment);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
 }
-
 
 
 void MoveSegmentCommand::setData(TrackDataSegment *tds, TrackDataTrack *destTrack)
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    mMoveSegment = acceptItem(tds);
-    mDestTrack = acceptItem(destTrack);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    mMoveSegment = tds;
+    mDestTrack = destTrack;
 }
-
-
 
 
 void MoveSegmentCommand::redo()
@@ -658,8 +740,9 @@ void MoveSegmentCommand::redo()
     Q_ASSERT(mDestTrack!=NULL);
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
-    mOrigTrack = mMoveSegment->parent();
+    mOrigTrack = dynamic_cast<TrackDataTrack *>(mMoveSegment->parent());
     Q_ASSERT(mOrigTrack!=NULL);
     mOrigIndex = mOrigTrack->childIndex(mMoveSegment);
 
@@ -667,12 +750,13 @@ void MoveSegmentCommand::redo()
              << "from" << mOrigTrack->name() << "index" << mOrigIndex
              << "->" << mDestTrack->name();
 
-    model()->moveItem(mMoveSegment, mDestTrack);
+    mOrigTrack->removeChildItem(mMoveSegment);
+    mDestTrack->addChildItem(mMoveSegment);
+
+    model()->endLayoutChange();
     controller()->view()->selectItem(mMoveSegment);
     updateMap();
 }
-
-
 
 
 void MoveSegmentCommand::undo()
@@ -686,49 +770,42 @@ void MoveSegmentCommand::undo()
              << "->" << mOrigTrack->name() << "index" << mOrigIndex;
 
     controller()->view()->clearSelection();
-    model()->moveItem(mMoveSegment, mOrigTrack, mOrigIndex);
+    model()->startLayoutChange();
+
+    mDestTrack->removeChildItem(mMoveSegment);
+    mOrigTrack->addChildItem(mMoveSegment, mOrigIndex);
+
+    model()->endLayoutChange();
     controller()->view()->selectItem(mMoveSegment);
     updateMap();
 }
 
-
-
-
-
-
-
-
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Delete Items							//
+//									//
+//  The deleted items (which may be the root of a complete tree) are	//
+//  retained in our container.  The source parents are only referred	//
+//  to and can be simple pointers.					//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 DeleteItemsCommand::DeleteItemsCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
+    mDeletedItemsContainer = NULL;
 }
 
 
 DeleteItemsCommand::~DeleteItemsCommand()
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    deleteList(mItems);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+    delete mDeletedItemsContainer;
 }
 
 
 void DeleteItemsCommand::setData(const QList<TrackDataItem *> &items)
 {
-#ifdef DEBUG_ITEMS
-    kDebug() << "start";
-#endif
-    mItems = items;
-    acceptList(mItems);
-#ifdef DEBUG_ITEMS
-    kDebug() << "done";
-#endif
+     mItems = items;
 }
 
 
@@ -737,12 +814,15 @@ void DeleteItemsCommand::redo()
     Q_ASSERT(!mItems.isEmpty());
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
+
+    if (mDeletedItemsContainer==NULL) mDeletedItemsContainer = new ItemContainer;
+    Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
     int num = mItems.count();
     mParentIndexes.resize(num);
     mParentItems.resize(num);
 
-    TrackDataTrack tempItem(QString::null);
     for (int i = 0; i<mItems.count(); ++i)
     {
         TrackDataItem *item = mItems[i];
@@ -751,10 +831,11 @@ void DeleteItemsCommand::redo()
         mParentItems[i] = parent;
         mParentIndexes[i] = parent->childIndex(item);
 
-        model()->moveItem(item, &tempItem);
-        tempItem.takeFirstChildItem();
+        parent->removeChildItem(item);
+        mDeletedItemsContainer->addChildItem(item);
     }
 
+    model()->endLayoutChange();
     updateMap();
 }
 
@@ -766,29 +847,36 @@ void DeleteItemsCommand::undo()
     Q_ASSERT(mParentIndexes.count()==mItems.count());
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
-    TrackDataTrack tempItem(QString::null);
     for (int i = mItems.count()-1; i>=0; --i)
     {
-        TrackDataItem *item = mItems[i];
-        tempItem.addChildItem(item);
-        model()->moveItem(item, mParentItems[i], mParentIndexes[i]);
+        TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
+        TrackDataItem *parent = mParentItems[i];
+        parent->addChildItem(item, mParentIndexes[i]);
+
         controller()->view()->selectItem(item, true);
     }
+    Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
     mParentItems.clear();
     mParentIndexes.clear();
 
+    model()->endLayoutChange();
     updateMap();
 }
 
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Move Points								//
+//									//
+//  Changes the specified items in place, so we can retain a pointer	//
+//  to them.								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MovePointsCommand::setDataItems(const QList<TrackDataItem *> &items)
 {
-    // Not accepting them here, because we only use the points in place
-    // and never retain or delete them.
     mItems = items;
 }
 

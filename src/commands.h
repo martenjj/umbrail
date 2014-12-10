@@ -11,7 +11,7 @@
 #include "style.h"
 
 
-
+class ItemContainer;
 
 
 // abstract
@@ -48,6 +48,8 @@ protected:
     FilesModel *model() const				{ return (mController->model()); }
 
     void updateMap() const;
+    void startLayoutChange() const;
+    void endLayoutChange() const;
 
 private:
     FilesController *mController;
@@ -174,7 +176,7 @@ public:
 private:
     TrackDataSegment *mParentSegment;
     int mSplitIndex;
-    TrackDataSegment *mNewSegment;
+    ItemContainer *mNewSegmentContainer;
 };
 
 
@@ -192,10 +194,11 @@ public:
 
 private:
     TrackDataSegment *mMasterSegment;
-    QList<TrackDataItem *> mOtherSegments;
-    QVector<TrackDataItem *> mOtherParents;
-    QVector<int> mOtherCounts;
-    QVector<int> mOtherIndexes;
+    QList<TrackDataItem *> mSourceSegments;
+    QVector<TrackDataItem *> mSourceParents;
+    QVector<int> mSourceCounts;
+    QVector<int> mSourceIndexes;
+    ItemContainer *mSavedSegmentContainer;
 };
 
 
@@ -210,7 +213,7 @@ public:
     void undo();
 
 private:
-    TrackDataTrack *mNewTrack;
+    ItemContainer *mNewTrackContainer;
 };
 
 
@@ -227,7 +230,7 @@ public:
     void setData(TrackDataItem *item);
 
 private:
-    TrackDataTrackpoint *mNewPoint;
+    ItemContainer *mNewPointContainer;
     TrackDataTrackpoint *mAtPoint;
 };
 
@@ -246,9 +249,9 @@ public:
 
 private:
     TrackDataSegment *mMoveSegment;
-    TrackDataItem *mOrigTrack;
-    TrackDataTrack *mDestTrack;
+    TrackDataTrack *mOrigTrack;
     int mOrigIndex;
+    TrackDataTrack *mDestTrack;
 };
 
 
@@ -268,6 +271,7 @@ private:
     QList<TrackDataItem *> mItems;
     QVector<TrackDataItem *> mParentItems;
     QVector<int> mParentIndexes;
+    ItemContainer *mDeletedItemsContainer;
 };
 
 

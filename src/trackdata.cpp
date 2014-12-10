@@ -48,6 +48,8 @@ static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
 static int allocStyle = 0;
+static int allocChildren = 0;
+static int allocMetadata = 0;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,16 +96,17 @@ BoundingArea BoundingArea::united(const BoundingArea &other) const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> &items)
+TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> *items)
 {
-    int num = items.count();
+    if (items==NULL) return (TimeRange::null);
+    int num = items->count();
     if (num==0) return (TimeRange::null);
 
-    const TrackDataItem *first = items.first();
+    const TrackDataItem *first = items->first();
     TimeRange result = first->timeSpan();
     for (int i = 1; i<num; ++i)
     {
-        TimeRange itsSpan = items[i]->timeSpan();
+        TimeRange itsSpan = items->at(i)->timeSpan();
         result = result.united(itsSpan);
     }
 
@@ -111,16 +114,18 @@ TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> &items)
 }
 
 
-BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> &items)
+
+BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 {
-    int num = items.count();
+    if (items==NULL) return (BoundingArea::null);
+    int num = items->count();
     if (num==0) return (BoundingArea::null);
 
-    const TrackDataItem *first = items.first();
+    const TrackDataItem *first = items->first();
     BoundingArea result = first->boundingArea();
     for (int i = 1; i<num; ++i)
     {
-        BoundingArea itsArea = items[i]->boundingArea();
+        BoundingArea itsArea = items->at(i)->boundingArea();
         result = result.united(itsArea);
     }
 
@@ -128,19 +133,21 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> &items)
 }
 
 
-double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items, bool tracksOnly)
+
+double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> *items, bool tracksOnly)
 {
-    int num = items.count();
+    if (items==NULL) return (0.0);
+    int num = items->count();
     if (num==0) return (0.0);
 
     double dist = 0.0;					// running total
-    const TrackDataAbstractPoint *prev = (tracksOnly ? dynamic_cast<const TrackDataTrackpoint *>(items.first()) :
-                                                       dynamic_cast<const TrackDataAbstractPoint *>(items.first()));
+    const TrackDataAbstractPoint *prev = (tracksOnly ? dynamic_cast<const TrackDataTrackpoint *>(items->first()) :
+                                                       dynamic_cast<const TrackDataAbstractPoint *>(items->first()));
     if (prev!=NULL)					// a list of (applicable) points
     {
         for (int i = 1; i<num; ++i)
         {
-            const TrackDataAbstractPoint *next = dynamic_cast<const TrackDataAbstractPoint *>(items[i]);
+            const TrackDataAbstractPoint *next = dynamic_cast<const TrackDataAbstractPoint *>(items->at(i));
             Q_ASSERT(next!=NULL);			// next point in sequence
 
             dist += prev->distanceTo(next);		// from previous point to this
@@ -151,7 +158,7 @@ double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items, bo
     {
         for (int i = 0; i<num; ++i)			// sum over all of them
         {
-            dist += items[i]->totalTravelDistance();
+            dist += items->at(i)->totalTravelDistance();
         }
     }
 
@@ -159,16 +166,19 @@ double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> &items, bo
 }
 
 
-unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
+
+
+unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> *items)
 {
-    int num = items.count();
+    if (items==NULL) return (0);
+    int num = items->count();
     if (num==0) return (0);
 
     unsigned int tot = 0;				// running total
-    const TrackDataAbstractPoint *first = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
+    const TrackDataAbstractPoint *first = dynamic_cast<const TrackDataAbstractPoint *>(items->first());
     if (first!=NULL)					// a list of points
     {
-        const TrackDataAbstractPoint *last = dynamic_cast<const TrackDataAbstractPoint *>(items.last());
+        const TrackDataAbstractPoint *last = dynamic_cast<const TrackDataAbstractPoint *>(items->last());
         Q_ASSERT(last!=NULL);				// last point in sequence
         tot = first->timeTo(last);
     }
@@ -176,7 +186,7 @@ unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
     {
         for (int i = 0; i<num; ++i)			// sum over all of them
         {
-            tot += items[i]->totalTravelTime();
+            tot += items->at(i)->totalTravelTime();
         }
     }
 
@@ -184,10 +194,12 @@ unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> &items)
 }
 
 
-unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> &items)
+
+unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> *items)
 {
+    if (items==NULL) return (0);
     int num = 0;
-    for (int i = 0; i<items.count(); ++i) num += items[i]->childCount();
+    for (int i = 0; i<items->count(); ++i) num += items->at(i)->childCount();
     return (num);
 }
 
@@ -270,26 +282,38 @@ TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter
 
 void TrackDataItem::init()
 {
+    mChildren = NULL;					// no children yet
     mParent = NULL;					// not attached to parent
-    mRefCount = 0;					// no references to this
     mStyle = NULL;					// no style set yet
+    mMetadata = NULL;					// no metadata yet
     mSelectionId = 1;					// nothing selected yet
 }
 
 
 TrackDataItem::~TrackDataItem()
 {
-    qDeleteAll(mChildItems);
+    if (mChildren!=NULL) qDeleteAll(*mChildren);
+    delete mChildren;
     delete mStyle;
+    delete mMetadata;
 }
 
 
 void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 {
     if (data->parent()!=NULL) kWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
+    Q_ASSERT(data->parent()==NULL);
 
-    if (idx>=0) mChildItems.insert(idx, data);		// insert at specified place
-    else mChildItems.append(data);			// default is to append
+    if (mChildren==NULL)
+    {
+#ifdef MEMORY_TRACKING
+        ++allocChildren;
+#endif
+        mChildren = new QList<TrackDataItem *>;
+    }
+
+    if (idx>=0) mChildren->insert(idx, data);		// insert at specified place
+    else mChildren->append(data);			// default is to append
 							// have taken ownership of child
     data->mParent = this;				// set child item parent
 }
@@ -297,8 +321,9 @@ void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 
 TrackDataItem *TrackDataItem::takeLastChildItem()
 {
-    Q_ASSERT(!mChildItems.isEmpty());
-    TrackDataItem *data = mChildItems.takeLast();
+    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(!mChildren->isEmpty());
+    TrackDataItem *data = mChildren->takeLast();
     data->mParent = NULL;				// now no longer has parent
     return (data);
 }
@@ -306,8 +331,9 @@ TrackDataItem *TrackDataItem::takeLastChildItem()
 
 TrackDataItem *TrackDataItem::takeFirstChildItem()
 {
-    Q_ASSERT(!mChildItems.isEmpty());
-    TrackDataItem *data = mChildItems.takeFirst();
+    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(!mChildren->isEmpty());
+    TrackDataItem *data = mChildren->takeFirst();
     data->mParent = NULL;				// now no longer has parent
     return (data);
 }
@@ -315,71 +341,84 @@ TrackDataItem *TrackDataItem::takeFirstChildItem()
 
 TrackDataItem *TrackDataItem::takeChildItem(int idx)
 {
-    Q_ASSERT(idx>=0 && idx<mChildItems.count());
-    TrackDataItem *data = mChildItems.takeAt(idx);
+    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(idx>=0 && idx<mChildren->count());
+    TrackDataItem *data = mChildren->takeAt(idx);
     data->mParent = NULL;				// now no longer has parent
     return (data);
-
 }
 
 
-void TrackDataItem::takeChildItem(TrackDataItem *item)
+void TrackDataItem::removeChildItem(TrackDataItem *item)
 {
-    takeChildItem(mChildItems.indexOf(item));
+    Q_ASSERT(mChildren!=NULL);
+    takeChildItem(mChildren->indexOf(item));
 }
 
 
 BoundingArea TrackDataItem::boundingArea() const
 {
-    return (TrackData::unifyBoundingAreas(mChildItems));
+    return (TrackData::unifyBoundingAreas(mChildren));
 }
 
 
 TimeRange TrackDataItem::timeSpan() const
 {
-    return (TrackData::unifyTimeSpans(mChildItems));
+    return (TrackData::unifyTimeSpans(mChildren));
 }
 
 
 double TrackDataItem::totalTravelDistance() const
 {
-    return (TrackData::sumTotalTravelDistance(mChildItems));
+    return (TrackData::sumTotalTravelDistance(mChildren));
 }
 
 
 unsigned int TrackDataItem::totalTravelTime() const
 {
-    return (TrackData::sumTotalTravelTime(mChildItems));
+    return (TrackData::sumTotalTravelTime(mChildren));
 }
 
 
 void TrackDataItem::setMetadata(int idx, const QString &value)
 {
-    int cnt = mMetadata.count();
-    if (idx>=cnt) mMetadata.resize(idx+1);
-    mMetadata[idx] = value;
+    if (mMetadata==NULL)
+    {
+#ifdef MEMORY_TRACKING
+        ++allocMetadata;
+#endif
+        mMetadata = new QVector<QString>;
+    }
+
+    int cnt = mMetadata->count();
+    if (idx>=cnt) mMetadata->resize(idx+1);
+    (*mMetadata)[idx] = value;
 }
 
 
 QString TrackDataItem::metadata(int idx) const
 {
-    int cnt = mMetadata.count();
+    if (mMetadata==NULL) return (QString::null);
+    int cnt = mMetadata->count();
     if (idx<0 || idx>=cnt) return (QString::null);
-    return (mMetadata.at(idx));
+    return (mMetadata->at(idx));
 }
 
 
 QString TrackDataItem::metadata(const QString &key) const
 {
+    if (mMetadata==NULL) return (QString::null);
     return (metadata(DataIndexer::self()->index(key)));
 }
 
 
 void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
 {
-    for (int idx = 0; idx<other->mMetadata.size(); ++idx)
+    if (other->mMetadata==NULL) return;			// nothing to copy
+
+    for (int idx = 0; idx<other->mMetadata->size(); ++idx)
     {
-        QString om = other->mMetadata.at(idx);
+        QString om = other->mMetadata->at(idx);
         if (om.isEmpty()) continue;
         QString tm = this->metadata(idx);
         if (!tm.isEmpty() && !overwrite) continue;
@@ -634,19 +673,6 @@ TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
 #endif
 }
 
-
-// BoundingArea TrackDataWaypoint::boundingArea() const
-// {
-//     return (BoundingArea(mLatitude, mLongitude));
-// }
-// 
-// 
-// QString TrackDataWaypoint::formattedElevation() const
-// {
-//     if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
-//     return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
-// }
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Memory tracking							//
@@ -690,6 +716,8 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
+    qDebug() << "child list allocated" << allocChildren;
+    qDebug() << "metadata allocated" << allocMetadata;
     qDebug() << "***********";
 }
 

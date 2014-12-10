@@ -276,7 +276,7 @@ void FilesController::slotTrackProperties()
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()==0) return;
 
-    TrackPropertiesDialogue d(items, view());
+    TrackPropertiesDialogue d(&items, view());
     QString actText = CommandBase::senderText(sender());
     d.setCaption(actText);
 

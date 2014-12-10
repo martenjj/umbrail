@@ -15,7 +15,7 @@
 
 
 
-TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
     kDebug();
@@ -26,7 +26,7 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> items, QWi
 
 
 
-void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> &items, bool bothTimes, bool tracksOnly)
+void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *> *items, bool bothTimes, bool tracksOnly)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     const bool blankIfZero = (isEmpty() || !tsp.isValid());
@@ -77,7 +77,7 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
 
 
 
-void TrackItemDetailPage::addBoundingAreaField(const QList<TrackDataItem *> &items)
+void TrackItemDetailPage::addBoundingAreaField(const QList<TrackDataItem *> *items)
 {
     BoundingArea bb = TrackData::unifyBoundingAreas(items);
     TrackDataLabel *l = new TrackDataLabel(bb.north(), bb.west(), true, this);
@@ -90,7 +90,7 @@ void TrackItemDetailPage::addBoundingAreaField(const QList<TrackDataItem *> &ite
 
 
 
-void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> &items, const QString &labelText)
+void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> *items, const QString &labelText)
 {
     int num = TrackData::sumTotalChildCount(items);
     TrackDataLabel *l = new TrackDataLabel(num, this);
@@ -124,7 +124,7 @@ void TrackItemDetailPage::addMetadataField(const TrackDataItem *tdi, const QStri
 
 
 
-TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
@@ -132,9 +132,9 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWi
 
     int nTracks = 0;
     int nFolders = 0;
-    for (int i = 0; i<items.count(); ++i)
+    for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataItem *item = items[i];
+        const TrackDataItem *item = items->at(i);
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
@@ -151,9 +151,9 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWi
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
 
-    if (items.count()==1)				// should always be so
+    if (items->count()==1)				// should always be so
     {
-        const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(items.first());
+        const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(items->first());
         Q_ASSERT(tdf!=NULL);
 
         addSeparatorField(i18nc("@title:group", "File"));
@@ -164,7 +164,7 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> items, QWi
 
 
 
-TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
@@ -174,9 +174,9 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> items, Q
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items);
 
-    if (items.count()==1)				// should always be so
+    if (items->count()==1)				// should always be so
     {
-        const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(items.first());
+        const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(items->first());
         Q_ASSERT(tdt!=NULL);
 
         addSeparatorField(i18nc("@title:group", "Source"));
@@ -187,7 +187,7 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> items, Q
 
 
 
-TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
@@ -197,9 +197,9 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> item
     addBoundingAreaField(items);
     addTimeDistanceSpeedFields(items, false);
 
-    if (items.count()==1)				// should always be so
+    if (items->count()==1)				// should always be so
     {
-        const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items.first());
+        const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items->first());
         Q_ASSERT(tds!=NULL);
 
         int cnt = tds->childCount();
@@ -217,15 +217,15 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> item
 
 
 
-TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackPointDetailPage");
 
-    if (items.count()==1)				// single selection
+    if (items->count()==1)				// single selection
     {
-        const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(items.first());
+        const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(items->first());
         Q_ASSERT(tdp!=NULL);
 
         TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
@@ -255,15 +255,15 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
     {
         addBoundingAreaField(items);
 
-        const TrackDataItem *seg = items.first()->parent();
+        const TrackDataItem *seg = items->first()->parent();
         Q_ASSERT(seg!=NULL);				// find parent segment
-        int firstIdx = seg->childIndex(items.first());	// its index of first item
-        int num = items.count();
+        int firstIdx = seg->childIndex(items->first());	// its index of first item
+        int num = items->count();
 
         bool contiguousSelection = true;		// assume so at start
         for (int i = 1; i<num; ++i)			// look at following items
         {
-            if (seg->childAt(firstIdx+i)!=items.at(i))	// mismatch children/selection
+            if (seg->childAt(firstIdx+i)!=items->at(i))	// mismatch children/selection
             {
                 contiguousSelection = false;
                 break;
@@ -275,10 +275,10 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
             addTimeDistanceSpeedFields(items, false);
         }
 
-        if (items.count()==2)				// exactly two points selected
+        if (items->count()==2)				// exactly two points selected
         {						// (nocontiguous doesn't matter)
-            TrackDataItem *item1 = items.first();
-            TrackDataItem *item2 = items.last();
+            TrackDataItem *item1 = items->first();
+            TrackDataItem *item2 = items->last();
 
             int idx1 = seg->childIndex(item1);
             int idx2 = seg->childIndex(item2);
@@ -289,7 +289,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 
             if (!contiguousSelection)			// not already added above
             {
-                addTimeDistanceSpeedFields(items2, false);
+                addTimeDistanceSpeedFields(&items2, false);
             }
             addSeparatorField();
 
@@ -325,7 +325,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 
 
 
-TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
@@ -333,9 +333,9 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> items,
 
     int nWaypoints = 0;
     int nFolders = 0;
-    for (int i = 0; i<items.count(); ++i)
+    for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataItem *item = items[i];
+        const TrackDataItem *item = items->at(i);
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
@@ -352,15 +352,15 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> items,
 
 
 
-TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackWaypointDetailPage");
 
-    if (items.count()==1)				// single selection
+    if (items->count()==1)				// single selection
     {
-        const TrackDataWaypoint *tdp = dynamic_cast<const TrackDataWaypoint *>(items.first());
+        const TrackDataWaypoint *tdp = dynamic_cast<const TrackDataWaypoint *>(items->first());
         Q_ASSERT(tdp!=NULL);
 
         TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
@@ -385,15 +385,15 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> it
     {
         addBoundingAreaField(items);
 
-        const TrackDataItem *seg = items.first()->parent();
+        const TrackDataItem *seg = items->first()->parent();
         Q_ASSERT(seg!=NULL);				// find parent segment
-        int firstIdx = seg->childIndex(items.first());	// its index of first item
-        int num = items.count();
+        int firstIdx = seg->childIndex(items->first());	// its index of first item
+        int num = items->count();
 
         bool contiguousSelection = true;		// assume so at start
         for (int i = 1; i<num; ++i)			// look at following items
         {
-            if (seg->childAt(firstIdx+i)!=items.at(i))	// mismatch children/selection
+            if (seg->childAt(firstIdx+i)!=items->at(i))	// mismatch children/selection
             {
                 contiguousSelection = false;
                 break;
@@ -405,10 +405,10 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> it
             addTimeDistanceSpeedFields(items, false, false);
         }
 
-        if (items.count()==2)				// exactly two points selected
+        if (items->count()==2)				// exactly two points selected
         {						// (nocontiguous doesn't matter)
-            TrackDataItem *item1 = items.first();
-            TrackDataItem *item2 = items.last();
+            TrackDataItem *item1 = items->first();
+            TrackDataItem *item2 = items->last();
 
             int idx1 = seg->childIndex(item1);
             int idx2 = seg->childIndex(item2);
@@ -419,7 +419,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> it
 
             if (!contiguousSelection)			// not already added above
             {
-                addTimeDistanceSpeedFields(items2, false, false);
+                addTimeDistanceSpeedFields(&items2, false, false);
             }
             addSeparatorField();
 

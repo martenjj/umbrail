@@ -19,18 +19,19 @@
 
 
 
-TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : QWidget(pnt)
 {
-    Q_ASSERT(!items.isEmpty());
+    Q_ASSERT(items!=NULL);
+    Q_ASSERT(!items->isEmpty());
     mFormLayout = new QFormLayout(this);
 
     mTimeZone = NULL;
     mPositionLabel = NULL;
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
-    if (mIsEmpty && !items.isEmpty())
+    if (mIsEmpty && !items->isEmpty())
     {
-        if (dynamic_cast<const TrackDataAbstractPoint *>(items.first())!=NULL) mIsEmpty = false;
+        if (dynamic_cast<const TrackDataAbstractPoint *>(items->first())!=NULL) mIsEmpty = false;
     }
 }
 

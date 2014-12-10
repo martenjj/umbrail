@@ -13,7 +13,7 @@ class QLabel;
 #define CREATE_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
     TrackPropertiesPage *								\
         TrackData ## ITEMTYPE::createProperties ## PAGETYPE ## Page(			\
-            const QList<TrackDataItem *> items,                         		\
+            const QList<TrackDataItem *> *items,                         		\
             QWidget *pnt) const                                         		\
     {											\
         return (new Track ## ITEMTYPE ## PAGETYPE ## Page(items, pnt));			\
@@ -37,7 +37,7 @@ public slots:
     void slotPointPositionChanged(double newLat, double newLon);
 
 protected:
-    TrackPropertiesPage(const QList<TrackDataItem *> items, QWidget *pnt);
+    TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
     void addSeparatorField(const QString &title = QString::null);
     void disableIfEmpty(QWidget *field);

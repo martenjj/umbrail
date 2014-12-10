@@ -24,14 +24,14 @@
 
 
 
-TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackItemGeneralPage");
 
     mNameEdit = new KLineEdit(this);
-    if (items.count()==1) mNameEdit->setText(items.first()->name());
+    if (items->count()==1) mNameEdit->setText(items->first()->name());
     else mNameEdit->setEnabled(false);
     connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
@@ -123,7 +123,7 @@ void TrackItemGeneralPage::slotChangePosition()
 
 
 
-void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> &items)
+void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> *items)
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
@@ -137,13 +137,13 @@ void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> &items
 
 
 
-void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> &items)
+void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
 {
     mTypeCombo = new ItemTypeCombo(this);
 
-    if (items.count()==1)
+    if (items->count()==1)
     {
-        const TrackDataItem *tdi = items.first();
+        const TrackDataItem *tdi = items->first();
         Q_ASSERT(tdi!=NULL);
 
         mTypeCombo->setType(tdi->metadata("type"));
@@ -157,14 +157,14 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> &items)
 
 
 
-void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> &items)
+void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
 {
     mDescEdit = new KTextEdit(this);
     mDescEdit->setMaximumHeight(100);
 
-    if (items.count()==1)
+    if (items->count()==1)
     {
-        const TrackDataItem *tdi = items.first();
+        const TrackDataItem *tdi = items->first();
         Q_ASSERT(tdi!=NULL);
 
         mDescEdit->setAcceptRichText(false);
@@ -183,11 +183,11 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> &items)
 
 
 
-void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> &items)
+void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *items)
 {
-    if (items.count()!=1) return;			// only for single selection
+    if (items->count()!=1) return;			// only for single selection
 
-    TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items.first());
+    TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items->first());
     Q_ASSERT(p!=NULL);
     mPositionPoint = p;
 
@@ -213,7 +213,7 @@ void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> &i
 
 
 
-TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
@@ -229,9 +229,9 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> items, Q
     connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SLOT(slotDataChanged()));
     connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SIGNAL(timeZoneChanged(const QString &)));
 
-    if (items.count()==1)				// a single item
+    if (items->count()==1)				// a single item
     {
-        TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items.first());
+        TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items->first());
         Q_ASSERT(fileItem!=NULL);
         mUrlRequester->setText(fileItem->fileName().pathOrUrl());
 
@@ -268,7 +268,7 @@ bool TrackFileGeneralPage::isDataValid() const
 
 
 
-TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
@@ -289,7 +289,7 @@ QString TrackTrackGeneralPage::typeText(int count) const
 
 
 
-TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
@@ -310,14 +310,14 @@ QString TrackSegmentGeneralPage::typeText(int count) const
 
 
 
-TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackPointGeneralPage");
 
     addPositionTimeFields(items);
-    if (items.count()>1) addTimeSpanFields(items);
+    if (items->count()>1) addTimeSpanFields(items);
 }
 
 
@@ -329,7 +329,7 @@ QString TrackTrackpointGeneralPage::typeText(int count) const
 
 
 
-TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
@@ -345,14 +345,14 @@ QString TrackFolderGeneralPage::typeText(int count) const
 
 
 
-TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> items, QWidget *pnt)
+TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
     kDebug();
     setObjectName("TrackWaypointGeneralPage");
 
     addPositionTimeFields(items);
-    if (items.count()>1) addTimeSpanFields(items);
+    if (items->count()>1) addTimeSpanFields(items);
 
     addSeparatorField();
     addDescField(items);

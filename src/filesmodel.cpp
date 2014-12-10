@@ -66,8 +66,6 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 {
     Q_ASSERT(tdi!=NULL);
     const TrackDataItem *pnt = tdi->parent();
-    if (pnt==NULL) Q_ASSERT(tdi==mRootFileItem);
-
     int row = (pnt==NULL ? 0 : pnt->childIndex(tdi));
     // static_cast will not work here due to const'ness
     return (row==-1 ? QModelIndex() : createIndex(row, 0, (void *) tdi));
@@ -206,11 +204,11 @@ default:		return (QVariant());
 }
 
 
-
 void FilesModel::clear()
 {
     emit layoutAboutToBeChanged();
     delete mRootFileItem;				// delete any existing
+    mRootFileItem = NULL;
     emit layoutChanged();
 }
 
@@ -252,10 +250,6 @@ void FilesModel::addToplevelItem(TrackDataFile *tdf)
 }
 
 
-
-
-
-
 TrackDataItem *FilesModel::removeLastToplevelItem()
 {
     // Remove and return the last track item child of the root file item.
@@ -273,40 +267,6 @@ TrackDataItem *FilesModel::removeLastToplevelItem()
 }
 
 
-//
-//
-//
-//void FilesModel::removePoint(int row)
-//{
-//    emit layoutAboutToBeChanged();
-//    kDebug() << "removing" << row;
-//    mFiles.removeAt(row);
-//    emit layoutChanged();
-//}
-//
-//
-//void FilesModel::removeFiles(int fromRow, int toRow)
-//{
-//    if (toRow==-1) toRow = mFiles.count()-1;
-//    emit layoutAboutToBeChanged();
-//    kDebug() << "removing" << fromRow << "-" << toRow;
-//    for (int i = toRow; i>=fromRow; --i) mFiles.removeAt(i);
-//    emit layoutChanged();
-//}
-//
-//
-//
-//
-//// the new point becomes row 'row'
-//void FilesModel::insertPoint(const PointData *pnt, int row)
-//{
-//    emit layoutAboutToBeChanged();
-//    kDebug() << "inserting" << row;
-//    mFiles.insert(row, *pnt);
-//    emit layoutChanged();
-//}
-
-
 void FilesModel::changedItem(const TrackDataItem *item)
 {
     QModelIndex idx = indexForItem(item);
@@ -314,91 +274,14 @@ void FilesModel::changedItem(const TrackDataItem *item)
 }
 
 
-
-
-void FilesModel::splitItem(TrackDataItem *item, int idx, TrackDataItem *rcvr,
-                           TrackDataItem *newParent, int newIndex)
+void FilesModel::startLayoutChange()
 {
     emit layoutAboutToBeChanged();
-
-    int takeFrom = idx+1;
-    kDebug() << "from" << item->name() << "->" << rcvr->name() << "from" << takeFrom;
-
-    // Move child items following the split index to the receiving item
-    while (item->childCount()>takeFrom)
-    {
-        TrackDataItem *movedItem = item->takeChildItem(takeFrom);
-        rcvr->addChildItem(movedItem);
-    }
-
-    // Adopt the receiving item as the next sibling of the split item
-    TrackDataItem *parentItem = item->parent();
-    int parentIndex = (newIndex!=-1 ? newIndex : (parentItem->childIndex(item)+1));
-    if (newParent!=NULL) parentItem = newParent;
-    Q_ASSERT(parentItem!=NULL);
-    kDebug() << "add to" << parentItem->name() << "as index" << parentIndex;
-    parentItem->addChildItem(rcvr, parentIndex);
-
-    emit layoutChanged();
 }
 
 
-
-void FilesModel::mergeItems(TrackDataItem *item, TrackDataItem *src, bool allItems)
+void FilesModel::endLayoutChange()
 {
-    emit layoutAboutToBeChanged();
-
-    const int startIndex = (allItems ? 0 : 1);
-    kDebug() << "from" << src->name() << "->" << item->name()
-             << "start" << startIndex << "count" << src->childCount();
-
-    // Append all the source's child items, either all (where 'allItems'
-    // is true) or all apart from the first (where 'allItems' is false),
-    // to the receiving item
-    while (src->childCount()>startIndex)
-    {
-        TrackDataItem *movedItem = src->takeChildItem(startIndex);
-        item->addChildItem(movedItem);
-    }
-
-    // Remove and orphan the now (effectively) empty source item
-    TrackDataItem *parentItem = src->parent();
-    Q_ASSERT(parentItem!=NULL);
-    kDebug() << "remove from" << parentItem->name();
-    (void) parentItem->takeChildItem(src);
-
-    emit layoutChanged();
-}
-
-
-
-void FilesModel::moveItem(TrackDataItem *item, TrackDataItem *dest, int destIndex)
-{
-    emit layoutAboutToBeChanged();
-
-    TrackDataItem *pnt = item->parent();
-    Q_ASSERT(pnt!=NULL);
-    pnt->takeChildItem(item);
-    dest->addChildItem(item, destIndex);
-
-    emit layoutChanged();
-}
-
-
-void FilesModel::insertItem(TrackDataItem *item, TrackDataItem *dest, int destIndex)
-{
-    emit layoutAboutToBeChanged();
-    dest->addChildItem(item, destIndex);
-    emit layoutChanged();
-}
-
-
-void FilesModel::removeItem(TrackDataItem *item)
-{
-    emit layoutAboutToBeChanged();
-    TrackDataItem *pnt = item->parent();
-    Q_ASSERT(pnt!=NULL);
-    pnt->takeChildItem(item);
     emit layoutChanged();
 }
 
