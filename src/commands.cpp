@@ -138,26 +138,46 @@ void FilesCommandBase::updateMap() const
 ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mTrackData = NULL;					// nothing held at present
+    mImportData = NULL;					// nothing held at present
     mSavedCount = 0;
 }
 
 
 ImportFileCommand::~ImportFileCommand()
 {
-    delete mTrackData;
+    delete mImportData;
 }
 
 
 void ImportFileCommand::redo()
 {
-    Q_ASSERT(mTrackData!=NULL);
-    mSavedCount = mTrackData->childCount();		// how many tracks contained
-    kDebug() << "file" << mTrackData->name() << "count" << mSavedCount;
+    Q_ASSERT(mImportData!=NULL);
+    mSavedCount = mImportData->childCount();		// how many tracks contained
+    kDebug() << "from" << mImportData->name() << "count" << mSavedCount;
 
-    model()->addToplevelItem(mTrackData);		// add data tree to model
-    Q_ASSERT(mTrackData->childCount()==0);		// should have taken all tracks
-							// retain original for undo
+    TrackDataFile *root = model()->rootFileItem();
+    if (root==NULL)					// no data in model yet
+    {
+        // Set the top level imported file item as the model file root.
+        model()->setRootFileItem(mImportData);		// use this as root item
+        mImportData = NULL;				// now owned by model
+    }
+    else
+    {
+        model()->startLayoutChange();
+
+        // Now, all items (expected to be tracks or folders) contained in
+        // the new file are set as children of the file root.
+        while (mImportData->childCount()>0)
+        {
+            TrackDataItem *tdi = mImportData->takeFirstChildItem();
+            if (tdi!=NULL) root->addChildItem(tdi);
+        }
+
+        model()->endLayoutChange();
+        Q_ASSERT(mImportData->childCount()==0);		// should have taken all tracks
+    }
+
     controller()->view()->clearSelection();
     updateMap();
 }
@@ -165,15 +185,30 @@ void ImportFileCommand::redo()
 
 void ImportFileCommand::undo()
 {
-    Q_ASSERT(mTrackData!=NULL);
-    for (int i = 0; i<mSavedCount; ++i)			// how many tracks added last time
-    {							// remove each from model
-        TrackDataItem *item = model()->removeLastToplevelItem();
-        if (item==NULL) continue;			// and re-add to saved file item
-        mTrackData->addChildItem(item, 0);		// in the original order of course
+    TrackDataFile *root = model()->rootFileItem();
+    Q_ASSERT(root!=NULL);
+
+    if (mImportData==NULL)				// was set as file root
+    {
+        mImportData = model()->takeRootFileItem();
+    }
+    else						// not used as file root,
+    {							// just take back its children
+        Q_ASSERT(root->childCount()>=mSavedCount);
+        model()->startLayoutChange();
+
+        for (int i = 0; i<mSavedCount; ++i)		// how many added last time
+        {						// remove each from model
+            TrackDataItem *item = root->takeLastChildItem();
+            if (item==NULL) continue;			// and re-add to saved file item
+            mImportData->addChildItem(item, 0);		// in the original order
+        }
+
+        model()->endLayoutChange();
+        Q_ASSERT(mImportData->childCount()==mSavedCount);
     }
 
-    kDebug() << "saved" << mTrackData->name() << "children" << mTrackData->childCount();
+    kDebug() << "saved" << mImportData->name() << "children" << mImportData->childCount();
 
     controller()->view()->clearSelection();
     updateMap();
@@ -574,6 +609,7 @@ AddTrackCommand::~AddTrackCommand()
 void AddTrackCommand::redo()
 {
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
     if (mNewTrackContainer==NULL)			// need to create new track
     {
@@ -588,12 +624,11 @@ void AddTrackCommand::redo()
     Q_ASSERT(mNewTrackContainer->childCount()==1);
     TrackDataItem *newTrack = mNewTrackContainer->takeFirstChildItem();
 
-    // The TrackDataTrack needs to be enclosed in a temporary TrackDataFile
-    // in order to be passed to the model.
-    TrackDataFile tdf(QString::null);
-    tdf.addChildItem(newTrack);
-    model()->addToplevelItem(&tdf);
+    TrackDataFile *root = model()->rootFileItem();
+    Q_ASSERT(root!=NULL);
+    root->addChildItem(newTrack);
 
+    model()->endLayoutChange();
     controller()->view()->selectItem(newTrack);
     updateMap();
 }
@@ -605,10 +640,14 @@ void AddTrackCommand::undo()
     Q_ASSERT(mNewTrackContainer->childCount()==0);
 
     controller()->view()->clearSelection();
+    model()->startLayoutChange();
 
-    TrackDataItem *newTrack = model()->removeLastToplevelItem();
+    TrackDataFile *root = model()->rootFileItem();
+    Q_ASSERT(root!=NULL);
+    TrackDataItem *newTrack = root->takeLastChildItem();
     mNewTrackContainer->addChildItem(newTrack);
 
+    model()->endLayoutChange();
     updateMap();
 }
 

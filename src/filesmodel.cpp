@@ -115,8 +115,6 @@ int FilesModel::columnCount(const QModelIndex &pnt) const
 }
 
 
-
-
 QVariant FilesModel::data(const QModelIndex &idx, int role) const
 {
     const TrackDataItem *tdi = itemForIndex(idx);
@@ -202,57 +200,25 @@ default:		return (QVariant());
 }
 
 
-void FilesModel::addToplevelItem(TrackDataFile *tdf)
+TrackDataFile *FilesModel::takeRootFileItem()
 {
-    emit layoutAboutToBeChanged();
-
-    TrackDataFile *fileRoot = rootFileItem();
-    if (fileRoot==NULL)
-    {
-        // If the model is currently empty, then first we add a file item
-        // immediately under the (invisible) root item.  The input tracks
-        // will then be adopted to become children of this.
-        //
-        // The original metadata from the file will have been copied to the
-        // contained tracks by the importer.
-
-        kDebug() << "adding root file item" << tdf->name();
-        mRootFileItem = new TrackDataFile(tdf->name());
-        mRootFileItem->setFileName(tdf->fileName());
-        mRootFileItem->copyMetadata(tdf);
-        fileRoot = mRootFileItem;
-    }
-
-    // Now, all items (expected to be tracks or folders) contained in
-    // the new file are adopted as children of the file root.
-    kDebug() << "adding from" << tdf->name() << tdf->childCount() << "items";
-    while (tdf->childCount()>0)
-    {
-        TrackDataItem *tdi = tdf->takeFirstChildItem();
-        if (tdi!=NULL) fileRoot->addChildItem(tdi);
-    }
-
-    emit layoutChanged();
-
-    // The file root passed in is now empty, as all its children have been
-    // taken away.  Leave it owned by the caller.
+    TrackDataFile *root = mRootFileItem;
+    Q_ASSERT(root!=NULL);
+    beginResetModel();
+    mRootFileItem = NULL;
+    endResetModel();
+    kDebug() << "removing root" << root->name();
+    return (root);
 }
 
 
-TrackDataItem *FilesModel::removeLastToplevelItem()
+void FilesModel::setRootFileItem(TrackDataFile *root)
 {
-    // Remove and return the last track item child of the root file item.
-    // TODO: need to make this work for removing the root file item?
-    if (rootFileItem()->childCount()==0)
-    {
-        kDebug() << "nothing to remove";
-        return (NULL);
-    }
-
-    emit layoutAboutToBeChanged();
-    TrackDataItem *tdf = rootFileItem()->takeLastChildItem();
-    emit layoutChanged();
-    return (tdf);
+    Q_ASSERT(mRootFileItem==NULL);
+    beginResetModel();
+    kDebug() << "setting root" << root->name();
+    mRootFileItem = root;
+    endResetModel();
 }
 
 

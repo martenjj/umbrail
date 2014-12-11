@@ -64,13 +64,13 @@ public:
     ImportFileCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~ImportFileCommand();
 
-    void setData(TrackDataFile *tdf)			{ mTrackData = tdf; }
+    void setData(TrackDataFile *tdf)			{ mImportData = tdf; }
 
     void redo();
     void undo();
 
 private:
-    TrackDataFile *mTrackData;
+    TrackDataFile *mImportData;
     int mSavedCount;
 };
 

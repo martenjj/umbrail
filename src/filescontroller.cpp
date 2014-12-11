@@ -118,19 +118,19 @@ bool FilesController::importFile(const KUrl &importFrom)
         return (false);
     }
 
+    ImportFileCommand *cmd = new ImportFileCommand(this);
+    cmd->setText(i18n("Import"));
+    cmd->setData(tdf);					// takes ownership of tree
+
     if (model()->isEmpty())				// any data held so far?
-    {							// no, pass to model directly
-        model()->addToplevelItem(tdf);			// takes ownership of tracks
-        delete tdf;					// not needed any more
+    {
+        cmd->redo();					// no, just do the import
+        delete cmd;					// no need for this now
         emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.pathOrUrl()));
     }
-    else						// model is not empty,
-    {							// make the operation undo'able
-        ImportFileCommand *cmd = new ImportFileCommand(this);
-        cmd->setText(i18n("Import"));
-        cmd->setData(tdf);				// takes ownership of tree
-        mainWindow()->executeCommand(cmd);
-
+    else
+    {
+        mainWindow()->executeCommand(cmd);		// make the operation undo'able
         emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.pathOrUrl()));
     }
 

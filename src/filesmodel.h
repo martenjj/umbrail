@@ -29,9 +29,8 @@ public:
 
     TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
     bool isEmpty() const				{ return (mRootFileItem==NULL); }
-
-    void addToplevelItem(TrackDataFile *tdf);
-    TrackDataItem *removeLastToplevelItem();
+    TrackDataFile *takeRootFileItem();
+    void setRootFileItem(TrackDataFile *root);
 
     void clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods);
 
