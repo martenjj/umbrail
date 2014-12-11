@@ -645,6 +645,21 @@ TrackDataFolder::TrackDataFolder(const QString &nm)
 #endif
 }
 
+
+QString TrackDataFolder::path() const
+{
+    QStringList p(name());
+    const TrackDataItem *pnt = parent();
+
+    while (pnt!=NULL && dynamic_cast<const TrackDataFile *>(pnt)==NULL)
+    {
+        p.prepend(pnt->name());
+        pnt = pnt->parent();
+    }
+
+    return (p.join("/"));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataTrackpoint							//

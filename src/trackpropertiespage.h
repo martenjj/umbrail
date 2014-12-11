@@ -40,7 +40,7 @@ protected:
     TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
     void addSeparatorField(const QString &title = QString::null);
-    void disableIfEmpty(QWidget *field);
+    void disableIfEmpty(QWidget *field, bool always = false);
 
 protected:
     QFormLayout *mFormLayout;

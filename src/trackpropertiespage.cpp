@@ -95,9 +95,9 @@ void TrackPropertiesPage::slotPointPositionChanged(double newLat, double newLon)
 }
 
 
-void TrackPropertiesPage::disableIfEmpty(QWidget *field)
+void TrackPropertiesPage::disableIfEmpty(QWidget *field, bool always)
 {
-    if (!isEmpty()) return;
+    if (!isEmpty() && !always) return;
 
     QWidget *l = mFormLayout->labelForField(field);
     if (l!=NULL) l->setEnabled(false);

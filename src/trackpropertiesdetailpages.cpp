@@ -347,7 +347,21 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
     TrackDataLabel *l = new TrackDataLabel(nWaypoints, this);
     mFormLayout->addRow(i18nc("@label:textbox", "Waypoints:"), l);
     l = new TrackDataLabel(nFolders, this);
-    mFormLayout->addRow(i18nc("@label:textbox", "Folders:"), l);
+    mFormLayout->addRow(i18nc("@label:textbox", "Subfolders:"), l);
+
+    addSeparatorField();
+
+    QLabel *pathDisplay = new QLabel(this);
+    pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    mFormLayout->addRow(i18nc("@label:textbox", "Path:"), pathDisplay);
+
+    if (items->count()==1)				// a single item
+    {
+        TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(items->first());
+        Q_ASSERT(folderItem!=NULL);
+        pathDisplay->setText(folderItem->path());
+    }
+    else disableIfEmpty(pathDisplay, true);
 }
 
 
@@ -380,6 +394,16 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
             vl->setValue(ele);
             mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
         }
+
+        addSeparatorField();
+
+        QLabel *pathDisplay = new QLabel(this);
+        pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+        mFormLayout->addRow(i18nc("@label:textbox", "Folder:"), pathDisplay);
+
+        TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(tdp->parent());
+        Q_ASSERT(folderItem!=NULL);
+        pathDisplay->setText(folderItem->path());
     }
     else						// multiple selection
     {
