@@ -15,6 +15,7 @@
 #include "dataindexer.h"
 
 
+#define WAYPOINT_FOLDER_NAME	"Waypoints"
 
 #undef DEBUG_IMPORT
 #undef DEBUG_DETAILED
@@ -127,14 +128,40 @@ TrackDataItem *GpxImporter::currentItem() const
 
 TrackDataFolder *GpxImporter::waypointFolder()
 {
+    // Strategy for locating the folder:
+    //
+    //  - If only one top-level folder exists, regardless of its name, use that
+    //
+    //  - If more than one such folder exists and one of them is named
+    //    "Waypoints", use that
+    //
+    //  - Otherwise, create a new folder "Waypoints" and use that
+
     if (mWaypointFolder==NULL)				// not allocated/found yet
     {
-        // TODO: strategy
-        //   if only one folder exists, use that
-        //   if more than one folder exists and one is named "Waypoints", use it
-        //   otherwise, create "Waypoints" and use that
-        mWaypointFolder = new TrackDataFolder("Waypoints");
-        mDataRoot->addChildItem(mWaypointFolder);
+        TrackDataFolder *foundFolder = NULL;
+        int folderCount = 0;
+        for (int i = 0; i<mDataRoot->childCount(); ++i)
+        {
+            TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(mDataRoot->childAt(i));
+            if (fold!=NULL)				// this is a folder
+            {
+                ++folderCount;
+                if (fold->name()==WAYPOINT_FOLDER_NAME) foundFolder = fold;
+                else if (foundFolder==NULL) foundFolder = fold;
+            }
+        }
+
+        if (folderCount!=1)				// no or multiple folders
+        {
+            if (foundFolder==NULL)			// nothing found during search
+            {						// create new folder now
+                foundFolder = new TrackDataFolder("Waypoints");
+                mDataRoot->addChildItem(foundFolder);
+            }
+        }
+
+        mWaypointFolder = foundFolder;
     }
 
     return (mWaypointFolder);
