@@ -61,13 +61,6 @@ FilesController::~FilesController()
 }
 
 
-void FilesController::clear()
-{
-    kDebug();
-    mDataModel->clear();
-}
-
-
 void FilesController::readProperties()
 {
     view()->readProperties();

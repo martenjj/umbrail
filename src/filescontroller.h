@@ -34,7 +34,6 @@ public:
 
     bool importFile(const KUrl &importFrom);
     bool exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
-    void clear();
 
     static QString allImportFilters();
     static QString allExportFilters();

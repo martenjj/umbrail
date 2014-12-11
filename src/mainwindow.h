@@ -76,7 +76,6 @@ private:
 
     bool save(const KUrl &to);
     bool load(const KUrl &from);
-    void clear();
 
 private slots:
     void slotUpdateActionState();

@@ -459,16 +459,6 @@ void MainWindow::slotStatusMessage(const QString &text)
 
 
 
-void MainWindow::clear()
-{
-    mUndoStack->clear();				// clear undo information
-    mapController()->clear();				// clear old map
-    filesController()->clear();				// clear old data
-    mProject->clear();					// clear project data
-}
-
-
-
 void MainWindow::slotNewProject()
 {
     MainWindow *w = new MainWindow(NULL);
@@ -502,8 +492,6 @@ bool MainWindow::loadProject(const KUrl &loadFrom)
 {
     if (!loadFrom.isValid()) return (false);
     kDebug() << "from" << loadFrom;
-
-    clear();						// clear storage
 
     if (!load(loadFrom)) return (false);		// load in data file
 

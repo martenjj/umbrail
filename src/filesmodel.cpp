@@ -32,9 +32,7 @@ FilesModel::FilesModel(QObject *pnt)
     : QAbstractItemModel(pnt)
 {
     kDebug();
-
     mRootFileItem = NULL;
-    clear();
 }
 
 
@@ -201,15 +199,6 @@ QVariant FilesModel::headerData(int section, Qt::Orientation orientation, int ro
 case COL_NAME:		return (i18n("Name"));
 default:		return (QVariant());
     }
-}
-
-
-void FilesModel::clear()
-{
-    emit layoutAboutToBeChanged();
-    delete mRootFileItem;				// delete any existing
-    mRootFileItem = NULL;
-    emit layoutChanged();
 }
 
 

@@ -27,7 +27,6 @@ public:
     virtual QVariant data(const QModelIndex &idx, int role) const;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
-    void clear();
     TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
     bool isEmpty() const				{ return (mRootFileItem==NULL); }
 
