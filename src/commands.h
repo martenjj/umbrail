@@ -203,17 +203,21 @@ private:
 
 
 
-class AddTrackCommand : public FilesCommandBase
+class AddContainerCommand : public FilesCommandBase
 {
 public:
-    AddTrackCommand(FilesController *fc, QUndoCommand *parent = NULL);
-    virtual ~AddTrackCommand();
+    AddContainerCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~AddContainerCommand();
 
     void redo();
     void undo();
 
+    void setData(TrackData::Type type, TrackDataItem *pnt = NULL);
+
 private:
-    ItemContainer *mNewTrackContainer;
+    TrackData::Type mType;
+    TrackDataItem *mParent;
+    ItemContainer *mNewItemContainer;
 };
 
 

@@ -587,68 +587,85 @@ void MergeSegmentsCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Add Track								//
+//  Add Container (track or folder)					//
 //									//
-//  We create a new track, and store it when required.			//
+//  We create the new container, and store it when required.  The	//
+//  parent container is only referred to, and can be NULL meaning	//
+//  the top level.							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-AddTrackCommand::AddTrackCommand(FilesController *fc, QUndoCommand *parent)
+AddContainerCommand::AddContainerCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mNewTrackContainer = NULL;
+    mNewItemContainer = NULL;
+    mParent = NULL;
+    mType = TrackData::None;
 }
 
 
-AddTrackCommand::~AddTrackCommand()
+AddContainerCommand::~AddContainerCommand()
 {
-    delete mNewTrackContainer;
+    delete mNewItemContainer;
 }
 
 
-void AddTrackCommand::redo()
+void AddContainerCommand::setData(TrackData::Type type, TrackDataItem *pnt)
+{
+    mType = type;
+    mParent = pnt;
+}
+
+
+void AddContainerCommand::redo()
 {
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mNewTrackContainer==NULL)			// need to create new track
+    if (mNewItemContainer==NULL)			// need to create new container
     {
-        mNewTrackContainer = new ItemContainer;
+        mNewItemContainer = new ItemContainer;
 
-        TrackDataTrack *copyTrack = new TrackDataTrack(QString::null);
-        copyTrack->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
-        kDebug() << "created" << copyTrack->name();
-        mNewTrackContainer->addChildItem(copyTrack);
+        TrackDataItem *addedItem = NULL;
+        if (mType==TrackData::Track)
+        {
+            addedItem = new TrackDataTrack(QString::null);
+            addedItem->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+        }
+        else if (mType==TrackData::Folder) addedItem = new TrackDataFolder(QString::null);
+        Q_ASSERT(addedItem!=NULL);
+
+        kDebug() << "created" << addedItem->name();
+        mNewItemContainer->addChildItem(addedItem);
     }
 
-    Q_ASSERT(mNewTrackContainer->childCount()==1);
-    TrackDataItem *newTrack = mNewTrackContainer->takeFirstChildItem();
+    Q_ASSERT(mNewItemContainer->childCount()==1);
+    TrackDataItem *newItem = mNewItemContainer->takeFirstChildItem();
 
-    TrackDataFile *root = model()->rootFileItem();
-    Q_ASSERT(root!=NULL);
-    root->addChildItem(newTrack);
+    if (mParent==NULL) mParent = model()->rootFileItem();
+    Q_ASSERT(mParent!=NULL);
+    mParent->addChildItem(newItem);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(newTrack);
-    updateMap();
+    controller()->view()->selectItem(newItem);
+    //updateMap();					// cannot cause a visual change
 }
 
 
-void AddTrackCommand::undo()
+void AddContainerCommand::undo()
 {
-    Q_ASSERT(mNewTrackContainer!=NULL);
-    Q_ASSERT(mNewTrackContainer->childCount()==0);
+    Q_ASSERT(mNewItemContainer!=NULL);
+    Q_ASSERT(mNewItemContainer->childCount()==0);
+    Q_ASSERT(mParent!=NULL);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    TrackDataFile *root = model()->rootFileItem();
-    Q_ASSERT(root!=NULL);
-    TrackDataItem *newTrack = root->takeLastChildItem();
-    mNewTrackContainer->addChildItem(newTrack);
+    TrackDataItem *newItem = mParent->takeLastChildItem();
+    mNewItemContainer->addChildItem(newItem);
 
     model()->endLayoutChange();
-    updateMap();
+    //updateMap();					// cannot cause a visual change
 }
 
 //////////////////////////////////////////////////////////////////////////

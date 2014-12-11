@@ -468,12 +468,30 @@ void FilesController::slotMoveSegment()
 
 void FilesController::slotAddTrack()
 {
-    AddTrackCommand *cmd = new AddTrackCommand(this);
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+    TrackDataItem *pnt = items.first();			// parent item (must be file)
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL);
+
+    AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
+    cmd->setData(TrackData::Track);
     mainWindow()->executeCommand(cmd);
 }
 
 
+void FilesController::slotAddFolder()
+{
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+    TrackDataItem *pnt = items.first();			// parent item (file or folder)
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL || dynamic_cast<TrackDataFolder *>(pnt)!=NULL);
+
+    AddContainerCommand *cmd = new AddContainerCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(TrackData::Folder, pnt);
+    mainWindow()->executeCommand(cmd);
+}
 
 
 void FilesController::slotAddPoint()

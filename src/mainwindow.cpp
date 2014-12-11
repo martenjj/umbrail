@@ -174,6 +174,11 @@ void MainWindow::setupActions()
     mAddTrackAction->setIcon(KIcon("list-add"));
     connect(mAddTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotAddTrack()));
 
+    mAddFolderAction = actionCollection()->addAction("edit_add_folder");
+    mAddFolderAction->setText(i18n("Add Folder"));
+    mAddFolderAction->setIcon(KIcon("bookmark-new-list"));
+    connect(mAddFolderAction, SIGNAL(triggered()), filesController(), SLOT(slotAddFolder()));
+
     mAddPointAction = actionCollection()->addAction("edit_add_point");
     mAddPointAction->setText(i18n("Add Point"));
     mAddPointAction->setIcon(KIcon("list-add"));
@@ -722,6 +727,7 @@ default:
     mMoveTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File || selType==TrackData::Folder));
 
     if (selCount==1 && selType==TrackData::Point)
     {

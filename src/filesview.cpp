@@ -340,4 +340,5 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine)
 
     if (!combine) selectionModel()->clear();
     selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+    scrollTo(idx);					// also expand if necessary
 }
