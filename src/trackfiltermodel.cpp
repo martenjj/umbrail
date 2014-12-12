@@ -43,9 +43,13 @@ Qt::ItemFlags TrackFilterModel::flags(const QModelIndex &idx) const
 {
     FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
     const TrackDataItem *item = filesModel->itemForIndex(mapToSource(idx));
-
+							// files can be selected
     if (dynamic_cast<const TrackDataFile *>(item)!=NULL) return (Qt::ItemIsEnabled);
-    if (dynamic_cast<const TrackDataTrack *>(item)!=NULL) return (Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+							// tracks can be selected
+    if (dynamic_cast<const TrackDataTrack *>(item)!=NULL)
+    {							// but not the current parent
+        if (item!=mSourceSegment->parent()) return (Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    }
     return (Qt::NoItemFlags);
 }
 
