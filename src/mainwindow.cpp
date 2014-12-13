@@ -122,8 +122,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupActions()
 {
-//    KStandardAction::quit(this, SLOT(close()), actionCollection());
-    KStandardAction::close(this, SLOT(close()), actionCollection());
+    KStandardAction::quit(this, SLOT(close()), actionCollection());
+    //KStandardAction::close(this, SLOT(close()), actionCollection());
 
     KAction *a = KStandardAction::openNew(this, SLOT(slotNewProject()), actionCollection());
     a = KStandardAction::open(this, SLOT(slotOpenProject()), actionCollection());
