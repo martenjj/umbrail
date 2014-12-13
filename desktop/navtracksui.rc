@@ -33,7 +33,7 @@
       <Separator/>
       <Action name="track_split"/>
       <Action name="track_merge"/>
-      <Action name="track_promote"/>
+      <Action name="track_move_item"/>
       <Separator/>
       <Action name="track_properties"/>
       <Action name="track_profile"/>

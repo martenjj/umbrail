@@ -1,5 +1,5 @@
 
-#include "movesegmentdialogue.h"
+#include "moveitemdialogue.h"
 
 #include <qgridlayout.h>
 #include <qlabel.h>
@@ -17,16 +17,13 @@
 #include "trackdata.h"
 
 
-
-MoveSegmentDialogue::MoveSegmentDialogue(FilesController *fc, QWidget *pnt)
+MoveItemDialogue::MoveItemDialogue(FilesController *fc, QWidget *pnt)
     : KDialog(pnt)
 {
-    setObjectName("MoveSegmentDialogue");
-
-    mSegment = NULL;
+    setObjectName("MoveItemDialogue");
 
     setModal(true);
-    setCaption(i18n("Move Segment"));
+    setCaption(i18nc("@title:window", "Move Item"));
     setButtons(KDialog::Ok|KDialog::Cancel);
     showButtonSeparator(true);
     enableButtonOk(false);
@@ -47,7 +44,6 @@ MoveSegmentDialogue::MoveSegmentDialogue(FilesController *fc, QWidget *pnt)
     TrackFilterModel *trackModel = new TrackFilterModel(this);
     trackModel->setSourceModel(fc->model());
     mTrackList->setModel(trackModel);
-    mTrackList->expandToDepth(9);
 
     connect(mTrackList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
             SLOT(slotSelectionChanged(const QItemSelection &,const QItemSelection &)));
@@ -60,8 +56,7 @@ MoveSegmentDialogue::MoveSegmentDialogue(FilesController *fc, QWidget *pnt)
 }
 
 
-
-MoveSegmentDialogue::~MoveSegmentDialogue()
+MoveItemDialogue::~MoveItemDialogue()
 {
     KConfigGroup grp = KGlobal::config()->group(objectName());
     saveDialogSize(grp);
@@ -102,17 +97,15 @@ MoveSegmentDialogue::~MoveSegmentDialogue()
 }
 
 
-void MoveSegmentDialogue::setSegment(const TrackDataSegment *seg)
+void MoveItemDialogue::setSource(const QList<TrackDataItem *> *items)
 {
-    mSegment = seg;
-
     TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mTrackList->model());
-    trackModel->setSourceSegment(seg);
+    trackModel->setSource(items);
+    mTrackList->expandToDepth(9);
 }
 
 
-
-TrackDataTrack *MoveSegmentDialogue::selectedTrack() const
+TrackDataItem *MoveItemDialogue::selectedDestination() const
 {
     QModelIndexList selIndexes = mTrackList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (NULL);
@@ -120,12 +113,11 @@ TrackDataTrack *MoveSegmentDialogue::selectedTrack() const
     TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mTrackList->model());
     FilesModel *filesModel = qobject_cast<FilesModel *>(trackModel->sourceModel());
     TrackDataItem *item = filesModel->itemForIndex(trackModel->mapToSource(selIndexes.first()));
-    return (dynamic_cast<TrackDataTrack *>(item));
+    return (item);
 }
 
 
-
-void MoveSegmentDialogue::slotSelectionChanged(const QItemSelection &sel, const QItemSelection &desel)
+void MoveItemDialogue::slotSelectionChanged(const QItemSelection &sel, const QItemSelection &desel)
 {
     enableButtonOk(mTrackList->selectionModel()->selectedIndexes().count()==1);
 }

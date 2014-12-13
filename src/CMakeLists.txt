@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		07-Dec-14					#
+#  Edit:		12-Dec-14					#
 #########################################################################
 
 project(navtracks)
@@ -52,7 +52,7 @@ set(navtracks_SRCS
   mapcontroller.cpp
   mapthemedialogue.cpp
   mapview.cpp
-  movesegmentdialogue.cpp
+  moveitemdialogue.cpp
   profilewidget.cpp
   project.cpp
   settingsdialogue.cpp

@@ -764,75 +764,92 @@ void AddPointCommand::undo()
 //									//
 //  Move Segment							//
 //									//
-//  The segment, origin and destination are only referred to and so	//
-//  can be simple pointers.						//
+//  The source and destination are only referred to, and so can be	//
+//  simple pointers.							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-MoveSegmentCommand::MoveSegmentCommand(FilesController *fc, QUndoCommand *parent)
+MoveItemCommand::MoveItemCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mMoveSegment = NULL;
-    mOrigTrack = NULL;
-    mDestTrack = NULL;
+    mDestination = NULL;
 }
 
 
-MoveSegmentCommand::~MoveSegmentCommand()
+MoveItemCommand::~MoveItemCommand()
 {
 }
 
 
-void MoveSegmentCommand::setData(TrackDataSegment *tds, TrackDataTrack *destTrack)
+void MoveItemCommand::setData(const QList<TrackDataItem *> &items, TrackDataItem *dest)
 {
-    mMoveSegment = tds;
-    mDestTrack = destTrack;
+    mItems = items;
+    mDestination = dest;
 }
 
 
-void MoveSegmentCommand::redo()
+void MoveItemCommand::redo()
 {
-    Q_ASSERT(mMoveSegment!=NULL);
-    Q_ASSERT(mDestTrack!=NULL);
+    Q_ASSERT(mDestination!=NULL);
+    Q_ASSERT(!mItems.isEmpty());
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    mOrigTrack = dynamic_cast<TrackDataTrack *>(mMoveSegment->parent());
-    Q_ASSERT(mOrigTrack!=NULL);
-    mOrigIndex = mOrigTrack->childIndex(mMoveSegment);
+    const int num = mItems.count();
+    mParentItems.resize(num);
+    mParentIndexes.resize(num);
 
-    kDebug() << "move" << mMoveSegment->name()
-             << "from" << mOrigTrack->name() << "index" << mOrigIndex
-             << "->" << mDestTrack->name();
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mItems[i];
+        TrackDataItem *par = item->parent();
+        Q_ASSERT(par!=NULL);
+        mParentItems[i] = par;
+        int idx = par->childIndex(item);
+        mParentIndexes[i] = idx;
 
-    mOrigTrack->removeChildItem(mMoveSegment);
-    mDestTrack->addChildItem(mMoveSegment);
+        kDebug() << "move" << item->name()
+                 << "from" << par->name() << "index" << idx
+                 << "->" << mDestination->name();
+
+        par->takeChildItem(idx);
+        mDestination->addChildItem(item);
+        controller()->view()->selectItem(item, true);
+    }
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mMoveSegment);
     updateMap();
 }
 
 
-void MoveSegmentCommand::undo()
+void MoveItemCommand::undo()
 {
-    Q_ASSERT(mMoveSegment!=NULL);
-    Q_ASSERT(mDestTrack!=NULL);
-    Q_ASSERT(mOrigTrack!=NULL);
-
-    kDebug() << "move" << mMoveSegment->name()
-             << "from" << mDestTrack->name()
-             << "->" << mOrigTrack->name() << "index" << mOrigIndex;
+    Q_ASSERT(mDestination!=NULL);
+    Q_ASSERT(!mItems.isEmpty());
+    const int cnt = mItems.count();
+    Q_ASSERT(mParentItems.count()==cnt);
+    Q_ASSERT(mParentIndexes.count()==cnt);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    mDestTrack->removeChildItem(mMoveSegment);
-    mOrigTrack->addChildItem(mMoveSegment, mOrigIndex);
+    for (int i = cnt-1; i>=0; --i)
+    {
+        TrackDataItem *item = mItems[i];
+        Q_ASSERT(item->parent()==mDestination);
+        TrackDataItem *par = mParentItems[i];
+        int idx = mParentIndexes[i];
+
+        kDebug() << "move" << item->name() << "from" << mDestination->name()
+                 << "->" << par->name() << "index" << idx;
+
+        mDestination->removeChildItem(item);
+        par->addChildItem(item, idx);
+        controller()->view()->selectItem(item, true);
+    }
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mMoveSegment);
     updateMap();
 }
 
@@ -875,11 +892,11 @@ void DeleteItemsCommand::redo()
     if (mDeletedItemsContainer==NULL) mDeletedItemsContainer = new ItemContainer;
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
-    int num = mItems.count();
+    const int num = mItems.count();
     mParentIndexes.resize(num);
     mParentItems.resize(num);
 
-    for (int i = 0; i<mItems.count(); ++i)
+    for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
         TrackDataItem *parent = item->parent();
@@ -899,13 +916,14 @@ void DeleteItemsCommand::redo()
 void DeleteItemsCommand::undo()
 {
     Q_ASSERT(!mItems.isEmpty());
-    Q_ASSERT(mParentItems.count()==mItems.count());
-    Q_ASSERT(mParentIndexes.count()==mItems.count());
+    const int cnt = mItems.count();
+    Q_ASSERT(mParentItems.count()==cnt);
+    Q_ASSERT(mParentIndexes.count()==cnt);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    for (int i = mItems.count()-1; i>=0; --i)
+    for (int i = cnt-1; i>=0; --i)
     {
         TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
         TrackDataItem *parent = mParentItems[i];

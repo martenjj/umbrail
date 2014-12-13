@@ -43,7 +43,7 @@ public slots:
     void slotTrackProperties();
     void slotSplitSegment();
     void slotMergeSegments();
-    void slotMoveSegment();
+    void slotMoveItem();
     void slotAddTrack();
     void slotAddFolder();
     void slotAddPoint();

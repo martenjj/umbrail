@@ -28,8 +28,6 @@
 #include <kurl.h>
 #include <kactionmenu.h>
 
-#include <marble/AbstractFloatItem.h>
-
 #include "filescontroller.h"
 #include "filesview.h"
 #include "filesmodel.h"
@@ -199,10 +197,10 @@ void MainWindow::setupActions()
     mMergeTrackAction->setIcon(KIcon("merge"));
     connect(mMergeTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMergeSegments()));
 
-    mMoveTrackAction = actionCollection()->addAction("track_promote");
-    mMoveTrackAction->setText(i18n("Move Segment..."));
-    mMoveTrackAction->setIcon(KIcon("go-up"));
-    connect(mMoveTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveSegment()));
+    mMoveItemAction = actionCollection()->addAction("track_move_item");
+    mMoveItemAction->setText(i18n("Move Item..."));
+    mMoveItemAction->setIcon(KIcon("go-up"));
+    connect(mMoveItemAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveItem()));
 
     mPropertiesAction = actionCollection()->addAction("track_properties");
     // text set in slotUpdateActionState() below
@@ -574,61 +572,6 @@ void MainWindow::slotExportFile()
 }
 
 
-//void MainWindow::slotExport()
-//{
-//    QStringList filters;
-//    filters << HtmlExporter::filter();
-//    filters << ImageExporter::filter();
-//
-//    KFileDialog d(QString("kfiledialog:///export/%1").arg("map.html"),filters.join("\n"),this);
-//    d.setCaption(i18n("Export"));
-//    d.setOperationMode(KFileDialog::Saving);
-//    d.setKeepLocation(true);
-//    d.setMode(KFile::File|KFile::LocalOnly);
-//    d.setConfirmOverwrite(true);
-//
-//    if (!d.exec()) return;
-//    QString saveTo = d.selectedFile();			// can only export to local files
-//    if (saveTo.isEmpty()) return;
-//    QString saveType = d.currentFilter().split(' ').at(0);
-//
-//
-//
-//
-//    kDebug() << "to" << saveTo << "filter" << saveType;
-//
-//    QString wantExt = saveType.mid(2);			// extension to save with
-//    QString haveExt = KMimeType::extractKnownExtension(saveTo);
-//    if (wantExt!=haveExt) saveTo += "."+wantExt;	// force add if not there
-//
-//    ExporterBase *exp = NULL;				// exporter for requested format
-//
-//    if (wantExt=="html")				// save map as HTML page
-//    {
-//        exp = mMap->createHtmlExporter();
-//        exp->setTitle(mProject->title());
-//    }
-//    else if (wantExt=="png")				// save map as image
-//    {
-//        exp = mMap->createImageExporter();
-//    }
-//    else
-//    {
-//        kDebug() << "Unknown save format" << wantExt;
-//        return;
-//    }
-//
-//    if (!exp->save(saveTo))
-//    {
-//        KMessageBox::sorry(this,i18n("<qt>Cannot save %1 to<br><filename>%3</filename><br><br>%2",
-//                                     wantExt.toUpper(),exp->lastError(),saveTo));
-//    }
-//
-//    delete exp;						// finished with exporter
-//}
-
-
-
 void MainWindow::slotSetModified(bool mod)
 {
     mProject->setModified(mod);
@@ -638,8 +581,6 @@ void MainWindow::slotSetModified(bool mod)
 
     mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
 }
-
-
 
 
 void MainWindow::slotUpdateActionState()
@@ -653,6 +594,8 @@ void MainWindow::slotUpdateActionState()
     QString propsText = i18nc("@action:inmenu", "Properties...");
     bool delEnabled = true;
     QString delText = i18nc("@action:inmenu", "Delete");
+    bool moveEnabled = false;
+    QString moveText = i18nc("@action:inmenu", "Move Item...");
 
     const TrackDataItem *selectedContainer = NULL;
     switch (selType)
@@ -675,6 +618,8 @@ case TrackData::Segment:
         propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
+        moveEnabled = true;
+        moveText = i18nc("@action:inmenu", "Move Segment...");
         selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
@@ -691,6 +636,8 @@ case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
+        moveEnabled = true;
+        moveText = i18nc("@action:inmenu", "Move Folder...");
         selectedContainer = filesController()->view()->selectedItem();
         break;
 
@@ -698,6 +645,8 @@ case TrackData::Waypoint:
         propsText = i18ncp("@action:inmenu", "Waypoint Properties...", "Waypoints Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Waypoint", "Delete Waypoints", selCount);
+        moveEnabled = true;
+        moveText = i18ncp("@action:inmenu", "Move Waypoint...", "Move Waypoints...", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
         break;
 
@@ -724,7 +673,8 @@ default:
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
 
     mSplitTrackAction->setEnabled(selCount==1 && selType==TrackData::Point);
-    mMoveTrackAction->setEnabled(selCount==1 && selType==TrackData::Segment);
+    mMoveItemAction->setEnabled(moveEnabled);
+    mMoveItemAction->setText(moveText);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File || selType==TrackData::Folder));

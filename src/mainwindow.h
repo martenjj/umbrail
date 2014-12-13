@@ -107,7 +107,7 @@ private:
 
     KAction *mSplitTrackAction;
     KAction *mMergeTrackAction;
-    KAction *mMoveTrackAction;
+    KAction *mMoveItemAction;
     KAction *mPropertiesAction;
     KAction *mProfileAction;
     KAction *mStatisticsAction;

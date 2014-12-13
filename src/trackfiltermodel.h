@@ -5,8 +5,10 @@
  
 #include <qsortfilterproxymodel.h>
 
+#include "trackdata.h"
 
-class TrackDataSegment;
+
+class TrackDataItem;
 
 
 class TrackFilterModel : public QSortFilterProxyModel
@@ -21,10 +23,11 @@ public:
     virtual Qt::ItemFlags flags(const QModelIndex &idx) const;
 
     virtual QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const;
-    void setSourceSegment(const TrackDataSegment *tds);
+    void setSource(const QList<TrackDataItem *> *items);
 
 private:
-    const TrackDataSegment *mSourceSegment;
+    const QList<TrackDataItem *> *mSourceItems;
+    TrackData::Type mMode;
 };
 
  

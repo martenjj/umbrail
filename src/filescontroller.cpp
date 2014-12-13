@@ -21,7 +21,7 @@
 #include "gpxexporter.h"
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
-#include "movesegmentdialogue.h"
+#include "moveitemdialogue.h"
 #include "style.h"
 
 #define GROUP_FILES		"Files"
@@ -392,7 +392,6 @@ static bool compareSegmentTimes(const TrackDataItem *item1, const TrackDataItem 
 }
 
 
-
 void FilesController::slotMergeSegments()
 {
     // There may be more than two segments selected.  They will all be merged
@@ -434,36 +433,29 @@ void FilesController::slotMergeSegments()
 }
 
 
-
-void FilesController::slotMoveSegment()
+void FilesController::slotMoveItem()
 {
     QList<TrackDataItem *> items = view()->selectedItems();
-    if (items.count()!=1) return;
-    TrackDataSegment *tds = dynamic_cast<TrackDataSegment *>(items.first());
-    Q_ASSERT(tds!=NULL);
+    //if (items.count()!=1) return;
+    const TrackDataItem *item = items.first();
 
-    MoveSegmentDialogue d(this, view());
-    d.setSegment(tds);
+    MoveItemDialogue d(this, view());
+    d.setSource(&items);
+
+    QString capt;
+    if (dynamic_cast<const TrackDataSegment *>(item)!=NULL) capt = i18nc("@title:window", "Move Segment");
+    else if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) capt = i18nc("@title:window", "Move Folder");
+    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL) capt = i18nc("@title:window", "Move Waypoint");
+    if (!capt.isEmpty()) d.setCaption(capt);
 
     if (!d.exec()) return;
 
-    TrackDataTrack *tdt = d.selectedTrack();
-
-    TrackDataTrack *sourceTrack = dynamic_cast<TrackDataTrack *>(tds->parent());
-    if (tdt==sourceTrack)
-    {
-        KMessageBox::sorry(mainWindow(), i18n("<qt>Segment \"%1\" is already part of track \"%2\"",
-                                              tds->name(), tdt->name()),
-                           i18n("Cannot move track"));
-        return;
-    }
-
-    MoveSegmentCommand *cmd = new MoveSegmentCommand(this);
+    TrackDataItem *dest = d.selectedDestination();
+    MoveItemCommand *cmd = new MoveItemCommand(this);
     cmd->setSenderText(sender());
-    cmd->setData(tds, tdt);
+    cmd->setData(items, dest);
     mainWindow()->executeCommand(cmd);
 }
-
 
 
 void FilesController::slotAddTrack()

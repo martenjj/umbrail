@@ -240,22 +240,22 @@ private:
 
 
 
-class MoveSegmentCommand : public FilesCommandBase
+class MoveItemCommand : public FilesCommandBase
 {
 public:
-    MoveSegmentCommand(FilesController *fc, QUndoCommand *parent = NULL);
-    virtual ~MoveSegmentCommand();
+    MoveItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~MoveItemCommand();
 
-    void setData(TrackDataSegment *tds, TrackDataTrack *destTrack);
+    void setData(const QList<TrackDataItem *> &items, TrackDataItem *dest);
 
     void redo();
     void undo();
 
 private:
-    TrackDataSegment *mMoveSegment;
-    TrackDataTrack *mOrigTrack;
-    int mOrigIndex;
-    TrackDataTrack *mDestTrack;
+    QList<TrackDataItem *> mItems;
+    QVector<TrackDataItem *> mParentItems;
+    QVector<int> mParentIndexes;
+    TrackDataItem *mDestination;
 };
 
 
