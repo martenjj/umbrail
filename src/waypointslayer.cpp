@@ -70,7 +70,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
     for (int i = 0; i<cnt; ++i)
     {
         const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item->childAt(i));
-        if (tdw==NULL) return;
+        if (tdw==NULL) continue;
 
 #ifdef DEBUG_PAINTING
         kDebug() << "draw waypoint" << tdw->name();
