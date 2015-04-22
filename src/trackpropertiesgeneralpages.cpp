@@ -109,7 +109,7 @@ void TrackItemGeneralPage::slotChangePosition()
     Q_ASSERT(mPositionPoint!=NULL);
 
     LatLongDialogue d(this);
-    d.setLatLong(mPositionPoint->latitude(), mPositionPoint->longitude());
+    d.setLatLong(mPositionLatitude, mPositionLongitude);
     d.setButtonText(KDialog::Ok, i18nc("@action:button", "Set"));
 
     if (d.exec())
@@ -190,12 +190,14 @@ void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *i
     TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items->first());
     Q_ASSERT(p!=NULL);
     mPositionPoint = p;
+    mPositionLatitude = p->latitude();
+    mPositionLongitude = p->longitude();
 
     QWidget *hb = new QWidget(this);
     QHBoxLayout *hlay = new QHBoxLayout(hb);
     hlay->setMargin(0);
     hlay->setSpacing(KDialog::spacingHint());
-    TrackDataLabel *l = new TrackDataLabel(p->formattedPosition(), this);
+    TrackDataLabel *l = new TrackDataLabel(TrackData::formattedLatLong(mPositionLatitude, mPositionLongitude), this);
     hlay->addWidget(l);
     hlay->addStretch(1);
     mPositionLabel = l;
