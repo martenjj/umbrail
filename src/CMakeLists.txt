@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		12-Dec-14					#
+#  Edit:		22-Apr-15					#
 #########################################################################
 
 project(navtracks)
@@ -24,8 +24,6 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 
 include(FindMarble)
 
-
-
 #########################################################################
 #									#
 #  Building the target							#
@@ -37,6 +35,7 @@ set(navtracks_SRCS
   autotooltipdelegate.cpp
   commands.cpp
   dataindexer.cpp
+  errorreporter.cpp
   exporterbase.cpp
   filescontroller.cpp
   filesmodel.cpp

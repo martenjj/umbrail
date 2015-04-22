@@ -9,6 +9,7 @@
 #include <kurl.h>
 
 #include "trackdata.h"
+#include "errorreporter.h"
 
 
 
@@ -29,17 +30,19 @@ bool ExporterBase::prepareSaveFile(const KUrl &file)
 {
     kDebug() << "to" << file;
 
+    reporter()->setFile(file);
+
     // verify/open file
     if (!file.isLocalFile())
     {
-        setError(i18n("Can only save to local files"));
+        reporter()->setError(ErrorReporter::Fatal, i18n("Can only save to local files"));
         return (false);
     }
 
     mSaveFile.setFileName(file.path());
     if (!mSaveFile.open(QIODevice::WriteOnly))
     {
-        setError(i18n("Cannot open file, %1", strerror(errno)));
+        reporter()->setError(ErrorReporter::Fatal, i18n("Cannot open file, %1", strerror(errno)));
         return (false);
     }
 

@@ -6,20 +6,21 @@
 
 #include <qstring.h>
 
+class ErrorReporter;
+
 
 class ImporterExporterBase
 {
+public:
+
+    ErrorReporter *reporter() const		{ return (mReporter); }
+
 protected:
     ImporterExporterBase();
     virtual ~ImporterExporterBase();
 
-    void setError(const QString &err);
-
-public:
-    const QString &lastError();
-
-protected:
-    QString mErrorString;
+private:
+    ErrorReporter *mReporter;
 };
 
  

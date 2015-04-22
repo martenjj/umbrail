@@ -18,6 +18,7 @@
 #include "trackdata.h"
 #include "style.h"
 #include "dataindexer.h"
+#include "errorreporter.h"
 
 
 
@@ -324,7 +325,7 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 
     if (!mSaveFile.finalize())
     {
-        setError(mSaveFile.errorString());
+        reporter()->setError(ErrorReporter::Fatal, mSaveFile.errorString());
         return (false);
     }
 

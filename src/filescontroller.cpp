@@ -13,6 +13,7 @@
 #include <kmessagebox.h>
 #include <kmimetype.h>
 #include <kurl.h>
+#include <kglobal.h>
 
 #include "filesmodel.h"
 #include "filesview.h"
@@ -23,6 +24,7 @@
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
 #include "style.h"
+#include "errorreporter.h"
 
 #define GROUP_FILES		"Files"
 
@@ -72,13 +74,91 @@ void FilesController::saveProperties()
 }
 
 
-
-void FilesController::reportFileError(bool saving, const QString &msg)
+bool FilesController::reportFileError(bool saving, const KUrl &file, const QString &msg)
 {
-    KMessageBox::sorry(mainWindow(), msg, (saving ? i18n("File Save Error") : i18n("File Load Error")));
-    emit statusMessage(saving ? i18n("Error saving file") : i18n("Error loading file"));
+    ErrorReporter rep;
+    rep.setError(ErrorReporter::Fatal, msg);
+    return (reportFileError(saving, file, &rep));
 }
 
+
+bool FilesController::reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep)
+{
+    bool detailed = (rep->messageCount()>1);
+    QStringList list = rep->messageList();
+
+    QString message;
+    QString caption;
+    QString iconName;
+    QString askText;
+
+    bool result = true;
+
+    QByteArray askKey = QUrl::toPercentEncoding(file.url());
+    KConfigGroup grp = KGlobal::config()->group("FileWarnings");
+
+    switch (rep->severity())
+    {
+case ErrorReporter::NoError:
+        return (result);
+
+case ErrorReporter::Warning:
+        if (grp.readEntry(askKey.constData(), false)) return (result);
+
+        detailed = true;
+        message = (saving ?
+                   i18n("<qt>The file <filename>%1</filename> was saved but with warnings.", file.pathOrUrl()) :
+                   i18n("<qt>The file <filename>%1</filename> was loaded but with warnings.", file.pathOrUrl()));
+        caption = (saving ? i18n("File Save Warning") : i18n("File Load Warning"));
+        iconName = "dialog-information";
+        askText = i18n("Do not show again for this file");
+        break;
+
+case ErrorReporter::Error:
+        message = (saving ?
+                   i18n("<qt>The file <filename>%1</filename> was saved but had errors.", file.pathOrUrl()) :
+                   i18n("<qt>The file <filename>%1</filename> was loaded but had errors.", file.pathOrUrl()));
+        caption = (saving ? i18n("File Save Error") : i18n("File Load Error"));
+        iconName = "dialog-warning";
+        break;
+
+case ErrorReporter::Fatal:
+        message = (saving ?
+                   i18n("<qt>The file <filename>%1</filename> could not be saved.<br>%2", file.pathOrUrl(), list.last()) :
+                   i18n("<qt>The file <filename>%1</filename> could not be loaded.<br>%2", file.pathOrUrl(), list.last()));
+        caption = (saving ? i18n("File Save Failure") : i18n("File Load Failure"));
+        iconName = "dialog-error";
+        result = false;
+        break;
+    }
+
+    if (!detailed && rep->severity()!=ErrorReporter::Fatal)
+    {							// don't want full details?
+        message += i18n("<br><br>%1", list.last());	// just show the last message
+							// if not shown already
+        list.clear();					// don't show in list
+    }
+
+    // Using the message box indirectly here for versatility.
+
+    KDialog *dlg = new KDialog(mainWindow());
+    dlg->setButtons(detailed ? KDialog::Ok|KDialog::Details : KDialog::Ok);
+    dlg->setCaption(caption);
+
+    bool notAgain = false;
+
+    KMessageBox::createKMessageBox(dlg,
+                                   KIcon(iconName),
+                                   message,
+                                   QStringList(),
+                                   askText,
+                                   &notAgain,
+                                   KMessageBox::AllowLink,
+                                   QString("<qt>")+list.join("<br>"));
+
+    if (notAgain) grp.writeEntry(askKey.constData(), true);
+    return (result);
+}
 
 
 bool FilesController::importFile(const KUrl &importFrom)
@@ -104,20 +184,21 @@ bool FilesController::importFile(const KUrl &importFrom)
     if (imp.isNull())					// could not create importer
     {
         kDebug() << "Unknown import format" << importType;
-        reportFileError(false, i18n("<qt>Unknown import format for<br><filename>%1</filename>",
-                                    importFrom.pathOrUrl()));
+        reportFileError(false, importFrom, i18n("Unknown import format"));
         return (false);
     }
 
     emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.pathOrUrl()));
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
-    if (tdf==NULL)
+
+    const ErrorReporter *rep = imp->reporter();
+    if (!reportFileError(false, importFrom, rep))
     {
-        reportFileError(false, i18n("<qt>Cannot import %1 from<br><filename>%3</filename><br><br>%2",
-                                    importType, imp->lastError(), importFrom.pathOrUrl()));
+        emit statusMessage(i18n("<qt>Loading <filename>%1</filename> failed", importFrom.pathOrUrl()));
         return (false);
     }
 
+    Q_ASSERT(tdf!=NULL);
     ImportFileCommand *cmd = new ImportFileCommand(this);
     cmd->setText(i18n("Import"));
     cmd->setData(tdf);					// takes ownership of tree
@@ -163,8 +244,7 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
     if (exp.isNull())					// could not create exporter
     {
         kDebug() << "Unknown export format" << exportType;
-        reportFileError(true, i18n("<qt>Unknown export format for<br><filename>%1</filename>",
-                                   exportTo.pathOrUrl()));
+        reportFileError(true, exportTo, i18n("Unknown export format"));
         return (false);
     }
 
@@ -178,8 +258,7 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
         {
             if (!QFile::copy(exportTo.path(), backupFile.path()))
             {
-                reportFileError(true, i18n("<qt>Cannot save original<br>of <filename>%1</filename><br>as <filename>%2</filename>",
-                                           exportTo.pathOrUrl(), backupFile.pathOrUrl()));
+                reportFileError(true, backupFile, i18n("Cannot save backup file"));
                 emit statusMessage(i18n("Backup failed"));
                 return (false);
             }
@@ -193,10 +272,12 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
     }
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.pathOrUrl()));
-    if (!exp->save(exportTo, tdf))
+    exp->save(exportTo, tdf);
+
+    const ErrorReporter *rep = exp->reporter();
+    if (!reportFileError(true, exportTo, rep))
     {
-        reportFileError(true, i18n("<qt>Cannot save %1 to<br><filename>%3</filename><br><br>%2",
-                             exportType, exp->lastError(), exportTo.pathOrUrl()));
+        emit statusMessage(i18n("<qt>Saving <filename>%1</filename> failed", exportTo.pathOrUrl()));
         return (false);
     }
 

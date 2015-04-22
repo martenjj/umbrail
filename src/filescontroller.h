@@ -12,6 +12,7 @@ class FilesView;
 class FilesModel;
 class MainWindow;
 class TrackDataFile;
+class ErrorReporter;
 
 #ifdef SORTABLE_VIEW
 class QSortFilterProxyModel;
@@ -57,7 +58,8 @@ signals:
 
 private:
     MainWindow *mainWindow() const;
-    void reportFileError(bool saving, const QString &msg);
+    bool reportFileError(bool saving, const KUrl &file, const QString &msg);
+    bool reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep);
 
 private slots:
     void slotUpdateActionState();

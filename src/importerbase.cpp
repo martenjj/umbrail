@@ -12,6 +12,7 @@
 
 #include "trackdata.h"
 #include "dataindexer.h"
+#include "errorreporter.h"
 
 
 #define DEBUG_IMPORT
@@ -41,17 +42,19 @@ bool ImporterBase::prepareLoadFile(const KUrl &file)
 {
     kDebug() << "from" << file;
 
+    reporter()->setFile(file);
+
     // verify/open file
     if (!file.isLocalFile())
     {
-        setError(i18n("Can only read local files"));
+        reporter()->setError(ErrorReporter::Fatal, i18n("Can only read local files"));
         return (false);
     }
 
     mFile = new QFile(file.path());
     if (!mFile->open(QIODevice::ReadOnly))
     {
-        setError(i18n("Cannot open file, %1", strerror(errno)));
+        reporter()->setError(ErrorReporter::Fatal, i18n("Cannot open file, %1", strerror(errno)));
         return (false);
     }
 
@@ -59,7 +62,6 @@ bool ImporterBase::prepareLoadFile(const KUrl &file)
     mDataRoot->setFileName(file);
     return (true);
 }
-
 
 
 #ifdef DEBUG_IMPORT
@@ -74,7 +76,6 @@ static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
     }
 }
 #endif
-
 
 
 bool ImporterBase::finaliseLoadFile(const KUrl &file)

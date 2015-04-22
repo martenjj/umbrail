@@ -13,6 +13,7 @@
 #include "trackdata.h"
 #include "style.h"
 #include "dataindexer.h"
+#include "errorreporter.h"
 
 
 #define WAYPOINT_FOLDER_NAME	"Waypoints"
@@ -323,7 +324,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             QString attrValue = atts.value(i);
             if (attrName=="lat") lat = attrValue.toDouble();
             else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException(attrName.toUpper()+" unexpected attribute on TRKPT element"));
+            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on TRKPT element"));
         }
 
         if (!isnan(lat) && !isnan(lon)) mCurrentPoint->setLatLong(lat, lon);
@@ -365,7 +366,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             QString attrValue = atts.value(i);
             if (attrName=="lat") lat = attrValue.toDouble();
             else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException(attrName.toUpper()+" unexpected attribute on WPT element"));
+            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on WPT element"));
         }
 
         if (!isnan(lat) && !isnan(lon)) mCurrentWaypoint->setLatLong(lat, lon);
@@ -463,7 +464,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         if (mCurrentWaypoint==NULL)			// check must have started
         {
-            return (error(makeXmlException("WPT element not started", "Wpt")));
+            return (error(makeXmlException("WPT element not started", "wpt")));
         }
 
 #ifdef DEBUG_IMPORT
@@ -517,14 +518,14 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=NULL) item->setName(mContainedChars);	// assign its name
         else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
-        else warning(makeXmlException("NAME not within TRK, TRKSEG, TKKPT, WPT or METADATA"));
+        else warning(makeXmlException("NAME not within TRK, TRKSEG, TRKPT, WPT or METADATA"));
     }
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item==NULL)
         {
-            return (error(makeXmlException("COLOR end not within TRK, TRKSEG or TKKPT")));
+            return (error(makeXmlException("COLOR end not within TRK, TRKSEG or TRKPT")));
         }
 
         bool ok;
@@ -544,7 +545,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         int idx = DataIndexer::self()->index(localName);
         if (item!=NULL) item->setMetadata(idx, mContainedChars);
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);
-        else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TKKPT, WPT or METADATA"));
+        else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TRKPT, WPT or METADATA"));
     }
 
     return (true);
@@ -587,18 +588,18 @@ bool GpxImporter::characters(const QString &ch)
 
 bool GpxImporter::error(const QXmlParseException &ex)
 {
-    setError(i18n("XML error at line %1 - %2", ex.lineNumber(), ex.message()));
+    reporter()->setError(ErrorReporter::Error, ex.message(), ex.lineNumber());
     return (true);
 }
 
 bool GpxImporter::fatalError(const QXmlParseException &ex)
 {
-    setError(i18n("XML fatal at line %1 - %2", ex.lineNumber(), ex.message()));
+    reporter()->setError(ErrorReporter::Fatal, ex.message(), ex.lineNumber());
     return (false);
 }
 
 bool GpxImporter::warning(const QXmlParseException &ex)
 {
-    setError(i18n("XML warning at line %1 - %2", ex.lineNumber(), ex.message()));
+    reporter()->setError(ErrorReporter::Warning, ex.message(), ex.lineNumber());
     return (true);
 }
