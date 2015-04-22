@@ -248,12 +248,14 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
                     if (i>0)				// not first point in container
                     {
                         const TrackDataAbstractPoint *prev = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i-1));
-                        Q_ASSERT(prev!=NULL);
+                        if (prev!=NULL)
+                        {
 #ifdef DEBUG_SELECTING
-                        kDebug() << "    setting prev point" << prev->name();
+                            kDebug() << "    setting prev point" << prev->name();
 #endif
-                        run.setPrevPoint(GeoDataCoordinates(prev->longitude(), prev->latitude(),
-                                                            0, GeoDataCoordinates::Degree));
+                            run.setPrevPoint(GeoDataCoordinates(prev->longitude(), prev->latitude(),
+                                                                0, GeoDataCoordinates::Degree));
+                        }
                     }
                 }
 
