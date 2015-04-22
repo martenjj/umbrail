@@ -151,10 +151,13 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
     const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
     const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
+    const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
 
     // start tag
-    if (tdt!=NULL)
+    if (tdt!=NULL)					// element TRK
     {
+        str.writeCharacters("\n\n  ");
         str.writeStartElement("trk");
         // <name> xsd:string </name>
         str.writeTextElement("name", tdt->name());
@@ -163,37 +166,52 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         writeMetadata(tdt, str, false);
         // <cmt> xsd:string </cmt>
     }
-    else if (tds!=NULL)
+    else if (tds!=NULL)					// element TRKSEG
     {
         str.writeStartElement("trkseg");
         writeMetadata(tds, str, false);
     }
-    else if (tdp!=NULL)
+    else if (tdp!=NULL || tdw!=NULL)			// element TRKPT or WPT
     {
-        str.writeStartElement("trkpt");
+        const TrackDataAbstractPoint *p;
+        if (tdp!=NULL)					// element TRKPT
+        {
+            p = tdp;
+            str.writeStartElement("trkpt");
+        }
+        else						// element WPT
+        {
+            p = tdw;
+            str.writeCharacters("\n\n  ");
+            str.writeStartElement("wpt");
+        }
+
         // lat="latitudeType"
         // lon="longitudeType"
-        str.writeAttribute("lat", QString::number(tdp->latitude(), 'f'));
-        str.writeAttribute("lon", QString::number(tdp->longitude(), 'f'));
+        str.writeAttribute("lat", QString::number(p->latitude(), 'f'));
+        str.writeAttribute("lon", QString::number(p->longitude(), 'f'));
 
         // <ele> xsd:decimal </ele>
-        double ele = tdp->elevation();
-        if (ele!=NAN) str.writeTextElement("ele", QString::number(tdp->elevation(), 'f', 3));
+        double ele = p->elevation();
+        if (ele!=NAN) str.writeTextElement("ele", QString::number(ele, 'f', 3));
 
         // <time> xsd:dateTime </time>
-        QDateTime dt = tdp->time();
+        QDateTime dt = p->time();
         if (dt.isValid()) str.writeTextElement("time", dt.toString(Qt::ISODate));
 
         // <name> xsd:string </name>
-        str.writeTextElement("name", tdp->name());
+        str.writeTextElement("name", p->name());
         // <cmt> xsd:string </cmt>
         // <desc> xsd:string </desc>
         // <sym> xsd:string </sym>
 
         // <hdop> xsd:decimal </hdop>
-        writeMetadata(tdp, str, false);
+        writeMetadata(p, str, false);
     }
-    else
+    else if (tdf!=NULL)					// Folder
+    {							// write nothing, but recurse for children
+    }
+    else						// anything else
     {
         kDebug() << "unknown item type" << item << item->name();
         return (true);					// warning only, don't abort
@@ -222,6 +240,17 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         writeMetadata(tdp, str, true);
         writeStyle(tdp, str);
     }
+    else if (tdw!=NULL)					// extensions for WPT
+    {
+        writeMetadata(tdw, str, true);
+        const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
+        if (fold!=NULL)					// within a folder?
+        {						// save the folder path
+            startExtensions(str);
+            str.writeTextElement("navtracks:folder", fold->path());
+        }
+    }
+
     endExtensions(str);
 
 #ifndef EXTENSIONS_AFTER_CHILDREN
@@ -229,7 +258,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 #endif
 
     // end tag
-    str.writeEndElement();
+    if (tdf==NULL) str.writeEndElement();		// nothing was started for this
     return (status);
 }
 
@@ -274,99 +303,6 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 //    str.writeEndElement();				// </link>
     // <time>2011-11-29T14:39:05Z</time>
     str.writeEndElement();				// </metadata>
-
-//    // Waypoints
-//    for (int i = 0; i<cnt; ++i)
-//    {
-//        str.writeCharacters("\n\n  ");
-//        str.writeComment(QString(" Point %1 of %2 ").arg(i+1).arg(cnt));
-//        const PointData *pnt = model->pointAt(i);
-//        if (!pnt->isValid())
-//        {
-//            str.writeComment(" (not valid) ");
-//            continue;
-//        }
-//
-//        if (pnt->flags() & PointData::NoExport)		// ignore this point
-//        {
-//            str.writeComment(QString(" %1 ").arg(pnt->name()));
-//            str.writeComment(" (not exported) ");
-//            continue;
-//        }
-//
-//        // <wpt lat="51.307657" lon="-0.768199">
-//        str.writeStartElement("wpt");
-//        str.writeAttribute("lat", QString::number(pnt->latitude(), 'f', 6));
-//        str.writeAttribute("lon", QString::number(pnt->longtitude(), 'f', 6));
-//
-//        // <ele>66.22</ele>
-//        double ele = pnt->elevation();
-//        if (!isnan(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 2));
-//
-//        // <name>11 Carmarthen Close</name>
-//        str.writeTextElement("name", pnt->name());
-//        // <link href="Media/icons/002.png"></link>
-//        // if a photo is assigned via the GPS's GUI,
-//        // but doesn't seem to work if set in this file...
-//
-//        // <sym>Residence</sym>
-//        str.writeTextElement("sym", pnt->symbol());
-//
-//        const QStringList *cats = pnt->categories();
-//        const QStringList *addr = pnt->addresses();
-//        if (!cats->isEmpty() || !addr->isEmpty())	// are there any extensions?
-//        {
-//            // <extensions>
-//            str.writeStartElement("extensions");
-//            // <gpxx:WaypointExtension>
-//            str.writeStartElement("gpxx:WaypointExtension");
-//
-//            if (!cats->isEmpty())			// are there any categories?
-//            {
-//                // <gpxx:Categories>
-//                str.writeStartElement("gpxx:Categories");
-//
-//                for (QStringList::const_iterator it = cats->constBegin();
-//                     it!=cats->constEnd(); ++it)
-//                {
-//                    QString cat = (*it);
-//                    // <gpxx:Category>Address Book</gpxx:Category>
-//                    str.writeTextElement("gpxx:Category", cat);
-//                }
-//
-//                str.writeEndElement();			// </gpxx:Categories>
-//            }
-//
-//            if (!addr->isEmpty())			// is there an address?
-//            {
-//                // <gpxx:Address>
-//                str.writeStartElement("gpxx:Address");
-//
-//                // <gpxx:StreetAddress>Eisenbahnstrasse 52</gpxx:StreetAddress>
-//                QString a = addr->value(PointData::AddressStreet);
-//                if (!a.isEmpty()) str.writeTextElement("gpxx:StreetAddress", a);
-//                // <gpxx:City>Hausach</gpxx:City>
-//                a = addr->value(PointData::AddressCity);
-//                if (!a.isEmpty()) str.writeTextElement("gpxx:City", a);
-//                // <gpxx:State>Ortenaukreis</gpxx:State>
-//                a = addr->value(PointData::AddressState);
-//                if (!a.isEmpty()) str.writeTextElement("gpxx:State", a);
-//                // <gpxx:Country>DEU</gpxx:Country>
-//                a = addr->value(PointData::AddressCountry);
-//                if (!a.isEmpty()) str.writeTextElement("gpxx:Country", a);
-//                // <gpxx:PostalCode>77756</gpxx:PostalCode>
-//                a = addr->value(PointData::AddressPostCode);
-//                if (!a.isEmpty()) str.writeTextElement("gpxx:PostalCode", a);
-//
-//                str.writeEndElement();			// </gpxx:Address>
-//            }
-//
-//            str.writeEndElement();			// </gpxx:WaypointExtension>
-//            str.writeEndElement();			// </extensions>
-//        }
-//
-//        str.writeEndElement();				// </wpt>
-//    }
 
     int num = item->childCount();			// write out child elements
     for (int i = 0; i<num; ++i)

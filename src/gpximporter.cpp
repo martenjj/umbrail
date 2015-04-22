@@ -107,13 +107,10 @@ QXmlParseException GpxImporter::makeXmlException(const QString &message, const Q
 }
 
 
-
 void GpxImporter::setDocumentLocator(QXmlLocator *locator)
 {
     mXmlLocator = locator;
 }
-
-
 
 
 TrackDataItem *GpxImporter::currentItem() const
@@ -126,9 +123,53 @@ TrackDataItem *GpxImporter::currentItem() const
 }
 
 
-TrackDataFolder *GpxImporter::waypointFolder()
+TrackDataFolder *GpxImporter::createFolder(const QString &path)
+{
+#ifdef DEBUG_DETAILED
+    kDebug() << path;
+#endif
+
+    QStringList folders = path.split("/");
+    Q_ASSERT(!folders.isEmpty());
+    TrackDataItem *cur = mDataRoot;
+    TrackDataFolder *foundFolder = NULL;
+
+    for (QStringList::const_iterator it = folders.constBegin(); it!=folders.constEnd(); ++it)
+    {
+        const QString name = (*it);
+
+        foundFolder = NULL;
+        for (int i = 0; i<cur->childCount(); ++i)
+        {
+            TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(cur->childAt(i));
+            if (fold!=NULL)				// this is a folder
+            {
+                if (fold->name()==name)			// see if name matches
+                {
+                    foundFolder = fold;			// yes, use this one
+                }
+            }
+        }
+
+        if (foundFolder==NULL)				// nothing existing found
+        {
+            kDebug() << "creating folder" << name << "under" << cur->name();
+            foundFolder = new TrackDataFolder(name);
+            cur->addChildItem(foundFolder);
+        }
+
+        cur = foundFolder;
+    }
+
+    return (foundFolder);
+}
+
+
+TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 {
     // Strategy for locating the folder:
+    //
+    //  - If the waypoint is specified and has a folder defined, use that
     //
     //  - If only one top-level folder exists, regardless of its name, use that
     //
@@ -136,6 +177,12 @@ TrackDataFolder *GpxImporter::waypointFolder()
     //    "Waypoints", use that
     //
     //  - Otherwise, create a new folder "Waypoints" and use that
+
+    if (tdw!=NULL)					// a waypoint is specified
+    {
+        const QString path = tdw->metadata("folder");	// its folder, if it has one
+        if (!path.isEmpty()) return (createFolder(path));
+    }
 
     if (mWaypointFolder==NULL)				// not allocated/found yet
     {
@@ -156,7 +203,7 @@ TrackDataFolder *GpxImporter::waypointFolder()
         {
             if (foundFolder==NULL)			// nothing found during search
             {						// create new folder now
-                foundFolder = new TrackDataFolder("Waypoints");
+                foundFolder = createFolder("Waypoints");
                 mDataRoot->addChildItem(foundFolder);
             }
         }
@@ -424,7 +471,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         kDebug() << "got a WPT:" << mCurrentWaypoint->name();
 #endif
 
-        TrackDataFolder *folder = waypointFolder();
+        TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
         Q_ASSERT(folder!=NULL);
         folder->addChildItem(mCurrentWaypoint);
         mCurrentWaypoint = NULL;				// finished with temporary

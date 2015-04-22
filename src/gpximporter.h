@@ -47,7 +47,8 @@ private:
     inline bool parsing() const;
     QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString::null);
     TrackDataItem *currentItem() const;
-    TrackDataFolder *waypointFolder();
+    TrackDataFolder *createFolder(const QString &path);
+    TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);
 
 private:
     TrackDataTrack *mCurrentTrack;
