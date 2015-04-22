@@ -233,6 +233,8 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
         for (int i = 0; i<cnt; ++i)
         {
             const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i));
+            if (tdp==NULL) continue;
+
 #ifdef DEBUG_SELECTING
             kDebug() << "  " << i << tdp->name() << "selected?" << (tdp->selectionId()==mSelectionId);
 #endif
