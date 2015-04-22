@@ -474,6 +474,8 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
         Q_ASSERT(folder!=NULL);
         folder->addChildItem(mCurrentWaypoint);
+        // Clear the folder name metadata, will regenerate on export
+        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
         mCurrentWaypoint = NULL;				// finished with temporary
         return (true);
     }
