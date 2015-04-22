@@ -204,7 +204,6 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
             if (foundFolder==NULL)			// nothing found during search
             {						// create new folder now
                 foundFolder = createFolder("Waypoints");
-                mDataRoot->addChildItem(foundFolder);
             }
         }
 
