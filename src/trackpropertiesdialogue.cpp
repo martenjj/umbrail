@@ -13,6 +13,7 @@
 #include "trackpropertiesgeneralpages.h"
 #include "trackpropertiesdetailpages.h"
 #include "trackpropertiesstylepages.h"
+#include "trackpropertiesmetadatapages.h"
 #include "style.h"
 
 
@@ -91,6 +92,12 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
             mStylePage, SLOT(setTimeZone(const QString &)));
     mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
 
+    page = item->createPropertiesMetadataPage(items, this);
+    mMetadataPage = qobject_cast<TrackItemMetadataPage *>(page);
+    Q_ASSERT(mMetadataPage!=NULL);
+    connect(mMetadataPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+    mTabWidget->addTab(page, i18nc("@title:tab", "Metadata"));
+
     setMinimumSize(320,380);
     KConfigGroup grp = KGlobal::config()->group(objectName());
     restoreDialogSize(grp);
@@ -103,6 +110,9 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items->first())!=NULL) styleEnabled = false;
     if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items->first())!=NULL) styleEnabled = false;
     mTabWidget->setTabEnabled(2, styleEnabled);
+
+    bool metadataEnabled = (items->count()==1);		// whether "Metadata" is applicable here
+    mTabWidget->setTabEnabled(3, metadataEnabled);
 }
 
 

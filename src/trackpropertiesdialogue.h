@@ -10,13 +10,12 @@
 class KTabWidget;
 
 class TrackDataItem;
+class Style;
+
 class TrackItemGeneralPage;
 class TrackItemDetailPage;
 class TrackItemStylePage;
-
-class Style;
-
-
+class TrackItemMetadataPage;
 
 
 class TrackPropertiesDialogue : public KDialog
@@ -43,6 +42,7 @@ private:
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;
     TrackItemStylePage *mStylePage;
+    TrackItemMetadataPage *mMetadataPage;
 };
 
 #endif							// TRACKPROPERTIESDIALOGUE_H

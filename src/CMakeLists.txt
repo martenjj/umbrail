@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		22-Apr-15					#
+#  Edit:		23-Apr-15					#
 #########################################################################
 
 project(navtracks)
@@ -51,6 +51,7 @@ set(navtracks_SRCS
   mapcontroller.cpp
   mapthemedialogue.cpp
   mapview.cpp
+  metadatamodel.cpp
   moveitemdialogue.cpp
   profilewidget.cpp
   project.cpp
@@ -66,6 +67,7 @@ set(navtracks_SRCS
   trackpropertiespage.cpp
   trackpropertiesdetailpages.cpp
   trackpropertiesgeneralpages.cpp
+  trackpropertiesmetadatapages.cpp
   trackpropertiesstylepages.cpp
   trackslayer.cpp
   variableunitdisplay.cpp
