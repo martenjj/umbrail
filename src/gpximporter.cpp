@@ -543,7 +543,12 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else						// Unknown tag, save as metadata
     {
         TrackDataItem *item = currentItem();		// find innermost current element
-        int idx = DataIndexer::self()->index(localName);
+
+        // Ultra GPS Logger tags waypoints with <description> instead of <desc>
+        QString key = localName;
+        if (key=="description") key = "desc";
+        int idx = DataIndexer::self()->index(key);
+
         if (item!=NULL) item->setMetadata(idx, mContainedChars);
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);
         else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TRKPT, WPT or METADATA"));
