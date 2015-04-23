@@ -117,9 +117,9 @@ void GpxImporter::setDocumentLocator(QXmlLocator *locator)
 TrackDataItem *GpxImporter::currentItem() const
 {
     TrackDataItem *item = mCurrentPoint;		// find innermost current element
+    if (item==NULL) item = mCurrentWaypoint;
     if (item==NULL) item = mCurrentSegment;
     if (item==NULL) item = mCurrentTrack;
-    if (item==NULL) item = mCurrentWaypoint;
     return (item);
 }
 
@@ -339,9 +339,9 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="time")
     {							// start of a TIME element
-        if (mCurrentPoint==NULL && !mWithinMetadata)
+        if (mCurrentPoint==NULL && mCurrentWaypoint==NULL && !mWithinMetadata)
         {						// check properly nested
-            warning(makeXmlException(localName.toUpper()+" start not within TRKPT or METADATA"));
+            warning(makeXmlException(localName.toUpper()+" start not within TRKPT, WPT or METADATA"));
         }
     }
     else if (localName=="wpt")				// start of an WPT element
@@ -493,11 +493,12 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
     }
     else if (localName=="time")				// end of a TIME element
-    {
-        if (mCurrentPoint!=NULL)			// check properly nested
+    {							// check properly nested
+        if (mCurrentPoint!=NULL || mCurrentWaypoint!=NULL)
         {
             // The time spec of the decoded date/time is UTC, which is what we want.
-            mCurrentPoint->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
+            TrackDataAbstractPoint *p = static_cast<TrackDataAbstractPoint *>(currentItem());
+            p->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
         }
         else
         {
@@ -509,7 +510,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // <bounds minlat="46.827816667" minlon="8.370250000" maxlat="46.850700000" maxlon="8.391166667"/>
             // <wpt> ...
             //
-            if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRKPT or METADATA"));
+            if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRKPT, WPT or METADATA"));
             mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
         }
     }
