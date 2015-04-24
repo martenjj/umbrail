@@ -9,11 +9,16 @@
 #include <klocale.h>
 #include <kpagedialog.h>
 #include <kcolorbutton.h>
+#include <kurlrequester.h>
 
 #include "settings.h"
 #include "style.h"
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsDialogue							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 SettingsDialogue::SettingsDialogue(QWidget *pnt)
     : KPageDialog(pnt)
@@ -31,14 +36,13 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
     connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
+    page = new SettingsPathsPage(this);
+    addPage(page);
+    connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
+    connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
+    connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
-
-
-
-
-
-
-    setMinimumSize(400,360);
+    setMinimumSize(400, 360);
     restoreDialogSize(KGlobal::config()->group(objectName()));
 }
 
@@ -49,8 +53,11 @@ SettingsDialogue::~SettingsDialogue()
     saveDialogSize(grp);
 }
 
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsMapStylePage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     : KPageWidgetItem(new QWidget(pnt))
@@ -89,13 +96,8 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mSelectedInnerButton->setToolTip(kcsi->toolTip());
     fl->addRow(kcsi->label(), mSelectedInnerButton);
 
-
-
     slotItemChanged();
 }
-
-
-
 
 
 void SettingsMapStylePage::slotSave()
@@ -105,13 +107,8 @@ void SettingsMapStylePage::slotSave()
     Settings::setSelectedMarkInner(mSelectedInnerButton->color());
     Settings::setSelectedUseSystemColours(mSelectedUseSystemCheck->isChecked());
 
-
-
     // Update the global style from the new application settings
     Style::globalStyle()->setLineColour(mLineColourButton->color());
-
-
-
 }
 
 
@@ -133,12 +130,8 @@ void SettingsMapStylePage::slotDefaults()
     kcsi->setDefault();
     mSelectedInnerButton->setColor(Settings::selectedMarkInner());
 
-
-
-
     slotItemChanged();
 }
-
 
 
 void SettingsMapStylePage::slotItemChanged()
@@ -146,4 +139,51 @@ void SettingsMapStylePage::slotItemChanged()
     bool syscol = mSelectedUseSystemCheck->isChecked();
     mSelectedOuterButton->setEnabled(!syscol);
     mSelectedInnerButton->setEnabled(!syscol);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsPathsPage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+SettingsPathsPage::SettingsPathsPage(QWidget *pnt)
+    : KPageWidgetItem(new QWidget(pnt))
+{
+    setName(i18nc("@title:tab", "Paths"));
+    setHeader(i18n("Default data and file locations"));
+    setIcon(KIcon("folder"));
+
+    QWidget *w = widget();
+    QFormLayout *fl = new QFormLayout(w);
+
+    mAudioNotesRequester = new KUrlRequester(w);
+    mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly);
+    mAudioNotesRequester->setUrl(KUrl(Settings::audioNotesDirectory()));
+    const KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
+    mAudioNotesRequester->setToolTip(kcsi->toolTip());
+    fl->addRow(kcsi->label(), mAudioNotesRequester);
+
+    slotItemChanged();
+}
+
+
+void SettingsPathsPage::slotSave()
+{
+    Settings::setAudioNotesDirectory(mAudioNotesRequester->url().url());
+}
+
+
+void SettingsPathsPage::slotDefaults()
+{
+    KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
+    kcsi->setDefault();
+    mAudioNotesRequester->setUrl(KUrl(Settings::audioNotesDirectory()));
+
+    slotItemChanged();
+}
+
+
+void SettingsPathsPage::slotItemChanged()
+{
 }

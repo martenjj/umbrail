@@ -3,6 +3,7 @@
 #include "trackdata.h"
 
 #include <qhash.h>
+#include <qregexp.h>
 
 #include <kdebug.h>
 #include <kglobal.h>
@@ -686,6 +687,29 @@ TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
 #ifdef MEMORY_TRACKING
     ++allocWaypoint;
 #endif
+}
+
+
+TrackData::WaypointType TrackDataWaypoint::waypointType() const
+{
+    QString n = metadata("media");			// first try saved media name
+    if (n.isEmpty()) n = name();			// then our waypoint name
+
+    QRegExp rx1("\\.3gp$");
+    if (n.contains(rx1)) return (TrackData::WaypointAudioNote);
+
+    return (TrackData::WaypointNormal);
+}
+
+
+QString TrackDataWaypoint::iconName() const
+{
+    switch (waypointType())
+    {
+case TrackData::WaypointNormal:		return ("favorites");
+case TrackData::WaypointAudioNote:	return ("speaker");
+default:				return ("unknown");
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

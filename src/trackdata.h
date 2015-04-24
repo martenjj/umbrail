@@ -102,6 +102,14 @@ namespace TrackData
         Waypoint
     };
 
+    // Finer grained classification for waypoints,
+    // accessed by TrackDataWaypoint::waypointType()
+    enum WaypointType
+    {
+        WaypointNormal,
+        WaypointAudioNote
+    };
+
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);
     TimeRange unifyTimeSpans(const QList<TrackDataItem *> *items);
     double sumTotalTravelDistance(const QList<TrackDataItem *> *items, bool tracksOnly = true);
@@ -340,7 +348,8 @@ public:
     TrackDataWaypoint(const QString &nm);
     virtual ~TrackDataWaypoint()			{}
 
-    QString iconName() const				{ return ("favorites"); }
+    QString iconName() const;
+    TrackData::WaypointType waypointType() const;
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;

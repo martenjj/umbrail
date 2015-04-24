@@ -99,7 +99,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         }
 
         // Then the waypoint icon image
-        const QPixmap img = KIconLoader::global()->loadIcon("favorites", KIconLoader::NoGroup, KIconLoader::SizeSmall,
+        const QPixmap img = KIconLoader::global()->loadIcon(tdw->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
                                                             KIconLoader::DefaultState, QStringList(), NULL, true);
         if (!img.isNull())				// icon image available
         {

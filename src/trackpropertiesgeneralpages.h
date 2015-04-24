@@ -12,6 +12,7 @@ class KTextEdit;
 class ItemTypeCombo;
 class TrackDataItem;
 class TrackDataAbstractPoint;
+class TrackDataWaypoint;
 class TimeZoneSelector;
 
 
@@ -147,6 +148,12 @@ public:
     virtual ~TrackWaypointGeneralPage()				{}
 
     QString typeText(int count) const;
+
+protected slots:
+    void slotPlayAudioNote();
+
+private:
+    const TrackDataWaypoint *mWaypoint;
 };
 
 

@@ -474,8 +474,25 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
         Q_ASSERT(folder!=NULL);
         folder->addChildItem(mCurrentWaypoint);
+
         // Clear the folder name metadata, will regenerate on export
         mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
+
+        // An OsmAnd+ audio note is stored as a waypoint with a special name.
+        // Using the GUI, it is possible to rename such a waypoint;  relying
+        // on the visible name to locate the audio recording would then fail.
+        // To get around this, we save the original name in the waypoint's
+        // metadata under a special key which will not get overwritten;  this
+        // will from then on be saved and loaded in the GPX file.
+        if (mCurrentWaypoint->waypointType()==TrackData::WaypointAudioNote)
+        {
+            const int idx = DataIndexer::self()->index("media");
+            if (mCurrentWaypoint->metadata(idx).isEmpty())
+            {
+                mCurrentWaypoint->setMetadata(idx, mCurrentWaypoint->name());
+            }
+        }
+
         mCurrentWaypoint = NULL;				// finished with temporary
         return (true);
     }

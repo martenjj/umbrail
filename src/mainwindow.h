@@ -68,6 +68,7 @@ protected slots:
     void slotMapMovePoints();
     void slotTrackProfile();
     void slotTrackStatistics();
+    void slotPlayMedia();
 
 private:
     void init();
@@ -111,6 +112,7 @@ private:
     KAction *mPropertiesAction;
     KAction *mProfileAction;
     KAction *mStatisticsAction;
+    KAction *mPlayMediaAction;
 
     KAction *mMapZoomInAction;
     KAction *mMapZoomOutAction;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="navmarks"
-     version="1"
+     version="2"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -35,6 +35,8 @@
       <Action name="track_merge"/>
       <Action name="track_move_item"/>
       <Separator/>
+      <Action name="track_play_media"/>
+      <Separator/>
       <Action name="track_properties"/>
       <Action name="track_profile"/>
       <Action name="track_statistics"/>
@@ -62,14 +64,10 @@
 
   </MenuBar>
 
-
   <Menu name="filesview_contextmenu">
-    <Action name="track_expand_all"/>
-    <Action name="track_collapse_all"/>
-    <Separator/>
     <Action name="map_go_selection"/>
+    <Action name="track_play_media"/>
     <Separator/>
-    <Action name="edit_select_all"/>
     <Action name="track_properties"/>
   </Menu>
 

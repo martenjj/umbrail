@@ -22,7 +22,8 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 #									#
 #########################################################################
 
-include(FindMarble)
+find_package(Marble REQUIRED)
+find_package(Phonon)
 
 #########################################################################
 #									#
@@ -51,6 +52,7 @@ set(navtracks_SRCS
   mapcontroller.cpp
   mapthemedialogue.cpp
   mapview.cpp
+  mediaplayer.cpp
   metadatamodel.cpp
   moveitemdialogue.cpp
   profilewidget.cpp
@@ -82,9 +84,15 @@ add_definitions("-DVERSION=\\\"${VERSION}\\\"")
 if (SORTABLE_VIEW)
   add_definitions("-DSORTABLE_VIEW=1")
 endif (SORTABLE_VIEW)
+if (PHONON_FOUND)
+  add_definitions("-DHAVE_PHONON=1")
+endif (PHONON_FOUND)
 
 kde4_add_executable(navtracks ${navtracks_SRCS})
 target_link_libraries(navtracks ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${MARBLE_LIBRARIES})
+if (PHONON_FOUND)
+  target_link_libraries(navtracks ${PHONON_LIBS})
+endif (PHONON_FOUND)
 
 add_dependencies(navtracks vcsversion)
 

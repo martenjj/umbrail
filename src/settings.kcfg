@@ -32,6 +32,14 @@
     </entry>
   </group>
 
+  <group name="Paths">
+    <entry name="AudioNotesDirectory" type="Path">
+      <label>Audio notes:</label>
+      <tooltip>The directory where OsmAnd+ audio notes are stored.</tooltip>
+      <default>$HOME</default>
+    </entry>
+  </group>
+
   <group name="Map">
     <entry name="MapHome" key="Home" type="String">
     </entry>

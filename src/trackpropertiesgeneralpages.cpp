@@ -21,7 +21,7 @@
 #include "itemtypecombo.h"
 #include "timezoneselector.h"
 #include "latlongdialogue.h"
-
+#include "mediaplayer.h"
 
 
 TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
@@ -203,6 +203,7 @@ void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *i
     mPositionLabel = l;
 
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
+    b->setToolTip(i18nc("@info:tooltip", "Change the latitude/longitude position"));
     connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
     hb->setFocusProxy(b);
     hb->setFocusPolicy(Qt::StrongFocus);
@@ -353,6 +354,52 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
     kDebug();
     setObjectName("TrackWaypointGeneralPage");
 
+    if (items->count()==1)
+    {
+        mWaypoint = dynamic_cast<const TrackDataWaypoint *>(items->first());
+        Q_ASSERT(mWaypoint!=NULL);
+
+        QString typeName;
+        switch (mWaypoint->waypointType())
+        {
+case TrackData::WaypointNormal:		typeName = i18n("None");	break;
+case TrackData::WaypointAudioNote:	typeName = i18n("Audio Note");	break;
+default:				typeName = i18n("(Unknown)");	break;
+        }
+
+        QWidget *hb = new QWidget(this);
+        QHBoxLayout *hlay = new QHBoxLayout(hb);
+        hlay->setMargin(0);
+        hlay->setSpacing(KDialog::spacingHint());
+
+        QLabel *l = new QLabel(typeName, this);
+        hlay->addWidget(l);
+        hlay->addStretch(1);
+
+        QPushButton *actionButton = NULL;
+        switch (mWaypoint->waypointType())
+        {
+case TrackData::WaypointAudioNote:
+            actionButton = new QPushButton(KIcon("media-playback-start"), QString::null, this);
+            actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
+            connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayAudioNote()));
+            break;
+
+default:    break;
+        }
+
+        if (actionButton!=NULL)				// action button is present
+        {
+            hb->setFocusProxy(actionButton);
+            hb->setFocusPolicy(Qt::StrongFocus);
+            hlay->addWidget(actionButton);
+        }
+
+        mFormLayout->addRow(i18nc("@label:textbox", "Media:"), hb);
+        addSeparatorField();
+    }
+    else mWaypoint = NULL;
+
     addPositionTimeFields(items);
     if (items->count()>1) addTimeSpanFields(items);
 
@@ -361,11 +408,17 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
 }
 
 
-
 QString TrackWaypointGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Waypoint</b>", "<b>%1 waypoints</b>", count));
 }
+
+
+void TrackWaypointGeneralPage::slotPlayAudioNote()
+{
+    MediaPlayer::playAudioNote(mWaypoint);
+}
+
 
 
 

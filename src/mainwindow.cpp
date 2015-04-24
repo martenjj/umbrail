@@ -40,6 +40,7 @@
 #include "settingsdialogue.h"
 #include "profilewidget.h"
 #include "statisticswidget.h"
+#include "mediaplayer.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -217,6 +218,13 @@ void MainWindow::setupActions()
     mStatisticsAction->setText(i18n("Statistics/Quality..."));
     mStatisticsAction->setIcon(KIcon("kt-check-data"));
     connect(mStatisticsAction, SIGNAL(triggered()), SLOT(slotTrackStatistics()));
+
+    a = actionCollection()->addAction("track_play_media");
+    a->setText(i18nc("@action:inmenu", "Open Media"));
+    a->setIcon(KIcon("media-playback-start"));
+    a->setShortcut(Qt::CTRL+Qt::Key_P);
+    connect(a, SIGNAL(triggered()), SLOT(slotPlayMedia()));
+    mPlayMediaAction = a;
 
     a = actionCollection()->addAction("map_save");
     a->setText(i18n("Save As Image..."));
@@ -596,6 +604,8 @@ void MainWindow::slotUpdateActionState()
     QString delText = i18nc("@action:inmenu", "Delete");
     bool moveEnabled = false;
     QString moveText = i18nc("@action:inmenu", "Move Item...");
+    bool playEnabled = false;
+    QString playText = i18nc("@action:inmenu", "Open Media");
 
     const TrackDataItem *selectedContainer = NULL;
     switch (selType)
@@ -648,6 +658,22 @@ case TrackData::Waypoint:
         moveEnabled = true;
         moveText = i18ncp("@action:inmenu", "Move Waypoint...", "Move Waypoints...", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
+
+        if (selCount==1)
+        {
+            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+            if (tdw!=NULL)
+            {
+                switch (tdw->waypointType())
+                {
+case TrackData::WaypointAudioNote:	playEnabled = true;
+					playText = i18nc("@action:inmenu", "Play Audio Note");
+					break;
+
+default:				break;
+                }
+            }
+        }
         break;
 
 case TrackData::Mixed:
@@ -667,6 +693,9 @@ default:
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
     mStatisticsAction->setEnabled(profileEnabled);
+
+    mPlayMediaAction->setEnabled(playEnabled);
+    mPlayMediaAction->setText(playText);
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
@@ -787,6 +816,21 @@ void MainWindow::slotTrackStatistics()
     w->setModal(false);
     w->setCaption(i18n("Track Statistics/Quality"));
     w->show();
+}
+
+
+// TODO: status messages from player
+void MainWindow::slotPlayMedia()
+{
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+    Q_ASSERT(tdw!=NULL);
+    switch (tdw->waypointType())
+    {
+case TrackData::WaypointAudioNote:	MediaPlayer::playAudioNote(tdw);
+					break;
+
+default:				break;
+    }
 }
 
 
