@@ -328,6 +328,17 @@ void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
 {
     selectionModel()->select(QItemSelection(index, index),
                              static_cast<QItemSelectionModel::SelectionFlags>(flags));
+
+    // If the thing clicked on is a track point, only scroll to it if
+    // its parent segment is expanded.  This avoids a long list of points
+    // suddenly appearing in the view for a stray map click.
+    const TrackDataItem *item = static_cast<FilesModel *>(model())->itemForIndex(index);
+    if (dynamic_cast<const TrackDataTrackpoint *>(item)!=NULL)
+    {
+        QModelIndex pnt = index.parent();
+        if (!isExpanded(pnt)) return;
+    }
+
     scrollTo(index);
 }
 
