@@ -30,16 +30,15 @@
       <Action name="track_collapse_all"/>
       <Separator/>
       <Action name="map_go_selection"/>
+      <Action name="track_play_media"/>
       <Separator/>
       <Action name="track_split"/>
       <Action name="track_merge"/>
       <Action name="track_move_item"/>
       <Separator/>
-      <Action name="track_play_media"/>
-      <Separator/>
-      <Action name="track_properties"/>
       <Action name="track_profile"/>
       <Action name="track_statistics"/>
+      <Action name="track_properties"/>
     </Menu>
 
     <Menu name="map">
