@@ -3,7 +3,10 @@
 #ifndef FILESCONTROLLER_H
 #define FILESCONTROLLER_H
  
+#include <math.h>
+
 #include <qobject.h>
+
 
 class KConfig;
 class KUrl;
@@ -49,6 +52,7 @@ public slots:
     void slotAddFolder();
     void slotAddPoint();
     void slotDeleteItems();
+    void slotAddWaypoint(qreal lat = NAN, qreal lon = NAN);
 
 signals:
     void statusMessage(const QString &text);

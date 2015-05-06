@@ -24,6 +24,7 @@ public:
 
     virtual QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const;
     void setSource(const QList<TrackDataItem *> *items);
+    void setMode(TrackData::Type mode);
 
 private:
     const QList<TrackDataItem *> *mSourceItems;

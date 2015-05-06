@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Apr-15					#
+#  Edit:		30-Apr-15					#
 #########################################################################
 
 project(navtracks)
@@ -35,6 +35,7 @@ set(navtracks_SRCS
   main.cpp
   autotooltipdelegate.cpp
   commands.cpp
+  createwaypointdialogue.cpp
   dataindexer.cpp
   errorreporter.cpp
   exporterbase.cpp
@@ -47,6 +48,7 @@ set(navtracks_SRCS
   importerbase.cpp
   itemtypecombo.cpp
   latlongdialogue.cpp
+  latlongwidget.cpp
   layerbase.cpp
   mainwindow.cpp
   mapcontroller.cpp

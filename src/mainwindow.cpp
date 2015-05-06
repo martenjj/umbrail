@@ -93,6 +93,9 @@ void MainWindow::init()
     // TODO: temp, see FilesView::selectionChanged()
     connect(mFilesController, SIGNAL(updateActionState()), mMapController->view(), SLOT(update()));
 
+    connect(mMapController->view(), SIGNAL(createWaypoint(qreal,qreal)),
+            mFilesController, SLOT(slotAddWaypoint(qreal,qreal)));
+
     mSplitter->addWidget(mFilesController->view());
     mSplitter->addWidget(mMapController->view());
 
@@ -182,6 +185,16 @@ void MainWindow::setupActions()
     mAddPointAction->setText(i18n("Add Point"));
     mAddPointAction->setIcon(KIcon("list-add"));
     connect(mAddPointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddPoint()));
+
+    mAddWaypointAction = actionCollection()->addAction("edit_add_waypoint");
+    mAddWaypointAction->setText(i18n("Add Waypoint..."));
+    mAddWaypointAction->setIcon(KIcon("list-add"));
+    connect(mAddWaypointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddWaypoint()));
+
+    a = actionCollection()->addAction("map_add_waypoint");
+    a->setText(i18n("Create Waypoint..."));
+    a->setIcon(KIcon("list-add"));
+    connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotAddWaypoint()));
 
     mDeleteItemsAction = actionCollection()->addAction("edit_delete_track");
     mDeleteItemsAction->setText(i18n("Delete"));
@@ -706,7 +719,11 @@ default:
     mMoveItemAction->setText(moveText);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
-    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File || selType==TrackData::Folder));
+    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
+                                                 selType==TrackData::Folder));
+    mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
+                                                   selType==TrackData::Point ||
+                                                   selType==TrackData::Waypoint));
 
     if (selCount==1 && selType==TrackData::Point)
     {

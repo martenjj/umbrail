@@ -32,6 +32,12 @@ void TrackFilterModel::setSource(const QList<TrackDataItem *> *items)
 }
 
 
+void TrackFilterModel::setMode(TrackData::Type mode)
+{
+    mMode = mode;
+}
+
+
 bool TrackFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
     FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
@@ -82,13 +88,16 @@ case TrackData::Segment:
         }
         else if (dynamic_cast<const TrackDataTrack *>(item)!=NULL)
         {
-            for (int i = 0; i<mSourceItems->count(); ++i)
+            if (mSourceItems!=NULL)
             {
-                const TrackDataItem *srcItem = mSourceItems->at(i);
-                if (srcItem->parent()==item)
+                for (int i = 0; i<mSourceItems->count(); ++i)
                 {
-                    sourceOk = false;
-                    break;
+                    const TrackDataItem *srcItem = mSourceItems->at(i);
+                    if (srcItem->parent()==item)
+                    {
+                        sourceOk = false;
+                        break;
+                    }
                 }
             }
 
@@ -104,38 +113,43 @@ case TrackData::Folder:
 
         if (dynamic_cast<const TrackDataFile *>(item)!=NULL)
         {
-            for (int i = 0; i<mSourceItems->count(); ++i)
+            if (mSourceItems!=NULL)
             {
-                const TrackDataItem *srcItem = mSourceItems->at(i);
-                if (srcItem->parent()==item)
+                for (int i = 0; i<mSourceItems->count(); ++i)
                 {
-                    sourceOk = false;
-                    break;
+                    const TrackDataItem *srcItem = mSourceItems->at(i);
+                    if (srcItem->parent()==item)
+                    {
+                        sourceOk = false;
+                        break;
+                    }
                 }
             }
         }
         else if (dynamic_cast<const TrackDataFolder *>(item)!=NULL)
         {
-            for (int i = 0; i<mSourceItems->count(); ++i)
+            if (mSourceItems!=NULL)
             {
-                const TrackDataItem *srcItem = mSourceItems->at(i);
-                if (srcItem==item) sourceOk = false;
-                else if (srcItem->parent()==item) sourceOk = false;
-                else
+                for (int i = 0; i<mSourceItems->count(); ++i)
                 {
-                    const TrackDataItem *pnt = item->parent();
-                    while (pnt!=NULL)
+                    const TrackDataItem *srcItem = mSourceItems->at(i);
+                    if (srcItem==item) sourceOk = false;
+                    else if (srcItem->parent()==item) sourceOk = false;
+                    else
                     {
-                        if (pnt==srcItem)
+                        const TrackDataItem *pnt = item->parent();
+                        while (pnt!=NULL)
                         {
-                            sourceOk = false;
-                            break;
+                            if (pnt==srcItem)
+                            {
+                                sourceOk = false;
+                                break;
+                            }
+                            pnt = pnt->parent();
                         }
-                        pnt = pnt->parent();
                     }
                 }
             }
-
         }
         else sourceOk = false;
 
@@ -148,13 +162,16 @@ case TrackData::Waypoint:
 
         if (dynamic_cast<const TrackDataFolder *>(item)!=NULL)
         {
-            for (int i = 0; i<mSourceItems->count(); ++i)
+            if (mSourceItems!=NULL)
             {
-                const TrackDataItem *srcItem = mSourceItems->at(i);
-                if (srcItem->parent()==item)
+                for (int i = 0; i<mSourceItems->count(); ++i)
                 {
-                    sourceOk = false;
-                    break;
+                    const TrackDataItem *srcItem = mSourceItems->at(i);
+                    if (srcItem->parent()==item)
+                    {
+                        sourceOk = false;
+                        break;
+                    }
                 }
             }
         }
@@ -179,7 +196,7 @@ QVariant TrackFilterModel::data(const QModelIndex &idx, int role) const
     TrackDataItem *item = filesModel->itemForIndex(mapToSource(idx));
 
     // Everything apart from source items is left unchanged
-    if (!mSourceItems->contains(item)) return (QSortFilterProxyModel::data(idx, role));
+    if (mSourceItems==NULL || !mSourceItems->contains(item)) return (QSortFilterProxyModel::data(idx, role));
 
     // Source items are shown in bold
     QFont f = QSortFilterProxyModel::data(idx,role).value<QFont>();

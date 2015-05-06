@@ -305,6 +305,26 @@ private:
 
 
 
+class AddWaypointCommand : public FilesCommandBase
+{
+public:
+    AddWaypointCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~AddWaypointCommand();
+
+    void setData(const QString &name, qreal lat, qreal lon,
+                 TrackDataFolder *folder, const TrackDataAbstractPoint *sourcePoint = NULL);
+
+    void redo();
+    void undo();
+
+private:
+    QString mWaypointName;
+    TrackDataFolder *mWaypointFolder;
+    qreal mLatitude;
+    qreal mLongitude;
+    const TrackDataAbstractPoint *mSourcePoint;
+    ItemContainer *mNewWaypointContainer;
+};
 
 
 

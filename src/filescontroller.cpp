@@ -23,8 +23,10 @@
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
+#include "createwaypointdialogue.h"
 #include "style.h"
 #include "errorreporter.h"
+#include "mapview.h"
 
 #define GROUP_FILES		"Files"
 
@@ -617,14 +619,50 @@ void FilesController::slotDeleteItems()
 }
 
 
+void FilesController::slotAddWaypoint(qreal lat, qreal lon)
+{
+    // There are 3 options for specifying the position of the waypoint:
+    //
+    //   1.	If the click was over the map, then the coordinates passed in
+    //		will be valid and the waypoint can be created there.
+    //
+    //   2.	If there is a selected track point or waypoint, then the
+    //		waypoint can be created as a copy at the same position.
+    //
+    //   3.	The user may enter the coordinates.
 
+    CreateWaypointDialogue d(this);
+    QList<TrackDataItem *> items = view()->selectedItems();
+    const TrackDataAbstractPoint *selPoint = NULL;
 
+    if (!isnan(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
+    else if (items.count()==1)				// there is a selected item
+    {							// a source point?
+        selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
+        if (selPoint!=NULL) d.setSourcePoint(selPoint);
+							// the destination folder?
+        const TrackDataFolder *selFolder = dynamic_cast<const TrackDataFolder *>(items.first());
+        if (selFolder!=NULL) d.setDestinationFolder(selFolder);
+    }
 
+    if (!d.exec()) return;
 
+    d.waypointPosition(&lat, &lon);
+    const QString name = d.waypointName();
+    TrackDataFolder *destFolder = d.selectedFolder();
+    Q_ASSERT(destFolder!=NULL);
 
+    kDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
 
+    AddWaypointCommand *cmd = new AddWaypointCommand(this);
 
+    QObject *sdr = sender();				// may be called directly
+    if (qobject_cast<MapView *>(sdr)!=NULL) cmd->setText(i18n("Create Waypoint on Map"));
+    else cmd->setSenderText(sdr);
 
+    cmd->setData(name, lat, lon, destFolder, selPoint);
+    mainWindow()->executeCommand(cmd);
+}
 
 
 MainWindow *FilesController::mainWindow() const

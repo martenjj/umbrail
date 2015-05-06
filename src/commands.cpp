@@ -97,7 +97,7 @@ ItemContainer::~ItemContainer()
 
 QString CommandBase::senderText(const QObject *sdr)
 {
-    const QAction *act = static_cast<const QAction *>(sdr);
+    const QAction *act = qobject_cast<const QAction *>(sdr);
     if (act==NULL) return (i18n("Action"));		// not called by action
     QString t = act->text();				// GUI text of action
 
@@ -240,6 +240,7 @@ void ChangeItemNameCommand::redo()
 
     item->setName(mNewName);
     model()->changedItem(item);
+    updateMap();
 }
 
 
@@ -251,6 +252,7 @@ void ChangeItemNameCommand::undo()
 
     item->setName(mSavedName);
     model()->changedItem(item);
+    updateMap();
 }
 
 
@@ -982,5 +984,93 @@ void MovePointsCommand::undo()
         model()->changedItem(item);
     }
 
+    updateMap();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Add Waypoint							//
+//									//
+//  We create the new point and store it.  We only refer to the		//
+//  input folder to identify where to create it.			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+AddWaypointCommand::AddWaypointCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mWaypointFolder = NULL;
+    mSourcePoint = NULL;
+    mNewWaypointContainer = NULL;
+}
+
+
+AddWaypointCommand::~AddWaypointCommand()
+{
+    delete mNewWaypointContainer;
+}
+
+
+void AddWaypointCommand::setData(const QString &name, qreal lat, qreal lon,
+                                 TrackDataFolder *folder,
+                                 const TrackDataAbstractPoint *sourcePoint)
+{
+    mWaypointName = name;
+    mWaypointFolder = folder;
+    mLatitude = lat;
+    mLongitude = lon;
+    mSourcePoint = sourcePoint;
+}
+
+
+void AddWaypointCommand::redo()
+{
+    Q_ASSERT(mWaypointFolder!=NULL);
+
+    controller()->view()->clearSelection();
+    model()->startLayoutChange();
+
+    if (mNewWaypointContainer==NULL)			// need to create new waypoint
+    {
+        mNewWaypointContainer = new ItemContainer;
+
+        TrackDataWaypoint *newWaypoint = new TrackDataWaypoint(mWaypointName);
+        newWaypoint->setLatLong(mLatitude, mLongitude);
+        if (mSourcePoint!=NULL)
+        {
+            newWaypoint->setElevation(mSourcePoint->elevation());
+            newWaypoint->setTime(mSourcePoint->time());
+            //newWaypoint->copyMetadata(mSourcePoint);
+            newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
+        }
+
+        mNewWaypointContainer->addChildItem(newWaypoint);
+    }
+
+    Q_ASSERT(mNewWaypointContainer->childCount()==1);
+    TrackDataItem *newPoint = mNewWaypointContainer->takeFirstChildItem();
+    mWaypointFolder->addChildItem(newPoint);
+
+    model()->endLayoutChange();
+    controller()->view()->selectItem(newPoint);
+    updateMap();
+}
+
+
+void AddWaypointCommand::undo()
+{
+    Q_ASSERT(mNewWaypointContainer!=NULL);
+    Q_ASSERT(mNewWaypointContainer->childCount()==0);
+    Q_ASSERT(mWaypointFolder!=NULL);
+
+    controller()->view()->clearSelection();
+    model()->startLayoutChange();
+
+    TrackDataItem *newPoint = mWaypointFolder->takeLastChildItem();
+    mNewWaypointContainer->addChildItem(newPoint);
+    Q_ASSERT(mNewWaypointContainer->childCount()==1);
+
+    model()->endLayoutChange();
+    controller()->view()->selectItem(mWaypointFolder);
     updateMap();
 }

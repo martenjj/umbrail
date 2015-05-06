@@ -104,6 +104,7 @@ private:
     KAction *mAddTrackAction;
     KAction *mAddFolderAction;
     KAction *mAddPointAction;
+    KAction *mAddWaypointAction;
     KAction *mDeleteItemsAction;
 
     KAction *mSplitTrackAction;

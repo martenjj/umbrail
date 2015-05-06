@@ -157,15 +157,23 @@ void MapView::slotShowAddressInformation(const GeoDataCoordinates &coords,
 
 
 // from MarbleWidgetPopupMenu::mouseCoordinates()
-bool MapView::mouseCoordinates(GeoDataCoordinates *coords)
+bool MapView::mouseCoordinates(GeoDataCoordinates *coords) const
 {
-    bool valid = true;
     qreal lat = 0.0;
     qreal lon = 0.0;
 
-    valid = geoCoordinates(mPopupX, mPopupY, lon, lat, GeoDataCoordinates::Radian);
+    const bool valid = geoCoordinates(mPopupX, mPopupY, lon, lat, GeoDataCoordinates::Radian);
     if (valid) *coords = GeoDataCoordinates(lon, lat);
     return (valid);
+}
+
+
+void MapView::slotAddWaypoint()
+{
+   qreal lat = 0.0;
+   qreal lon = 0.0;
+   const bool valid = geoCoordinates(mPopupX, mPopupY, lon, lat, GeoDataCoordinates::Degree);
+   if (valid) emit createWaypoint(lat, lon);
 }
 
 

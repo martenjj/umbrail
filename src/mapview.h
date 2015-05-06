@@ -49,15 +49,17 @@ public slots:
     void slotRmbRequest(int mx, int my);
     void slotFindAddress();
     void slotShowOverlay();
+    void slotAddWaypoint();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
 
 signals:
     void draggedPoints(qreal latOff, qreal lonOff);
+    void createWaypoint(qreal lat, qreal lon);
 
 private:
-    bool mouseCoordinates(GeoDataCoordinates *coords);
+    bool mouseCoordinates(GeoDataCoordinates *coords) const;
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
@@ -74,6 +76,5 @@ private:
     TracksLayer *mTracksLayer;
     WaypointsLayer *mWaypointsLayer;
 };
-
 
 #endif							// MAPVIEW_H

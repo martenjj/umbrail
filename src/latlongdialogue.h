@@ -7,9 +7,7 @@
 #include <kdialog.h>
 
 
-class QLineEdit;
-class QTabWidget;
-class QComboBox;
+class LatLongWidget;
 
 
 class LatLongDialogue : public KDialog
@@ -21,41 +19,14 @@ public:
     virtual ~LatLongDialogue();
 
     void setLatLong(double lat, double lon);
-    double latitude() const			{ return (mLatitude); }
-    double longitude() const			{ return (mLongitude); }
-
-signals:
-    void positionChanged(double lat, double lon);
+    double latitude() const;
+    double longitude() const;
 
 private slots:
-    void slotDecimalTextChanged();
-    void slotDmsTextChanged();
+    void slotUpdateButtonState();
 
 private:
-    bool updateButtonState();
-    void setDMS(double d, QLineEdit *deg, QLineEdit *min,
-                QLineEdit *sec, QComboBox *sign);
-    double getDMS(QLineEdit *deg, QLineEdit *min,
-                  QLineEdit *sec, QComboBox *sign) const;
-
-private:
-    QTabWidget *mTabs;
-
-    QLineEdit *mLatitudeEdit;
-    QLineEdit *mLongitudeEdit;
-
-    QLineEdit *mLatitudeDeg;
-    QLineEdit *mLatitudeMin;
-    QLineEdit *mLatitudeSec;
-    QComboBox *mLatitudeCombo;
-
-    QLineEdit *mLongitudeDeg;
-    QLineEdit *mLongitudeMin;
-    QLineEdit *mLongitudeSec;
-    QComboBox *mLongitudeCombo;
-
-    double mLatitude;
-    double mLongitude;
+    LatLongWidget *mWidget;
 };
 
 
