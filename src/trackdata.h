@@ -109,7 +109,8 @@ namespace TrackData
         WaypointNormal,
         WaypointAudioNote,
         WaypointVideoNote,
-        WaypointPhoto
+        WaypointPhoto,
+        WaypointAny
     };
 
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);

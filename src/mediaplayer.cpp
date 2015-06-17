@@ -33,6 +33,11 @@
 #include <klocale.h>
 #include <kdialog.h>
 #include <kmessagebox.h>
+#include <krun.h>
+#include <kmimetype.h>
+#include <kfiledialog.h>
+
+#include <kio/job.h>
 
 #ifdef HAVE_PHONON
 #include <Phonon/MediaObject>
@@ -45,20 +50,20 @@
 #include "photoviewer.h"
 
 
-void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
+static QString findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType expectedType)
 {
-    if (item==NULL) return;
-    if (item->waypointType()!=TrackData::WaypointAudioNote)
+    if (item==NULL) return (QString::null);
+    if (expectedType!=TrackData::WaypointAny && item->waypointType()!=expectedType)
     {
-        kWarning() << "waypoint" << item->name() << "is not an AudioNote";
-        return;
+        kWarning() << "waypoint" << item->name() << "is not type" << expectedType;
+        return (QString::null);
     }
 
     QString n = item->metadata("link");			// first try saved media name
     if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
     if (n.isEmpty()) n = item->name();			// then the waypoint name
 
-    kDebug() << item->name() << n;
+    kDebug() << "item" << item->name() << "link" << n;
 
     QFile mediaFile(KUrl(Settings::audioNotesDirectory()+"/"+n).path());
     if (!mediaFile.exists())
@@ -66,16 +71,26 @@ void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
         KMessageBox::error(NULL,
                            i18n("Media file not found:<br><filename>%1</filename>", mediaFile.fileName()),
                            i18n("Cannot play media file"));
-        return;
+        return (QString::null);
     }
-    kDebug() << "playing" << mediaFile.fileName();
+
+    QString file = mediaFile.fileName();
+    kDebug() << "media file" << file;
+    return (file);
+}
+
+
+void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
+{
+    QString file = findMediaFile(item, TrackData::WaypointAudioNote);
+    if (file.isEmpty()) return;
 
     // TODO: selectable external player output with a config setting,
     // see krepton//src/sounds.cpp
 
 #ifdef HAVE_PHONON
     Phonon::MediaObject *mediaObject = new Phonon::MediaObject;
-    mediaObject->setCurrentSource(mediaFile.fileName());
+    mediaObject->setCurrentSource(file);
     QObject::connect(mediaObject, SIGNAL(finished()), mediaObject, SLOT(deleteLater()));
 
     Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::NoCategory);
@@ -89,35 +104,15 @@ void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
 
 void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
 {
-    if (item==NULL) return;
-    if (item->waypointType()!=TrackData::WaypointVideoNote)
-    {
-        kWarning() << "waypoint" << item->name() << "is not a VideoNote";
-        return;
-    }
-
-    QString n = item->metadata("link");			// first try saved media name
-    if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
-    if (n.isEmpty()) n = item->name();			// then the waypoint name
-
-    kDebug() << item->name() << n;
-
-    QFile mediaFile(KUrl(Settings::audioNotesDirectory()+"/"+n).path());
-    if (!mediaFile.exists())
-    {
-        KMessageBox::error(NULL,
-                           i18n("Media file not found:<br><filename>%1</filename>", mediaFile.fileName()),
-                           i18n("Cannot play media file"));
-        return;
-    }
-    kDebug() << "playing" << mediaFile.fileName();
+    QString file = findMediaFile(item, TrackData::WaypointVideoNote);
+    if (file.isEmpty()) return;
 
     // TODO: selectable external player output with a config setting,
     // see krepton//src/sounds.cpp
 
 #ifdef HAVE_PHONON
-    VideoViewer *v = new VideoViewer(mediaFile.fileName(), NULL);
-    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Video %1", KUrl(mediaFile.fileName()).fileName())));
+    VideoViewer *v = new VideoViewer(file, NULL);
+    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Video %1", KUrl(file).fileName())));
     v->show();
 #else
     KMessageBox::error(NULL, i18n("Phonon is not available"), i18n("Cannot play media file"));
@@ -128,30 +123,37 @@ void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
 
 void MediaPlayer::viewPhotoNote(const TrackDataWaypoint *item)
 {
-    if (item==NULL) return;
-    if (item->waypointType()!=TrackData::WaypointPhoto)
-    {
-        kWarning() << "waypoint" << item->name() << "is not a Photo";
-        return;
-    }
+    QString file = findMediaFile(item, TrackData::WaypointPhoto);
+    if (file.isEmpty()) return;
 
-    QString n = item->metadata("link");			// first try saved media name
-    if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
-    if (n.isEmpty()) n = item->name();			// then the waypoint name
-
-    kDebug() << item->name() << n;
-
-    QFile mediaFile(KUrl(Settings::audioNotesDirectory()+"/"+n).path());
-    if (!mediaFile.exists())
-    {
-        KMessageBox::error(NULL,
-                           i18n("Media file not found:<br><filename>%1</filename>", mediaFile.fileName()),
-                           i18n("Cannot view photo file"));
-        return;
-    }
-    kDebug() << "viewing" << mediaFile.fileName();
-
-    PhotoViewer *v = new PhotoViewer(mediaFile.fileName(), NULL);
-    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Photo %1", KUrl(mediaFile.fileName()).fileName())));
+    PhotoViewer *v = new PhotoViewer(file, NULL);
+    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Photo %1", KUrl(file).fileName())));
     v->show();
+}
+
+
+void MediaPlayer::openMediaFile(const TrackDataWaypoint *item)
+{
+    QString file = findMediaFile(item, TrackData::WaypointAny);
+    if (file.isEmpty()) return;
+
+    KRun::displayOpenWithDialog(KUrl::List(file), NULL);
+}
+
+
+void MediaPlayer::saveMediaFile(const TrackDataWaypoint *item)
+{
+    QString file = findMediaFile(item, TrackData::WaypointAny);
+    if (file.isEmpty()) return;
+
+    KUrl sourceUrl = KUrl(file);
+    KUrl startUrl("kfiledialog:///saveMedia/");
+    startUrl.setFileName(sourceUrl.fileName());
+
+    KMimeType::Ptr mimeType = KMimeType::findByPath(file, 0, true);
+    KUrl destUrl = KFileDialog::getSaveUrl(startUrl, mimeType->name(), NULL, i18nc("@title:window", "Save Media As"));
+    kDebug() << destUrl;
+
+    if (!destUrl.isValid()) return;
+    KIO::file_copy(sourceUrl, destUrl, -1);
 }

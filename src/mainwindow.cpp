@@ -233,11 +233,23 @@ void MainWindow::setupActions()
     connect(mStatisticsAction, SIGNAL(triggered()), SLOT(slotTrackStatistics()));
 
     a = actionCollection()->addAction("track_play_media");
-    a->setText(i18nc("@action:inmenu", "Open Media"));
+    a->setText(i18nc("@action:inmenu", "View Media"));
     a->setIcon(KIcon("media-playback-start"));
     a->setShortcut(Qt::CTRL+Qt::Key_P);
     connect(a, SIGNAL(triggered()), SLOT(slotPlayMedia()));
     mPlayMediaAction = a;
+
+    a = actionCollection()->addAction("file_open_media");
+    a->setText(i18nc("@action:inmenu", "Open Media With..."));
+    a->setIcon(KIcon("document-open"));
+    connect(a, SIGNAL(triggered()), SLOT(slotOpenMedia()));
+    mOpenMediaAction = a;
+
+    a = actionCollection()->addAction("file_save_media");
+    a->setText(i18nc("@action:inmenu", "Save Media As..."));
+    a->setIcon(KIcon("file-save-as"));
+    connect(a, SIGNAL(triggered()), SLOT(slotSaveMedia()));
+    mSaveMediaAction = a;
 
     a = actionCollection()->addAction("map_save");
     a->setText(i18n("Save As Image..."));
@@ -618,7 +630,7 @@ void MainWindow::slotUpdateActionState()
     bool moveEnabled = false;
     QString moveText = i18nc("@action:inmenu", "Move Item...");
     bool playEnabled = false;
-    QString playText = i18nc("@action:inmenu", "Open Media");
+    QString playText = i18nc("@action:inmenu", "View Media");
 
     const TrackDataItem *selectedContainer = NULL;
     switch (selType)
@@ -717,6 +729,8 @@ default:
 
     mPlayMediaAction->setEnabled(playEnabled);
     mPlayMediaAction->setText(playText);
+    mOpenMediaAction->setEnabled(playEnabled);
+    mSaveMediaAction->setEnabled(playEnabled);
 
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
@@ -862,6 +876,24 @@ case TrackData::WaypointPhoto:		MediaPlayer::viewPhotoNote(tdw);
 
 default:				break;
     }
+}
+
+
+void MainWindow::slotOpenMedia()
+{
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+    Q_ASSERT(tdw!=NULL);
+    if (tdw->waypointType()==TrackData::WaypointNormal) return;
+    MediaPlayer::openMediaFile(tdw);
+}
+
+
+void MainWindow::slotSaveMedia()
+{
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+    Q_ASSERT(tdw!=NULL);
+    if (tdw->waypointType()==TrackData::WaypointNormal) return;
+    MediaPlayer::saveMediaFile(tdw);
 }
 
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="navmarks"
-     version="2"
+     version="3"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -8,6 +8,8 @@
  
   <MenuBar>
     <Menu name="file">
+      <Action name="file_open_media" append="open_merge"/>
+      <Action name="file_save_media" append="save_merge"/>
       <Action name="file_import" append="save_merge"/>
       <Action name="file_export" append="save_merge"/>
     </Menu>

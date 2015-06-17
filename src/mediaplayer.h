@@ -31,12 +31,15 @@
 
 class TrackDataWaypoint;
 
-
+// TODO: needs to be a class, so that it can have the main window as parent
 namespace MediaPlayer
 {
     void playAudioNote(const TrackDataWaypoint *item);
     void playVideoNote(const TrackDataWaypoint *item);
     void viewPhotoNote(const TrackDataWaypoint *item);
+
+    void openMediaFile(const TrackDataWaypoint *item);
+    void saveMediaFile(const TrackDataWaypoint *item);
 };
 
 #endif							// MEDIAPLAYER_H
