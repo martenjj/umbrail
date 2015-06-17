@@ -105,7 +105,7 @@ QString ErrorRecordMessage::format() const
 {
     if (mLine>-1)					// including line number
     {
-        return (i18n("%1 at line %2: %3", severityString(), mLine, mMessage));
+        return (i18n("%1 at line %2: %3", severityString(), QString::number(mLine), mMessage));
     }
     else						// no line number
     {

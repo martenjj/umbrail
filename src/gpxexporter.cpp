@@ -98,6 +98,10 @@ static bool shouldBeInExtensions(const TrackDataItem *item, const QString &name)
     {							// segment - all in extensions
         return (true);
     }
+    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL)
+    {							// waypoint - these not in extensions
+        return (!(name=="link"));
+    }
     else return (false);				// metadata - no extensions
 }
 
@@ -117,7 +121,13 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         if (data.isEmpty()) continue;
 
         if (wantExtensions) startExtensions(str);
-        str.writeTextElement(name, data);
+
+        if (name=="link")				// special format for this
+        {
+            str.writeEmptyElement(name);
+            str.writeAttribute("link", data);
+        }
+        else str.writeTextElement(name, data);
     }
 }
 

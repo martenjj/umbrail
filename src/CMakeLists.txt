@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		30-Apr-15					#
+#  Edit:		17-Jun-15					#
 #########################################################################
 
 project(navtracks)
@@ -57,6 +57,7 @@ set(navtracks_SRCS
   mediaplayer.cpp
   metadatamodel.cpp
   moveitemdialogue.cpp
+  photoviewer.cpp
   profilewidget.cpp
   project.cpp
   settingsdialogue.cpp
@@ -79,6 +80,10 @@ set(navtracks_SRCS
   waypointslayer.cpp
   ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
+
+if (PHONON_FOUND)
+  set(navtracks_SRCS ${navtracks_SRCS} videoviewer.cpp)
+endif (PHONON_FOUND)
 
 kde4_add_kcfg_files(navtracks_SRCS settings.kcfgc)
 

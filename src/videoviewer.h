@@ -25,18 +25,49 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef MEDIAPLAYER_H
-#define MEDIAPLAYER_H
+#ifndef VIDEOVIEWER_H
+#define VIDEOVIEWER_H
 
 
-class TrackDataWaypoint;
+#include <qwidget.h>
 
 
-namespace MediaPlayer
+class QLabel;
+class QPushButton;
+class QTimer;
+class KUrl;
+
+namespace Phonon { class VideoPlayer; };
+
+
+class VideoViewer : public QWidget
 {
-    void playAudioNote(const TrackDataWaypoint *item);
-    void playVideoNote(const TrackDataWaypoint *item);
-    void viewPhotoNote(const TrackDataWaypoint *item);
+    Q_OBJECT
+
+public:
+    VideoViewer(const KUrl &url, QWidget *pnt = NULL);
+    virtual ~VideoViewer();
+
+protected slots:
+    void slotFinished();
+    void slotPlay();
+    void slotPause();
+    void slotStop();
+    void slotRewind();
+
+private slots:
+    void slotTickTimer();
+
+private:
+    Phonon::VideoPlayer *mPlayer;
+
+    QPushButton *mPlayButton;
+    QPushButton *mPauseButton;
+    QPushButton *mStopButton;
+    QPushButton *mRewindButton;
+    QLabel *mTimeLabel;
+
+    QTimer *mTickTimer;
 };
 
-#endif							// MEDIAPLAYER_H
+#endif							// VIDEOVIEWER_H

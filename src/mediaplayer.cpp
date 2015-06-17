@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Apr-15						//
+//  Edit:	17-Jun-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -31,7 +31,7 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kprocess.h>
+#include <kdialog.h>
 #include <kmessagebox.h>
 
 #ifdef HAVE_PHONON
@@ -41,19 +41,21 @@
 
 #include "trackdata.h"
 #include "settings.h"
+#include "videoviewer.h"
+#include "photoviewer.h"
 
 
 void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
 {
     if (item==NULL) return;
-
     if (item->waypointType()!=TrackData::WaypointAudioNote)
     {
         kWarning() << "waypoint" << item->name() << "is not an AudioNote";
         return;
     }
 
-    QString n = item->metadata("media");		// first try saved media name
+    QString n = item->metadata("link");			// first try saved media name
+    if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
     if (n.isEmpty()) n = item->name();			// then the waypoint name
 
     kDebug() << item->name() << n;
@@ -82,4 +84,74 @@ void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
 #else
     KMessageBox::error(NULL, i18n("Phonon is not available"), i18n("Cannot play media file"));
 #endif
+}
+
+
+void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
+{
+    if (item==NULL) return;
+    if (item->waypointType()!=TrackData::WaypointVideoNote)
+    {
+        kWarning() << "waypoint" << item->name() << "is not a VideoNote";
+        return;
+    }
+
+    QString n = item->metadata("link");			// first try saved media name
+    if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
+    if (n.isEmpty()) n = item->name();			// then the waypoint name
+
+    kDebug() << item->name() << n;
+
+    QFile mediaFile(KUrl(Settings::audioNotesDirectory()+"/"+n).path());
+    if (!mediaFile.exists())
+    {
+        KMessageBox::error(NULL,
+                           i18n("Media file not found:<br><filename>%1</filename>", mediaFile.fileName()),
+                           i18n("Cannot play media file"));
+        return;
+    }
+    kDebug() << "playing" << mediaFile.fileName();
+
+    // TODO: selectable external player output with a config setting,
+    // see krepton//src/sounds.cpp
+
+#ifdef HAVE_PHONON
+    VideoViewer *v = new VideoViewer(mediaFile.fileName(), NULL);
+    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Video %1", KUrl(mediaFile.fileName()).fileName())));
+    v->show();
+#else
+    KMessageBox::error(NULL, i18n("Phonon is not available"), i18n("Cannot play media file"));
+#endif
+}
+
+
+
+void MediaPlayer::viewPhotoNote(const TrackDataWaypoint *item)
+{
+    if (item==NULL) return;
+    if (item->waypointType()!=TrackData::WaypointPhoto)
+    {
+        kWarning() << "waypoint" << item->name() << "is not a Photo";
+        return;
+    }
+
+    QString n = item->metadata("link");			// first try saved media name
+    if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
+    if (n.isEmpty()) n = item->name();			// then the waypoint name
+
+    kDebug() << item->name() << n;
+
+    QFile mediaFile(KUrl(Settings::audioNotesDirectory()+"/"+n).path());
+    if (!mediaFile.exists())
+    {
+        KMessageBox::error(NULL,
+                           i18n("Media file not found:<br><filename>%1</filename>", mediaFile.fileName()),
+                           i18n("Cannot view photo file"));
+        return;
+    }
+    kDebug() << "viewing" << mediaFile.fileName();
+
+    PhotoViewer *v = new PhotoViewer(mediaFile.fileName(), NULL);
+    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Photo %1", KUrl(mediaFile.fileName()).fileName())));
+    v->show();
 }

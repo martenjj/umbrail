@@ -683,6 +683,14 @@ case TrackData::WaypointAudioNote:	playEnabled = true;
 					playText = i18nc("@action:inmenu", "Play Audio Note");
 					break;
 
+case TrackData::WaypointVideoNote:	playEnabled = true;
+					playText = i18nc("@action:inmenu", "Play Video Note");
+					break;
+
+case TrackData::WaypointPhoto:		playEnabled = true;
+					playText = i18nc("@action:inmenu", "View Photo");
+					break;
+
 default:				break;
                 }
             }
@@ -844,6 +852,12 @@ void MainWindow::slotPlayMedia()
     switch (tdw->waypointType())
     {
 case TrackData::WaypointAudioNote:	MediaPlayer::playAudioNote(tdw);
+					break;
+
+case TrackData::WaypointVideoNote:	MediaPlayer::playVideoNote(tdw);
+					break;
+
+case TrackData::WaypointPhoto:		MediaPlayer::viewPhotoNote(tdw);
 					break;
 
 default:				break;

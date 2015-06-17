@@ -226,7 +226,8 @@ bool GpxImporter::startDocument()
 }
 
 
-bool GpxImporter::startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts)
+bool GpxImporter::startElement(const QString &namespaceURI, const QString &localName,
+                               const QString &qName, const QXmlAttributes &atts)
 {
 #ifdef DEBUG_DETAILED
     qDebug() << indent().constData() << "START" << localName;
@@ -370,7 +371,19 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         }
 
         if (!isnan(lat) && !isnan(lon)) mCurrentWaypoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing lat/lon on WPT element"));
+        else warning(makeXmlException("missing LAT/LON attribute on WPT element"));
+    }
+    else if (localName=="link")				// start of a LINK element
+    {
+        if (mCurrentWaypoint==NULL)			// check not nested
+        {
+            return (error(makeXmlException("LINK start not within WPT", "link")));
+        }
+
+        QString link = atts.value("link");
+        if (link.isEmpty()) link = atts.value("href");
+        if (!link.isEmpty()) mCurrentWaypoint->setMetadata(DataIndexer::self()->index("link"), link);
+        else warning(makeXmlException("missing LINK/HREF attribute on LINK element"));
     }
 
     mContainedChars = QString::null;			// clear contained data
@@ -478,16 +491,18 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         // Clear the folder name metadata, will regenerate on export
         mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
 
-        // An OsmAnd+ audio note is stored as a waypoint with a special name.
-        // Using the GUI, it is possible to rename such a waypoint;  relying
-        // on the visible name to locate the audio recording would then fail.
-        // To get around this, we save the original name in the waypoint's
-        // metadata under a special key which will not get overwritten;  this
-        // will from then on be saved and loaded in the GPX file.
-        if (mCurrentWaypoint->waypointType()==TrackData::WaypointAudioNote)
+        // Only do this check if the "link" metadata has not already
+        // been set by a LINK tag.
+        const int idx = DataIndexer::self()->index("link");
+        if (mCurrentWaypoint->metadata(idx).isEmpty())
         {
-            const int idx = DataIndexer::self()->index("media");
-            if (mCurrentWaypoint->metadata(idx).isEmpty())
+            // An OsmAnd+ AV note is stored as a waypoint with a special name.
+            // Using the GUI, it is possible to rename such a waypoint;  relying
+            // on the visible name to locate the media file would then fail.
+            // To get around this, we save the original name in the waypoint's
+            // metadata under a special key which will not get overwritten;  this
+            // will from then on be saved and loaded in the GPX file.
+            if (mCurrentWaypoint->waypointType()!=TrackData::WaypointNormal)
             {
                 mCurrentWaypoint->setMetadata(idx, mCurrentWaypoint->name());
             }

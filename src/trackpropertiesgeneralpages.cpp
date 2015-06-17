@@ -364,6 +364,8 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
         {
 case TrackData::WaypointNormal:		typeName = i18n("None");	break;
 case TrackData::WaypointAudioNote:	typeName = i18n("Audio Note");	break;
+case TrackData::WaypointVideoNote:	typeName = i18n("Video Note");	break;
+case TrackData::WaypointPhoto:		typeName = i18n("Photo");	break;
 default:				typeName = i18n("(Unknown)");	break;
         }
 
@@ -383,6 +385,18 @@ case TrackData::WaypointAudioNote:
             actionButton = new QPushButton(KIcon("media-playback-start"), QString::null, this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayAudioNote()));
+            break;
+
+case TrackData::WaypointVideoNote:
+            actionButton = new QPushButton(KIcon("media-playback-start"), QString::null, this);
+            actionButton->setToolTip(i18nc("@info:tooltip", "Play the video note"));
+            connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayVideoNote()));
+            break;
+
+case TrackData::WaypointPhoto:
+            actionButton = new QPushButton(KIcon("document-preview"), QString::null, this);
+            actionButton->setToolTip(i18nc("@info:tooltip", "View the photo"));
+            connect(actionButton, SIGNAL(clicked()), SLOT(slotViewPhotoNote()));
             break;
 
 default:    break;
@@ -417,6 +431,18 @@ QString TrackWaypointGeneralPage::typeText(int count) const
 void TrackWaypointGeneralPage::slotPlayAudioNote()
 {
     MediaPlayer::playAudioNote(mWaypoint);
+}
+
+
+void TrackWaypointGeneralPage::slotPlayVideoNote()
+{
+    MediaPlayer::playVideoNote(mWaypoint);
+}
+
+
+void TrackWaypointGeneralPage::slotViewPhotoNote()
+{
+    MediaPlayer::viewPhotoNote(mWaypoint);
 }
 
 

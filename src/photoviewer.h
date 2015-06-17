@@ -25,18 +25,27 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef MEDIAPLAYER_H
-#define MEDIAPLAYER_H
+#ifndef PHOTOVIEWER_H
+#define PHOTOVIEWER_H
 
 
-class TrackDataWaypoint;
+#include <qwidget.h>
 
 
-namespace MediaPlayer
+class QLabel;
+class KUrl;
+
+
+class PhotoViewer : public QWidget
 {
-    void playAudioNote(const TrackDataWaypoint *item);
-    void playVideoNote(const TrackDataWaypoint *item);
-    void viewPhotoNote(const TrackDataWaypoint *item);
+    Q_OBJECT
+
+public:
+    PhotoViewer(const KUrl &url, QWidget *pnt = NULL);
+    virtual ~PhotoViewer();
+
+private:
+    QString mAspect;
 };
 
-#endif							// MEDIAPLAYER_H
+#endif							// PHOTOVIEWER_H

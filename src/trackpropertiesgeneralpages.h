@@ -151,6 +151,8 @@ public:
 
 protected slots:
     void slotPlayAudioNote();
+    void slotPlayVideoNote();
+    void slotViewPhotoNote();
 
 private:
     const TrackDataWaypoint *mWaypoint;

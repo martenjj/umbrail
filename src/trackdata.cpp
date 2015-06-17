@@ -692,12 +692,13 @@ TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
 
 TrackData::WaypointType TrackDataWaypoint::waypointType() const
 {
-    QString n = metadata("media");			// first try saved media name
+    QString n = metadata("link");			// first try saved link name
+    if (n.isEmpty()) n = metadata("media");		// compatibility with old metadata
     if (n.isEmpty()) n = name();			// then our waypoint name
 
-    QRegExp rx1("\\.3gp$");
-    if (n.contains(rx1)) return (TrackData::WaypointAudioNote);
-
+    if (n.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
+    if (n.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
+    if (n.contains(QRegExp("\\.jpg$"))) return (TrackData::WaypointPhoto);
     return (TrackData::WaypointNormal);
 }
 
@@ -708,6 +709,8 @@ QString TrackDataWaypoint::iconName() const
     {
 case TrackData::WaypointNormal:		return ("favorites");
 case TrackData::WaypointAudioNote:	return ("speaker");
+case TrackData::WaypointVideoNote:	return ("mixer-video");
+case TrackData::WaypointPhoto:		return ("image-x-generic");
 default:				return ("unknown");
     }
 }
