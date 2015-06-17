@@ -139,6 +139,7 @@ void VideoViewer::slotFinished()
 
 void VideoViewer::slotPlay()
 {
+    mPlayButton->setEnabled(false);
     mPauseButton->setEnabled(true);
     mRewindButton->setEnabled(true);
     mStopButton->setEnabled(true);
