@@ -3,10 +3,12 @@
 #define TRACKPROPERTIESGENERALPAGES_H
 
 #include "trackpropertiespage.h"
+#include "trackdata.h"
 
 class QLabel;
 class QDateTime;
 class QFormLayout;
+class QComboBox;
 class KLineEdit;
 class KTextEdit;
 class ItemTypeCombo;
@@ -30,6 +32,7 @@ public:
     QString newItemDesc() const;
     QString newTrackType() const;
     QString newTimeZone() const;
+    TrackData::WaypointStatus newWaypointStatus() const;
 
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const;
@@ -41,6 +44,7 @@ protected:
 
     void addTimeSpanFields(const QList<TrackDataItem *> *items);
     void addTypeField(const QList<TrackDataItem *> *items);
+    void addStatusField(const QList<TrackDataItem *> *items);
     void addDescField(const QList<TrackDataItem *> *items);
     void addPositionTimeFields(const QList<TrackDataItem *> *items);
 
@@ -56,6 +60,7 @@ protected:
     ItemTypeCombo *mTypeCombo;
     KTextEdit *mDescEdit;
     TimeZoneSelector *mTimeZoneSel;
+    QComboBox *mStatusCombo;
 
     const TrackDataAbstractPoint *mPositionPoint;
     bool mPositionChanged;

@@ -113,6 +113,15 @@ namespace TrackData
         WaypointAny
     };
 
+    // User status for waypoints
+    enum WaypointStatus
+    {
+        StatusInvalid = -1,
+        StatusNone = 0,
+        StatusTodo,
+        StatusDone
+    };
+
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);
     TimeRange unifyTimeSpans(const QList<TrackDataItem *> *items);
     double sumTotalTravelDistance(const QList<TrackDataItem *> *items, bool tracksOnly = true);

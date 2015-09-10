@@ -362,36 +362,40 @@ void FilesController::slotTrackProperties()
     QUndoCommand *cmd = new QUndoCommand();		// parent command
 
     QString newItemName = d.newItemName();		// new name for item
-    kDebug() << "new name" << newItemName;
+    //kDebug() << "new name" << newItemName;
     if (!newItemName.isEmpty() && newItemName!=item->name())
     {							// changing the name
+        kDebug() << "name change" << item->name() << "->" << newItemName;
         ChangeItemNameCommand *cmd1 = new ChangeItemNameCommand(this, cmd);
         cmd1->setDataItem(item);
         cmd1->setData(newItemName);
     }
 
     QString newTimeZone = d.newTimeZone();
-    kDebug() << "new timezone" << newTimeZone;
+    //kDebug() << "new timezone" << newTimeZone;
     if (newTimeZone!=item->metadata("timezone"))
     {
+        kDebug() << "timezone change" << item->metadata("timezone") << "->" << newTimeZone;
         ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
         cmd2->setDataItem(item);
         cmd2->setData("timezone", newTimeZone);
     }
 
     const Style newStyle = d.newStyle();		// item style
-    kDebug() << "new style" << newStyle;
+    //kDebug() << "new style" << newStyle;
     if (newStyle!=*item->style())			// changing the style
     {
+        kDebug() << "change style" << item->style() << "->" << newStyle;
         ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
         cmd3->setDataItem(item);
         cmd3->setData(newStyle);
     }
 
     QString newType = d.newTrackType();
+    //kDebug() << "new type" << newType;
     if (newType!="-")					// new type is applicable
     {
-        kDebug() << "new type" << newType;
+        kDebug() << "change type" << item->metadata("type") << "->" << newType;
         if (newType!=item->metadata("type"))
         {
             ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
@@ -401,26 +405,36 @@ void FilesController::slotTrackProperties()
     }
 
     QString newDesc = d.newItemDesc();
-    if (newDesc!="-")					// new description is applicable
-    {
-        kDebug() << "new description" << newDesc;
-        if (newDesc!=item->metadata("desc"))
-        {
-            ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
-            cmd5->setDataItem(item);
-            cmd5->setData("desc", newDesc);
-        }
+    //kDebug() << "new description" << newDesc;
+    if (newDesc!="-" && newDesc!=item->metadata("desc"))
+    {							// new description is applicable
+        kDebug() << "change desc" << item->metadata("desc") << "->" << newDesc;
+        ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
+        cmd5->setDataItem(item);
+        cmd5->setData("desc", newDesc);
     }
 
     double newLat;
     double newLon;
     if (d.newPointPosition(&newLat, &newLon))
     {
+        kDebug() << "change position";
         TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(item);
         Q_ASSERT(p!=NULL);
         MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
         cmd6->setDataItems((QList<TrackDataItem *>() << p));
         cmd6->setData(newLat-p->latitude(), newLon-p->longitude());
+    }
+
+    TrackData::WaypointStatus newStatus = d.newWaypointStatus();
+    TrackData::WaypointStatus oldStatus = static_cast<TrackData::WaypointStatus>(item->metadata("status").toInt());
+    if (items.count()>1) oldStatus = TrackData::StatusInvalid;
+    if (newStatus!=TrackData::StatusInvalid && newStatus!=oldStatus)
+    {
+        kDebug() << "change status" << oldStatus << "->" << newStatus;
+        ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
+        cmd7->setDataItems(items);
+        cmd7->setData("status", (newStatus==0) ? QString::null : QString::number(newStatus));
     }
 
     if (cmd->childCount()==0)				// anything to actually do?

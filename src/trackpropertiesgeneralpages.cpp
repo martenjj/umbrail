@@ -40,6 +40,7 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
     addSeparatorField();
 
     mTypeCombo = NULL;					// not applicable yet
+    mStatusCombo = NULL;
     mDescEdit = NULL;
     mTimeZoneSel = NULL;
 
@@ -82,6 +83,18 @@ QString TrackItemGeneralPage::newTrackType() const
     int idx = mTypeCombo->currentIndex();
     if (idx==0) return (QString::null);			// first is always "none"
     return (mTypeCombo->currentText());
+}
+
+
+
+TrackData::WaypointStatus TrackItemGeneralPage::newWaypointStatus() const
+{
+    if (mStatusCombo==NULL) return (TrackData::StatusInvalid);
+							// not for this data
+    if (!mStatusCombo->isEnabled()) return (TrackData::StatusInvalid);
+							// not applicable
+    int status = mStatusCombo->itemData(mStatusCombo->currentIndex()).toInt();
+    return (static_cast<TrackData::WaypointStatus>(status));
 }
 
 
@@ -153,6 +166,34 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
     else mTypeCombo->setEnabled(false);
 
     mFormLayout->addRow(i18nc("@label:listbox", "Type:"), mTypeCombo);
+}
+
+
+
+void TrackItemGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
+{
+    mStatusCombo = new QComboBox(this);
+    mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());
+
+    mStatusCombo->addItem(KIcon("task-reject"), i18n("(None)"), TrackData::StatusNone);
+    mStatusCombo->addItem(KIcon("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
+    mStatusCombo->addItem(KIcon("task-complete"), i18n("Done"), TrackData::StatusDone);
+
+    if (items->count()>1)
+    {
+        mStatusCombo->addItem(KIcon("task-delegate"), i18n("(No change)"), TrackData::StatusInvalid);
+        mStatusCombo->setCurrentIndex(mStatusCombo->count()-1);
+    }
+    else
+    {
+        const TrackDataItem *tdi = items->first();
+        Q_ASSERT(tdi!=NULL);
+        mStatusCombo->setCurrentIndex(tdi->metadata("status").toInt());
+    }
+
+    connect(mStatusCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
+
+    mFormLayout->addRow(i18nc("@label:listbox", "Status:"), mStatusCombo);
 }
 
 
@@ -354,6 +395,7 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
     kDebug();
     setObjectName("TrackWaypointGeneralPage");
 
+    mWaypoint = NULL;
     if (items->count()==1)
     {
         mWaypoint = dynamic_cast<const TrackDataWaypoint *>(items->first());
@@ -418,6 +460,7 @@ default:    break;
     if (items->count()>1) addTimeSpanFields(items);
 
     addSeparatorField();
+    addStatusField(items);
     addDescField(items);
 }
 

@@ -219,21 +219,22 @@ void ImportFileCommand::undo()
 //									//
 //  Change Item (name, style, metadata)					//
 //									//
-//  All of these simply change the specified item in place, so they	//
-//  can retain a pointer to it.						//
+//  All of these simply change the specified items in place, so they	//
+//  can retain a pointer to them.					//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 ChangeItemCommand::ChangeItemCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mDataItem = NULL;					// nothing set at present
+    mDataItems.clear();					// nothing set at present
 }
 
 
 void ChangeItemNameCommand::redo()
 {
-    TrackDataItem *item = mDataItem;
+    Q_ASSERT(mDataItems.count()==1);
+    TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
     mSavedName = item->name();
     kDebug() << "item" << mSavedName << "->" << mNewName;
@@ -246,7 +247,8 @@ void ChangeItemNameCommand::redo()
 
 void ChangeItemNameCommand::undo()
 {
-    TrackDataItem *item = mDataItem;
+    Q_ASSERT(mDataItems.count()==1);
+    TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "back to" << mSavedName;
 
@@ -258,7 +260,8 @@ void ChangeItemNameCommand::undo()
 
 void ChangeItemStyleCommand::redo()
 {
-    TrackDataItem *item = mDataItem;
+    Q_ASSERT(mDataItems.count()==1);
+    TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "->" << mNewStyle.toString();
 
@@ -272,7 +275,8 @@ void ChangeItemStyleCommand::redo()
 
 void ChangeItemStyleCommand::undo()
 {
-    TrackDataItem *item = mDataItem;
+    Q_ASSERT(mDataItems.count()==1);
+    TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
     kDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
 
@@ -285,26 +289,42 @@ void ChangeItemStyleCommand::undo()
 
 void ChangeItemDataCommand::redo()
 {
-    TrackDataItem *item = mDataItem;
-    Q_ASSERT(item!=NULL);
-    kDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
+    mSavedValues.clear();
 
-    int idx = DataIndexer::self()->index(mKey);
-    mSavedValue = item->metadata(idx);
-    item->setMetadata(idx, mNewValue);
-    model()->changedItem(item);
+    const int idx = DataIndexer::self()->index(mKey);
+    for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
+    {
+        TrackDataItem *item = (*it);
+        Q_ASSERT(item!=NULL);
+        kDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
+
+        mSavedValues.append(item->metadata(idx));
+        item->setMetadata(idx, mNewValue);
+        model()->changedItem(item);
+    }
+
+    Q_ASSERT(mSavedValues.count()==mDataItems.count());
     //updateMap();
 }
 
 
 void ChangeItemDataCommand::undo()
 {
-    TrackDataItem *item = mDataItem;
-    Q_ASSERT(item!=NULL);
-    kDebug() << "item" << item->name() << "data" << mKey << "back to" << mSavedValue;
-    int idx = DataIndexer::self()->index(mKey);
-    item->setMetadata(idx, mSavedValue);
-    model()->changedItem(item);
+    Q_ASSERT(mSavedValues.count()==mDataItems.count());
+
+    const int idx = DataIndexer::self()->index(mKey);
+    for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
+    {
+        TrackDataItem *item = (*it);
+        Q_ASSERT(item!=NULL);
+        QString savedValue = mSavedValues.takeFirst();
+        kDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
+        item->setMetadata(idx, savedValue);
+        model()->changedItem(item);
+
+    }
+
+    Q_ASSERT(mSavedValues.count()==0);
     //updateMap();
 }
 

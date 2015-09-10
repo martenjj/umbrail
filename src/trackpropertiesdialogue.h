@@ -7,6 +7,8 @@
 
 #include <kdialog.h>
 
+#include "trackdata.h"
+
 class KTabWidget;
 
 class TrackDataItem;
@@ -31,7 +33,8 @@ public:
     Style newStyle() const;
     QString newTrackType() const;
     QString newTimeZone() const;
-    bool newPointPosition(double *newLat, double *newLon);
+    bool newPointPosition(double *newLat, double *newLon) const;
+    TrackData::WaypointStatus newWaypointStatus() const;
 
 protected slots:
     void slotDataChanged();

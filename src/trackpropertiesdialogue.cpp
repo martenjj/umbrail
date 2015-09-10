@@ -151,6 +151,12 @@ QString TrackPropertiesDialogue::newTimeZone() const
 }
 
 
+TrackData::WaypointStatus TrackPropertiesDialogue::newWaypointStatus() const
+{
+    return (mGeneralPage->newWaypointStatus());
+}
+
+
 Style TrackPropertiesDialogue::newStyle() const
 {
     if (!mTabWidget->isTabEnabled(2)) return (Style::null);	// style not applicable
@@ -158,7 +164,7 @@ Style TrackPropertiesDialogue::newStyle() const
 }
 
 
-bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon)
+bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon) const
 {
     return (mGeneralPage->newPointPosition(newLat, newLon));
 }

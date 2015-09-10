@@ -127,7 +127,11 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
             str.writeEmptyElement(name);
             str.writeAttribute("link", data);
         }
-        else str.writeTextElement(name, data);
+        else
+        {
+            if (name=="status") name = "navtracks:"+name;
+            str.writeTextElement(name, data);
+        }
     }
 }
 

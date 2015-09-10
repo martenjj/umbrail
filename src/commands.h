@@ -83,13 +83,14 @@ class ChangeItemCommand : public FilesCommandBase
 public:
     virtual ~ChangeItemCommand()			{}
 
-    void setDataItem(TrackDataItem *item)		{ mDataItem = item; }
+    void setDataItem(TrackDataItem *item)			{ mDataItems.clear(); mDataItems.append(item); }
+    void setDataItems(const QList<TrackDataItem *> &items)	{ mDataItems = items; }
 
 protected:
     ChangeItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
 
 protected:
-    TrackDataItem *mDataItem;
+    QList<TrackDataItem *> mDataItems;
     bool mFileWasModified;
 };
 
@@ -155,7 +156,7 @@ public:
 private:
     QString mKey;
     QString mNewValue;
-    QString mSavedValue;
+    QStringList mSavedValues;
 };
 
 

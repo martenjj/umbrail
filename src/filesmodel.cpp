@@ -7,6 +7,7 @@
 #include <kdebug.h>
 #include <klocale.h>
 #include <kicon.h>
+#include <kcolorscheme.h>
 
 #include "trackdata.h"
 
@@ -132,6 +133,21 @@ case Qt::DecorationRole:
         switch (idx.column())
         {
 case COL_NAME:     return (KIcon(tdi->iconName()));
+        }
+        break;
+
+case Qt::ForegroundRole:
+        switch (idx.column())
+        {
+case COL_NAME:
+            QString status = tdi->metadata("status");
+            if (!status.isEmpty())
+            {
+                TrackData::WaypointStatus s = static_cast<TrackData::WaypointStatus>(status.toInt());
+                KColorScheme sch(QPalette::Normal);
+                if (s==TrackData::StatusTodo) return (sch.foreground(KColorScheme::NegativeText));
+                if (s==TrackData::StatusDone) return (sch.foreground(KColorScheme::PositiveText));
+            }
         }
         break;
 
