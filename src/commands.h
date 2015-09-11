@@ -214,11 +214,13 @@ public:
     void undo();
 
     void setData(TrackData::Type type, TrackDataItem *pnt = NULL);
+    void setName(const QString &name)			{ mAddName = name; }
 
 private:
     TrackData::Type mType;
     TrackDataItem *mParent;
     ItemContainer *mNewItemContainer;
+    QString mAddName;
 };
 
 
@@ -303,9 +305,6 @@ private:
 
 
 
-
-
-
 class AddWaypointCommand : public FilesCommandBase
 {
 public:
@@ -318,15 +317,36 @@ public:
     void redo();
     void undo();
 
+protected:
+    TrackDataFolder *mWaypointFolder;
+
 private:
     QString mWaypointName;
-    TrackDataFolder *mWaypointFolder;
     qreal mLatitude;
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
     ItemContainer *mNewWaypointContainer;
 };
 
+
+
+class AddPhotoCommand : public AddWaypointCommand
+{
+public:
+    AddPhotoCommand(FilesController *fc, QUndoCommand *parent = NULL)
+        : AddWaypointCommand(fc, parent)		{}
+    virtual ~AddPhotoCommand()				{}
+
+    void setLink(const KUrl &link)			{ mLinkUrl = link; }
+    void setTime(const QDateTime &dt)			{ mDateTime = dt; }
+
+    void redo();
+    void undo();
+
+private:
+    KUrl mLinkUrl;
+    QDateTime mDateTime;
+};
 
 
 #endif							// COMMANDS_H

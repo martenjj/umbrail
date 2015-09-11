@@ -15,6 +15,11 @@
 #include <kurl.h>
 #include <kglobal.h>
 
+#ifdef HAVE_KEXIV2
+#include <libkexiv2/kexiv2.h>
+using namespace KExiv2Iface;
+#endif
+
 #include "filesmodel.h"
 #include "filesview.h"
 #include "commands.h"
@@ -30,6 +35,7 @@
 
 #define GROUP_FILES		"Files"
 
+#define PHOTO_FOLDER_NAME	"Photos"
 
 
 FilesController::FilesController(QObject *pnt)
@@ -222,7 +228,6 @@ bool FilesController::importFile(const KUrl &importFrom)
 }
 
 
-
 bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
 {
     if (!exportTo.isValid()) return (false);
@@ -288,6 +293,71 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
 }
 
 
+bool FilesController::importPhoto(const KUrl &importFrom)
+{
+    kDebug() << importFrom;
+    if (!importFrom.isValid()) return (false);
+// TODO: check must be local file
+
+    double alt = 0;
+    double lat,lon;
+#ifdef HAVE_KEXIV2
+    KExiv2 exi(importFrom.toLocalFile());
+    kDebug() << "Exiv2 data:";
+    kDebug() << "  dimensions" << exi.getImageDimensions();
+    kDebug() << "  orientation" << exi.getImageOrientation();
+    QDateTime dt = exi.getImageDateTime();
+    kDebug() << "  datetime" << dt;
+    bool gpsValid = exi.getGPSInfo(alt,lat,lon);
+    kDebug() << "  gps valid?" << gpsValid << "alt" << alt << "lat" << lat << "lon" << lon;
+
+    QUndoCommand *cmd = new QUndoCommand();		// parent command
+    cmd->setText(i18n("Import Photo"));
+
+    if (gpsValid)
+    {
+        KMessageBox::information(mainWindow(),
+                                 i18n("<qt>The image contained a valid GPS position.<br>The waypoint has been created at that position."),
+                                 i18n("Waypoint Created from GPS"),
+                                 "createdFromGps");
+        emit statusMessage(i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.pathOrUrl()));
+    }
+    else
+    {
+        if (dt.isValid())
+        {
+            kDebug() << "TODO: create from date/time";
+            return (false);
+        }
+        else
+        {
+#endif
+            kDebug() << "TODO: create with no data";
+            return (false);
+#ifdef HAVE_KEXIV2
+        }
+    }
+#endif
+
+    TrackDataFolder *foundFolder = TrackData::findChildFolder(PHOTO_FOLDER_NAME, model()->rootFileItem());
+    if (foundFolder==NULL)				// find where to store point
+    {
+        kDebug() << "need to add new folder";
+        AddContainerCommand *cmd1 = new AddContainerCommand(this, cmd);
+        cmd1->setData(TrackData::Folder, model()->rootFileItem());
+        cmd1->setName(PHOTO_FOLDER_NAME);
+    }
+
+    AddPhotoCommand *cmd2 = new AddPhotoCommand(this, cmd);
+    cmd2->setData(importFrom.fileName(), lat, lon, foundFolder, NULL);
+    cmd2->setLink(importFrom);
+    cmd2->setTime(dt);
+
+    mainWindow()->executeCommand(cmd);
+    emit modified();
+    return (true);
+}
+
 
 void FilesController::slotUpdateActionState()
 {
@@ -342,7 +412,6 @@ default:                    break;
 
     emit updateActionState();
 }
-
 
 
 void FilesController::slotTrackProperties()

@@ -262,9 +262,35 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
     if (!dt.isValid()) return (i18nc("an unknown quantity", "unknown"));
     if (tz==NULL) return (KGlobal::locale()->formatDateTime(dt, KLocale::ShortDate, true));
 
-    QDateTime tzdt = tz->toZoneTime(dt);
+    QDateTime tzdt = tz->toZoneTime(dt.toUTC());
     //kDebug() << dt << "->" << tzdt << tz->abbreviation(dt);
     return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
+}
+
+
+TrackDataFolder *TrackData::findChildFolder(const QString &name, const TrackDataItem *pnt, bool findOne)
+{
+    kDebug() << "name" << name << "under" << pnt->name() << "findone" << findOne;
+    TrackDataFolder *foundFolder = NULL;
+    int folderCount = 0;
+    for (int i = 0; i<pnt->childCount(); ++i)
+    {
+        TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(pnt->childAt(i));
+        if (fold!=NULL)					// this is a folder
+        {
+            ++folderCount;
+            if (fold->name()==name)
+            {
+                kDebug() << "  exact match";
+                return (fold);
+            }
+            else if (foundFolder==NULL) foundFolder = fold;
+        }
+    }
+
+    kDebug() << "  count" << folderCount << "found" << ((void *) foundFolder);
+    if (findOne && folderCount==1) return (foundFolder);
+    return (NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////

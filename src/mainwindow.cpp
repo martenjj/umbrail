@@ -13,7 +13,6 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-
 #include <kapplication.h>
 #include <kaboutdata.h>
 #include <kaction.h>
@@ -27,6 +26,7 @@
 #include <kmimetype.h>
 #include <kurl.h>
 #include <kactionmenu.h>
+#include <kimageio.h>
 
 #include "filescontroller.h"
 #include "filesview.h"
@@ -146,6 +146,11 @@ void MainWindow::setupActions()
     mExportAction->setShortcut(Qt::CTRL+Qt::Key_E);
     connect(mExportAction, SIGNAL(triggered()), SLOT(slotExportFile()));
     mExportAction->setEnabled(false);
+
+    a = actionCollection()->addAction("file_add_photo");
+    a->setText("Import Photo...");
+    a->setIcon(KIcon("image-loading"));
+    connect(a, SIGNAL(triggered()), SLOT(slotImportPhoto()));
 
     mSelectAllAction = KStandardAction::selectAll(filesController()->view(), SLOT(slotSelectAllSiblings()), actionCollection());
     mClearSelectAction = KStandardAction::deselect(filesController()->view(), SLOT(clearSelection()), actionCollection());
@@ -602,6 +607,21 @@ void MainWindow::slotExportFile()
     if (!d.exec()) return;
 //////// TODO: export selected item
 //    filesController()->exportFile(d.selectedUrl());
+}
+
+
+void MainWindow::slotImportPhoto()
+{
+    const QStringList mimeTypes = KImageIO::mimeTypes(KImageIO::Reading);
+    KFileDialog d(KUrl("kfiledialog:///importphoto"), mimeTypes.join(" "), this);
+    d.setCaption(i18n("Import Photo"));
+    d.setOperationMode(KFileDialog::Opening);
+    d.setKeepLocation(true);
+    d.setMode(KFile::File|KFile::LocalOnly);
+    d.setInlinePreviewShown( true );
+
+    if (!d.exec()) return;
+    filesController()->importPhoto(d.selectedUrl());
 }
 
 

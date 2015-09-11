@@ -14,6 +14,7 @@
 class KTimeZone;
 class Style;
 class TrackDataItem;
+class TrackDataFolder;
 class TrackPropertiesPage;
 
 //////////////////////////////////////////////////////////////////////////
@@ -131,6 +132,21 @@ namespace TrackData
     QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
     QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
+
+    /**
+     * Find a child folder under a specified parent.
+     *
+     * @param name Name of the folder to find.
+     * @param pnt The parent or root folder to search under.
+     * @param findOne If no matching folder is found, then return a
+     * single one (see below).
+     *
+     * @return If the named folder was found then it is returned.
+     * If the named folder was not found but only a single folder exists,
+     * then it is returned if @p findOne is @c true.  Otherwise, @c NULL
+     * is returned.
+     **/
+    TrackDataFolder *findChildFolder(const QString &name, const TrackDataItem *pnt, bool findOne = false);
 };
 
 //////////////////////////////////////////////////////////////////////////

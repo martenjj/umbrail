@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	17-Jun-15						//
+//  Edit:	10-Sep-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -65,7 +65,8 @@ static QString findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointT
 
     kDebug() << "item" << item->name() << "link" << n;
 
-    QFile mediaFile(KUrl(Settings::audioNotesDirectory()+"/"+n).path());
+    if (!n.startsWith("/")) n = Settings::audioNotesDirectory()+"/"+n;
+    QFile mediaFile(KUrl(n).path());
     if (!mediaFile.exists())
     {
         KMessageBox::error(NULL,

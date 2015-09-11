@@ -618,6 +618,10 @@ void MergeSegmentsCommand::undo()
 //									//
 //////////////////////////////////////////////////////////////////////////
 
+// TODO: not thread safe!
+static TrackDataFolder *lastCreatedFolder = NULL;
+
+
 AddContainerCommand::AddContainerCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
@@ -652,10 +656,14 @@ void AddContainerCommand::redo()
         TrackDataItem *addedItem = NULL;
         if (mType==TrackData::Track)
         {
-            addedItem = new TrackDataTrack(QString::null);
+            addedItem = new TrackDataTrack(mAddName);
             addedItem->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
         }
-        else if (mType==TrackData::Folder) addedItem = new TrackDataFolder(QString::null);
+        else if (mType==TrackData::Folder)
+        {
+            lastCreatedFolder = new TrackDataFolder(mAddName);
+            addedItem = lastCreatedFolder;
+        }
         Q_ASSERT(addedItem!=NULL);
 
         kDebug() << "created" << addedItem->name();
@@ -1060,7 +1068,6 @@ void AddWaypointCommand::redo()
         {
             newWaypoint->setElevation(mSourcePoint->elevation());
             newWaypoint->setTime(mSourcePoint->time());
-            //newWaypoint->copyMetadata(mSourcePoint);
             newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
         }
 
@@ -1093,4 +1100,35 @@ void AddWaypointCommand::undo()
     model()->endLayoutChange();
     controller()->view()->selectItem(mWaypointFolder);
     updateMap();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Add Photo								//
+//									//
+//  Just like creating a waypoint, except that there may be some more	//
+//  information to fill in.						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+void AddPhotoCommand::redo()
+{
+    if (mWaypointFolder==NULL)				// no destination folder set
+    {
+        mWaypointFolder = lastCreatedFolder;		// use the one just created
+        Q_ASSERT(mWaypointFolder!=NULL);
+    }
+
+    AddWaypointCommand::redo();				// add the basic waypoint
+
+    TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
+    Q_ASSERT(tdw!=NULL);				// retrieve the just added point
+    if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.pathOrUrl());
+    if (mDateTime.isValid()) tdw->setTime(mDateTime);
+}
+
+
+void AddPhotoCommand::undo()
+{
+    AddWaypointCommand::undo();
 }

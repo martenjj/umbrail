@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		17-Jun-15					#
+#  Edit:		10-Sep-15					#
 #########################################################################
 
 project(navtracks)
@@ -23,7 +23,14 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 #########################################################################
 
 find_package(Marble REQUIRED)
-find_package(Phonon)
+macro_optional_find_package(Phonon)
+macro_optional_find_package(Exiv2)
+macro_optional_find_package(Kexiv2)
+
+macro_log_feature(MARBLE_FOUND "Marble" "Map display library" "http://marble.kde.org" TRUE "" "Required for map display")
+macro_log_feature(PHONON_FOUND "Phonon" "Multimedia playback library" "http://phonon.kde.org" FALSE "" "Required for playback of audio/video notes")
+macro_log_feature(EXIV2_FOUND "Exiv2" "Image metadata support" "http://www.exiv2.org" FALSE "0.19")
+macro_log_feature(KEXIV2_FOUND "LibKExiv2" "Wrapper around Exiv2 library" "http://www.digikam.org/sharedlibs" FALSE "" "Required for geolocation of photos")
 
 #########################################################################
 #									#
@@ -94,12 +101,23 @@ endif (SORTABLE_VIEW)
 if (PHONON_FOUND)
   add_definitions("-DHAVE_PHONON=1")
 endif (PHONON_FOUND)
+if (EXIV2_FOUND)
+  if (KEXIV2_FOUND)
+    add_definitions("-DHAVE_KEXIV2=1")
+    include_directories(${KEXIV2_INCLUDE_DIR})
+  endif (KEXIV2_FOUND)
+endif (EXIV2_FOUND)
 
 kde4_add_executable(navtracks ${navtracks_SRCS})
 target_link_libraries(navtracks ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${MARBLE_LIBRARIES})
 if (PHONON_FOUND)
   target_link_libraries(navtracks ${PHONON_LIBS})
 endif (PHONON_FOUND)
+if (EXIV2_FOUND)
+  if (KEXIV2_FOUND)
+    target_link_libraries(navtracks ${KEXIV2_LIBRARIES})
+  endif (KEXIV2_FOUND)
+endif (EXIV2_FOUND)
 
 add_dependencies(navtracks vcsversion)
 

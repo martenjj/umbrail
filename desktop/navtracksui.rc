@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="navmarks"
-     version="3"
+     version="4"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -11,6 +11,7 @@
       <Action name="file_open_media" append="open_merge"/>
       <Action name="file_save_media" append="save_merge"/>
       <Action name="file_import" append="save_merge"/>
+      <Action name="file_add_photo" append="save_merge"/>
       <Action name="file_export" append="save_merge"/>
     </Menu>
 
@@ -90,6 +91,7 @@
     <Action name="file_save"/>
     <Action name="file_import"/>
     <Action name="file_export"/>
+    <Action name="file_add_photo"/>
     <Separator/>
     <Action name="map_move_points"/>
     <Separator/>

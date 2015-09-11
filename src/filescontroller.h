@@ -38,6 +38,7 @@ public:
 
     bool importFile(const KUrl &importFrom);
     bool exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
+    bool importPhoto(const KUrl &importFrom);
 
     static QString allImportFilters();
     static QString allExportFilters();
