@@ -137,21 +137,8 @@ TrackDataFolder *GpxImporter::createFolder(const QString &path)
 
     for (QStringList::const_iterator it = folders.constBegin(); it!=folders.constEnd(); ++it)
     {
-        const QString name = (*it);
-
-        foundFolder = NULL;
-        for (int i = 0; i<cur->childCount(); ++i)
-        {
-            TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(cur->childAt(i));
-            if (fold!=NULL)				// this is a folder
-            {
-                if (fold->name()==name)			// see if name matches
-                {
-                    foundFolder = fold;			// yes, use this one
-                }
-            }
-        }
-
+        const QString name = (*it);			// look for existing subfolder
+        foundFolder = TrackData::findChildFolder(name, cur);
         if (foundFolder==NULL)				// nothing existing found
         {
             kDebug() << "creating folder" << name << "under" << cur->name();
@@ -172,10 +159,7 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
     //
     //  - If the waypoint is specified and has a folder defined, use that
     //
-    //  - If only one top-level folder exists, regardless of its name, use that
-    //
-    //  - If more than one such folder exists and one of them is named
-    //    "Waypoints", use that
+    //  - If a top level folder named "Waypoints" exists, use that
     //
     //  - Otherwise, create a new folder "Waypoints" and use that
 
@@ -186,29 +170,8 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
     }
 
     if (mWaypointFolder==NULL)				// not allocated/found yet
-    {
-        TrackDataFolder *foundFolder = NULL;
-        int folderCount = 0;
-        for (int i = 0; i<mDataRoot->childCount(); ++i)
-        {
-            TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(mDataRoot->childAt(i));
-            if (fold!=NULL)				// this is a folder
-            {
-                ++folderCount;
-                if (fold->name()==WAYPOINT_FOLDER_NAME) foundFolder = fold;
-                else if (foundFolder==NULL) foundFolder = fold;
-            }
-        }
-
-        if (folderCount!=1)				// no or multiple folders
-        {
-            if (foundFolder==NULL)			// nothing found during search
-            {						// create new folder now
-                foundFolder = createFolder(WAYPOINT_FOLDER_NAME);
-            }
-        }
-
-        mWaypointFolder = foundFolder;
+    {							// find or create now
+        mWaypointFolder = createFolder(WAYPOINT_FOLDER_NAME);
     }
 
     return (mWaypointFolder);
