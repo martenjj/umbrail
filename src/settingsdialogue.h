@@ -7,6 +7,7 @@
 
 
 class QCheckBox;
+class QSpinBox;
 class KColorButton;
 class KUrlRequester;
 
@@ -51,13 +52,13 @@ private:
 };
 
 
-class SettingsPathsPage : public KPageWidgetItem
+class SettingsFilesPage : public KPageWidgetItem
 {
     Q_OBJECT
 
 public:
-    SettingsPathsPage(QWidget *pnt = NULL);
-    virtual ~SettingsPathsPage()				{}
+    SettingsFilesPage(QWidget *pnt = NULL);
+    virtual ~SettingsFilesPage()				{}
 
 public slots:
     void slotSave();
@@ -68,6 +69,9 @@ private slots:
 
 private:
     KUrlRequester *mAudioNotesRequester;
+    QCheckBox *mUseGpsCheck;
+    QCheckBox *mUseTimeCheck;
+    QSpinBox *mTimeThresholdSpinbox;
 };
 
 #endif							// SETTINGSDIALOGUE_H

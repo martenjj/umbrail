@@ -35,6 +35,7 @@ using namespace KExiv2Iface;
 #include "errorreporter.h"
 #include "mapview.h"
 #include "mapcontroller.h"
+#include "settings.h"
 
 #define GROUP_FILES		"Files"
 
@@ -354,15 +355,15 @@ bool FilesController::importPhoto(const KUrl &importFrom)
     QString statusText;
     bool matched = false;
 
-    if (gpsValid)
+    if (gpsValid && Settings::photoUseGps())
     {
-        messageText = i18n("<qt>The image contained a valid GPS position.<nl/>The waypoint will be created at that position.");
+        messageText = i18n("<qt>The image file contained a valid GPS position.<nl/>The waypoint will be created at that position.");
         statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.pathOrUrl());
         matched = true;
     }
     else
     {
-        if (dt.isValid())
+        if (dt.isValid() && Settings::photoUseTime())
         {
             if (dt.timeSpec()==Qt::LocalTime)
             {
@@ -392,7 +393,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
             closestPoint = NULL;
             findChildWithTime(model()->rootFileItem(), dt);
 
-            if (closestPoint!=NULL && closestDiff<COINCIDENCE_THRESHOLD)
+            if (closestPoint!=NULL && closestDiff<=Settings::photoTimeThreshold())
             {
                 messageText = i18np("<qt>The image date/time matched point '%1' within %2 second.<nl/>The waypoint will be created at that point position.",
                                     "<qt>The image date/time matched point '%1' within %2 seconds.<nl/>The waypoint will be created at that point position.",
@@ -407,7 +408,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
             }
             else
             {
-                messageText = i18n("<qt>The image had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.");
+                messageText = i18n("<qt>The image file had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.");
             }
         }
     }
@@ -415,7 +416,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
     if (!matched)
 #endif
     {
-        if (messageText.isEmpty()) messageText = i18n("<qt>The image had no GPS position or date/time.<nl/>The waypoint will be created at the current map centre.");
+        if (messageText.isEmpty()) messageText = i18n("<qt>The image file had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.");
         statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.pathOrUrl());
         lat = mainWindow()->mapController()->view()->centerLatitude();
         lon = mainWindow()->mapController()->view()->centerLongitude();

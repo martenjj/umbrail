@@ -33,10 +33,42 @@
   </group>
 
   <group name="Paths">
+
+    <entry name="PathsGroupTitle" type="String">
+      <label>Paths</label>
+    </entry>
+
     <entry name="AudioNotesDirectory" type="Path">
       <label>Audio notes:</label>
       <tooltip>The directory where OsmAnd+ audio notes are stored.</tooltip>
       <default>$HOME</default>
+    </entry>
+  </group>
+
+  <group name="Import">
+
+    <entry name="PhotoGroupTitle" type="String">
+      <label>Photo Import</label>
+    </entry>
+
+    <entry name="PhotoUseGps" type="Bool">
+      <label>Use GPS location</label>
+      <tooltip>If a photo contains GPS geolocation information, use it to place the waypoint.</tooltip>
+      <default>true</default>
+    </entry>
+
+    <entry name="PhotoUseTime" type="Bool">
+      <label>Use photo date/time</label>
+      <tooltip>Use the date/time of a photo to locate a track point.</tooltip>
+      <default>true</default>
+    </entry>
+
+    <entry name="PhotoTimeThreshold" type="Int">
+      <label>Time tolerance (seconds):</label>
+      <tooltip>How close in time a photo needs to be in order to match at a point.</tooltip>
+      <default>30</default>
+      <min>1</min>
+      <max>300</max>
     </entry>
   </group>
 

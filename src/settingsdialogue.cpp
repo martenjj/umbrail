@@ -4,12 +4,15 @@
 #include <qformlayout.h>
 #include <qformlayout.h>
 #include <qcheckbox.h>
+#include <qgroupbox.h>
+#include <qspinbox.h>
 
 #include <kdebug.h>
 #include <klocale.h>
 #include <kpagedialog.h>
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
+#include <kconfigskeleton.h>
 
 #include "settings.h"
 #include "style.h"
@@ -36,7 +39,7 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
     connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
-    page = new SettingsPathsPage(this);
+    page = new SettingsFilesPage(this);
     addPage(page);
     connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
     connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
@@ -143,47 +146,101 @@ void SettingsMapStylePage::slotItemChanged()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  SettingsPathsPage							//
+//  SettingsFilesPage							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-SettingsPathsPage::SettingsPathsPage(QWidget *pnt)
+SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     : KPageWidgetItem(new QWidget(pnt))
 {
-    setName(i18nc("@title:tab", "Paths"));
-    setHeader(i18n("Default data and file locations"));
+    setName(i18nc("@title:tab", "Files"));
+    setHeader(i18n("Settings for file locations and importing"));
     setIcon(KIcon("folder"));
 
     QWidget *w = widget();
     QFormLayout *fl = new QFormLayout(w);
 
+    const KConfigSkeletonItem *ski = Settings::self()->pathsGroupTitleItem();
+    Q_ASSERT(ski!=NULL);
+    QGroupBox *g = new QGroupBox(ski->label(), w);
+    g->setFlat(true);
+    fl->addRow(g);
+
+    ski = Settings::self()->audioNotesDirectoryItem();
+    Q_ASSERT(ski!=NULL);
     mAudioNotesRequester = new KUrlRequester(w);
     mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly);
     mAudioNotesRequester->setUrl(KUrl(Settings::audioNotesDirectory()));
-    const KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
-    mAudioNotesRequester->setToolTip(kcsi->toolTip());
-    fl->addRow(kcsi->label(), mAudioNotesRequester);
+    mAudioNotesRequester->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mAudioNotesRequester);
+
+    fl->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Fixed, QSizePolicy::Fixed));
+
+    ski = Settings::self()->photoGroupTitleItem();
+    Q_ASSERT(ski!=NULL);
+    g = new QGroupBox(ski->label(), w);
+    g->setFlat(true);
+    fl->addRow(g);
+
+    ski = Settings::self()->photoUseGpsItem();
+    Q_ASSERT(ski!=NULL);
+    mUseGpsCheck = new QCheckBox(ski->label(), w);
+    mUseGpsCheck->setToolTip(ski->toolTip());
+    mUseGpsCheck->setChecked(Settings::photoUseGps());
+    fl->addRow(mUseGpsCheck);
+
+    ski = Settings::self()->photoUseTimeItem();
+    Q_ASSERT(ski!=NULL);
+    mUseTimeCheck = new QCheckBox(ski->label(), w);
+    mUseTimeCheck->setToolTip(ski->toolTip());
+    mUseTimeCheck->setChecked(Settings::photoUseTime());
+    connect(mUseTimeCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    fl->addRow(mUseTimeCheck);
+
+    ski = Settings::self()->photoTimeThresholdItem();
+    Q_ASSERT(ski!=NULL);
+    mTimeThresholdSpinbox = new QSpinBox(w);
+    mTimeThresholdSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
+    mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
+    mTimeThresholdSpinbox->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mTimeThresholdSpinbox);
 
     slotItemChanged();
 }
 
 
-void SettingsPathsPage::slotSave()
+void SettingsFilesPage::slotSave()
 {
     Settings::setAudioNotesDirectory(mAudioNotesRequester->url().url());
+    Settings::setPhotoUseGps(mUseGpsCheck->isChecked());
+    Settings::setPhotoUseTime(mUseTimeCheck->isChecked());
+    Settings::setPhotoTimeThreshold(mTimeThresholdSpinbox->value());
 }
 
 
-void SettingsPathsPage::slotDefaults()
+void SettingsFilesPage::slotDefaults()
 {
     KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
     kcsi->setDefault();
     mAudioNotesRequester->setUrl(KUrl(Settings::audioNotesDirectory()));
 
+    kcsi = Settings::self()->photoUseGpsItem();
+    kcsi->setDefault();
+    mUseGpsCheck->setChecked(Settings::photoUseGps());
+
+    kcsi = Settings::self()->photoUseTimeItem();
+    kcsi->setDefault();
+    mUseTimeCheck->setChecked(Settings::photoUseGps());
+
+    kcsi = Settings::self()->photoTimeThresholdItem();
+    kcsi->setDefault();
+    mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
+
     slotItemChanged();
 }
 
 
-void SettingsPathsPage::slotItemChanged()
+void SettingsFilesPage::slotItemChanged()
 {
+    mTimeThresholdSpinbox->setEnabled(mUseTimeCheck->isChecked());
 }
