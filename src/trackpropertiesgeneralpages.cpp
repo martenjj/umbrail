@@ -306,7 +306,6 @@ QString TrackFileGeneralPage::typeText(int count) const
 bool TrackFileGeneralPage::isDataValid() const
 {
     if (mUrlRequester->isEnabled() && mUrlRequester->text().isEmpty()) return (false);
-    if (mTimeZoneSel->isEnabled() && mTimeZoneSel->timeZone().isEmpty()) return (false);
     return (TrackItemGeneralPage::isDataValid());
 }
 
