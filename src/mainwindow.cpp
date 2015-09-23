@@ -10,6 +10,7 @@
 #include <qsplitter.h>
 #include <qundostack.h>
 #include <qdatetime.h>
+#include <qevent.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -64,6 +65,8 @@ MainWindow::MainWindow(QWidget *pnt)
 
 void MainWindow::init()
 {
+    setAcceptDrops(true);				// accept file drops
+
     mSplitter = new QSplitter(this);
     mSplitter->setChildrenCollapsible(false);
     setCentralWidget(mSplitter);
@@ -927,4 +930,41 @@ void MainWindow::executeCommand(QUndoCommand *cmd)
 {
     if (mUndoStack!=NULL) mUndoStack->push(cmd);	// do via undo system
     else { cmd->redo(); delete cmd; }			// do directly (fallback)
+}
+
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
+{
+    if (ev->dropAction()!=Qt::CopyAction) return;
+    const QMimeData *mimeData = ev->mimeData();
+    if (!mimeData->hasUrls()) return;
+
+    ev->accept();
+}
+
+
+void MainWindow::dropEvent(QDropEvent *ev)
+{
+    if (ev->dropAction()!=Qt::CopyAction) return;
+    const QMimeData *mimeData = ev->mimeData();
+    if (!mimeData->hasUrls()) return;
+
+    const QStringList imageTypes = KImageIO::mimeTypes(KImageIO::Reading);
+
+    QList<QUrl> urls = mimeData->urls();
+    const bool multiple = (urls.count()>1);
+    for (QList<QUrl>::const_iterator it = urls.constBegin(); it!=urls.constEnd(); ++it)
+    {
+        const QUrl url = (*it);
+        const KMimeType::Ptr mime = KMimeType::findByUrl(url);
+
+        if (imageTypes.contains(mime->name()))
+        {
+            kDebug() << "accept dropped image" << url << "mimetype" << mime->name();
+            if (filesController()->importPhoto(url, multiple)==FilesController::StatusCancelled) break;
+        }
+        else kWarning() << "reject dropped" << url << "mimetype" << mime->name();
+    }
+
+    ev->accept();
 }

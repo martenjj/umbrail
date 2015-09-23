@@ -7,10 +7,13 @@
 #include <kurl.h>
 
 class QLabel;
-class QCloseEvent;
 class QUndoStack;
 class QUndoCommand;
 class QSplitter;
+
+class QCloseEvent;
+class QDragEnterEvent;
+class QDropEvent;
 
 class KAction;
 class KToggleAction;
@@ -45,8 +48,11 @@ public slots:
 protected:
     virtual void saveProperties(KConfigGroup &grp);
     virtual void readProperties(const KConfigGroup &grp);
-    virtual void closeEvent(QCloseEvent *ev);
     virtual bool queryClose();
+
+    virtual void closeEvent(QCloseEvent *ev);
+    virtual void dragEnterEvent(QDragEnterEvent *ev);
+    virtual void dropEvent(QDropEvent *ev);
 
 protected slots:
     void slotNewProject();
