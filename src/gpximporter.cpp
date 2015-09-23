@@ -537,6 +537,8 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     }
     else						// Unknown tag, save as metadata
     {
+        if (mContainedChars.isEmpty()) return (true);	// if there is anything to save
+
         TrackDataItem *item = currentItem();		// find innermost current element
 
         // Ultra GPS Logger tags waypoints with <description> instead of <desc>
