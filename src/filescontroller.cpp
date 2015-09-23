@@ -173,9 +173,9 @@ case ErrorReporter::Fatal:
 }
 
 
-bool FilesController::importFile(const KUrl &importFrom)
+FilesController::Status FilesController::importFile(const KUrl &importFrom)
 {
-    if (!importFrom.isValid()) return (false);
+    if (!importFrom.isValid()) return (FilesController::StatusFailed);
     QString importType = KMimeType::extractKnownExtension(importFrom.path());
     if (importType.isEmpty())
     {
@@ -197,7 +197,7 @@ bool FilesController::importFile(const KUrl &importFrom)
     {
         kDebug() << "Unknown import format" << importType;
         reportFileError(false, importFrom, i18n("Unknown import format"));
-        return (false);
+        return (FilesController::StatusFailed);
     }
 
     emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.pathOrUrl()));
@@ -207,7 +207,7 @@ bool FilesController::importFile(const KUrl &importFrom)
     if (!reportFileError(false, importFrom, rep))
     {
         emit statusMessage(i18n("<qt>Loading <filename>%1</filename> failed", importFrom.pathOrUrl()));
-        return (false);
+        return (FilesController::StatusFailed);
     }
 
     Q_ASSERT(tdf!=NULL);
@@ -228,13 +228,13 @@ bool FilesController::importFile(const KUrl &importFrom)
     }
 
     emit modified();
-    return (true);					// done, finished with importer
+    return (FilesController::StatusOk);			// done, finished with importer
 }
 
 
-bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
+FilesController::Status FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
 {
-    if (!exportTo.isValid()) return (false);
+    if (!exportTo.isValid()) return (FilesController::StatusFailed);
     QString exportType = KMimeType::extractKnownExtension(exportTo.path());
     if (exportType.isEmpty())
     {
@@ -256,7 +256,7 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
     {
         kDebug() << "Unknown export format" << exportType;
         reportFileError(true, exportTo, i18n("Unknown export format"));
-        return (false);
+        return (FilesController::StatusFailed);
     }
 
     if (exportTo.isLocalFile() && QFile::exists(exportTo.path()))
@@ -271,7 +271,7 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
             {
                 reportFileError(true, backupFile, i18n("Cannot save backup file"));
                 emit statusMessage(i18n("Backup failed"));
-                return (false);
+                return (FilesController::StatusFailed);
             }
 
             KMessageBox::information(mainWindow(),
@@ -289,15 +289,13 @@ bool FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
     if (!reportFileError(true, exportTo, rep))
     {
         emit statusMessage(i18n("<qt>Saving <filename>%1</filename> failed", exportTo.pathOrUrl()));
-        return (false);
+        return (FilesController::StatusFailed);
     }
 
     emit statusMessage(i18n("<qt>Exported <filename>%1</filename>", exportTo.pathOrUrl()));
-    return (true);					// done, finished with exporter
+    return (FilesController::StatusOk);			// done, finished with exporter
 }
 
-
-static const int COINCIDENCE_THRESHOLD = 60;
 
 static int closestDiff;
 static const TrackDataTrackpoint *closestPoint;
@@ -326,10 +324,10 @@ static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
 }
 
 
-bool FilesController::importPhoto(const KUrl &importFrom)
+FilesController::Status FilesController::importPhoto(const KUrl &importFrom, bool multiple)
 {
     kDebug() << importFrom;
-    if (!importFrom.isValid()) return (false);
+    if (!importFrom.isValid()) return (FilesController::StatusFailed);
     // TODO: check must be local file
 
     double alt = 0;
@@ -357,7 +355,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
 
     if (gpsValid && Settings::photoUseGps())
     {
-        messageText = i18n("<qt>The image file contained a valid GPS position.<nl/>The waypoint will be created at that position.");
+        messageText = i18n("<qt>The image file <filename>%1</filename> contained a valid GPS position.<nl/>The waypoint will be created at that position.", importFrom.fileName());
         statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.pathOrUrl());
         matched = true;
     }
@@ -385,7 +383,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
                     int q = KMessageBox::warningContinueCancel(mainWindow(),
                                                                i18n("<qt>No time zone has been set for this file.<nl/>Time comparison may not work correctly."),
                                                                i18n("No Time Zone"));
-                    if (q==KMessageBox::Cancel) return (false);
+                    if (q==KMessageBox::Cancel) return (FilesController::StatusFailed);
                 }
             }
 
@@ -395,9 +393,9 @@ bool FilesController::importPhoto(const KUrl &importFrom)
 
             if (closestPoint!=NULL && closestDiff<=Settings::photoTimeThreshold())
             {
-                messageText = i18np("<qt>The image date/time matched point '%1' within %2 second.<nl/>The waypoint will be created at that point position.",
-                                    "<qt>The image date/time matched point '%1' within %2 seconds.<nl/>The waypoint will be created at that point position.",
-                                    closestPoint->name(), closestDiff);
+                messageText = i18np("<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
+                                    "<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
+                                    closestDiff, closestPoint->name(), importFrom.fileName());
                 statusText = i18n("<qt>Imported <filename>%1</filename> at date/time position", importFrom.pathOrUrl());
 
                 sourcePoint = closestPoint;
@@ -408,7 +406,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
             }
             else
             {
-                messageText = i18n("<qt>The image file had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.");
+                messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
             }
         }
     }
@@ -416,19 +414,36 @@ bool FilesController::importPhoto(const KUrl &importFrom)
     if (!matched)
 #endif
     {
-        if (messageText.isEmpty()) messageText = i18n("<qt>The image file had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.");
+        if (messageText.isEmpty()) messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
         statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.pathOrUrl());
         lat = mainWindow()->mapController()->view()->centerLatitude();
         lon = mainWindow()->mapController()->view()->centerLongitude();
     }
 
-    if (messageText.isEmpty()) return (false);		// nothing to do
-    int q = KMessageBox::questionYesNo(mainWindow(),
+    if (messageText.isEmpty()) return (FilesController::StatusFailed);
+							// nothing to do
+
+    int q;
+    if (multiple)
+    {
+        q = KMessageBox::questionYesNoCancel(mainWindow(),
                                        messageText,
                                        i18n("Create Waypoint?"),
-                                       KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::ok().icon()),
-                                       KStandardGuiItem::cancel());
-    if (q!=KMessageBox::Yes) return (false);
+                                       KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
+                                       KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()),
+                                       KGuiItem(i18nc("@action:button", "Cancel All"), KStandardGuiItem::cancel().icon()));
+    }
+    else
+    {
+        q = KMessageBox::questionYesNo(mainWindow(),
+                                       messageText,
+                                       i18n("Create Waypoint?"),
+                                       KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
+                                       KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()));
+    }
+
+    if (q==KMessageBox::Cancel) return (FilesController::StatusCancelled);
+    if (q==KMessageBox::No) return (FilesController::StatusFailed);
 
     // Find or create a folder to place the resulting waypoint in
     TrackDataFolder *foundFolder = TrackData::findChildFolder(PHOTO_FOLDER_NAME, model()->rootFileItem());
@@ -449,7 +464,7 @@ bool FilesController::importPhoto(const KUrl &importFrom)
     mainWindow()->executeCommand(cmd);
     emit modified();
     emit statusMessage(statusText);
-    return (true);
+    return (FilesController::StatusOk);
 }
 
 

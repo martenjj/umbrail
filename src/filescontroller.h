@@ -27,6 +27,15 @@ class FilesController : public QObject
     Q_OBJECT
 
 public:
+
+    // File loading or saving status
+    enum Status
+    {
+        StatusOk,
+        StatusFailed,
+        StatusCancelled
+    };
+
     FilesController(QObject *pnt = NULL);
     ~FilesController();
 
@@ -36,9 +45,9 @@ public:
     void readProperties();
     void saveProperties();
 
-    bool importFile(const KUrl &importFrom);
-    bool exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
-    bool importPhoto(const KUrl &importFrom);
+    FilesController::Status importFile(const KUrl &importFrom);
+    FilesController::Status exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
+    FilesController::Status importPhoto(const KUrl &importFrom, bool multiple = false);
 
     static QString allImportFilters();
     static QString allExportFilters();

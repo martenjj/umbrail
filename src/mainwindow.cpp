@@ -451,7 +451,7 @@ bool MainWindow::save(const KUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
-    if (!filesController()->exportFile(savePath, tdf)) return (false);
+    if (filesController()->exportFile(savePath, tdf)!=FilesController::StatusOk) return (false);
     slotStatusMessage(i18n("<qt>Saved <filename>%1</filename>", savePath));
     return (true);					// more appropriate message
 }
@@ -468,7 +468,7 @@ bool MainWindow::load(const KUrl &from)
     QDir d(from.path());				// should be absolute already,
     QString loadPath = d.absolutePath();		// but just make sure
 
-    if (!filesController()->importFile(loadPath)) return (false);
+    if (filesController()->importFile(loadPath)!=FilesController::StatusOk) return (false);
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf!=NULL)
@@ -617,11 +617,17 @@ void MainWindow::slotImportPhoto()
     d.setCaption(i18n("Import Photo"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
-    d.setMode(KFile::File|KFile::LocalOnly);
+    d.setMode(KFile::Files|KFile::LocalOnly);
     d.setInlinePreviewShown( true );
 
     if (!d.exec()) return;
-    filesController()->importPhoto(d.selectedUrl());
+    const KUrl::List urls = d.selectedUrls();
+    const bool multiple = (urls.count()>1);
+    for (KUrl::List::const_iterator it = urls.constBegin(); it!=urls.constEnd(); ++it)
+    {
+        const KUrl u = (*it);
+        if (filesController()->importPhoto(u, multiple)==FilesController::StatusCancelled) break;
+    }
 }
 
 
