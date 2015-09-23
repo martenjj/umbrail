@@ -208,7 +208,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
         // <ele> xsd:decimal </ele>
         double ele = p->elevation();
-        if (ele!=NAN) str.writeTextElement("ele", QString::number(ele, 'f', 3));
+        if (!isnan(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 3));
 
         // <time> xsd:dateTime </time>
         QDateTime dt = p->time();
