@@ -11,6 +11,7 @@
 #include <qundostack.h>
 #include <qdatetime.h>
 #include <qevent.h>
+#include <qclipboard.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -111,6 +112,7 @@ void MainWindow::init()
 
     slotSetModified(false);
     slotUpdateActionState();
+    slotUpdatePasteState();
 }
 
 
@@ -166,6 +168,10 @@ void MainWindow::setupActions()
     mRedoAction = KStandardAction::redo(mUndoStack, SLOT(redo()), actionCollection());
     mRedoAction->setEnabled(false);
     mRedoText = mRedoAction->text();
+
+    mPasteAction = KStandardAction::paste(this, SLOT(slotPaste()), actionCollection());
+    mPasteAction->setEnabled(false);
+    connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(slotUpdatePasteState()));
 
     a = actionCollection()->addAction("track_expand_all");
     a->setText(i18n("Expand All"));
@@ -943,16 +949,14 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
 }
 
 
-void MainWindow::dropEvent(QDropEvent *ev)
+bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 {
-    if (ev->dropAction()!=Qt::CopyAction) return;
-    const QMimeData *mimeData = ev->mimeData();
-    if (!mimeData->hasUrls()) return;
+    if (!mimeData->hasUrls()) return (false);
+    QList<QUrl> urls = mimeData->urls();
+    const bool multiple = (urls.count()>1);
 
     const QStringList imageTypes = KImageIO::mimeTypes(KImageIO::Reading);
 
-    QList<QUrl> urls = mimeData->urls();
-    const bool multiple = (urls.count()>1);
     for (QList<QUrl>::const_iterator it = urls.constBegin(); it!=urls.constEnd(); ++it)
     {
         const QUrl url = (*it);
@@ -960,11 +964,43 @@ void MainWindow::dropEvent(QDropEvent *ev)
 
         if (imageTypes.contains(mime->name()))
         {
-            kDebug() << "accept dropped image" << url << "mimetype" << mime->name();
+            kDebug() << "accept image" << url << "mimetype" << mime->name();
             if (filesController()->importPhoto(url, multiple)==FilesController::StatusCancelled) break;
         }
-        else kWarning() << "reject dropped" << url << "mimetype" << mime->name();
+        else kWarning() << "reject" << url << "mimetype" << mime->name();
     }
 
-    ev->accept();
+    return (true);
+}
+
+
+void MainWindow::dropEvent(QDropEvent *ev)
+{
+    if (ev->dropAction()!=Qt::CopyAction) return;
+    const QMimeData *mimeData = ev->mimeData();
+    if (acceptMimeData(mimeData)) ev->accept();
+}
+
+
+void MainWindow::slotPaste()
+{
+    const QClipboard *clip = QApplication::clipboard();
+    if (clip->ownsClipboard()) return;			// has our internal data
+
+    const QMimeData *mimeData = clip->mimeData();
+    acceptMimeData(mimeData);
+}
+
+
+void MainWindow::slotUpdatePasteState()
+{
+    const QClipboard *clip = QApplication::clipboard();
+    bool enable = false;
+    if (!clip->ownsClipboard())				// has data from someone else
+    {
+        const QMimeData *mimeData = clip->mimeData();
+        if (mimeData->hasUrls()) enable = true;		// one or more URLs
+    }
+
+    mPasteAction->setEnabled(enable);
 }

@@ -14,6 +14,7 @@ class QSplitter;
 class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
+class QMimeData;
 
 class KAction;
 class KToggleAction;
@@ -63,6 +64,7 @@ protected slots:
     void slotImportFile();
     void slotPreferences();
     void slotImportPhoto();
+    void slotPaste();
 
     void slotCanUndoChanged(bool can);
     void slotCanRedoChanged(bool can);
@@ -87,8 +89,11 @@ private:
     bool save(const KUrl &to);
     bool load(const KUrl &from);
 
+    bool acceptMimeData(const QMimeData *mimeData);
+
 private slots:
     void slotUpdateActionState();
+    void slotUpdatePasteState();
 
 private:
     Project *mProject;
@@ -102,6 +107,8 @@ private:
     KAction *mSaveProjectAsAction;
     KAction *mExportAction;
     KAction *mImportAction;
+
+    KAction *mPasteAction;
 
     KAction *mUndoAction;
     KAction *mRedoAction;
