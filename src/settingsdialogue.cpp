@@ -78,6 +78,13 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mLineColourButton->setToolTip(kcsi->toolTip());
     fl->addRow(kcsi->label(), mLineColourButton);
 
+    kcsi = Settings::self()->showTrackArrowsItem();
+    mShowTrackArrowsCheck = new QCheckBox(kcsi->label(), w);
+    mShowTrackArrowsCheck->setChecked(Settings::showTrackArrows());
+    connect(mShowTrackArrowsCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    mShowTrackArrowsCheck->setToolTip(kcsi->toolTip());
+    fl->addRow(QString::null, mShowTrackArrowsCheck);
+
     fl->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
 
     kcsi = Settings::self()->selectedUseSystemColoursItem();
@@ -109,6 +116,7 @@ void SettingsMapStylePage::slotSave()
     Settings::setSelectedMarkOuter(mSelectedOuterButton->color());
     Settings::setSelectedMarkInner(mSelectedInnerButton->color());
     Settings::setSelectedUseSystemColours(mSelectedUseSystemCheck->isChecked());
+    Settings::setShowTrackArrows(mShowTrackArrowsCheck->isChecked());
 
     // Update the global style from the new application settings
     Style::globalStyle()->setLineColour(mLineColourButton->color());
@@ -120,6 +128,10 @@ void SettingsMapStylePage::slotDefaults()
     KConfigSkeletonItem *kcsi = Settings::self()->lineColourItem();
     kcsi->setDefault();
     mLineColourButton->setColor(Settings::lineColour());
+
+    kcsi = Settings::self()->showTrackArrowsItem();
+    kcsi->setDefault();
+    mShowTrackArrowsCheck->setChecked(Settings::showTrackArrows());
 
     kcsi = Settings::self()->selectedUseSystemColoursItem();
     kcsi->setDefault();

@@ -13,6 +13,12 @@
       <default code="true">Qt::magenta</default>
     </entry>
 
+    <entry name="ShowTrackArrows" type="Bool">
+      <label>Show track direction of travel</label>
+      <tooltip>Show the direction of travel using arrows on tracks.</tooltip>
+      <default>true</default>
+    </entry>
+
     <entry name="SelectedMarkOuter" type="Color">
       <label>Point border:</label>
       <tooltip>The border colour used to display selected points.</tooltip>
