@@ -29,6 +29,14 @@
 #undef DEBUG_DRAGGING
 #undef DEBUG_SELECTING
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+// Painting parameters							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+static const int POINT_SELECTED_WIDTH = 3;		// line width for selected points
+
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
@@ -444,4 +452,21 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
     }
 
     return (false);					// pass event on
+}
+
+
+
+void LayerBase::setSelectionColours(QPainter *painter, bool setBrush) const
+{
+    if (Settings::selectedUseSystemColours())		// use system selection colours
+    {
+        KColorScheme sch(QPalette::Active, KColorScheme::Selection);
+        painter->setPen(QPen(sch.background().color(), POINT_SELECTED_WIDTH));
+        if (setBrush) painter->setBrush(sch.foreground());
+    }
+    else						// our own custom colours
+    {
+        painter->setPen(QPen(Settings::selectedMarkOuter(), POINT_SELECTED_WIDTH));
+        if (setBrush) painter->setBrush(Settings::selectedMarkInner());
+    }
 }

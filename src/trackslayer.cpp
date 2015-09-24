@@ -13,19 +13,30 @@
 #include "mapview.h"
 #include "trackdata.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 #undef DEBUG_PAINTING
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+// Painting parameters							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 static const int POINTS_PER_BLOCK = 50;			// points drawn per polyline
 static const int POINT_CIRCLE_SIZE = 10;		// size of point circle
-static const int POINT_SELECTED_WIDTH = 3;		// line width for selected points
 
 static const int ARROW_PER_SEGMENTS = 5;		// arrow every this many segments
 static const int ARROW_MIN_LENGTH = 20;			// minimum segment length for arrow
 static const double ARROW_TRI_WIDTH = 10.0/2.0;		// half of direction arrow width
 static const double ARROW_TRI_HEIGHT = 12.0/3.0;	// third of direction arrow height
 
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
 TracksLayer::TracksLayer(QWidget *pnt)
     : LayerBase(pnt)
@@ -212,24 +223,10 @@ void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
             painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
         }
 
-
-        // TODO: colour selection to base class
-
         // Finally, draw the selected points along the line, if there are any.
         // Do this last so that the selection markers always show up on top.
 
-        if (Settings::selectedUseSystemColours())
-        {						// use system selection colours
-            KColorScheme sch(QPalette::Active, KColorScheme::Selection);
-            painter->setPen(QPen(sch.background().color(), POINT_SELECTED_WIDTH));
-            painter->setBrush(sch.foreground());
-        }
-        else						// our own custom colours
-        {
-            painter->setPen(QPen(Settings::selectedMarkOuter(), POINT_SELECTED_WIDTH));
-            painter->setBrush(Settings::selectedMarkInner());
-        }
-
+        setSelectionColours(painter);
         for (int i = 0; i<cnt; ++i)
         {
             const TrackDataTrackpoint *tdp = static_cast<const TrackDataTrackpoint *>(item->childAt(i));

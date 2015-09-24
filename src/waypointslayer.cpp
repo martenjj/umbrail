@@ -13,12 +13,24 @@
 #include "trackdata.h"
 
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
 #undef DEBUG_PAINTING
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+// Painting parameters							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 static const int POINT_CIRCLE_SIZE = 20;		// size of selected circle
-static const int POINT_SELECTED_WIDTH = 3;		// line width for selected points
 
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 
 WaypointsLayer::WaypointsLayer(QWidget *pnt)
     : LayerBase(pnt)
@@ -82,19 +94,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         // Not "isSelected" - only for the selected waypoint, not the container
         if (tdw->selectionId()==mSelectionId)
         {
-            // TODO: colour selection to base class
-            if (Settings::selectedUseSystemColours())
-            {						// use system selection colours
-                KColorScheme sch(QPalette::Active, KColorScheme::Selection);
-                painter->setPen(QPen(sch.background().color(), POINT_SELECTED_WIDTH));
-                //painter->setBrush(sch.foreground());
-            }
-            else					// our own custom colours
-            {
-                painter->setPen(QPen(Settings::selectedMarkOuter(), POINT_SELECTED_WIDTH));
-                //painter->setBrush(Settings::selectedMarkInner());
-            }
-
+            setSelectionColours(painter, false);	// pen only, not brush
             painter->drawEllipse(coord, POINT_CIRCLE_SIZE, POINT_CIRCLE_SIZE);
         }
 

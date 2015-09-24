@@ -11,6 +11,7 @@ using namespace Marble;
 
 class QMouseEvent;
 class QElapsedTimer;
+class QPainter;
 class TrackDataItem;
 class TrackDataAbstractPoint;
 class MapView;
@@ -82,6 +83,7 @@ protected:
     virtual void doPaintDrag(const SelectionRun *run, GeoPainter *painter) const = 0;
 
     GeoDataCoordinates applyOffset(const GeoDataCoordinates &coords) const;
+    void setSelectionColours(QPainter *painter, bool setBrush = true) const;
 
 private:
     void paintDataTree(const TrackDataItem *item, GeoPainter *painter, bool doSelected, bool parentSelected);
