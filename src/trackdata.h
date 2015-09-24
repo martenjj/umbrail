@@ -120,7 +120,8 @@ namespace TrackData
         StatusInvalid = -1,
         StatusNone = 0,
         StatusTodo,
-        StatusDone
+        StatusDone,
+        StatusQuestion
     };
 
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);

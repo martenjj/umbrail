@@ -147,6 +147,7 @@ case COL_NAME:
                 KColorScheme sch(QPalette::Normal);
                 if (s==TrackData::StatusTodo) return (sch.foreground(KColorScheme::NegativeText));
                 if (s==TrackData::StatusDone) return (sch.foreground(KColorScheme::PositiveText));
+                if (s==TrackData::StatusQuestion) return (sch.foreground(KColorScheme::NeutralText));
             }
         }
         break;

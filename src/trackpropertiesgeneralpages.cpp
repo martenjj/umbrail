@@ -178,6 +178,7 @@ void TrackItemGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
     mStatusCombo->addItem(KIcon("task-reject"), i18n("(None)"), TrackData::StatusNone);
     mStatusCombo->addItem(KIcon("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
     mStatusCombo->addItem(KIcon("task-complete"), i18n("Done"), TrackData::StatusDone);
+    mStatusCombo->addItem(KIcon("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
 
     if (items->count()>1)
     {
