@@ -627,16 +627,10 @@ void MainWindow::slotImportPhoto()
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::Files|KFile::LocalOnly);
-    d.setInlinePreviewShown( true );
+    d.setInlinePreviewShown(true);
 
     if (!d.exec()) return;
-    const KUrl::List urls = d.selectedUrls();
-    const bool multiple = (urls.count()>1);
-    for (KUrl::List::const_iterator it = urls.constBegin(); it!=urls.constEnd(); ++it)
-    {
-        const KUrl u = (*it);
-        if (filesController()->importPhoto(u, multiple)==FilesController::StatusCancelled) break;
-    }
+    filesController()->importPhoto(d.selectedUrls());
 }
 
 
@@ -953,24 +947,30 @@ bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 {
     if (!mimeData->hasUrls()) return (false);
     QList<QUrl> urls = mimeData->urls();
-    const bool multiple = (urls.count()>1);
 
     const QStringList imageTypes = KImageIO::mimeTypes(KImageIO::Reading);
 
+    KUrl::List validUrls;
     for (QList<QUrl>::const_iterator it = urls.constBegin(); it!=urls.constEnd(); ++it)
     {
-        const QUrl url = (*it);
+        const KUrl url = (*it);
         const KMimeType::Ptr mime = KMimeType::findByUrl(url);
 
         if (imageTypes.contains(mime->name()))
         {
             kDebug() << "accept image" << url << "mimetype" << mime->name();
-            if (filesController()->importPhoto(url, multiple)==FilesController::StatusCancelled) break;
+            validUrls.append(url);
         }
         else kWarning() << "reject" << url << "mimetype" << mime->name();
     }
 
-    return (true);
+    if (validUrls.isEmpty())				// no usable URLs found
+    {
+        KMessageBox::sorry(this, i18n("Don't know what to do with any of the pasted or dropped URLs"));
+        return (false);
+    }
+
+    return (filesController()->importPhoto(validUrls)!=FilesController::StatusCancelled);
 }
 
 

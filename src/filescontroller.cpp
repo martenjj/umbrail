@@ -66,6 +66,8 @@ FilesController::FilesController(QObject *pnt)
     connect(mView, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
     connect(mDataModel, SIGNAL(clickedItem(const QModelIndex &,unsigned int)),
             mView, SLOT(slotClickedItem(const QModelIndex &,unsigned int)));
+
+    mWarnedNoTimezone = false;
 }
 
 
@@ -324,147 +326,204 @@ static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
 }
 
 
-FilesController::Status FilesController::importPhoto(const KUrl &importFrom, bool multiple)
+// true => time OK, false => needs conversion but can't
+bool FilesController::adjustTimeSpec(QDateTime &dt)
 {
-    kDebug() << importFrom;
-    if (!importFrom.isValid()) return (FilesController::StatusFailed);
-    // TODO: check must be local file
+    if (!dt.isValid()) return (true);			// nothing can be done
+    const Qt::TimeSpec ts = dt.timeSpec();
+    if (ts==Qt::UTC) return (true);			// nothing to do
+    if (ts==Qt::OffsetFromUTC)				// not sure what to do
+    {
+        kWarning() << "Don't know what to do with OffsetFromUTC time";
+        return (false);
+    }
 
-    double alt = 0;
-    double lat, lon;
-    const TrackDataAbstractPoint *sourcePoint = NULL;
+    Q_ASSERT(ts==Qt::LocalTime);			// the only possibility left
 
-#ifdef HAVE_KEXIV2
-    KExiv2 exi(importFrom.toLocalFile());
-    kDebug() << "Exiv2 data:";
-    kDebug() << "  dimensions" << exi.getImageDimensions();
-    kDebug() << "  orientation" << exi.getImageOrientation();
+    // Local time needs to be converted to UTC (using the time zone of the file)
+    // in order to correspond with the recording times.  This means that a
+    // time zone needs to be set for meaningful results.
 
-    // This appears to return the date/time in Qt::LocalTime specification.
-    QDateTime dt = exi.getImageDateTime();
-    kDebug() << "  datetime" << dt << "spec" << dt.timeSpec();
-    bool gpsValid = exi.getGPSInfo(alt,lat,lon);
-    kDebug() << "  gps valid?" << gpsValid << "alt" << alt << "lat" << lat << "lon" << lon;
+    QString zone = model()->rootFileItem()->timeZone();	// get the file time zone set
+    if (zone.isEmpty()) return (false);			// if none, can't convert
+
+    KTimeZone tz(KSystemTimeZones::zone(zone));
+    kDebug() << "file time zone" << tz.name() << "offset" << tz.offset(time(NULL));
+    dt = tz.toUtc(dt);
+    kDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
+    return (true);
+}
+
+
+FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
+{
+    int q;						// status for questions
+
+    QString zone = model()->rootFileItem()->timeZone();	// get the file time zone set
+    if (zone.isEmpty() && !mWarnedNoTimezone)		// message only once per file
+    {
+        q = KMessageBox::warningContinueCancel(mainWindow(),
+                                               i18n("<qt>No time zone has been set for this file.<nl/>Locating by time and/or the time of<nl/>created waypoints may be incorrect."),
+                                               i18n("No Time Zone"));
+
+        if (q==KMessageBox::Cancel) return (FilesController::StatusCancelled);
+        mWarnedNoTimezone = true;
+    }
+
+    const int total = urls.count();
+    const bool multiple = (total>1);
+    FilesController::Status result = FilesController::StatusOk;
+    bool containerCreated = false;
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
-    cmd->setText(i18n("Import Photo"));
+    cmd->setText(i18np("Import Photo", "Import %1 Photos", total));
 
-    QString messageText;
-    QString statusText;
-    bool matched = false;
+    for (int i = 0; i<total; ++i)
+    {
+        const KUrl &importFrom = urls[i];
+        kDebug() << importFrom;
 
-    if (gpsValid && Settings::photoUseGps())
-    {
-        messageText = i18n("<qt>The image file <filename>%1</filename> contained a valid GPS position.<nl/>The waypoint will be created at that position.", importFrom.fileName());
-        statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.pathOrUrl());
-        matched = true;
-    }
-    else
-    {
-        if (dt.isValid() && Settings::photoUseTime())
+        if (!importFrom.isValid()) continue;
+        if (!importFrom.isLocalFile())
         {
-            if (dt.timeSpec()==Qt::LocalTime)
+            const QString messageText = i18n("<qt><filename>%1</filename> is not a local file", importFrom.pathOrUrl());
+            if (!multiple) KMessageBox::sorry(mainWindow(), messageText, i18n("Cannot Import"));
+            else
             {
-                // If this is local time, then it needs to be converted to UTC
-                // (using the time zone of the file) in order to correspond with
-                // the recording times.  This means that a time zone needs to
-                // be set for meaningful results.
+                q = KMessageBox::warningContinueCancel(mainWindow(),
+                                                       messageText,
+                                                       i18n("Cannot Import"),
+                                                       KStandardGuiItem::cont(),
+                                                       KGuiItem(i18nc("@action:button", "Cancel All"), KStandardGuiItem::cancel().icon()));
+                if (q==KMessageBox::Continue) continue;
+            }
+            return (FilesController::StatusCancelled);
+        }
 
-                QString zone = model()->rootFileItem()->timeZone();
-                if (!zone.isEmpty())			// get the file time zone set
+        double alt = 0;
+        double lat, lon;
+        const TrackDataAbstractPoint *sourcePoint = NULL;
+
+#ifdef HAVE_KEXIV2
+        KExiv2 exi(importFrom.toLocalFile());
+        kDebug() << "Exiv2 data:";
+        kDebug() << "  dimensions" << exi.getImageDimensions();
+        kDebug() << "  orientation" << exi.getImageOrientation();
+
+        // This appears to return the date/time in Qt::LocalTime specification.
+        QDateTime dt = exi.getImageDateTime();
+        kDebug() << "  datetime" << dt << "spec" << dt.timeSpec();
+        bool gpsValid = exi.getGPSInfo(alt,lat,lon);
+        kDebug() << "  gps valid?" << gpsValid << "alt" << alt << "lat" << lat << "lon" << lon;
+
+        QString messageText;
+        QString statusText;
+        bool matched = false;
+
+        adjustTimeSpec(dt);				// check time, even if using GPS
+
+        if (gpsValid && Settings::photoUseGps())
+        {
+            messageText = i18n("<qt>The image file <filename>%1</filename> contained a valid GPS position.<nl/>The waypoint will be created at that position.", importFrom.fileName());
+            statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.pathOrUrl());
+            matched = true;
+        }
+        else
+        {
+            if (dt.isValid() && Settings::photoUseTime())
+            {
+                closestDiff = INT_MAX;
+                closestPoint = NULL;
+                findChildWithTime(model()->rootFileItem(), dt);
+
+                if (closestPoint!=NULL && closestDiff<=Settings::photoTimeThreshold())
                 {
-                    KTimeZone tz(KSystemTimeZones::zone(zone));
-                    kDebug() << "file time zone" << tz.name() << "offset" << tz.offset(time(NULL));
-                    dt = tz.toUtc(dt);
-                    kDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
+                    messageText = i18np("<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
+                                        "<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
+                                        closestDiff, closestPoint->name(), importFrom.fileName());
+                    statusText = i18n("<qt>Imported <filename>%1</filename> at date/time position", importFrom.pathOrUrl());
+
+                    sourcePoint = closestPoint;
+                    lat = closestPoint->latitude();
+                    lon = closestPoint->longitude();
+                    alt = closestPoint->elevation();
+                    matched = true;
                 }
                 else
                 {
-                    int q = KMessageBox::warningContinueCancel(mainWindow(),
-                                                               i18n("<qt>No time zone has been set for this file.<nl/>Time comparison may not work correctly."),
-                                                               i18n("No Time Zone"));
-                    if (q==KMessageBox::Cancel) return (FilesController::StatusFailed);
+                    messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
                 }
             }
+        }
 
-            closestDiff = INT_MAX;
-            closestPoint = NULL;
-            findChildWithTime(model()->rootFileItem(), dt);
+        if (!matched)
+#endif
+        {
+            if (messageText.isEmpty()) messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
+            statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.pathOrUrl());
+            lat = mainWindow()->mapController()->view()->centerLatitude();
+            lon = mainWindow()->mapController()->view()->centerLongitude();
+        }
 
-            if (closestPoint!=NULL && closestDiff<=Settings::photoTimeThreshold())
-            {
-                messageText = i18np("<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
-                                    "<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
-                                    closestDiff, closestPoint->name(), importFrom.fileName());
-                statusText = i18n("<qt>Imported <filename>%1</filename> at date/time position", importFrom.pathOrUrl());
+        if (messageText.isEmpty()) continue;		// nothing to do
 
-                sourcePoint = closestPoint;
-                lat = closestPoint->latitude();
-                lon = closestPoint->longitude();
-                alt = closestPoint->elevation();
-                matched = true;
-            }
+        if (multiple)
+        {
+            q = KMessageBox::questionYesNoCancel(mainWindow(),
+                                                 messageText,
+                                                 i18n("Create Waypoint?"),
+                                                 KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
+                                                 KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()),
+                                                 KGuiItem(i18nc("@action:button", "Cancel All"), KStandardGuiItem::cancel().icon()));
+        }
+        else
+        {
+            q = KMessageBox::questionYesNo(mainWindow(),
+                                           messageText,
+                                           i18n("Create Waypoint?"),
+                                           KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
+                                           KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()));
+        }
+        if (q==KMessageBox::Cancel) return (FilesController::StatusCancelled);
+        if (q==KMessageBox::No)
+        {
+            if (result==FilesController::StatusOk) result = FilesController::StatusFailed;
+            continue;
+        }
+
+        // Find or create a folder to place the resulting waypoint in
+        TrackDataFolder *foundFolder = TrackData::findChildFolder(PHOTO_FOLDER_NAME, model()->rootFileItem());
+        if (foundFolder==NULL)				// find where to store point
+        {
+            if (containerCreated) kDebug() << "new folder already added";
             else
             {
-                messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
+                kDebug() << "need to add new folder";
+                AddContainerCommand *cmd1 = new AddContainerCommand(this, cmd);
+                cmd1->setData(TrackData::Folder, model()->rootFileItem());
+                cmd1->setName(PHOTO_FOLDER_NAME);
+                containerCreated = true;
             }
         }
+
+        // Create the waypoint
+        AddPhotoCommand *cmd2 = new AddPhotoCommand(this, cmd);
+        cmd2->setData(importFrom.fileName(), lat, lon, foundFolder, sourcePoint);
+        cmd2->setLink(importFrom);
+        cmd2->setTime(dt);
+
+        emit statusMessage(statusText);
     }
 
-    if (!matched)
-#endif
-    {
-        if (messageText.isEmpty()) messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
-        statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.pathOrUrl());
-        lat = mainWindow()->mapController()->view()->centerLatitude();
-        lon = mainWindow()->mapController()->view()->centerLongitude();
+    if (cmd->childCount()==0)				// anything to actually do?
+    {							// nothing added above, so
+        delete cmd;					// don't need this after all
+        return (result);
     }
-
-    if (messageText.isEmpty()) return (FilesController::StatusFailed);
-							// nothing to do
-
-    int q;
-    if (multiple)
-    {
-        q = KMessageBox::questionYesNoCancel(mainWindow(),
-                                       messageText,
-                                       i18n("Create Waypoint?"),
-                                       KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
-                                       KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()),
-                                       KGuiItem(i18nc("@action:button", "Cancel All"), KStandardGuiItem::cancel().icon()));
-    }
-    else
-    {
-        q = KMessageBox::questionYesNo(mainWindow(),
-                                       messageText,
-                                       i18n("Create Waypoint?"),
-                                       KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
-                                       KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()));
-    }
-
-    if (q==KMessageBox::Cancel) return (FilesController::StatusCancelled);
-    if (q==KMessageBox::No) return (FilesController::StatusFailed);
-
-    // Find or create a folder to place the resulting waypoint in
-    TrackDataFolder *foundFolder = TrackData::findChildFolder(PHOTO_FOLDER_NAME, model()->rootFileItem());
-    if (foundFolder==NULL)				// find where to store point
-    {
-        kDebug() << "need to add new folder";
-        AddContainerCommand *cmd1 = new AddContainerCommand(this, cmd);
-        cmd1->setData(TrackData::Folder, model()->rootFileItem());
-        cmd1->setName(PHOTO_FOLDER_NAME);
-    }
-
-    // Create the waypoint
-    AddPhotoCommand *cmd2 = new AddPhotoCommand(this, cmd);
-    cmd2->setData(importFrom.fileName(), lat, lon, foundFolder, sourcePoint);
-    cmd2->setLink(importFrom);
-    cmd2->setTime(dt);
 
     mainWindow()->executeCommand(cmd);
     emit modified();
-    emit statusMessage(statusText);
-    return (FilesController::StatusOk);
+    return (result);
 }
 
 

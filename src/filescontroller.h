@@ -7,9 +7,13 @@
 
 #include <qobject.h>
 
+#include <kurl.h>
+
+
+class QDateTime;
 
 class KConfig;
-class KUrl;
+// class KUrl;
 
 class FilesView;
 class FilesModel;
@@ -47,7 +51,7 @@ public:
 
     FilesController::Status importFile(const KUrl &importFrom);
     FilesController::Status exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
-    FilesController::Status importPhoto(const KUrl &importFrom, bool multiple = false);
+    FilesController::Status importPhoto(const KUrl::List &urls);
 
     static QString allImportFilters();
     static QString allExportFilters();
@@ -75,6 +79,9 @@ private:
     bool reportFileError(bool saving, const KUrl &file, const QString &msg);
     bool reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep);
 
+    bool adjustTimeSpec(QDateTime &dt);
+    FilesController::Status importPhotoInternal(const KUrl &importFrom, bool multiple);
+
 private slots:
     void slotUpdateActionState();
 
@@ -84,6 +91,7 @@ private:
 #ifdef SORTABLE_VIEW
     QSortFilterProxyModel *mProxyModel;
 #endif
+    bool mWarnedNoTimezone;
 };
  
 #endif							// FILESCONTROLLER_H
