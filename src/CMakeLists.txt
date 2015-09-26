@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		10-Sep-15					#
+#  Edit:		25-Sep-15					#
 #########################################################################
 
 project(navtracks)
@@ -109,7 +109,7 @@ if (EXIV2_FOUND)
 endif (EXIV2_FOUND)
 
 kde4_add_executable(navtracks ${navtracks_SRCS})
-target_link_libraries(navtracks ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${MARBLE_LIBRARIES})
+target_link_libraries(navtracks ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${KDE4_KPARTS_LIBS} ${MARBLE_LIBRARIES})
 if (PHONON_FOUND)
   target_link_libraries(navtracks ${PHONON_LIBS})
 endif (PHONON_FOUND)

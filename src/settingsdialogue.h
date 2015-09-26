@@ -7,6 +7,7 @@
 
 
 class QCheckBox;
+class QComboBox;
 class QSpinBox;
 class KColorButton;
 class KUrlRequester;
@@ -73,6 +74,26 @@ private:
     QCheckBox *mUseGpsCheck;
     QCheckBox *mUseTimeCheck;
     QSpinBox *mTimeThresholdSpinbox;
+};
+
+
+class SettingsMediaPage : public KPageWidgetItem
+{
+    Q_OBJECT
+
+public:
+    SettingsMediaPage(QWidget *pnt = NULL);
+    virtual ~SettingsMediaPage()				{}
+
+public slots:
+    void slotSave();
+    void slotDefaults();
+
+private slots:
+    void slotItemChanged();
+
+private:
+    QComboBox *mPhotoViewerCombo;
 };
 
 #endif							// SETTINGSDIALOGUE_H

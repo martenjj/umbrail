@@ -4,6 +4,7 @@
 #include <qformlayout.h>
 #include <qformlayout.h>
 #include <qcheckbox.h>
+#include <qcombobox.h>
 #include <qgroupbox.h>
 #include <qspinbox.h>
 
@@ -13,6 +14,8 @@
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
 #include <kconfigskeleton.h>
+#include <kservice.h>
+#include <kmimetypetrader.h>
 
 #include "settings.h"
 #include "style.h"
@@ -40,6 +43,12 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
     page = new SettingsFilesPage(this);
+    addPage(page);
+    connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
+    connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
+    connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
+
+    page = new SettingsMediaPage(this);
     addPage(page);
     connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
     connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
@@ -255,4 +264,63 @@ void SettingsFilesPage::slotDefaults()
 void SettingsFilesPage::slotItemChanged()
 {
     mTimeThresholdSpinbox->setEnabled(mUseTimeCheck->isChecked());
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsMediaPage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
+    : KPageWidgetItem(new QWidget(pnt))
+{
+    setName(i18nc("@title:tab", "Media"));
+    setHeader(i18n("Settings for notes and photographs"));
+    setIcon(KIcon("applications-multimedia"));
+
+    QWidget *w = widget();
+    QFormLayout *fl = new QFormLayout(w);
+
+    const KConfigSkeletonItem *ski = Settings::self()->photoViewModeItem();
+    Q_ASSERT(ski!=NULL);
+    mPhotoViewerCombo = new QComboBox(w);
+    mPhotoViewerCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mPhotoViewerCombo);
+
+    int selectIndex = -1;
+    KService::List services = KMimeTypeTrader::self()->query("image/jpeg", "KParts/ReadOnlyPart");
+    if (services.isEmpty()) kWarning() << "No viewer part available";
+    for (KService::List::const_iterator it = services.constBegin(); it!=services.constEnd(); ++it)
+    {
+        const KService::Ptr service = (*it);
+
+        mPhotoViewerCombo->addItem(KIcon(service->icon()), service->name(), service->storageId());
+        if (service->storageId()==Settings::photoViewMode()) selectIndex = mPhotoViewerCombo->count()-1;
+    }
+
+    if (selectIndex!=-1) mPhotoViewerCombo->setCurrentIndex(selectIndex);
+    if (mPhotoViewerCombo->count()==0) mPhotoViewerCombo->setEnabled(false);
+
+    slotItemChanged();
+}
+
+
+void SettingsMediaPage::slotSave()
+{
+    if (!mPhotoViewerCombo->isEnabled()) return;
+    Settings::setPhotoViewMode(mPhotoViewerCombo->itemData(mPhotoViewerCombo->currentIndex()).toString());
+}
+
+
+void SettingsMediaPage::slotDefaults()
+{
+    if (!mPhotoViewerCombo->isEnabled()) return;
+    mPhotoViewerCombo->setCurrentIndex(0);
+    slotItemChanged();
+}
+
+
+void SettingsMediaPage::slotItemChanged()
+{
 }

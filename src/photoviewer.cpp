@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	17-Jun-15						//
+//  Edit:	26-Sep-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,75 +27,108 @@
 
 #include "photoviewer.h"
 
-#include <qgridlayout.h>
-#include <qapplication.h>
-#include <qdesktopwidget.h>
-#include <qlabel.h>
+#include <qevent.h>
 
 #include <kdebug.h>
-#include <klocale.h>
 #include <kurl.h>
-#include <kglobal.h>
-#include <kconfig.h>
-#include <kconfiggroup.h>
-#include <kpushbutton.h>
+#include <kservice.h>
+#include <kmimetype.h>
+#include <kmimetypetrader.h>
+#include <kactioncollection.h>
+#include <kstandardaction.h>
+#include <kmenubar.h>
+
+#include "settings.h"
 
 
 PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
-    : QWidget(pnt)
+    : KParts::MainWindow(pnt, Qt::Window)
 {
     kDebug() << url;
 
     setObjectName("PhotoViewer");
     setWindowTitle(i18n("Photo Viewer"));
     setAttribute(Qt::WA_DeleteOnClose);
- 
-    QGridLayout *gl = new QGridLayout(this);
+    setXMLFile("viewerui.rc");
 
-    QPixmap pix(url.path());
-    if (pix.width()>pix.height())
-    {
-        pix = pix.scaled(800, 600, Qt::KeepAspectRatio);
-        mAspect = "L";
+    KService::Ptr service;
+
+    QString viewMode = Settings::photoViewMode();	// selected view mode from settings
+    kDebug() << "view mode from settings" << viewMode;
+    if (!viewMode.isEmpty())				// if there is one,
+    {							// get the service from that
+        if (viewMode.endsWith(".desktop")) viewMode.chop(8);
+        service = KService::serviceByDesktopName(viewMode);
+        if (service.isNull())
+        {
+            kWarning() << "Viewer part" << viewMode << "not available";
+            return;
+        }
     }
     else
     {
-        pix = pix.scaled(600, 800, Qt::KeepAspectRatio);
-        mAspect = "P";
+        KMimeType::Ptr mimeType = KMimeType::findByUrl(url);
+        kDebug() << "mime type" << mimeType->name();	// get services for MIME type
+        KService::List services = KMimeTypeTrader::self()->query(mimeType->name(), "KParts/ReadOnlyPart");
+        if (services.isEmpty())
+        {
+            kWarning() << "No viewer parts available for" << mimeType->name();
+            return;
+        }
+
+        service = services.first();			// take the first preference
     }
 
-    QLabel *l = new QLabel(this);
-    l->setPixmap(pix);
-    l->setScaledContents(true);
-    gl->addWidget(l, 0, 0, 1, -1);
-    gl->setRowStretch(0, 1);
+    Q_ASSERT(!service.isNull());
+    kDebug() << "  service" << service->name() << "id" << service->storageId();
 
-    QPushButton *but = new KPushButton(KStandardGuiItem::close(), this);
-    connect(but, SIGNAL(clicked()), SLOT(close()));
-    gl->addWidget(but, 1, 1, Qt::AlignRight);
+    // from https://techbase.kde.org/Development/Tutorials/Using_KParts
+    mPart = service->createInstance<KParts::ReadOnlyPart>(NULL);
+    if (mPart==NULL)
+    {
+        kWarning() << "Unable to create viewer part";
+        return;
+    }
 
-    // from KDialog::restoreDialogSize()
-    int scnum = QApplication::desktop()->screenNumber(parentWidget());
-    QRect desk = QApplication::desktop()->screenGeometry(scnum);
+    // Set up actions
+    actionCollection()->addAction(KStandardAction::Close, "file_close", this, SLOT(close()));
 
-    const KConfigGroup grp = KGlobal::config()->group(objectName());
-    int w = grp.readEntry( QString::fromLatin1("Width %1 %2").arg(desk.width()).arg(mAspect), 400);
-    int h = grp.readEntry(QString::fromLatin1("Height %1 %2").arg(desk.height()).arg(mAspect), 300);
-    resize(w, h);
+    // Create/merge the GUI
+    setCentralWidget(mPart->widget());
+    setupGUI(KXmlGuiWindow::ToolBar|KXmlGuiWindow::Keys);
+    createGUI(mPart);
+
+    // Our own XMLGUI file for this main window has to contain a menu bar
+    // item for any menu that the part may provide;  otherwise, any such
+    // new menu bar items will appear at the end of our menu bar!  However,
+    // this results in these menu bar items appearing (as empty) even if the
+    // part doesn't provide any actions for them.  So, after the part's XMLGUI
+    // has been merged with ours, we hide any empty menu bar items.
+    QList<QAction *> acts = menuBar()->actions();
+    for (int i = 0; i<acts.count(); ++i)
+    {
+        QAction *act = acts[i];
+        QMenu *menu = act->menu();
+        if (menu!=NULL && menu->isEmpty())
+        {
+            kDebug() << "hiding empty menu" << act->text();
+            act->setVisible(false);
+        }
+    }
+
+    setAutoSaveSettings(objectName(), true);
+    mPart->openUrl(url);
+}
+
+
+void PhotoViewer::keyPressEvent(QKeyEvent *ev)
+{
+    if (ev->key()==Qt::Key_Escape) close();
+    else QWidget::keyPressEvent(ev);
 }
 
 
 PhotoViewer::~PhotoViewer()
 {
-    // from KDialog::saveDialogSize()
-    int scnum = QApplication::desktop()->screenNumber(parentWidget());
-    QRect desk = QApplication::desktop()->screenGeometry(scnum);
-
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    const QSize sizeToSave = size();
-    grp.writeEntry(QString::fromLatin1("Width %1 %2").arg(desk.width()).arg(mAspect), sizeToSave.width());
-    grp.writeEntry(QString::fromLatin1("Height %1 %2").arg(desk.height()).arg(mAspect), sizeToSave.height());
-    grp.sync();
-
     kDebug() << "done";
 }

@@ -89,6 +89,13 @@
     </entry>
   </group>
 
+  <group name="PhotoViewer">
+    <entry name="PhotoViewMode" key="Mode" type="String">
+      <label>Photo viewer:</label>
+      <tooltip>The embedded viewer to use for viewing photographs.</tooltip>
+    </entry>
+  </group>
+
   <group name="MainWindow">
     <entry name="MainWindowSplitterState" key="SplitterState" type="String">
     </entry>

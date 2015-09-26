@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	17-Jun-15						//
+//  Edit:	26-Sep-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -29,14 +29,15 @@
 #define PHOTOVIEWER_H
 
 
-#include <qwidget.h>
+#include <kparts/mainwindow.h>
 
 
-class QLabel;
+class QAction;
+class QKeyEvent;
 class KUrl;
 
 
-class PhotoViewer : public QWidget
+class PhotoViewer : public KParts::MainWindow
 {
     Q_OBJECT
 
@@ -44,8 +45,11 @@ public:
     PhotoViewer(const KUrl &url, QWidget *pnt = NULL);
     virtual ~PhotoViewer();
 
+protected:
+    virtual void keyPressEvent(QKeyEvent *ev);
+
 private:
-    QString mAspect;
+    KParts::ReadOnlyPart *mPart;
 };
 
 #endif							// PHOTOVIEWER_H
