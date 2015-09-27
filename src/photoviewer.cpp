@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	26-Sep-15						//
+//  Edit:	27-Sep-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -97,6 +97,7 @@ PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
     setCentralWidget(mPart->widget());
     setupGUI(KXmlGuiWindow::ToolBar|KXmlGuiWindow::Keys);
     createGUI(mPart);
+    setFocusPolicy(Qt::StrongFocus);
 
     // Our own XMLGUI file for this main window has to contain a menu bar
     // item for any menu that the part may provide;  otherwise, any such
