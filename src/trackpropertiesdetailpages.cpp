@@ -44,7 +44,7 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
     mFormLayout->addRow(i18nc("@label:textbox", "Time span:"), l);
     disableIfEmpty(l);
 
-    if (bothTimes)
+    if (bothTimes && dynamic_cast<TrackDataFile *>(items->first())==NULL)
     {
         tt = TrackData::sumTotalTravelTime(items);
         l = new TrackDataLabel(TrackData::formattedDuration(tt, blankIfZero), this);
