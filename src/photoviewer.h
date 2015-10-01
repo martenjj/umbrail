@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	27-Sep-15						//
+//  Edit:	28-Sep-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,6 +33,7 @@
 
 
 class QKeyEvent;
+class QMenuBar;
 class KUrl;
 
 
@@ -46,6 +47,9 @@ public:
 
 protected:
     virtual void keyPressEvent(QKeyEvent *ev);
+
+private:
+    void fixupMenuBar(QMenuBar *bar);
 
 private:
     KParts::ReadOnlyPart *mPart;

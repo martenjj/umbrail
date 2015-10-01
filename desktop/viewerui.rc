@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<kpartgui name="viewer"
+<gui name="viewer"
      version="1"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -7,30 +7,6 @@
                          http://www.kde.org/standards/kxmlgui/1.0/kxmlgui.xsd" >
  
   <MenuBar>
-    <Menu name="file">		<!-- Us/Okular/Gwenview -->
-      <Merge/>
-    </Menu>
-
-    <Menu name="edit">		<!-- Okular -->
-      <Separator/>
-    </Menu>
-
-    <Menu name="view">		<!-- Okular/Gwenview -->
-      <Separator/>
-    </Menu>
-
-    <Menu name="go">		<!-- Okular -->
-      <Separator/>
-    </Menu>
-
-    <Menu name="bookmarks">	<!-- Okular -->
-      <Separator/>
-    </Menu>
-
-    <Menu name="tools">		<!-- Okular -->
-      <Separator/>
-    </Menu>
-
   </MenuBar>
 
   <ToolBar name="viewerToolBar" noMerge="1">
@@ -39,4 +15,4 @@
     <Separator/>
   </ToolBar>
 
-</kpartgui>
+</gui>

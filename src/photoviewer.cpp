@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	27-Sep-15						//
+//  Edit:	01-Oct-15						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -98,24 +98,7 @@ PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
     setupGUI(KXmlGuiWindow::ToolBar|KXmlGuiWindow::Keys);
     createGUI(mPart);
     setFocusPolicy(Qt::StrongFocus);
-
-    // Our own XMLGUI file for this main window has to contain a menu bar
-    // item for any menu that the part may provide;  otherwise, any such
-    // new menu bar items will appear at the end of our menu bar!  However,
-    // this results in these menu bar items appearing (as empty) even if the
-    // part doesn't provide any actions for them.  So, after the part's XMLGUI
-    // has been merged with ours, we hide any empty menu bar items.
-    QList<QAction *> acts = menuBar()->actions();
-    for (int i = 0; i<acts.count(); ++i)
-    {
-        QAction *act = acts[i];
-        QMenu *menu = act->menu();
-        if (menu!=NULL && menu->isEmpty())
-        {
-            kDebug() << "hiding empty menu" << act->text();
-            act->setVisible(false);
-        }
-    }
+    fixupMenuBar(menuBar());
 
     setAutoSaveSettings(objectName(), true);
     mPart->openUrl(url);
@@ -132,4 +115,71 @@ void PhotoViewer::keyPressEvent(QKeyEvent *ev)
 PhotoViewer::~PhotoViewer()
 {
     kDebug() << "done";
+}
+
+
+//  The viewer part may provide its own menu bar entries, which are supposed
+//  to be merged with the existing ones (since we actually define no menus of
+//  our own, all from the standard XMLGUI definition) at the appropriate place.
+//  However, what actually seems to happen is that an new menu bar entries which
+//  the part provides appear at the end of the menu bar!
+//
+//  We cannot specify those menus at the appropriate place in our own XMLGUI
+//  file, since this would mean having to anticipiate all of the entries that a
+//  part may provide, and also the possibility of ending up with blank menu
+//  entries if the part doesn't provide them.  So what we do is to look along
+//  the menu bar, noting the actions for the "Settings", right alignment
+//  separator and "Help", assuming that they all come in that order with nothing
+//  intervening.  Then we remove those actions from the menu bar, and add them
+//  at the end in the appropriate order.
+
+void PhotoViewer::fixupMenuBar(QMenuBar *bar)
+{
+    kDebug();
+
+    QAction *sepAct = NULL;
+    QAction *helpAct = NULL;
+    QAction *settAct = NULL;
+
+    QList<QAction *> acts = bar->actions();
+    for (int i = 0; i<acts.count(); ++i)
+    {
+        QAction *act = acts[i];
+        //kDebug() << "act" << i << act->text() << "menu?" << (act->menu()!=NULL);
+        if (sepAct==NULL && act->text().isEmpty())			// the separator?
+        {
+            kDebug() << "separator found at" << i;
+            sepAct = act;
+            if (i>0) settAct = acts[i-1];
+            continue;
+        }
+
+        if (sepAct!=NULL && helpAct==NULL)
+        {
+            kDebug() << "help" << act->text() << "found at" << i;
+            helpAct = act;
+            break;
+        }
+    }
+
+    if (settAct!=NULL)
+    {
+        kDebug() << "moving settings to end";
+        bar->removeAction(settAct);
+        bar->addAction(settAct);
+    }
+
+    if (sepAct!=NULL)
+    {
+        kDebug() << "moving separator to end";
+        bar->removeAction(sepAct);
+        bar->addAction(sepAct);
+    }
+
+    if (helpAct!=NULL)
+    {
+        kDebug() << "moving help to end";
+        bar->removeAction(helpAct);
+        bar->addAction(helpAct);
+    }
 }
