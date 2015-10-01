@@ -18,6 +18,7 @@ class QMimeData;
 
 class KAction;
 class KToggleAction;
+class KSelectAction;
 class KSqueezedTextLabel;
 class KUrl;
 
@@ -122,6 +123,8 @@ private:
     KAction *mAddPointAction;
     KAction *mAddWaypointAction;
     KAction *mDeleteItemsAction;
+
+    KSelectAction *mWaypointStatusAction;
 
     KAction *mSplitTrackAction;
     KAction *mMergeTrackAction;

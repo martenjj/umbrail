@@ -57,6 +57,7 @@ public:
     static QString allExportFilters();
     static QString allProjectFilters(bool includeAllFiles);
 
+
 public slots:               
     void slotTrackProperties();
     void slotSplitSegment();
@@ -67,6 +68,7 @@ public slots:
     void slotAddPoint();
     void slotDeleteItems();
     void slotAddWaypoint(qreal lat = NAN, qreal lon = NAN);
+    void slotSetWaypointStatus();
 
 signals:
     void statusMessage(const QString &text);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="navmarks"
-     version="5"
+     version="6"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -32,6 +32,7 @@
       <Separator/>
       <Action name="map_go_selection"/>
       <Action name="track_play_media"/>
+      <Action name="waypoint_status"/>
       <Separator/>
       <Action name="track_split"/>
       <Action name="track_merge"/>
@@ -68,6 +69,7 @@
     <Action name="map_go_selection"/>
     <Action name="track_play_media"/>
     <Separator/>
+    <Action name="waypoint_status"/>
     <Action name="track_properties"/>
   </Menu>
 

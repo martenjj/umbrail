@@ -19,6 +19,7 @@
 #include <kaboutdata.h>
 #include <kaction.h>
 #include <ktoggleaction.h>
+#include <kselectaction.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
 #include <kstatusbar.h>
@@ -235,6 +236,26 @@ void MainWindow::setupActions()
     mPropertiesAction->setShortcut(KShortcut(Qt::CTRL+Qt::Key_Return, Qt::CTRL+Qt::Key_Enter));
     mPropertiesAction->setIcon(KIcon("document-properties"));
     connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
+
+    mWaypointStatusAction = new KSelectAction(i18nc("@action:inmenu", "Waypoint Status"), this);
+    mWaypointStatusAction->setToolBarMode(KSelectAction::MenuMode);
+    actionCollection()->addAction("waypoint_status", mWaypointStatusAction);
+
+    a = mWaypointStatusAction->addAction(KIcon("task-reject"), i18n("(None)"));
+    a->setData(TrackData::StatusNone);
+    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+
+    a = mWaypointStatusAction->addAction(KIcon("task-ongoing"), i18n("To Do"));
+    a->setData(TrackData::StatusTodo);
+    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+
+    a = mWaypointStatusAction->addAction(KIcon("task-complete"), i18n("Done"));
+    a->setData(TrackData::StatusDone);
+    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+
+    a = mWaypointStatusAction->addAction(KIcon("dialog-warning"), i18n("Uncertain"));
+    a->setData(TrackData::StatusQuestion);
+    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
     mProfileAction = actionCollection()->addAction("track_profile");
     mProfileAction->setText(i18n("Elevation/Speed Profile..."));
@@ -660,6 +681,8 @@ void MainWindow::slotUpdateActionState()
     QString moveText = i18nc("@action:inmenu", "Move Item...");
     bool playEnabled = false;
     QString playText = i18nc("@action:inmenu", "View Media");
+    bool statusEnabled = false;
+    int statusValue = TrackData::StatusInvalid;
 
     const TrackDataItem *selectedContainer = NULL;
     switch (selType)
@@ -712,6 +735,7 @@ case TrackData::Waypoint:
         moveEnabled = true;
         moveText = i18ncp("@action:inmenu", "Move Waypoint...", "Move Waypoints...", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
+        statusEnabled = true;
 
         if (selCount==1)
         {
@@ -734,6 +758,8 @@ case TrackData::WaypointPhoto:		playEnabled = true;
 
 default:				break;
                 }
+
+                statusValue = tdw->metadata("status").toInt();
             }
         }
         break;
@@ -775,6 +801,14 @@ default:
     mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
                                                    selType==TrackData::Point ||
                                                    selType==TrackData::Waypoint));
+
+    mWaypointStatusAction->setEnabled(statusEnabled);
+    QList<QAction *> acts = mWaypointStatusAction->actions();
+    for (QList<QAction *>::const_iterator it = acts.constBegin(); it!=acts.constEnd(); ++it)
+    {
+        QAction *act = (*it);
+        act->setChecked(statusValue==act->data().toInt());
+    }
 
     if (selCount==1 && selType==TrackData::Point)
     {

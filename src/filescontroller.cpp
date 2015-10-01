@@ -685,6 +685,20 @@ void FilesController::slotTrackProperties()
 }
 
 
+void FilesController::slotSetWaypointStatus()
+{
+    QAction *act = qobject_cast<QAction *>(sender());
+    if (act==NULL) return;
+    int newStatus = act->data().toInt();
+
+    ChangeItemDataCommand *cmd = new ChangeItemDataCommand(this);
+    cmd->setText(i18n("Waypoint Status %1", CommandBase::senderText(sender())));
+    cmd->setDataItems(view()->selectedItems());
+    cmd->setData("status", (newStatus==0) ? QString::null : QString::number(newStatus));
+    mainWindow()->executeCommand(cmd);
+}
+
+
 void FilesController::slotSplitSegment()
 {
     QList<TrackDataItem *> items = view()->selectedItems();
