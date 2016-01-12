@@ -306,6 +306,7 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/GpxExtensions/v3", "gpxx");
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
+    str.writeNamespace("http://www.keelhaul.me.uk/navtracks/", "navtracks");
     str.writeCharacters("\n\n  ");
 
     // <metadata>
