@@ -28,6 +28,7 @@ public:
 
     // ImporterBase
     TrackDataFile *load(const KUrl &file);
+    bool needsResave() const;
 
     // QXmlContentHandler
     void setDocumentLocator(QXmlLocator *locator);
@@ -64,6 +65,8 @@ private:
     QString mRestartTag;
     const QXmlLocator *mXmlLocator;
     QString mContainedChars;
+
+    QStringList mUndefinedNamespaces;
 };
 
 #endif							// GPXIMPORTER_H

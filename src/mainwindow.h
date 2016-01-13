@@ -6,6 +6,8 @@
 #include <kxmlguiwindow.h>
 #include <kurl.h>
 
+#include <filescontroller.h>
+
 class QLabel;
 class QUndoStack;
 class QUndoCommand;
@@ -22,7 +24,6 @@ class KSelectAction;
 class KSqueezedTextLabel;
 class KUrl;
 
-class FilesController;
 class MapController;
 class Project;
 class TrackDataItem;
@@ -88,7 +89,7 @@ private:
     void setupStatusBar();
 
     bool save(const KUrl &to);
-    bool load(const KUrl &from);
+    FilesController::Status load(const KUrl &from);
 
     bool acceptMimeData(const QMimeData *mimeData);
 

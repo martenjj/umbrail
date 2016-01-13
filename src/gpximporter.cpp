@@ -55,6 +55,8 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
     mCurrentWaypoint = NULL;
     mWaypointFolder = NULL;
 
+    mUndefinedNamespaces.clear();
+
     QXmlSimpleReader xmlReader;
     xmlReader.setContentHandler(this);
     xmlReader.setErrorHandler(this);
@@ -195,6 +197,18 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 #ifdef DEBUG_DETAILED
     qDebug() << indent().constData() << "START" << localName;
 #endif
+
+    if (namespaceURI.isEmpty())				// element with undefined namespace
+    {
+        if (!mUndefinedNamespaces.contains(qName))	// only report each one once
+        {
+            QStringList nameParts = qName.split(':');
+            warning(makeXmlException(QString("Undefined namespace '%1' for element '%2'")
+                                     .arg(nameParts.at(0))
+                                     .arg(nameParts.at(1).toUpper())));
+            mUndefinedNamespaces.append(qName);
+        }
+    }
 
     for (int i = 0; i<atts.count(); ++i)
     {
@@ -572,6 +586,11 @@ bool GpxImporter::endDocument()
         return (error(makeXmlException(QString("METADATA or EXTENSIONS not terminated"))));
     }
 
+    if (!mUndefinedNamespaces.isEmpty())
+    {
+        warning(makeXmlException("Undefined XML namespaces, re-save file to correct"));
+    }
+
     kDebug() << "end document";
     return (true);
 }
@@ -605,4 +624,10 @@ bool GpxImporter::warning(const QXmlParseException &ex)
 {
     reporter()->setError(ErrorReporter::Warning, ex.message(), ex.lineNumber());
     return (true);
+}
+
+
+bool GpxImporter::needsResave() const
+{
+    return (!mUndefinedNamespaces.isEmpty());
 }

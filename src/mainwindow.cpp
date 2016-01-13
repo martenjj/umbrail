@@ -489,16 +489,18 @@ bool MainWindow::save(const KUrl &to)
 
 
 // Error reporting and status messages are done in FilesController::importFile()
-bool MainWindow::load(const KUrl &from)
+FilesController::Status MainWindow::load(const KUrl &from)
 {
     kDebug() << "from" << from;
 
     // TODO: allow non-local files
-    if (!from.isValid() || !from.hasPath()) return (false);
+    if (!from.isValid() || !from.hasPath()) return (FilesController::StatusFailed);
     QDir d(from.path());				// should be absolute already,
     QString loadPath = d.absolutePath();		// but just make sure
 
-    if (filesController()->importFile(loadPath)!=FilesController::StatusOk) return (false);
+
+    FilesController::Status status = filesController()->importFile(loadPath);
+    if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf!=NULL)
@@ -518,7 +520,7 @@ bool MainWindow::load(const KUrl &from)
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments
-    return (true);
+    return (status);
 }
 
 
@@ -564,11 +566,13 @@ bool MainWindow::loadProject(const KUrl &loadFrom)
     if (!loadFrom.isValid()) return (false);
     kDebug() << "from" << loadFrom;
 
-    if (!load(loadFrom)) return (false);		// load in data file
+    FilesController::Status status = load(loadFrom);	// load in data file
+    if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (false);
 
     mProject->setFileName(loadFrom);
     mUndoStack->clear();				// clear undo history
-    slotSetModified(false);				// ensure window title updated
+							// ensure window title updated
+    slotSetModified(status==FilesController::StatusResave);
     return (true);
 }
 

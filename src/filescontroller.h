@@ -36,6 +36,7 @@ public:
     enum Status
     {
         StatusOk,
+        StatusResave,
         StatusFailed,
         StatusCancelled
     };

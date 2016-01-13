@@ -19,6 +19,7 @@ public:
     virtual ~ImporterBase();
 
     virtual TrackDataFile *load(const KUrl &file) = 0;
+    virtual bool needsResave() const			{ return (false); }
 
 protected:
     bool prepareLoadFile(const KUrl &file);

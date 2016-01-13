@@ -229,8 +229,8 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
         emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.pathOrUrl()));
     }
 
-    emit modified();
-    return (FilesController::StatusOk);			// done, finished with importer
+    emit modified();					// done, finished with importer
+    return (imp->needsResave() ? FilesController::StatusResave : FilesController::StatusOk);
 }
 
 
