@@ -539,11 +539,10 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
         bool ok;
-        unsigned int rgb = mContainedChars.toUInt(&ok, 16);
-        if (!ok)
-        {
-            return (error(makeXmlException("invalid value for COLOR")));
-        }
+        QString rgbString = mContainedChars;
+        if (rgbString.startsWith('#')) rgbString.remove(0, 1);
+        unsigned int rgb = rgbString.toUInt(&ok, 16);
+        if (!ok) return (error(makeXmlException("invalid value for COLOR")));
 
         Style s = *item->style();
         s.setLineColour(QColor(rgb));
