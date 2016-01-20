@@ -401,7 +401,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         if (mCurrentTrack==NULL)			// check must have started
         {
-            return (error(makeXmlException("TRK element not started", "trk")));
+            return (error(makeXmlException("TRK element not started")));
         }
 
         if (mCurrentSegment!=NULL)			// segment not closed
@@ -424,7 +424,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         if (mCurrentSegment==NULL)			// check must have started
         {
-            return (error(makeXmlException("TRKSEG element not started", "trkseg")));
+            return (error(makeXmlException("TRKSEG element not started")));
         }
 
 #ifdef DEBUG_IMPORT
@@ -438,7 +438,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         if (mCurrentPoint==NULL)			// check must have started
         {
-            return (error(makeXmlException("TRKPT element not started", "trkpt")));
+            return (error(makeXmlException("TRKPT element not started")));
         }
 
 #ifdef DEBUG_IMPORT
@@ -454,7 +454,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         if (mCurrentWaypoint==NULL)			// check must have started
         {
-            return (error(makeXmlException("WPT element not started", "wpt")));
+            return (error(makeXmlException("WPT element not started")));
         }
 
 #ifdef DEBUG_IMPORT
@@ -542,7 +542,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         unsigned int rgb = mContainedChars.toUInt(&ok, 16);
         if (!ok)
         {
-            return (error(makeXmlException("invalid value for COLOR", localName)));
+            return (error(makeXmlException("invalid value for COLOR")));
         }
 
         Style s = *item->style();
