@@ -82,6 +82,9 @@ private:
     bool reportFileError(bool saving, const KUrl &file, const QString &msg);
     bool reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep);
 
+    bool fileWarningsIgnored(const KUrl &file) const;
+    void setFileWarningsIgnored(const KUrl &file, bool ignore = true);
+
     bool adjustTimeSpec(QDateTime &dt);
     FilesController::Status importPhotoInternal(const KUrl &importFrom, bool multiple);
 

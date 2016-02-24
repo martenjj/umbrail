@@ -88,6 +88,22 @@ void FilesController::saveProperties()
 }
 
 
+bool FilesController::fileWarningsIgnored(const KUrl &file) const
+{
+    QByteArray askKey = QUrl::toPercentEncoding(file.url());
+    KConfigGroup grp = KGlobal::config()->group("FileWarnings");
+    return (grp.readEntry(askKey.constData(), false));
+}
+
+
+void FilesController::setFileWarningsIgnored(const KUrl &file, bool ignore)
+{
+    QByteArray askKey = QUrl::toPercentEncoding(file.url());
+    KConfigGroup grp = KGlobal::config()->group("FileWarnings");
+    grp.writeEntry(askKey.constData(), ignore);
+}
+
+
 bool FilesController::reportFileError(bool saving, const KUrl &file, const QString &msg)
 {
     ErrorReporter rep;
@@ -108,16 +124,13 @@ bool FilesController::reportFileError(bool saving, const KUrl &file, const Error
 
     bool result = true;
 
-    QByteArray askKey = QUrl::toPercentEncoding(file.url());
-    KConfigGroup grp = KGlobal::config()->group("FileWarnings");
-
     switch (rep->severity())
     {
 case ErrorReporter::NoError:
         return (result);
 
 case ErrorReporter::Warning:
-        if (grp.readEntry(askKey.constData(), false)) return (result);
+        if (fileWarningsIgnored(file)) return (result);
 
         detailed = true;
         message = (saving ?
@@ -170,7 +183,7 @@ case ErrorReporter::Fatal:
                                    KMessageBox::AllowLink,
                                    QString("<qt>")+list.join("<br>"));
 
-    if (notAgain) grp.writeEntry(askKey.constData(), true);
+    if (notAgain) setFileWarningsIgnored(file, true);
     return (result);
 }
 
@@ -230,7 +243,9 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
     }
 
     emit modified();					// done, finished with importer
-    return (imp->needsResave() ? FilesController::StatusResave : FilesController::StatusOk);
+
+    if (imp->needsResave() && !fileWarningsIgnored(importFrom)) return (FilesController::StatusResave);
+    return (FilesController::StatusOk);
 }
 
 
