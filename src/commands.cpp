@@ -1069,6 +1069,8 @@ void AddWaypointCommand::redo()
             newWaypoint->setElevation(mSourcePoint->elevation());
             newWaypoint->setTime(mSourcePoint->time());
             newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
+            const QString stopData = mSourcePoint->metadata("stop");
+            if (!stopData.isEmpty()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
         }
 
         mNewWaypointContainer->addChildItem(newWaypoint);

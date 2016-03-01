@@ -57,7 +57,10 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     setMainWidget(w);
 
-    TrackPropertiesPage *page = item->createPropertiesGeneralPage(items, this);
+    const TrackPropertiesInterface *propif = dynamic_cast<const TrackPropertiesInterface *>(item);
+    Q_ASSERT(propif!=NULL);
+
+    TrackPropertiesPage *page = propif->createPropertiesGeneralPage(items, this);
     mGeneralPage = qobject_cast<TrackItemGeneralPage *>(page);
     Q_ASSERT(mGeneralPage!=NULL);
     mGeneralPage->setTimeZone(zoneName);
@@ -71,7 +74,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     typeLabel->setText(mGeneralPage->typeText(items->count()));
 
-    page = item->createPropertiesDetailPage(items, this);
+    page = propif->createPropertiesDetailPage(items, this);
     mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
     Q_ASSERT(mDetailPage!=NULL);
     mDetailPage->setTimeZone(zoneName);
@@ -83,7 +86,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     mTabWidget->addTab(page, i18nc("@title:tab", "Details"));
 
-    page = item->createPropertiesStylePage(items, this);
+    page = propif->createPropertiesStylePage(items, this);
     mStylePage = qobject_cast<TrackItemStylePage *>(page);
     Q_ASSERT(mStylePage!=NULL);
     mStylePage->setTimeZone(zoneName);
@@ -92,7 +95,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
             mStylePage, SLOT(setTimeZone(const QString &)));
     mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
 
-    page = item->createPropertiesMetadataPage(items, this);
+    page = propif->createPropertiesMetadataPage(items, this);
     mMetadataPage = qobject_cast<TrackItemMetadataPage *>(page);
     Q_ASSERT(mMetadataPage!=NULL);
     connect(mMetadataPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));

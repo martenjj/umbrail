@@ -13,8 +13,10 @@ class FilesModel;
 class FilesView;
 class MainWindow;
 class TrackDataItem;
+class TrackDataStop;
 class TracksLayer;
 class WaypointsLayer;
+class StopsLayer;
 
 
 class MapView : public MarbleWidget
@@ -40,6 +42,8 @@ public:
 
     void setFilesModel(FilesModel *mod)			{ mFilesModel = mod; }
     void setFilesView(FilesView *view)			{ mFilesView = view; }
+
+    void setStopLayerData(const QList<const TrackDataStop *> *data);
 
     MainWindow *mainWindow() const			{ return (mMainWindow); }
     FilesModel *filesModel() const			{ return (mFilesModel); }
@@ -75,6 +79,7 @@ private:
 
     TracksLayer *mTracksLayer;
     WaypointsLayer *mWaypointsLayer;
+    StopsLayer *mStopsLayer;
 };
 
 #endif							// MAPVIEW_H

@@ -44,6 +44,7 @@
 #include "profilewidget.h"
 #include "statisticswidget.h"
 #include "mediaplayer.h"
+#include "stopdetectdialogue.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -69,7 +70,7 @@ void MainWindow::init()
 {
     setAcceptDrops(true);				// accept file drops
 
-    mSplitter = new QSplitter(this);
+    mSplitter = new QSplitter(Qt::Horizontal, this);
     mSplitter->setChildrenCollapsible(false);
     setCentralWidget(mSplitter);
 
@@ -231,6 +232,10 @@ void MainWindow::setupActions()
     mMoveItemAction->setIcon(KIcon("go-up"));
     connect(mMoveItemAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveItem()));
 
+    mStopDetectAction = new KToggleAction(KIcon("media-playback-stop"), i18n("Locate Stops..."), this);
+    connect(mStopDetectAction, SIGNAL(triggered()), SLOT(slotTrackStopDetect()));
+    actionCollection()->addAction("track_stop_detect", mStopDetectAction);
+
     mPropertiesAction = actionCollection()->addAction("track_properties");
     // text set in slotUpdateActionState() below
     mPropertiesAction->setShortcut(KShortcut(Qt::CTRL+Qt::Key_Return, Qt::CTRL+Qt::Key_Enter));
@@ -327,7 +332,7 @@ void MainWindow::setupActions()
     mMapGoToAction->setText(i18n("Show on Map"));
     mMapGoToAction->setIcon(KIcon("marble"));
     mMapGoToAction->setShortcut(Qt::CTRL+Qt::Key_G);
-    connect(mMapGoToAction, SIGNAL(triggered()), this, SLOT(slotMapGotoSelection()));
+    connect(mMapGoToAction, SIGNAL(triggered()), SLOT(slotMapGotoSelection()));
 
     a = actionCollection()->addAction("map_select_theme");
     a->setText(i18n("Select Theme..."));
@@ -785,6 +790,7 @@ default:
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
     mStatisticsAction->setEnabled(profileEnabled);
+    mStopDetectAction->setEnabled(profileEnabled);
 
     mPlayMediaAction->setEnabled(playEnabled);
     mPlayMediaAction->setText(playText);
@@ -1041,4 +1047,31 @@ void MainWindow::slotUpdatePasteState()
     }
 
     mPasteAction->setEnabled(enable);
+}
+
+
+void MainWindow::slotTrackStopDetect()
+{
+    if (mStopDetectAction->isChecked())
+    {
+        if (mStopDetectDialogue==NULL)
+        {
+            // TODO: maybe dowsn't need to be member or persistent
+            mStopDetectDialogue = new StopDetectDialogue(this);
+            connect(mStopDetectDialogue, SIGNAL(finished(int)), SLOT(slotStopDetectFinished(int)));
+        }
+
+        mStopDetectDialogue->show();
+    }
+    else
+    {
+        if (mStopDetectDialogue!=NULL) mStopDetectDialogue->hide();
+    }
+}
+
+
+void MainWindow::slotStopDetectFinished(int result)
+{
+    kDebug() << "result" << result;
+    mStopDetectAction->setChecked(false);
 }

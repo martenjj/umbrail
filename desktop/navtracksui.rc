@@ -38,6 +38,8 @@
       <Action name="track_merge"/>
       <Action name="track_move_item"/>
       <Separator/>
+      <Action name="track_stop_detect"/>
+      <Separator/>
       <Action name="track_profile"/>
       <Action name="track_statistics"/>
       <Action name="track_properties"/>

@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "trackslayer.h"
 #include "waypointslayer.h"
+#include "stopslayer.h"
 
 
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
@@ -66,11 +67,16 @@ MapView::MapView(QWidget *pnt)
     mWaypointsLayer = new WaypointsLayer(this);
     connect(mWaypointsLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
     addLayer(mWaypointsLayer);
+
+    // Temporary stops display layer
+    mStopsLayer = new StopsLayer;
+    addLayer(mStopsLayer);
 }
 
 
 MapView::~MapView()
 {
+    delete mStopsLayer;
     kDebug() << "done";
 }
 
@@ -287,4 +293,11 @@ bool MapView::eventFilter(QObject *obj, QEvent *ev)
     }
 
     return (false);					// pass event on
+}
+
+
+void MapView::setStopLayerData(const QList<const TrackDataStop *> *data)
+{
+    mStopsLayer->setStopsData(data);
+    update();
 }

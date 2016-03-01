@@ -49,7 +49,7 @@ private:
 ////////////////////////////////////////////////////////////////////////
 
 
-class LayerBase : public QObject, public LayerInterface
+class LayerBase : public QObject, public Marble::LayerInterface
 {
     Q_OBJECT
 

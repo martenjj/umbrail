@@ -1,10 +1,10 @@
 
 #include "moveitemdialogue.h"
 
-#include <qgridlayout.h>
-#include <qlabel.h>
+// #include <qgridlayout.h>
+// #include <qlabel.h>
 #include <qtreeview.h>
-#include <qitemselectionmodel.h>
+// #include <qitemselectionmodel.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -105,6 +105,22 @@ void MoveItemDialogue::setSource(const QList<TrackDataItem *> *items)
 }
 
 
+void MoveItemDialogue::selectDestination(const TrackDataItem *item)
+{
+    if (item==NULL)					// clear selection only
+    {
+        mTrackList->selectionModel()->select(QModelIndex(), QItemSelectionModel::Clear);
+        return;
+    }
+
+    TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mTrackList->model());
+    FilesModel *filesModel = qobject_cast<FilesModel *>(trackModel->sourceModel());
+    QModelIndex idx = trackModel->mapFromSource(filesModel->indexForItem(item));
+    mTrackList->expand(idx.parent());
+    mTrackList->selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
+}
+
+
 TrackDataItem *MoveItemDialogue::selectedDestination() const
 {
     QModelIndexList selIndexes = mTrackList->selectionModel()->selectedIndexes();
@@ -120,4 +136,12 @@ TrackDataItem *MoveItemDialogue::selectedDestination() const
 void MoveItemDialogue::slotSelectionChanged(const QItemSelection &sel, const QItemSelection &desel)
 {
     enableButtonOk(mTrackList->selectionModel()->selectedIndexes().count()==1);
+    emit selectionChanged();
+}
+
+
+void MoveItemDialogue::setMode(TrackData::Type mode)
+{
+    TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mTrackList->model());
+    trackModel->setMode(mode);
 }

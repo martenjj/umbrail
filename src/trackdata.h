@@ -19,6 +19,22 @@ class TrackPropertiesPage;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackPropertiesInterface						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackPropertiesInterface
+{
+public:
+    virtual ~TrackPropertiesInterface()			{}
+    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  TimeRange								//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -26,16 +42,16 @@ class TrackPropertiesPage;
 class TimeRange
 {
 public:
-    TimeRange()					{}
+    TimeRange()						{}
     TimeRange(const QDateTime &sp, const QDateTime &fp)
-        : mStart(sp), mFinish(fp)		{}
+        : mStart(sp), mFinish(fp)			{}
 
-    ~TimeRange()				{}
+    ~TimeRange()					{}
 
-    QDateTime start() const			{ return (mStart); }
-    QDateTime finish() const			{ return (mFinish); }
-    bool isValid() const			{ return (mStart.isValid() && mFinish.isValid()); }
-    unsigned timeSpan() const			{ return (mStart.secsTo(mFinish)); }
+    QDateTime start() const				{ return (mStart); }
+    QDateTime finish() const				{ return (mFinish); }
+    bool isValid() const				{ return (mStart.isValid() && mFinish.isValid()); }
+    unsigned timeSpan() const				{ return (mStart.secsTo(mFinish)); }
 
     TimeRange united(const TimeRange &other) const;
 
@@ -57,17 +73,17 @@ class BoundingArea
 public:
     BoundingArea()
         : mLatNorth(NAN), mLatSouth(NAN),
-          mLonWest(NAN), mLonEast(NAN)		{}
+          mLonWest(NAN), mLonEast(NAN)			{}
     BoundingArea(double lat, double lon)
         : mLatNorth(lat), mLatSouth(lat),
-          mLonWest(lon), mLonEast(lon)		{}
-    ~BoundingArea()				{}
+          mLonWest(lon), mLonEast(lon)			{}
+    ~BoundingArea()					{}
 
-    double north() const			{ return (mLatNorth); }
-    double south() const			{ return (mLatSouth); }
-    double east() const				{ return (mLonEast); }
-    double west() const				{ return (mLonWest); }
-    bool isValid() const			{ return (!isnan(mLatNorth) && !isnan(mLonWest)); }
+    double north() const				{ return (mLatNorth); }
+    double south() const				{ return (mLatSouth); }
+    double east() const					{ return (mLonEast); }
+    double west() const					{ return (mLonWest); }
+    bool isValid() const				{ return (!isnan(mLatNorth) && !isnan(mLonWest)); }
 
     BoundingArea united(const BoundingArea &other) const;
 
@@ -194,11 +210,6 @@ public:
     virtual unsigned int totalTravelTime() const;
     QString timeZone() const;
 
-    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
-    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
-    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
-    virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
-
 protected:
     TrackDataItem(const QString &nm, const char *format = NULL, int *counter = NULL);
 
@@ -222,7 +233,7 @@ private:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataFile : public TrackDataItem
+class TrackDataFile : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
     TrackDataFile(const QString &nm);
@@ -247,7 +258,7 @@ private:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataTrack : public TrackDataItem
+class TrackDataTrack : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
     TrackDataTrack(const QString &nm);
@@ -267,7 +278,7 @@ public:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataSegment : public TrackDataItem
+class TrackDataSegment : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
     TrackDataSegment(const QString &nm);
@@ -289,7 +300,7 @@ public:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataFolder : public TrackDataItem
+class TrackDataFolder : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
     TrackDataFolder(const QString &nm);
@@ -315,7 +326,7 @@ class TrackDataAbstractPoint : public TrackDataItem
 {
 public:
     TrackDataAbstractPoint(const QString &nm, const char *format, int *counter);
-    virtual ~TrackDataAbstractPoint()				{}
+    virtual ~TrackDataAbstractPoint()			{}
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }
@@ -333,6 +344,7 @@ public:
     BoundingArea boundingArea() const;
     TimeRange timeSpan() const;
     double distanceTo(const TrackDataAbstractPoint *other, bool accurate = false) const;
+    double distanceTo(double lat, double lon, bool accurate = false) const;
     double bearingTo(const TrackDataAbstractPoint *other) const;
     int timeTo(const TrackDataAbstractPoint *other) const;
 
@@ -351,7 +363,7 @@ private:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataTrackpoint : public TrackDataAbstractPoint
+class TrackDataTrackpoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
 {
 public:
     TrackDataTrackpoint(const QString &nm);
@@ -371,7 +383,7 @@ public:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataWaypoint : public TrackDataAbstractPoint
+class TrackDataWaypoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
 {
 public:
     TrackDataWaypoint(const QString &nm);
@@ -385,5 +397,21 @@ public:
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataStop							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataStop : public TrackDataAbstractPoint
+{
+public:
+    TrackDataStop(const QString &nm);
+    virtual ~TrackDataStop()				{}
+
+    QString iconName() const				{ return ("media-playback-stop"); }
+};
+
 
 #endif							// TRACKDATA_H

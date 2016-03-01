@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		25-Sep-15					#
+#  Edit:		01-Mar-16					#
 #########################################################################
 
 project(navtracks)
@@ -49,6 +49,8 @@ set(navtracks_SRCS
   filescontroller.cpp
   filesmodel.cpp
   filesview.cpp
+  folderselectdialogue.cpp
+  folderselectwidget.cpp
   gpxexporter.cpp
   gpximporter.cpp
   importerexporterbase.cpp
@@ -69,6 +71,8 @@ set(navtracks_SRCS
   project.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
+  stopdetectdialogue.cpp
+  stopslayer.cpp
   style.cpp
   timezonedialogue.cpp
   timezoneselector.cpp
@@ -82,6 +86,7 @@ set(navtracks_SRCS
   trackpropertiesmetadatapages.cpp
   trackpropertiesstylepages.cpp
   trackslayer.cpp
+  valueslider.cpp
   variableunitdisplay.cpp
   variableunitcombo.cpp
   waypointslayer.cpp

@@ -40,6 +40,7 @@ static int counterSegment = 0;
 static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
+static int counterStop = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
@@ -48,6 +49,7 @@ static int allocSegment = 0;
 static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
+static int allocStop = 0;
 static int allocStyle = 0;
 static int allocChildren = 0;
 static int allocMetadata = 0;
@@ -268,6 +270,7 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
 }
 
 
+// TODO: make into a member function of 'pnt'
 TrackDataFolder *TrackData::findChildFolder(const QString &name, const TrackDataItem *pnt, bool findOne)
 {
     kDebug() << "name" << name << "under" << pnt->name() << "findone" << findOne;
@@ -605,14 +608,14 @@ TimeRange TrackDataAbstractPoint::timeSpan() const
 }
 
 
-double TrackDataAbstractPoint::distanceTo(const TrackDataAbstractPoint *other, bool accurate) const
+double TrackDataAbstractPoint::distanceTo(double lat, double lon, bool accurate) const
 {
     // See http://www.movable-type.co.uk/scripts/latlong.html
 
     const double lat1 = latitude()*DEGREES_TO_RADIANS;
     const double lon1 = longitude()*DEGREES_TO_RADIANS;
-    const double lat2 = other->latitude()*DEGREES_TO_RADIANS;
-    const double lon2 = other->longitude()*DEGREES_TO_RADIANS;
+    const double lat2 = lat*DEGREES_TO_RADIANS;
+    const double lon2 = lon*DEGREES_TO_RADIANS;
 
     if (accurate)
     {
@@ -625,6 +628,12 @@ double TrackDataAbstractPoint::distanceTo(const TrackDataAbstractPoint *other, b
     const double x = (lon2-lon1)*cos((lat1+lat2)/2.0);
     const double y = (lat2-lat1);
     return (sqrt(x*x + y*y));
+}
+
+
+double TrackDataAbstractPoint::distanceTo(const TrackDataAbstractPoint *other, bool accurate) const
+{
+    return (distanceTo(other->latitude(), other->longitude(), accurate));
 }
 
 
@@ -743,6 +752,20 @@ default:				return ("unknown");
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataStop							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataStop::TrackDataStop(const QString &nm)
+    : TrackDataAbstractPoint(nm, "stop_%03d", &counterStop)
+{
+#ifdef MEMORY_TRACKING
+    ++allocStop;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  Memory tracking							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -769,6 +792,7 @@ MemoryTracker::MemoryTracker()
     qDebug() << "folder" << sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "stop" << sizeof(TrackDataStop) << "bytes";
     qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
@@ -783,6 +807,7 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "folder allocated" << allocFolder << "items, total" << allocFolder*sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "stop allocated" << allocStop << "items, total" << allocStop*sizeof(TrackDataStop) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;
