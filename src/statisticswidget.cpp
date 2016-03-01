@@ -22,7 +22,8 @@
 
 
 StatisticsWidget::StatisticsWidget(QWidget *pnt)
-    : KDialog(pnt)
+    : KDialog(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
 
@@ -30,15 +31,13 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     setButtons(KDialog::Close);
     showButtonSeparator(true);
 
-    mMainWindow = qobject_cast<MainWindow *>(pnt);
-
     mTotalPoints = 0;
     mWithTime = 0;
     mWithElevation = 0;
     mWithGpsSpeed = 0;
     mWithGpsHdop = 0;
 
-    const QList<TrackDataItem *> items = mainWindow()->filesController()->view()->selectedItems();
+    const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
     for (int i = 0; i<items.count(); ++i) getPointData(items[i]);
 
     mWidget = new QWidget(this);

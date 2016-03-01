@@ -4,6 +4,7 @@
 #define MAPCONTROLLER_H
  
 #include <qobject.h>
+#include "mainwindowinterface.h"
 
 #include <marble/MapThemeManager.h>
 
@@ -12,11 +13,10 @@ using namespace Marble;
 class KConfig;
 
 class MapView;
-class MainWindow;
 class TrackDataItem;
 
 
-class MapController : public QObject
+class MapController : public QObject, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -55,9 +55,6 @@ signals:
     void modified();
 
     void mapZoomChanged(bool canZoomIn, bool canZoomOut);
-
-private:
-    MainWindow *mainWindow() const;
 
 private:
     MapView *mView;

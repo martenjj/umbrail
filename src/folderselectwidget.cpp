@@ -13,12 +13,11 @@
 #include "folderselectdialogue.h"
 
 
-FolderSelectWidget::FolderSelectWidget(MainWindow *mw, QWidget *pnt)
-    : QFrame(pnt)
+FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
+    : QFrame(pnt),
+      MainWindowInterface(pnt)
 {
     setObjectName("FolderSelectWidget");
-
-    mMainWindow = mw;
 
     QHBoxLayout *hb = new QHBoxLayout(this);
     hb->setMargin(0);
@@ -38,7 +37,7 @@ FolderSelectWidget::FolderSelectWidget(MainWindow *mw, QWidget *pnt)
 
 void FolderSelectWidget::slotSelectFolder()
 {
-    FolderSelectDialogue *d = new FolderSelectDialogue(mMainWindow, this);
+    FolderSelectDialogue *d = new FolderSelectDialogue(this);
     d->setDestinationPath(mDestFolder->text());
     if (!d->exec()) return;
 

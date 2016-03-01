@@ -17,13 +17,12 @@
 
 
 FilesView::FilesView(QWidget *pnt)
-    : QTreeView(pnt)
+    : QTreeView(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
 
     setObjectName("FilesView");
-
-    mMainWindow = qobject_cast<MainWindow *>(pnt);
 
     setRootIsDecorated(true);
     setSortingEnabled(true);

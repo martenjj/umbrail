@@ -49,7 +49,8 @@ static const int minStopPoints = 3;			// minimum points for valid stop
 
 
 StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
-    : KDialog(pnt)
+    : KDialog(pnt),
+      MainWindowInterface(pnt)
 {
     setObjectName("StopDetectDialogue");
 
@@ -66,9 +67,6 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mIdleTimer->setInterval(2000);
     mIdleTimer->setSingleShot(true);			// don't start until show event
     connect(mIdleTimer, SIGNAL(timeout()), SLOT(slotDetectStops()));
-
-    mMainWindow = qobject_cast<MainWindow *>(pnt);
-    Q_ASSERT(mMainWindow!=NULL);
 
     QWidget *w = new QWidget(this);
     QHBoxLayout *hb = new QHBoxLayout(w);
@@ -101,7 +99,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
 
     fl->addRow(new QLabel(QString::null, this));
 
-    mFolderSelect = new FolderSelectWidget(mainWindow(), this);
+    mFolderSelect = new FolderSelectWidget(this);
     connect(mFolderSelect, SIGNAL(folderChanged(const QString &)), SLOT(slotSetButtonStates()));
     fl->addRow(i18n("Destination folder:"), mFolderSelect);
 
@@ -149,7 +147,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
 
 StopDetectDialogue::~StopDetectDialogue()
 {
-    mainWindow()->mapController()->view()->setStopLayerData(NULL);
+    mapController()->view()->setStopLayerData(NULL);
     qDeleteAll(mResultPoints);
 
     KConfigGroup grp = KGlobal::config()->group(objectName());
@@ -177,7 +175,7 @@ void StopDetectDialogue::slotShowOnMap()
 
     QList<TrackDataItem *> its;
     its.append(static_cast<TrackDataItem *>(tds));
-    mainWindow()->mapController()->gotoSelection(its);
+    mapController()->gotoSelection(its);
 }
 
 
@@ -199,17 +197,18 @@ void StopDetectDialogue::slotDetectStops()
 
     setCursor(Qt::BusyCursor);
 
-    mainWindow()->mapController()->view()->setStopLayerData(NULL);
+    mapController()->view()->setStopLayerData(NULL);
 
 // Output records
 
+    // TODO: need qDeleteAll?
     mResultPoints.clear();
 
 // Assemble all of the points of interest into a single linear list.
 // This list is assumed to be in time order.
 
     mPoints.clear();
-    const QList<TrackDataItem *> items = mainWindow()->filesController()->view()->selectedItems();
+    const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
     for (int i = 0; i<items.count(); ++i) getPointData(items[i]);
     kDebug() << "total points" << mPoints.count();
     if (mPoints.count()<minInputPoints)
@@ -224,7 +223,7 @@ void StopDetectDialogue::slotDetectStops()
 // resolve file time zone
 
     KTimeZone tz;
-    QString zoneName = mainWindow()->filesController()->model()->rootFileItem()->metadata("timezone");
+    QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
     if (!zoneName.isEmpty()) tz = KSystemTimeZones::zone(zoneName);
 
 // Detect stops 
@@ -403,7 +402,7 @@ void StopDetectDialogue::slotDetectStops()
     slotSetButtonStates();
     mResultsList->blockSignals(false);
 
-    mainWindow()->mapController()->view()->setStopLayerData(&mResultPoints);
+    mapController()->view()->setStopLayerData(&mResultPoints);
     unsetCursor();
 
     kDebug() << "done";
@@ -458,7 +457,7 @@ void StopDetectDialogue::slotCommitResults()
     const QStringList folders = folderPath.split('/');
     Q_ASSERT(!folders.isEmpty());
 
-    FilesModel *model = mainWindow()->filesController()->model();
+    FilesModel *model = filesController()->model();
 
     // The destination folder must exist at this point
     // TODO: -> TrackDataFolder *TrackData::findFolderByPath()
@@ -486,7 +485,7 @@ void StopDetectDialogue::slotCommitResults()
         tdw->setLatLong(tds->latitude(), tds->longitude());
         tdw->setTime(tds->time());
 
-        AddWaypointCommand *cmd2 = new AddWaypointCommand(mainWindow()->filesController(), cmd);
+        AddWaypointCommand *cmd2 = new AddWaypointCommand(filesController(), cmd);
         cmd2->setData(tds->name(), tds->latitude(), tds->longitude(),
                                  dynamic_cast<TrackDataFolder *>(destFolder),
                                  tds);

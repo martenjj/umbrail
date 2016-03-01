@@ -20,7 +20,8 @@
 
 
 MapController::MapController(QObject *pnt)
-    : QObject(pnt)
+    : QObject(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
 
@@ -236,12 +237,6 @@ void MapController::slotAboutMarble()
 }
 
 
-MainWindow *MapController::mainWindow() const
-{
-    return (qobject_cast<MainWindow *>(parent()));
-}
-
-
 void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 {
     if (items.count()==0) return;
@@ -265,9 +260,9 @@ void MapController::slotDraggedPoints(qreal latOff, qreal lonOff)
 {
     kDebug() << latOff << lonOff;
 
-    MovePointsCommand *cmd = new MovePointsCommand(mainWindow()->filesController());
+    MovePointsCommand *cmd = new MovePointsCommand(filesController());
     cmd->setText(i18n("Move Points"));
-    cmd->setDataItems(mainWindow()->filesController()->view()->selectedItems());
+    cmd->setDataItems(filesController()->view()->selectedItems());
     cmd->setData(latOff, lonOff);
     mainWindow()->executeCommand(cmd);
 }

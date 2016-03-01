@@ -9,7 +9,7 @@
 #include <kxmlguiwindow.h>
 #include <kurl.h>
 
-#include <filescontroller.h>
+#include "filescontroller.h"
 
 class QLabel;
 class QUndoStack;

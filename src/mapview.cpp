@@ -29,11 +29,10 @@
 
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
 MapView::MapView(QWidget *pnt)
-    : MarbleWidget(pnt)
+    : MarbleWidget(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
-
-    mMainWindow = qobject_cast<MainWindow *>(pnt);
 
     mFilesModel = NULL;
     mFilesView = NULL;

@@ -5,13 +5,13 @@
  
 #include <marble/MarbleWidget.h>
 #include <marble/ReverseGeocodingRunnerManager.h>
+#include "mainwindowinterface.h"
 
 using namespace Marble;
 
 class KAction;
 class FilesModel;
 class FilesView;
-class MainWindow;
 class TrackDataItem;
 class TrackDataStop;
 class TracksLayer;
@@ -19,7 +19,7 @@ class WaypointsLayer;
 class StopsLayer;
 
 
-class MapView : public MarbleWidget
+class MapView : public MarbleWidget, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -40,12 +40,12 @@ public:
 
     static QColor resolveLineColour(const TrackDataItem *tdd);
 
+    // TODO: through MainWindowInterface
     void setFilesModel(FilesModel *mod)			{ mFilesModel = mod; }
     void setFilesView(FilesView *view)			{ mFilesView = view; }
 
     void setStopLayerData(const QList<const TrackDataStop *> *data);
 
-    MainWindow *mainWindow() const			{ return (mMainWindow); }
     FilesModel *filesModel() const			{ return (mFilesModel); }
     FilesView *filesView() const			{ return (mFilesView); }
 
@@ -72,7 +72,6 @@ private slots:
 private:
     FilesModel *mFilesModel;
     FilesView *mFilesView;
-    MainWindow *mMainWindow;
     ReverseGeocodingRunnerManager *mRunnerManager;
     int mPopupX;
     int mPopupY;

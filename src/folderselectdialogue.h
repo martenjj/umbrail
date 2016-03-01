@@ -4,9 +4,7 @@
 
 
 #include "moveitemdialogue.h"
-
-
-class MainWindow;
+#include "mainwindowinterface.h"
 
 
 class FolderSelectDialogue : public MoveItemDialogue
@@ -14,7 +12,7 @@ class FolderSelectDialogue : public MoveItemDialogue
     Q_OBJECT
 
 public:
-    explicit FolderSelectDialogue(MainWindow *mw, QWidget *pnt = NULL);
+    explicit FolderSelectDialogue(QWidget *pnt = NULL);
     virtual ~FolderSelectDialogue()			{}
 
     void setDestinationPath(const QString &path);
@@ -24,9 +22,6 @@ protected slots:
 
 private slots:
     void slotUpdateButtonStates();
-
-private:
-    MainWindow *mMainWindow;
 };
 
 #endif							// FOLDERSELECTDIALOGUE_H

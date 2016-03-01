@@ -3,21 +3,18 @@
 #ifndef FILESCONTROLLER_H
 #define FILESCONTROLLER_H
  
-#include <math.h>
-
 #include <qobject.h>
+#include "mainwindowinterface.h"
 
+#include <math.h>
 #include <kurl.h>
-
 
 class QDateTime;
 
 class KConfig;
-// class KUrl;
 
 class FilesView;
 class FilesModel;
-class MainWindow;
 class TrackDataFile;
 class ErrorReporter;
 
@@ -26,7 +23,7 @@ class QSortFilterProxyModel;
 #endif
 
 
-class FilesController : public QObject
+class FilesController : public QObject, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -78,7 +75,6 @@ signals:
     void updateMap();
 
 private:
-    MainWindow *mainWindow() const;
     bool reportFileError(bool saving, const KUrl &file, const QString &msg);
     bool reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep);
 

@@ -4,17 +4,17 @@
 
 
 #include <qframe.h>
+#include "mainwindowinterface.h"
 
 class QLineEdit;
-class MainWindow;
 
 
-class FolderSelectWidget : public QFrame
+class FolderSelectWidget : public QFrame, public MainWindowInterface
 {
     Q_OBJECT
 
 public:
-    explicit FolderSelectWidget(MainWindow *mw, QWidget *pnt = NULL);
+    explicit FolderSelectWidget(QWidget *pnt = NULL);
     virtual ~FolderSelectWidget()			{}
 
     QString folderPath() const;
@@ -27,8 +27,6 @@ protected slots:
 
 private:
     QLineEdit *mDestFolder;
-
-    MainWindow *mMainWindow;
 };
 
 #endif							// FOLDERSELECTWIDGET_H

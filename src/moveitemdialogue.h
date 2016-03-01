@@ -4,23 +4,21 @@
 
 
 #include <kdialog.h>
+#include "mainwindowinterface.h"
 
 #include "trackdata.h"
 
 
 class QTreeView;
 class QItemSelection;
-class TrackDataItem;
-class FilesController;
 
 
-
-class MoveItemDialogue : public KDialog
+class MoveItemDialogue : public KDialog, public MainWindowInterface
 {
     Q_OBJECT
 
 public:
-    explicit MoveItemDialogue(FilesController *fc, QWidget *pnt = NULL);
+    explicit MoveItemDialogue(QWidget *pnt = NULL);
     virtual ~MoveItemDialogue();
 
     void setSource(const QList<TrackDataItem *> *items);

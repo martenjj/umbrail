@@ -4,6 +4,7 @@
 #define FILESVIEW_H
  
 #include <qtreeview.h>
+#include "mainwindowinterface.h"
 
 #include "trackdata.h"
 
@@ -11,7 +12,7 @@
 class MainWindow;
 
 
-class FilesView : public QTreeView
+class FilesView : public QTreeView, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -43,11 +44,6 @@ signals:
     void updateActionState();
 
 private:
-    MainWindow *mainWindow() const		{ return (mMainWindow); }
-
-private:
-    MainWindow *mMainWindow;
-
     int mSelectedCount;
     TrackData::Type mSelectedType;
     const TrackDataItem *mSelectedItem;

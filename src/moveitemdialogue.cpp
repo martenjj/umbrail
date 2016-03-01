@@ -1,10 +1,7 @@
 
 #include "moveitemdialogue.h"
 
-// #include <qgridlayout.h>
-// #include <qlabel.h>
 #include <qtreeview.h>
-// #include <qitemselectionmodel.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -17,8 +14,9 @@
 #include "trackdata.h"
 
 
-MoveItemDialogue::MoveItemDialogue(FilesController *fc, QWidget *pnt)
-    : KDialog(pnt)
+MoveItemDialogue::MoveItemDialogue(QWidget *pnt)
+    : KDialog(pnt),
+      MainWindowInterface(pnt)
 {
     setObjectName("MoveItemDialogue");
 
@@ -42,7 +40,7 @@ MoveItemDialogue::MoveItemDialogue(FilesController *fc, QWidget *pnt)
     mTrackList->setHeaderHidden(true);
 
     TrackFilterModel *trackModel = new TrackFilterModel(this);
-    trackModel->setSourceModel(fc->model());
+    trackModel->setSourceModel(filesController()->model());
     mTrackList->setModel(trackModel);
 
     connect(mTrackList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),

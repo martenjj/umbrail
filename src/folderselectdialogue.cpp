@@ -23,12 +23,10 @@
 #include "commands.h"
 
 
-FolderSelectDialogue::FolderSelectDialogue(MainWindow *mw, QWidget *pnt)
-    : MoveItemDialogue(mw->filesController(), pnt)
+FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
+    : MoveItemDialogue(pnt)
 {
     setObjectName("FolderSelectDialogue");
-
-    mMainWindow = mw;
 
     setCaption(i18nc("@title:window", "Select Folder"));
     setButtons(KDialog::User1|KDialog::Ok|KDialog::Cancel);
@@ -64,11 +62,11 @@ void FolderSelectDialogue::slotNewFolder()
         return;
     };
 
-    AddContainerCommand *cmd = new AddContainerCommand(mMainWindow->filesController());
+    AddContainerCommand *cmd = new AddContainerCommand(filesController());
     cmd->setText(i18n("New Folder"));
     cmd->setData(TrackData::Folder, item);
     cmd->setName(name);
-    mMainWindow->executeCommand(cmd);
+    mainWindow()->executeCommand(cmd);
 
 // select the added folder
 
@@ -95,7 +93,7 @@ void FolderSelectDialogue::setDestinationPath(const QString &path)
 {
     kDebug() << path;
 
-    FilesModel *model = mMainWindow->filesController()->model();
+    FilesModel *model = filesController()->model();
 
     QStringList folders = path.split('/');
     if (folders.isEmpty())				// no folder path

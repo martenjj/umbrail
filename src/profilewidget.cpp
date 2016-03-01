@@ -25,15 +25,14 @@
 
 
 ProfileWidget::ProfileWidget(QWidget *pnt)
-    : KDialog(pnt)
+    : KDialog(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
 
     setObjectName("ProfileWidget");
     setButtons(KDialog::Close);
     showButtonSeparator(true);
-
-    mMainWindow = qobject_cast<MainWindow *>(pnt);
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -283,7 +282,7 @@ void ProfileWidget::slotUpdatePlot()
     mCumulativeTravel = 0;
     mPrevPoint = NULL;
 
-    const QList<TrackDataItem *> items = mainWindow()->filesController()->view()->selectedItems();
+    const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
     mRefData.clear();
     mElevData.clear();
     mSpeedData.clear();

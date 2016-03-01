@@ -4,6 +4,7 @@
 
 
 #include <kdialog.h>
+#include "mainwindowinterface.h"
 
 #include <qvector.h>
 
@@ -20,7 +21,7 @@ class TrackDataStop;
 class FolderSelectWidget;
 
 
-class StopDetectDialogue : public KDialog
+class StopDetectDialogue : public KDialog, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -30,11 +31,6 @@ public:
 
 protected:
     void showEvent(QShowEvent *ev);
-
-    // TODO: subclass MainWindowInterface
-    // that has mainWindow(), looks up through Qt object tree
-    // cache for later access
-    MainWindow *mainWindow() const			{ return (mMainWindow); }
 
 protected slots:
     void slotShowOnMap();
@@ -56,8 +52,6 @@ private:
     FolderSelectWidget *mFolderSelect;
 
     QTimer *mIdleTimer;
-
-    MainWindow *mMainWindow;
 
     // TODO: internal, no need to be member
     QVector<const TrackDataTrackpoint *> mPoints;

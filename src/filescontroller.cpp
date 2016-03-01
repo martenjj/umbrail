@@ -43,7 +43,8 @@ using namespace KExiv2Iface;
 
 
 FilesController::FilesController(QObject *pnt)
-    : QObject(pnt)
+    : QObject(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
 
@@ -476,8 +477,8 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
         {
             if (messageText.isEmpty()) messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
             statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.pathOrUrl());
-            lat = mainWindow()->mapController()->view()->centerLatitude();
-            lon = mainWindow()->mapController()->view()->centerLongitude();
+            lat = mapController()->view()->centerLatitude();
+            lon = mapController()->view()->centerLongitude();
         }
 
         if (messageText.isEmpty()) continue;		// nothing to do
@@ -802,7 +803,7 @@ void FilesController::slotMoveItem()
     //if (items.count()!=1) return;
     const TrackDataItem *item = items.first();
 
-    MoveItemDialogue d(this, view());
+    MoveItemDialogue d(view());
     d.setSource(&items);
 
     QString capt;
@@ -943,13 +944,6 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     cmd->setData(name, lat, lon, destFolder, selPoint);
     mainWindow()->executeCommand(cmd);
 }
-
-
-MainWindow *FilesController::mainWindow() const
-{
-    return (qobject_cast<MainWindow *>(parent()));
-}
-
 
 
 //////////////////////////////////////////////////////////////////////////

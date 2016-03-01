@@ -4,14 +4,14 @@
 #define STATISTICSWIDGET_H
  
 #include <kdialog.h>
+#include "mainwindowinterface.h"
 
 
 class QGridLayout;
-class MainWindow;
 class TrackDataItem;
 
 
-class StatisticsWidget : public KDialog
+class StatisticsWidget : public KDialog, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -20,13 +20,10 @@ public:
     virtual ~StatisticsWidget();
 
 private:
-    MainWindow *mainWindow() const		{ return (mMainWindow); }
-
     void getPointData(const TrackDataItem *item);
     void addRow(const QString &text, int num, bool withPercent = true);
 
 private:
-    MainWindow *mMainWindow;
     QWidget *mWidget;
     QGridLayout *mLayout;
 

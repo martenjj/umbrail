@@ -3,20 +3,20 @@
 #ifndef PROFILEWIDGET_H
 #define PROFILEWIDGET_H
  
-#include <qvector.h>
 #include <kdialog.h>
+#include "mainwindowinterface.h"
 
+#include <qvector.h>
 
 class QCheckBox;
 class QRadioButton;
-class MainWindow;
 class TrackDataItem;
 class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
 
 
-class ProfileWidget : public KDialog
+class ProfileWidget : public KDialog, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -28,12 +28,9 @@ private slots:
     void slotUpdatePlot();
 
 private:
-    MainWindow *mainWindow() const		{ return (mMainWindow); }
     void getPlotData(const TrackDataItem *item);
 
 private:
-    MainWindow *mMainWindow;
-
     QCheckBox *mElevationCheck;
     QCheckBox *mSpeedCheck;
     QRadioButton *mSpeedGpsRadio;

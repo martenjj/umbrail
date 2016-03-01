@@ -60,6 +60,7 @@ set(navtracks_SRCS
   latlongwidget.cpp
   layerbase.cpp
   mainwindow.cpp
+  mainwindowinterface.cpp
   mapcontroller.cpp
   mapthemedialogue.cpp
   mapview.cpp
