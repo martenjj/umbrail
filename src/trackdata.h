@@ -150,16 +150,6 @@ namespace TrackData
     QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
     QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
-
-    /**
-     * Find a child folder under a specified parent.
-     *
-     * @param name Name of the folder to find.
-     * @param pnt The parent or root folder to search under.
-     *
-     * @return The named folder if it was found, otherwise, @c NULL
-     **/
-    TrackDataFolder *findChildFolder(const QString &name, const TrackDataItem *pnt);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,6 +189,14 @@ public:
     QString metadata(int idx) const;
     QString metadata(const QString &key) const;
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
+
+    /**
+     * Find a child folder under this parent.
+     *
+     * @param wantName Name of the folder to find
+     * @return The named folder if it was found, otherwise, @c NULL
+     **/
+    TrackDataFolder *findChildFolder(const QString &wantName) const;
 
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;

@@ -508,7 +508,7 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
         }
 
         // Find or create a folder to place the resulting waypoint in
-        TrackDataFolder *foundFolder = TrackData::findChildFolder(PHOTO_FOLDER_NAME, model()->rootFileItem());
+        TrackDataFolder *foundFolder = model()->rootFileItem()->findChildFolder(PHOTO_FOLDER_NAME);
         if (foundFolder==NULL)				// find where to store point
         {
             if (containerCreated) kDebug() << "new folder already added";

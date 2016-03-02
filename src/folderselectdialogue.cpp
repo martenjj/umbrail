@@ -48,7 +48,7 @@ void FolderSelectDialogue::slotNewFolder()
     if (name.isEmpty()) return;
 
     TrackDataItem *item = selectedItem();
-    TrackDataFolder *foundFolder = TrackData::findChildFolder(name, item);
+    TrackDataFolder *foundFolder = item->findChildFolder(name);
     if (foundFolder!=NULL)
     {
         KMessageBox::sorry(this,
@@ -65,7 +65,7 @@ void FolderSelectDialogue::slotNewFolder()
 
 // select the added folder
 
-    TrackDataFolder *newFolder = TrackData::findChildFolder(name, item);
+    TrackDataFolder *newFolder = item->findChildFolder(name);
     Q_ASSERT(newFolder!=NULL);
 
     setSelectedItem(newFolder);
@@ -100,7 +100,7 @@ void FolderSelectDialogue::setPath(const QString &path)
     const TrackDataItem *item = filesController()->model()->rootFileItem();
     foreach (const QString &folder, folders)
     {
-        const TrackDataFolder *foundFolder = TrackData::findChildFolder(folder, item);
+        const TrackDataFolder *foundFolder = item->findChildFolder(folder);
         if (foundFolder==NULL) kDebug() << "folder" << folder << "not found under" << item->name();
 
         item = foundFolder;

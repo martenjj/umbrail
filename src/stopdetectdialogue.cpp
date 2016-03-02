@@ -463,7 +463,7 @@ void StopDetectDialogue::slotCommitResults()
     TrackDataItem *destFolder = model->rootFileItem();
     foreach (const QString &folder, folders)
     {
-        destFolder = TrackData::findChildFolder(folder, destFolder);
+        destFolder = destFolder->findChildFolder(folder);
         Q_ASSERT(destFolder!=NULL);
     }
 

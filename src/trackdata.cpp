@@ -267,22 +267,6 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
     return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
 }
 
-
-TrackDataFolder *TrackData::findChildFolder(const QString &name, const TrackDataItem *pnt)
-{
-    //kDebug() << "name" << name << "under" << pnt->name();
-    for (int i = 0; i<pnt->childCount(); ++i)
-    {
-        TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(pnt->childAt(i));
-        if (fold!=NULL)					// this is a folder
-        {						// check matching name
-            if (fold->name()==name) return (fold);
-        }
-    }
-
-    return (NULL);
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataItem							//
@@ -474,6 +458,24 @@ QString TrackDataItem::timeZone() const
         parentItem = parentItem->parent();
     }
     return (QString::null);
+}
+
+
+TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
+{
+    if (mChildren==NULL) return (NULL);			// no children exist
+
+    //kDebug() << "name" << wantName << "under" << name();
+    for (int i = 0; i<mChildren->count(); ++i)
+    {
+        TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(mChildren->at(i));
+        if (fold!=NULL)					// this child is a folder,
+        {						// check matching name
+            if (fold->name()==wantName) return (fold);
+        }
+    }
+
+    return (NULL);
 }
 
 //////////////////////////////////////////////////////////////////////////
