@@ -4,6 +4,7 @@
 #include <qelapsedtimer.h>
 #include <qapplication.h>
 #include <qevent.h>
+#include <qtimer.h>
 
 #include <kdebug.h>
 #include <klocale.h>
@@ -61,9 +62,7 @@ LayerBase::LayerBase(QWidget *pnt)
     mClickTimer = new QElapsedTimer;
     mMovePointsMode = false;
 
-    MapView *mapView = qobject_cast<MapView *>(pnt);
-    Q_ASSERT(mapView!=NULL);
-    mapView->installEventFilter(this);
+    QTimer::singleShot(0, this, SLOT(slotInstallEventFilter()));
 }
 
 
@@ -71,6 +70,12 @@ LayerBase::~LayerBase()
 {
     delete mDraggingPoints;
     kDebug() << "done";
+}
+
+
+void LayerBase::slotInstallEventFilter()
+{
+    mapController()->view()->installEventFilter(this);
 }
 
 
