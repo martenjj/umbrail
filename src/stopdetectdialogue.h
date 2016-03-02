@@ -5,8 +5,6 @@
 
 #include <kdialog.h>
 
-#include <qvector.h>
-
 class QTimer;
 class QListWidget;
 class QLineEdit;
@@ -40,9 +38,6 @@ protected slots:
     void slotShowOnMap();
     void slotCommitResults();
 
-private:
-    void getPointData(const TrackDataItem *item);
-
 private slots:
     void slotDetectStops();
     void slotSetButtonStates();
@@ -58,9 +53,6 @@ private:
     QTimer *mIdleTimer;
 
     MainWindow *mMainWindow;
-
-    // TODO: internal, no need to be member
-    QVector<const TrackDataTrackpoint *> mPoints;
 
     QList<const TrackDataStop *> mResultPoints;
 };

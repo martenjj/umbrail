@@ -188,6 +188,27 @@ static bool withinDistance(const TrackDataTrackpoint *tdp, double lat, double lo
 }
 
 
+static void getPointData(const TrackDataItem *item, QVector<const TrackDataTrackpoint *> *points)
+{
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
+    if (tdp!=NULL)					// is this a point?
+    {
+        if (isnan(tdp->latitude())) return;		// check position is valid
+        if (isnan(tdp->longitude())) return;
+
+        const QDateTime dt = tdp->time();		// check time is valid
+        if (!dt.isValid()) return;
+
+        points->append(tdp);
+    }
+    else						// not a point, recurse for children
+    {
+        const int num = item->childCount();
+        for (int i = 0; i<num; ++i) getPointData(item->childAt(i), points);
+    }
+}
+
+
 void StopDetectDialogue::slotDetectStops()
 {
     kDebug() << "starting";
@@ -201,18 +222,18 @@ void StopDetectDialogue::slotDetectStops()
 
     mainWindow()->mapController()->view()->setStopLayerData(NULL);
 
-// Output records
-
+    // Clear the result array but do not delete the points it contains,
+    // previously committed points are now part of the main data tree.
     mResultPoints.clear();
 
-// Assemble all of the points of interest into a single linear list.
-// This list is assumed to be in time order.
+    // Assemble all of the points of interest into a single linear list.
+    // This list is assumed to be in time order.
+    QVector<const TrackDataTrackpoint *> inputPoints;
 
-    mPoints.clear();
     const QList<TrackDataItem *> items = mainWindow()->filesController()->view()->selectedItems();
-    for (int i = 0; i<items.count(); ++i) getPointData(items[i]);
-    kDebug() << "total points" << mPoints.count();
-    if (mPoints.count()<minInputPoints)
+    for (int i = 0; i<items.count(); ++i) getPointData(items[i], &inputPoints);
+    kDebug() << "total points" << inputPoints.count();
+    if (inputPoints.count()<minInputPoints)
     {
         kDebug() << "not enough points!";
         unsetCursor();
@@ -221,8 +242,7 @@ void StopDetectDialogue::slotDetectStops()
 
 // may need sorting for time here
 
-// resolve file time zone
-
+    // Resolve the file time zone
     KTimeZone tz;
     QString zoneName = mainWindow()->filesController()->model()->rootFileItem()->metadata("timezone");
     if (!zoneName.isEmpty()) tz = KSystemTimeZones::zone(zoneName);
@@ -245,11 +265,11 @@ void StopDetectDialogue::slotDetectStops()
 
     for (;;)						// loop 2: for each stop found
     {
-        if (startIndex>=mPoints.count()) break;		// reached end of points list
+        if (startIndex>=inputPoints.count()) break;	// reached end of points list
 
         kDebug() << "### loop2: startIndex" << startIndex;
 
-        pnt = mPoints[startIndex];			// initial point in run
+        pnt = inputPoints[startIndex];			// initial point in run
         double runLat = pnt->latitude();		// centre of current run
         double runLon = pnt->longitude();
 
@@ -271,9 +291,9 @@ void StopDetectDialogue::slotDetectStops()
                 int searchIndex = currentIndex+1+i;	// index of point being checked
                 kDebug() << "  looking at searchIndex" << searchIndex;
 
-                if (searchIndex>=mPoints.count()) break; // end of points list
-
-                pnt = mPoints[searchIndex];
+                if (searchIndex>=inputPoints.count()) break;
+							// end of points list
+                pnt = inputPoints[searchIndex];
                 if (withinDistance(pnt, runLat, runLon, maxDist))
                 {					// within distance tolerance?
                     kDebug() << "  within distance tol";
@@ -291,11 +311,11 @@ void StopDetectDialogue::slotDetectStops()
             // foundIndex = index of end of this run
 
             kDebug() << "run found from startIndex" << startIndex << "to foundIndex" << foundIndex;
-            pnt = mPoints[startIndex];
-            kDebug() << "  start point" << pnt->name() << "found point" << mPoints[foundIndex]->name();
+            pnt = inputPoints[startIndex];
+            kDebug() << "  start point" << pnt->name() << "found point" << inputPoints[foundIndex]->name();
 
 #ifdef MOVING_AVERAGING
-            pnt = mPoints[foundIndex];
+            pnt = inputPoints[foundIndex];
             sumLat += pnt->latitude();
             sumLon += pnt->longitude();
             ++sumNum;
@@ -313,7 +333,7 @@ void StopDetectDialogue::slotDetectStops()
  
              for (int i = startIndex+1; i<=foundIndex; ++i)
              {
-                 pnt = mPoints[i];
+                 pnt = inputPoints[i];
                  if (withinDistance(pnt, refLat, refLon, maxDist))
                  {
                      kDebug() << "  including" << i << "in average";
@@ -338,8 +358,8 @@ void StopDetectDialogue::slotDetectStops()
         {
             kDebug() << "******** stop found from startIndex" << startIndex << "to currentIndex" << currentIndex;
 
-            const TrackDataTrackpoint *startPoint = mPoints[startIndex];
-            const TrackDataTrackpoint *endPoint = mPoints[currentIndex];
+            const TrackDataTrackpoint *startPoint = inputPoints[startIndex];
+            const TrackDataTrackpoint *endPoint = inputPoints[currentIndex];
 
             kDebug() << "  start point" << startPoint->name() << "end point" << endPoint->name();
 
@@ -410,27 +430,6 @@ void StopDetectDialogue::slotDetectStops()
 }
 
 
-void StopDetectDialogue::getPointData(const TrackDataItem *item)
-{
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
-    if (tdp!=NULL)					// is this a point?
-    {
-        if (isnan(tdp->latitude())) return;		// check position is valid
-        if (isnan(tdp->longitude())) return;
-
-        const QDateTime dt = tdp->time();		// check time is valid
-        if (!dt.isValid()) return;
-
-        mPoints.append(tdp);
-    }
-    else						// not a point, recurse for children
-    {
-        const int num = item->childCount(); 
-        for (int i = 0; i<num; ++i) getPointData(item->childAt(i));
-    }
-}
-
-
 void StopDetectDialogue::slotSetButtonStates()
 {
     int numChecked = 0;
@@ -451,7 +450,7 @@ void StopDetectDialogue::slotCommitResults()
     kDebug();
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
-    cmd->setText(i18n("Detect Stops"));
+    cmd->setText(i18n("Locate Stops"));
 
     const QString folderPath = mFolderSelect->folderPath();
     Q_ASSERT(!folderPath.isEmpty());
