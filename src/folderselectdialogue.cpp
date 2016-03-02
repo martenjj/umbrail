@@ -88,24 +88,6 @@ void FolderSelectDialogue::setPath(const QString &path)
 {
     kDebug() << path;
 
-    QStringList folders = path.split('/');
-    if (folders.isEmpty())				// no folder path
-    {
-        setSelectedItem(NULL);				// clear selection
-        return;
-    }
-
-    // TODO: -> TrackData::findFolderByPath()
-    // also used in StopDetectDialogue::slotCommitResults()
-    const TrackDataItem *item = filesController()->model()->rootFileItem();
-    foreach (const QString &folder, folders)
-    {
-        const TrackDataFolder *foundFolder = item->findChildFolder(folder);
-        if (foundFolder==NULL) kDebug() << "folder" << folder << "not found under" << item->name();
-
-        item = foundFolder;
-        if (item==NULL) break;
-    }
-
-    setSelectedItem(item);
+    TrackDataFolder *selFolder = TrackData::findFolderByPath(path, filesController()->model()->rootFileItem());
+    setSelectedItem(selFolder);				// empty path => NULL => clear selection
 }

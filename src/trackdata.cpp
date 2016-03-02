@@ -267,6 +267,21 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
     return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
 }
 
+
+TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataItem *root)
+{
+    const QStringList folders = path.split('/');
+
+    TrackDataFolder *foundFolder = NULL;
+    foreach (const QString &folder, folders)
+    {
+        foundFolder = (foundFolder!=NULL ? foundFolder : root)->findChildFolder(folder);
+        if (foundFolder==NULL) break;
+    }
+
+    return (foundFolder);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataItem							//

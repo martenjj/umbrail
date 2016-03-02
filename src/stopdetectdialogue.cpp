@@ -452,20 +452,10 @@ void StopDetectDialogue::slotCommitResults()
 
     const QString folderPath = mFolderSelect->folderPath();
     Q_ASSERT(!folderPath.isEmpty());
-    const QStringList folders = folderPath.split('/');
-    Q_ASSERT(!folders.isEmpty());
-
-    FilesModel *model = filesController()->model();
 
     // The destination folder must exist at this point
-    // TODO: -> TrackDataFolder *TrackData::findFolderByPath()
-    // also used in FolderSelectDialogue::setDestinationPath()
-    TrackDataItem *destFolder = model->rootFileItem();
-    foreach (const QString &folder, folders)
-    {
-        destFolder = destFolder->findChildFolder(folder);
-        Q_ASSERT(destFolder!=NULL);
-    }
+    TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, filesController()->model()->rootFileItem());
+    Q_ASSERT(destFolder!=NULL);
 
     // Create the waypoints
     for (int i = 0; i<mResultsList->count(); ++i)
@@ -478,8 +468,7 @@ void StopDetectDialogue::slotCommitResults()
 							// source point - its metadata copied
         AddWaypointCommand *cmd2 = new AddWaypointCommand(filesController(), cmd);
         cmd2->setData(tdw->name(), tdw->latitude(), tdw->longitude(),
-                      dynamic_cast<TrackDataFolder *>(destFolder),
-                      tdw);
+                      dynamic_cast<TrackDataFolder *>(destFolder), tdw);
     }
 
     if (cmd->childCount()==0)				// anything to actually do?
