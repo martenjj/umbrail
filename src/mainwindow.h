@@ -4,8 +4,6 @@
 #define MAINWINDOW_H
 
 
-#include <qpointer.h>
-
 #include <kxmlguiwindow.h>
 #include <kurl.h>
 
@@ -30,7 +28,6 @@ class KUrl;
 class MapController;
 class Project;
 class TrackDataItem;
-class StopDetectDialogue;
 
 
 class MainWindow : public KXmlGuiWindow
@@ -101,7 +98,6 @@ private:
 private slots:
     void slotUpdateActionState();
     void slotUpdatePasteState();
-    void slotStopDetectFinished(int result);
 
 private:
     Project *mProject;
@@ -110,7 +106,6 @@ private:
 
     KSqueezedTextLabel *mStatusMessage;
     QLabel *mModifiedIndicator;
-    QPointer<StopDetectDialogue> mStopDetectDialogue;
 
     KAction *mSaveProjectAction;
     KAction *mSaveProjectAsAction;
@@ -137,7 +132,7 @@ private:
     KAction *mSplitTrackAction;
     KAction *mMergeTrackAction;
     KAction *mMoveItemAction;
-    KToggleAction *mStopDetectAction;
+    KAction *mStopDetectAction;
     KAction *mPropertiesAction;
     KAction *mProfileAction;
     KAction *mStatisticsAction;
