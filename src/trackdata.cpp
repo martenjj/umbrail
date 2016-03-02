@@ -268,29 +268,18 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
 }
 
 
-// TODO: make into a member function of 'pnt'
-TrackDataFolder *TrackData::findChildFolder(const QString &name, const TrackDataItem *pnt, bool findOne)
+TrackDataFolder *TrackData::findChildFolder(const QString &name, const TrackDataItem *pnt)
 {
-    kDebug() << "name" << name << "under" << pnt->name() << "findone" << findOne;
-    TrackDataFolder *foundFolder = NULL;
-    int folderCount = 0;
+    //kDebug() << "name" << name << "under" << pnt->name();
     for (int i = 0; i<pnt->childCount(); ++i)
     {
         TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(pnt->childAt(i));
         if (fold!=NULL)					// this is a folder
-        {
-            ++folderCount;
-            if (fold->name()==name)
-            {
-                kDebug() << "  exact match";
-                return (fold);
-            }
-            else if (foundFolder==NULL) foundFolder = fold;
+        {						// check matching name
+            if (fold->name()==name) return (fold);
         }
     }
 
-    kDebug() << "  count" << folderCount << "found" << ((void *) foundFolder);
-    if (findOne && folderCount==1) return (foundFolder);
     return (NULL);
 }
 

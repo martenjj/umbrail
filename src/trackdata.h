@@ -156,15 +156,10 @@ namespace TrackData
      *
      * @param name Name of the folder to find.
      * @param pnt The parent or root folder to search under.
-     * @param findOne If no matching folder is found, then return a
-     * single one (see below).
      *
-     * @return If the named folder was found then it is returned.
-     * If the named folder was not found but only a single folder exists,
-     * then it is returned if @p findOne is @c true.  Otherwise, @c NULL
-     * is returned.
+     * @return The named folder if it was found, otherwise, @c NULL
      **/
-    TrackDataFolder *findChildFolder(const QString &name, const TrackDataItem *pnt, bool findOne = false);
+    TrackDataFolder *findChildFolder(const QString &name, const TrackDataItem *pnt);
 };
 
 //////////////////////////////////////////////////////////////////////////
