@@ -1,10 +1,6 @@
 
 #include "folderselectdialogue.h"
 
-#include <qgridlayout.h>
-#include <qlabel.h>
-#include <qtreeview.h>
-#include <qitemselectionmodel.h>
 #include <QRegExpValidator>
 
 #include <kdebug.h>
@@ -17,28 +13,27 @@
 
 #include "mainwindow.h"
 #include "filesmodel.h"
-#include "filesview.h"
 #include "trackfiltermodel.h"
 #include "trackdata.h"
 #include "commands.h"
 
 
 FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
-    : MoveItemDialogue(pnt)
+    : ItemSelectDialogue(pnt)
 {
     setObjectName("FolderSelectDialogue");
 
     setCaption(i18nc("@title:window", "Select Folder"));
     setButtons(KDialog::User1|KDialog::Ok|KDialog::Cancel);
-    enableButtonOk(false);
     setButtonText(KDialog::Ok, i18nc("@action:button", "Select"));
+    enableButtonOk(false);
     setButtonText(KDialog::User1, i18nc("@action:button", "New Folder..."));
     setButtonIcon(KDialog::User1, KIcon("folder-new"));
 
     connect(this, SIGNAL(user1Clicked()), SLOT(slotNewFolder()));
     connect(this, SIGNAL(selectionChanged()), SLOT(slotUpdateButtonStates()));
 
-    setMode(TrackData::Folder);				// can select folders
+    trackModel()->setMode(TrackData::Folder);		// can select folders
 
     slotUpdateButtonStates();
 }
@@ -52,7 +47,7 @@ void FolderSelectDialogue::slotNewFolder()
                                          QString::null, NULL, this, val);
     if (name.isEmpty()) return;
 
-    TrackDataItem *item = selectedDestination();
+    TrackDataItem *item = selectedItem();
     TrackDataFolder *foundFolder = TrackData::findChildFolder(name, item);
     if (foundFolder!=NULL)
     {
@@ -73,14 +68,14 @@ void FolderSelectDialogue::slotNewFolder()
     TrackDataFolder *newFolder = TrackData::findChildFolder(name, item);
     Q_ASSERT(newFolder!=NULL);
 
-    selectDestination(newFolder);
+    setSelectedItem(newFolder);
     button(KDialog::Ok)->setFocus(Qt::OtherFocusReason);
 }
 
 
 void FolderSelectDialogue::slotUpdateButtonStates()
 {
-    const TrackDataItem *item = selectedDestination();
+    const TrackDataItem *item = selectedItem();
     const bool isFolder = (dynamic_cast<const TrackDataFolder *>(item)!=NULL);
     const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=NULL);
 
@@ -89,22 +84,20 @@ void FolderSelectDialogue::slotUpdateButtonStates()
 }
 
 
-void FolderSelectDialogue::setDestinationPath(const QString &path)
+void FolderSelectDialogue::setPath(const QString &path)
 {
     kDebug() << path;
-
-    FilesModel *model = filesController()->model();
 
     QStringList folders = path.split('/');
     if (folders.isEmpty())				// no folder path
     {
-        selectDestination(NULL);			// clear selection
+        setSelectedItem(NULL);				// clear selection
         return;
     }
 
     // TODO: -> TrackData::findFolderByPath()
     // also used in StopDetectDialogue::slotCommitResults()
-    const TrackDataItem *item = model->rootFileItem();
+    const TrackDataItem *item = filesController()->model()->rootFileItem();
     foreach (const QString &folder, folders)
     {
         const TrackDataFolder *foundFolder = TrackData::findChildFolder(folder, item);
@@ -114,5 +107,5 @@ void FolderSelectDialogue::setDestinationPath(const QString &path)
         if (item==NULL) break;
     }
 
-    selectDestination(item);
+    setSelectedItem(item);
 }

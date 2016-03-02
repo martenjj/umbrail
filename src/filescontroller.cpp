@@ -814,7 +814,7 @@ void FilesController::slotMoveItem()
 
     if (!d.exec()) return;
 
-    TrackDataItem *dest = d.selectedDestination();
+    TrackDataItem *dest = d.selectedItem();
     MoveItemCommand *cmd = new MoveItemCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(items, dest);

@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		01-Mar-16					#
+#  Edit:		02-Mar-16					#
 #########################################################################
 
 project(navtracks)
@@ -55,6 +55,7 @@ set(navtracks_SRCS
   gpximporter.cpp
   importerexporterbase.cpp
   importerbase.cpp
+  itemselectdialogue.cpp
   itemtypecombo.cpp
   latlongdialogue.cpp
   latlongwidget.cpp

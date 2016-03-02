@@ -3,11 +3,10 @@
 #define FOLDERSELECTDIALOGUE_H
 
 
-#include "moveitemdialogue.h"
-#include "mainwindowinterface.h"
+#include "itemselectdialogue.h"
 
 
-class FolderSelectDialogue : public MoveItemDialogue
+class FolderSelectDialogue : public ItemSelectDialogue
 {
     Q_OBJECT
 
@@ -15,7 +14,7 @@ public:
     explicit FolderSelectDialogue(QWidget *pnt = NULL);
     virtual ~FolderSelectDialogue()			{}
 
-    void setDestinationPath(const QString &path);
+    void setPath(const QString &path);
 
 protected slots:
     void slotNewFolder();
