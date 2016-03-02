@@ -90,6 +90,9 @@ private:
     bool testClickTolerance(const QMouseEvent *mev) const;
     virtual void findSelectionInTree(const TrackDataItem *item);
 
+private slots:
+    void slotInstallEventFilter();
+
 private:
     bool mMovePointsMode;
 
