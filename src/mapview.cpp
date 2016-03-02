@@ -293,7 +293,7 @@ bool MapView::eventFilter(QObject *obj, QEvent *ev)
 }
 
 
-void MapView::setStopLayerData(const QList<const TrackDataStop *> *data)
+void MapView::setStopLayerData(const QList<const TrackDataWaypoint *> *data)
 {
     mStopsLayer->setStopsData(data);
     update();

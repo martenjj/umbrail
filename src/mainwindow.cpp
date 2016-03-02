@@ -954,7 +954,8 @@ void MainWindow::slotOpenMedia()
 {
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
     Q_ASSERT(tdw!=NULL);
-    if (tdw->waypointType()==TrackData::WaypointNormal) return;
+    const TrackData::WaypointType wpt = tdw->waypointType();
+    if (wpt==TrackData::WaypointNormal || wpt==TrackData::WaypointStop) return;
     MediaPlayer::openMediaFile(tdw);
 }
 
@@ -963,7 +964,8 @@ void MainWindow::slotSaveMedia()
 {
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
     Q_ASSERT(tdw!=NULL);
-    if (tdw->waypointType()==TrackData::WaypointNormal) return;
+    const TrackData::WaypointType wpt = tdw->waypointType();
+    if (wpt==TrackData::WaypointNormal || wpt==TrackData::WaypointStop) return;
     MediaPlayer::saveMediaFile(tdw);
 }
 

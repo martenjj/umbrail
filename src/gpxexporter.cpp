@@ -129,7 +129,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         }
         else
         {
-            if (name=="status" || name=="source") name = "navtracks:"+name;
+            if (name=="status" || name=="source" || name=="stop") name = "navtracks:"+name;
             str.writeTextElement(name, data);
         }
     }

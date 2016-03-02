@@ -127,6 +127,7 @@ namespace TrackData
         WaypointAudioNote,
         WaypointVideoNote,
         WaypointPhoto,
+        WaypointStop,
         WaypointAny
     };
 
@@ -397,21 +398,5 @@ public:
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
-
-//////////////////////////////////////////////////////////////////////////
-//									//
-//  TrackDataStop							//
-//									//
-//////////////////////////////////////////////////////////////////////////
-
-class TrackDataStop : public TrackDataAbstractPoint
-{
-public:
-    TrackDataStop(const QString &nm);
-    virtual ~TrackDataStop()				{}
-
-    QString iconName() const				{ return ("media-playback-stop"); }
-};
-
 
 #endif							// TRACKDATA_H

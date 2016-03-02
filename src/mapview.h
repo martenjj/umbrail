@@ -11,7 +11,7 @@ using namespace Marble;
 
 class KAction;
 class TrackDataItem;
-class TrackDataStop;
+class TrackDataWaypoint;
 class TracksLayer;
 class WaypointsLayer;
 class StopsLayer;
@@ -38,7 +38,7 @@ public:
 
     static QColor resolveLineColour(const TrackDataItem *tdd);
 
-    void setStopLayerData(const QList<const TrackDataStop *> *data);
+    void setStopLayerData(const QList<const TrackDataWaypoint *> *data);
 
 public slots:               
     void slotRmbRequest(int mx, int my);

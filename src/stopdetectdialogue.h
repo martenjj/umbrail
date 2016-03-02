@@ -6,8 +6,6 @@
 #include <kdialog.h>
 #include "mainwindowinterface.h"
 
-#include <qvector.h>
-
 class QTimer;
 class QListWidget;
 class QLineEdit;
@@ -17,7 +15,7 @@ class MainWindow;
 class ValueSlider;
 class TrackDataItem;
 class TrackDataTrackpoint;
-class TrackDataStop;
+class TrackDataWaypoint;
 class FolderSelectWidget;
 
 
@@ -36,9 +34,6 @@ protected slots:
     void slotShowOnMap();
     void slotCommitResults();
 
-private:
-    void getPointData(const TrackDataItem *item);
-
 private slots:
     void slotDetectStops();
     void slotSetButtonStates();
@@ -53,10 +48,7 @@ private:
 
     QTimer *mIdleTimer;
 
-    // TODO: internal, no need to be member
-    QVector<const TrackDataTrackpoint *> mPoints;
-
-    QList<const TrackDataStop *> mResultPoints;
+    QList<const TrackDataWaypoint *> mResultPoints;
 };
 
 #endif							// STOPDETECTDIALOGUE_H

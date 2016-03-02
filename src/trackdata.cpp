@@ -40,7 +40,6 @@ static int counterSegment = 0;
 static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
-static int counterStop = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
@@ -49,7 +48,6 @@ static int allocSegment = 0;
 static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
-static int allocStop = 0;
 static int allocStyle = 0;
 static int allocChildren = 0;
 static int allocMetadata = 0;
@@ -727,9 +725,12 @@ TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
 
 TrackData::WaypointType TrackDataWaypoint::waypointType() const
 {
-    QString n = metadata("link");			// first try saved link name
+    QString n = metadata("stop");			// first try saved stop data
+    if (!n.isEmpty()) return (TrackData::WaypointStop);	// this means it's a stop
+
+    n = metadata("link");				// then get saved link name
     if (n.isEmpty()) n = metadata("media");		// compatibility with old metadata
-    if (n.isEmpty()) n = name();			// then our waypoint name
+    if (n.isEmpty()) n = name();			// lastly try our waypoint name
 
     if (n.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
     if (n.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
@@ -746,22 +747,9 @@ case TrackData::WaypointNormal:		return ("favorites");
 case TrackData::WaypointAudioNote:	return ("speaker");
 case TrackData::WaypointVideoNote:	return ("mixer-video");
 case TrackData::WaypointPhoto:		return ("image-x-generic");
+case TrackData::WaypointStop:		return ("media-playback-stop");
 default:				return ("unknown");
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-//									//
-//  TrackDataStop							//
-//									//
-//////////////////////////////////////////////////////////////////////////
-
-TrackDataStop::TrackDataStop(const QString &nm)
-    : TrackDataAbstractPoint(nm, "stop_%03d", &counterStop)
-{
-#ifdef MEMORY_TRACKING
-    ++allocStop;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -792,7 +780,6 @@ MemoryTracker::MemoryTracker()
     qDebug() << "folder" << sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
-    qDebug() << "stop" << sizeof(TrackDataStop) << "bytes";
     qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
@@ -807,7 +794,6 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "folder allocated" << allocFolder << "items, total" << allocFolder*sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
-    qDebug() << "stop allocated" << allocStop << "items, total" << allocStop*sizeof(TrackDataStop) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;
