@@ -14,7 +14,7 @@ class MainWindow;
 class ValueSlider;
 class TrackDataItem;
 class TrackDataTrackpoint;
-class TrackDataStop;
+class TrackDataWaypoint;
 class FolderSelectWidget;
 
 
@@ -54,7 +54,7 @@ private:
 
     MainWindow *mMainWindow;
 
-    QList<const TrackDataStop *> mResultPoints;
+    QList<const TrackDataWaypoint *> mResultPoints;
 };
 
 #endif							// STOPDETECTDIALOGUE_H

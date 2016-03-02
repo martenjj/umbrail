@@ -479,7 +479,10 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // To get around this, we save the original name in the waypoint's
             // metadata under a special key which will not get overwritten;  this
             // will from then on be saved and loaded in the GPX file.
-            if (mCurrentWaypoint->waypointType()!=TrackData::WaypointNormal)
+
+            // TODO: this test -> TrackDataWaypoint::hasMedia()
+            const TrackData::WaypointType wpt = mCurrentWaypoint->waypointType();
+            if (wpt!=TrackData::WaypointNormal && wpt!=TrackData::WaypointStop)
             {
                 mCurrentWaypoint->setMetadata(idx, mCurrentWaypoint->name());
             }

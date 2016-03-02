@@ -7,7 +7,7 @@
 
 using namespace Marble;
 
-class TrackDataStop;
+class TrackDataWaypoint;
 
 
 class StopsLayer : public Marble::LayerInterface
@@ -22,10 +22,10 @@ public:
     bool render(GeoPainter *painter, ViewportParams *viewport,
                 const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL);
 
-    void setStopsData(const QList<const TrackDataStop *> *data);
+    void setStopsData(const QList<const TrackDataWaypoint *> *data);
 
 private:
-    const QList<const TrackDataStop *> *mStopsData;
+    const QList<const TrackDataWaypoint *> *mStopsData;
 };
 
 #endif							// WAYPOINTSLAYER_H

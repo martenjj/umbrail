@@ -408,6 +408,7 @@ case TrackData::WaypointNormal:		typeName = i18n("None");	break;
 case TrackData::WaypointAudioNote:	typeName = i18n("Audio Note");	break;
 case TrackData::WaypointVideoNote:	typeName = i18n("Video Note");	break;
 case TrackData::WaypointPhoto:		typeName = i18n("Photo");	break;
+case TrackData::WaypointStop:		typeName = i18n("Stop");	break;
 default:				typeName = i18n("(Unknown)");	break;
         }
 
@@ -451,7 +452,7 @@ default:    break;
             hlay->addWidget(actionButton);
         }
 
-        mFormLayout->addRow(i18nc("@label:textbox", "Media:"), hb);
+        mFormLayout->addRow(i18nc("@label:textbox", "Type:"), hb);
         addSeparatorField();
     }
     else mWaypoint = NULL;

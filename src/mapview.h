@@ -13,7 +13,7 @@ class FilesModel;
 class FilesView;
 class MainWindow;
 class TrackDataItem;
-class TrackDataStop;
+class TrackDataWaypoint;
 class TracksLayer;
 class WaypointsLayer;
 class StopsLayer;
@@ -43,7 +43,7 @@ public:
     void setFilesModel(FilesModel *mod)			{ mFilesModel = mod; }
     void setFilesView(FilesView *view)			{ mFilesView = view; }
 
-    void setStopLayerData(const QList<const TrackDataStop *> *data);
+    void setStopLayerData(const QList<const TrackDataWaypoint *> *data);
 
     MainWindow *mainWindow() const			{ return (mMainWindow); }
     FilesModel *filesModel() const			{ return (mFilesModel); }

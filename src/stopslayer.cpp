@@ -50,16 +50,17 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
 
     for (int i = 0; i<mStopsData->count(); ++i)
     {
-        const TrackDataStop *tds = mStopsData->at(i);
+        const TrackDataWaypoint *tdw = mStopsData->at(i);
 
+        // TODO: combine with same in WaypointsLayer
 #ifdef DEBUG_PAINTING
-        kDebug() << "draw stop" << i << tds->name();
+        kDebug() << "draw stop" << i << tdw->name();
 #endif
-        GeoDataCoordinates coord(tds->longitude(), tds->latitude(),
+        GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
                                  0, GeoDataCoordinates::Degree);
 
         // First the icon image
-        const QPixmap img = KIconLoader::global()->loadIcon(tds->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
+        const QPixmap img = KIconLoader::global()->loadIcon(tdw->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
                                                             KIconLoader::DefaultState, QStringList(), NULL, true);
         if (!img.isNull())				// icon image available
         {
@@ -76,10 +77,10 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
         painter->save();
         painter->translate(15, 3);			// offset text from point
         painter->setPen(Qt::gray);			// draw with drop shadow
-        painter->drawText(coord, tds->name());
+        painter->drawText(coord, tdw->name());
         painter->translate(-1, -1);
         painter->setPen(Qt::black);
-        painter->drawText(coord, tds->name());
+        painter->drawText(coord, tdw->name());
         painter->restore();
     }
 
@@ -87,7 +88,7 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
 }
 
 
-void StopsLayer::setStopsData(const QList<const TrackDataStop *> *data)
+void StopsLayer::setStopsData(const QList<const TrackDataWaypoint *> *data)
 {
     mStopsData = data;
     if (mStopsData==NULL) kDebug() << "data cleared";

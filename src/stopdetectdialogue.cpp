@@ -171,12 +171,12 @@ void StopDetectDialogue::slotShowOnMap()
     if (items.count()!=1) return;
     int idx = items.first()->data(Qt::UserRole).toInt();
 
-    TrackDataStop *tds = const_cast<TrackDataStop *>(mResultPoints[idx]);
+    TrackDataWaypoint *tdw = const_cast<TrackDataWaypoint *>(mResultPoints[idx]);
 
-    kDebug() << "index" << idx << tds->name();
+    kDebug() << "index" << idx << tdw->name();
 
     QList<TrackDataItem *> its;
-    its.append(static_cast<TrackDataItem *>(tds));
+    its.append(static_cast<TrackDataItem *>(tdw));
     mainWindow()->mapController()->gotoSelection(its);
 }
 
@@ -377,12 +377,12 @@ void StopDetectDialogue::slotDetectStops()
                 QString text1 = dt1.toString("hh:mm:ss");
                 QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));
 
-                TrackDataStop *tds = new TrackDataStop(i18n("Stop at %1 for %2", text1, text2));
-                tds->setLatLong(runLat, runLon);
-                tds->setTime(dt1);
-                tds->setMetadata(DataIndexer::self()->index("stop"), (text1+' '+text2));
+                TrackDataWaypoint *tdw = new TrackDataWaypoint(i18n("Stop at %1 for %2", text1, text2));
+                tdw->setLatLong(runLat, runLon);
+                tdw->setTime(dt1);
+                tdw->setMetadata(DataIndexer::self()->index("stop"), (text1+' '+text2));
 
-                mResultPoints.append(tds);
+                mResultPoints.append(tdw);
 
                 startIndex = currentIndex;		// start search again after stop
             }
@@ -411,9 +411,9 @@ void StopDetectDialogue::slotDetectStops()
 
     for (int i = 0; i<num; ++i)				// generate new results
     {
-        const TrackDataStop *tds = mResultPoints[i];
+        const TrackDataWaypoint *tdw = mResultPoints[i];
 
-        QListWidgetItem *item = new QListWidgetItem(tds->name());
+        QListWidgetItem *item = new QListWidgetItem(tdw->name());
         item->setFlags(item->flags()|Qt::ItemIsUserCheckable);
         item->setData(Qt::CheckStateRole, Qt::Checked);
         item->setData(Qt::UserRole, i);
@@ -476,19 +476,12 @@ void StopDetectDialogue::slotCommitResults()
         Qt::CheckState check = static_cast<Qt::CheckState>(item->data(Qt::CheckStateRole).toInt());
         if (check!=Qt::Checked) continue;		// include this in results?
 
-        // TODO: merge TrackDataStop into TrackDataWaypoint
-        // metadata "stop" = "hh:mm:ss mm:ss"
-        // waypoint icon/type if this is set
-
-        const TrackDataStop *tds = mResultPoints[i];
-        TrackDataWaypoint *tdw = new TrackDataWaypoint(tds->name());
-        tdw->setLatLong(tds->latitude(), tds->longitude());
-        tdw->setTime(tds->time());
-
+        const TrackDataWaypoint *tdw = mResultPoints[i];
+							// source point - its metadata copied
         AddWaypointCommand *cmd2 = new AddWaypointCommand(mainWindow()->filesController(), cmd);
-        cmd2->setData(tds->name(), tds->latitude(), tds->longitude(),
-                                 dynamic_cast<TrackDataFolder *>(destFolder),
-                                 tds);
+        cmd2->setData(tdw->name(), tdw->latitude(), tdw->longitude(),
+                      dynamic_cast<TrackDataFolder *>(destFolder),
+                      tdw);
     }
 
     if (cmd->childCount()==0)				// anything to actually do?
