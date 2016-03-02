@@ -387,6 +387,7 @@ public:
 
     QString iconName() const;
     TrackData::WaypointType waypointType() const;
+    bool isMediaType() const;
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;

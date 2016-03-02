@@ -758,6 +758,15 @@ default:				return ("unknown");
     }
 }
 
+
+bool TrackDataWaypoint::isMediaType() const
+{
+    const TrackData::WaypointType wpt = waypointType();
+    return (wpt==TrackData::WaypointAudioNote ||
+            wpt==TrackData::WaypointVideoNote ||
+            wpt==TrackData::WaypointPhoto);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Memory tracking							//

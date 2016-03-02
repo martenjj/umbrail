@@ -461,34 +461,32 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         kDebug() << "got a WPT:" << mCurrentWaypoint->name();
 #endif
 
-        TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
-        Q_ASSERT(folder!=NULL);
-        folder->addChildItem(mCurrentWaypoint);
-
         // Clear the folder name metadata, will regenerate on export
         mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
 
-        // Only do this check if the "link" metadata has not already
-        // been set by a LINK tag.
-        const int idx = DataIndexer::self()->index("link");
-        if (mCurrentWaypoint->metadata(idx).isEmpty())
+        if (mCurrentWaypoint->isMediaType())
         {
-            // An OsmAnd+ AV note is stored as a waypoint with a special name.
-            // Using the GUI, it is possible to rename such a waypoint;  relying
-            // on the visible name to locate the media file would then fail.
-            // To get around this, we save the original name in the waypoint's
-            // metadata under a special key which will not get overwritten;  this
-            // will from then on be saved and loaded in the GPX file.
-
-            // TODO: this test -> TrackDataWaypoint::hasMedia()
-            const TrackData::WaypointType wpt = mCurrentWaypoint->waypointType();
-            if (wpt!=TrackData::WaypointNormal && wpt!=TrackData::WaypointStop)
+            // Only do this check if the "link" metadata has not already
+            // been set by a LINK tag.
+            const int idx = DataIndexer::self()->index("link");
+            if (mCurrentWaypoint->metadata(idx).isEmpty())
             {
+                // An OsmAnd+ AV note is stored as a waypoint with a special name.
+                // Using the GUI, it is possible to rename such a waypoint;  relying
+                // on the visible name to locate the media file would then fail.
+                // To get around this, we save the original name in the waypoint's
+                // metadata under a special key which will not get overwritten;  this
+                // will from then on be saved and loaded in the GPX file.
+
                 mCurrentWaypoint->setMetadata(idx, mCurrentWaypoint->name());
             }
         }
 
-        mCurrentWaypoint = NULL;				// finished with temporary
+        TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
+        Q_ASSERT(folder!=NULL);
+        folder->addChildItem(mCurrentWaypoint);		// add to destination folder
+
+        mCurrentWaypoint = NULL;			// finished with temporary
         return (true);
     }
 
