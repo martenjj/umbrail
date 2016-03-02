@@ -37,12 +37,11 @@ FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
 
 void FolderSelectWidget::slotSelectFolder()
 {
-    // TODO: can be auto variable
-    FolderSelectDialogue *d = new FolderSelectDialogue(this);
-    d->setPath(mDestFolder->text());
-    if (!d->exec()) return;
+    FolderSelectDialogue d(this);
+    d.setPath(mDestFolder->text());
+    if (!d.exec()) return;
 
-    const TrackDataFolder *selectedFolder = dynamic_cast<const TrackDataFolder *>(d->selectedItem());
+    const TrackDataFolder *selectedFolder = dynamic_cast<const TrackDataFolder *>(d.selectedItem());
     if (selectedFolder==NULL) mDestFolder->clear();
     else mDestFolder->setText(selectedFolder->path());
 
