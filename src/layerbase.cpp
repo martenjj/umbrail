@@ -15,6 +15,7 @@
 #include "filesmodel.h"
 #include "filesview.h"
 #include "mainwindow.h"
+#include "mapcontroller.h"
 #include "style.h"
 #include "settings.h"
 #include "mapview.h"
@@ -50,20 +51,20 @@ void SelectionRun::clear()
 ////////////////////////////////////////////////////////////////////////
 
 LayerBase::LayerBase(QWidget *pnt)
-    : QObject(pnt)
+    : QObject(pnt),
+      MainWindowInterface(pnt)
 {
     kDebug();
-
-    mMapView = qobject_cast<MapView *>(pnt);
 
     mClickedPoint = NULL;
     mDraggingPoints = NULL;
     mClickTimer = new QElapsedTimer;
     mMovePointsMode = false;
 
-    mapView()->installEventFilter(this);
+    MapView *mapView = qobject_cast<MapView *>(pnt);
+    Q_ASSERT(mapView!=NULL);
+    mapView->installEventFilter(this);
 }
-
 
 
 LayerBase::~LayerBase()
@@ -71,7 +72,6 @@ LayerBase::~LayerBase()
     delete mDraggingPoints;
     kDebug() << "done";
 }
-
 
 
 QStringList LayerBase::renderPosition() const
@@ -106,10 +106,10 @@ GeoDataCoordinates LayerBase::applyOffset(const GeoDataCoordinates &coords) cons
 bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
                        const QString &renderPos, GeoSceneLayer *layer)
 {
-    const FilesModel *filesModel = mapView()->filesModel();
+    const FilesModel *filesModel = filesController()->model();
     if (filesModel==NULL) return (false);		// no data to use!
 
-    const FilesView *filesView = mapView()->filesView();
+    const FilesView *filesView = filesController()->view();
     mSelectionId = (filesView!=NULL ? filesView->selectionId() : 0);
 
     // Paint the data in two passes.  The first does all non-selected items,
@@ -327,6 +327,9 @@ void LayerBase::setMovePointsMode(bool on)
 
 bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 {
+    MapView *mapView = mapController()->view();
+    FilesModel *filesModel = filesController()->model();
+
     if (ev->type()==QEvent::MouseButtonPress)
     {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
@@ -340,7 +343,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 
         // See whether there is a track data point under the click.
         qreal lat,lon;
-        bool onEarth = mapView()->geoCoordinates(mClickX, mClickY, lon, lat);
+        bool onEarth = mapView->geoCoordinates(mClickX, mClickY, lon, lat);
 #ifdef DEBUG_DRAGGING
         kDebug() << "  onearth" << onEarth << "lat" << lat << "lon" << lon;
 #endif
@@ -349,8 +352,8 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         qreal lat1,lat2;
         qreal lon1,lon2;
         const int dragStart = qApp->startDragDistance();
-        mapView()->geoCoordinates(mClickX-dragStart, mClickY-dragStart, lon1, lat1);
-        mapView()->geoCoordinates(mClickX+dragStart, mClickY+dragStart, lon2, lat2);
+        mapView->geoCoordinates(mClickX-dragStart, mClickY-dragStart, lon1, lat1);
+        mapView->geoCoordinates(mClickX+dragStart, mClickY+dragStart, lon2, lat2);
         mLatMin = qMin(lat1, lat2);
         mLatMax = qMax(lat1, lat2);
         mLonMin = qMin(lon1, lon2);
@@ -358,7 +361,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
         kDebug() << "  tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
 #endif
-        const TrackDataAbstractPoint *tdp = findClickedPoint(mapView()->filesModel()->rootFileItem());
+        const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
         if (tdp!=NULL)					// a point was found
         {
             mClickedPoint = tdp;			// record for release event
@@ -387,7 +390,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #endif
             emit draggedPoints(mLatOff, mLonOff);
             delete mDraggingPoints; mDraggingPoints = NULL;
-            mapView()->update();
+            mapView->update();
             return (true);
         }
 
@@ -399,7 +402,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
             kDebug() << "  valid click detected";
 #endif
-            mapView()->filesModel()->clickedPoint(clickedPoint, mouseEvent->modifiers());
+            filesModel->clickedPoint(clickedPoint, mouseEvent->modifiers());
             return (true);				// event consumed
         }
     }
@@ -420,7 +423,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #endif
                 mClickTimer->invalidate();
 
-                const TrackDataAbstractPoint *tdp = findClickedPoint(mapView()->filesModel()->rootFileItem());
+                const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
                 if (tdp!=NULL && tdp->selectionId()!=mSelectionId)
                 {
 #ifdef DEBUG_DRAGGING
@@ -430,22 +433,20 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
                 }
 
                 mDraggingPoints = new QList<SelectionRun>;
-                this->findSelectionInTree(mapView()->filesModel()->rootFileItem());
+                this->findSelectionInTree(filesModel->rootFileItem());
             }
             else return (false);			// outside click tolerance
         }
 
         qreal lat, lon;
-        if (mapView()->geoCoordinates(mouseEvent->pos().x(),
-                                      mouseEvent->pos().y(),
-                                      lon, lat))
+        if (mapView->geoCoordinates(mouseEvent->pos().x(), mouseEvent->pos().y(), lon, lat))
         {
             mLatOff = lat-mClickedPoint->latitude();
             mLonOff = lon-mClickedPoint->longitude();
 #ifdef DEBUG_DRAGGING
             kDebug() << "  lat/lon off" << mLatOff << mLonOff;
 #endif
-            mapView()->update();
+            mapView->update();
         }
 
         return (true);					// event consumed

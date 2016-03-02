@@ -6,6 +6,7 @@
 #include <marble/LayerInterface.h>
 #include <marble/GeoDataCoordinates.h>
 #include <marble/GeoDataLineString.h>
+#include "mainwindowinterface.h"
 
 using namespace Marble;
 
@@ -49,7 +50,7 @@ private:
 ////////////////////////////////////////////////////////////////////////
 
 
-class LayerBase : public QObject, public Marble::LayerInterface
+class LayerBase : public QObject, public MainWindowInterface, public Marble::LayerInterface
 {
     Q_OBJECT
 
@@ -73,8 +74,6 @@ protected:
     unsigned long mSelectionId;
 
 protected:
-    MapView *mapView() const			{ return (mMapView); }
-
     virtual bool isApplicableItem(const TrackDataItem *item) const = 0;
     virtual bool isDirectContainer(const TrackDataItem *item) const = 0;
     virtual bool isIndirectContainer(const TrackDataItem *item) const = 0;
@@ -92,8 +91,6 @@ private:
     virtual void findSelectionInTree(const TrackDataItem *item);
 
 private:
-    MapView *mMapView;
-
     bool mMovePointsMode;
 
     QElapsedTimer *mClickTimer;

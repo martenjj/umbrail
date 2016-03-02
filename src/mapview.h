@@ -10,8 +10,6 @@
 using namespace Marble;
 
 class KAction;
-class FilesModel;
-class FilesView;
 class TrackDataItem;
 class TrackDataStop;
 class TracksLayer;
@@ -40,14 +38,7 @@ public:
 
     static QColor resolveLineColour(const TrackDataItem *tdd);
 
-    // TODO: through MainWindowInterface
-    void setFilesModel(FilesModel *mod)			{ mFilesModel = mod; }
-    void setFilesView(FilesView *view)			{ mFilesView = view; }
-
     void setStopLayerData(const QList<const TrackDataStop *> *data);
-
-    FilesModel *filesModel() const			{ return (mFilesModel); }
-    FilesView *filesView() const			{ return (mFilesView); }
 
 public slots:               
     void slotRmbRequest(int mx, int my);
@@ -70,8 +61,6 @@ private slots:
     void slotSystemPaletteChanged();
 
 private:
-    FilesModel *mFilesModel;
-    FilesView *mFilesView;
     ReverseGeocodingRunnerManager *mRunnerManager;
     int mPopupX;
     int mPopupY;

@@ -89,8 +89,6 @@ void MainWindow::init()
     connect(mFilesController, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
 
     mMapController = new MapController(this);
-    mMapController->view()->setFilesModel(mFilesController->model());
-    mMapController->view()->setFilesView(mFilesController->view());
     connect(mMapController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
     connect(mMapController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mMapController, SIGNAL(mapZoomChanged(bool,bool)), SLOT(slotMapZoomChanged(bool,bool)));

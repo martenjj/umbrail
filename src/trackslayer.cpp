@@ -10,6 +10,7 @@
 #include <marble/GeoPainter.h>
 
 #include "settings.h"
+#include "mapcontroller.h"
 #include "mapview.h"
 #include "trackdata.h"
 
@@ -153,8 +154,8 @@ void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
 
             qreal x1, y1;				// coordinates of this point
             qreal x2, y2;				// coordinates of next point
-            bool onScreen = mapView()->screenCoordinates(p1->longitude(), p1->latitude(), x1, y1) &&
-                            mapView()->screenCoordinates(p2->longitude(), p2->latitude(), x2, y2);
+            bool onScreen = mapController()->view()->screenCoordinates(p1->longitude(), p1->latitude(), x1, y1) &&
+                            mapController()->view()->screenCoordinates(p2->longitude(), p2->latitude(), x2, y2);
             if (!onScreen) continue;			// map to screen coordinates
 
             int len = qRound((qAbs(x1-x2)+qAbs(y1-y2))/2);

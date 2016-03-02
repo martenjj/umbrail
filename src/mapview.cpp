@@ -34,8 +34,6 @@ MapView::MapView(QWidget *pnt)
 {
     kDebug();
 
-    mFilesModel = NULL;
-    mFilesView = NULL;
     mRunnerManager = NULL;
 
     setMapThemeId("earth/openstreetmap/openstreetmap.dgml");
