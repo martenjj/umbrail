@@ -230,9 +230,10 @@ void MainWindow::setupActions()
     mMoveItemAction->setIcon(KIcon("go-up"));
     connect(mMoveItemAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveItem()));
 
-    mStopDetectAction = new KToggleAction(KIcon("media-playback-stop"), i18n("Locate Stops..."), this);
+    mStopDetectAction = actionCollection()->addAction("track_stop_detect");
+    mStopDetectAction->setText(i18n("Locate Stops..."));
+    mStopDetectAction->setIcon(KIcon("media-playback-stop"));
     connect(mStopDetectAction, SIGNAL(triggered()), SLOT(slotTrackStopDetect()));
-    actionCollection()->addAction("track_stop_detect", mStopDetectAction);
 
     mPropertiesAction = actionCollection()->addAction("track_properties");
     // text set in slotUpdateActionState() below
@@ -1052,26 +1053,6 @@ void MainWindow::slotUpdatePasteState()
 
 void MainWindow::slotTrackStopDetect()
 {
-    if (mStopDetectAction->isChecked())
-    {
-        if (mStopDetectDialogue==NULL)
-        {
-            // TODO: maybe dowsn't need to be member or persistent
-            mStopDetectDialogue = new StopDetectDialogue(this);
-            connect(mStopDetectDialogue, SIGNAL(finished(int)), SLOT(slotStopDetectFinished(int)));
-        }
-
-        mStopDetectDialogue->show();
-    }
-    else
-    {
-        if (mStopDetectDialogue!=NULL) mStopDetectDialogue->hide();
-    }
-}
-
-
-void MainWindow::slotStopDetectFinished(int result)
-{
-    kDebug() << "result" << result;
-    mStopDetectAction->setChecked(false);
+    StopDetectDialogue *d = new StopDetectDialogue(this);
+    d->show();
 }
