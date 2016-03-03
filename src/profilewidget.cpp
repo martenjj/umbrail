@@ -15,11 +15,14 @@
 #include <klocale.h>
 #include <kconfiggroup.h>
 #include <kglobal.h>
+#include <ktimezone.h>
+#include <ksystemtimezone.h>
 
 #include "qcustomplot.h"
 #include "mainwindow.h"
 #include "filescontroller.h"
 #include "filesview.h"
+#include "filesmodel.h"
 #include "trackdata.h"
 #include "variableunitcombo.h"
 
@@ -202,7 +205,9 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
         double distStep = 0;
         double timeStep = 0;
 
-        const QDateTime dt = tdp->time();
+        QDateTime dt = tdp->time();
+        // do time zone conversion
+        if (mTimeZone!=NULL) dt = mTimeZone->toZoneTime(dt.toUTC());
 
         if (mPrevPoint!=NULL)
         {
@@ -283,11 +288,22 @@ void ProfileWidget::slotUpdatePlot()
     mPrevPoint = NULL;
 
     const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
+
     mRefData.clear();
     mElevData.clear();
     mSpeedData.clear();
-
     mBaseTime = 0;
+
+    // Resolve the file time zone
+    KTimeZone tz;
+    QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
+    if (!zoneName.isEmpty())
+    {
+        tz = KSystemTimeZones::zone(zoneName);
+        mTimeZone = &tz;
+    }
+    else mTimeZone = NULL;
+
     for (int i = 0; i<items.count(); ++i) getPlotData(items[i]);
     kDebug() << "got" << mRefData.count() << "data points";
 

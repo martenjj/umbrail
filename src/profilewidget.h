@@ -14,6 +14,7 @@ class TrackDataItem;
 class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
+class KTimeZone;
 
 
 class ProfileWidget : public KDialog, public MainWindowInterface
@@ -54,7 +55,9 @@ private:
     bool mUseTravelDistance;
     double mCumulativeTravel;
     const TrackDataTrackpoint *mPrevPoint;
+
     time_t mBaseTime;
+    KTimeZone *mTimeZone;
 };
 
 #endif							// PROFILEWIDGET_H
