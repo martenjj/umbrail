@@ -461,9 +461,6 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         kDebug() << "got a WPT:" << mCurrentWaypoint->name();
 #endif
 
-        // Clear the folder name metadata, will regenerate on export
-        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
-
         if (mCurrentWaypoint->isMediaType())
         {
             // Only do this check if the "link" metadata has not already
@@ -484,8 +481,11 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
 
         TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
         Q_ASSERT(folder!=NULL);
-        folder->addChildItem(mCurrentWaypoint);		// add to destination folder
 
+        // Clear the folder name metadata, will regenerate on export
+        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
+
+        folder->addChildItem(mCurrentWaypoint);		// add to destination folder
         mCurrentWaypoint = NULL;			// finished with temporary
         return (true);
     }
