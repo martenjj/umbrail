@@ -33,6 +33,19 @@ set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL
 set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
 set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://www.digikam.org/sharedlibs" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 
+find_library(LIBDIALOGUTIL_FOUND "libdialogutil.so")
+if (LIBDIALOGUTIL_FOUND)
+  get_filename_component(LIBDIALOGUTIL_DIR ${LIBDIALOGUTIL_FOUND} DIRECTORY)
+  get_filename_component(LIBDIALOGUTIL_LIBRARY ${LIBDIALOGUTIL_FOUND} NAME)
+  message(STATUS "Found libdialogutil library: ${LIBDIALOGUTIL_DIR}")
+
+  find_file(HDRDIALOGUTIL_FOUND "dialogbase.h" HINTS ${KDE_INSTALL_FULL_INCLUDEDIR} PATH_SUFFIXES "KF5")
+  get_filename_component(HDRDIALOGUTIL_DIR ${HDRDIALOGUTIL_FOUND} DIRECTORY)
+  message(STATUS "Found libdialogutil headers: ${HDRDIALOGUTIL_DIR}")
+else (LIBDIALOGUTIL_FOUND)
+  message(FATAL_ERROR "This project requires the libdialogutil library")
+endif (LIBDIALOGUTIL_FOUND)
+
 #########################################################################
 #									#
 #  Rigourousness							#
@@ -149,9 +162,12 @@ if (KF5KExiv2_FOUND)
   target_link_libraries(navtracks KF5::KExiv2)
 endif (KF5KExiv2_FOUND)
 
+target_link_libraries(navtracks ${LIBDIALOGUTIL_LIBRARY})
+
 add_dependencies(navtracks vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
 include_directories(${QCUSTOMPLOT_DIR})
+include_directories(${HDRDIALOGUTIL_DIR})
 
 #########################################################################
 #									#

@@ -1,7 +1,7 @@
 
 #include "moveitemdialogue.h"
 
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include "trackfiltermodel.h"
 
@@ -11,10 +11,11 @@ MoveItemDialogue::MoveItemDialogue(QWidget *pnt)
 {
     setObjectName("MoveItemDialogue");
 
-    setCaption(i18nc("@title:window", "Move Item"));
-    setButtons(KDialog::Ok|KDialog::Cancel);
-    enableButtonOk(false);
-    setButtonText(KDialog::Ok, i18nc("@action:button", "Move"));
+    setWindowTitle(i18nc("@title:window", "Move Item"));
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+
+    setButtonEnabled(QDialogButtonBox::Ok, false);
+    setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Move"));
 }
 
 

@@ -4,9 +4,7 @@
 #include <qtreeview.h>
 #include <qtimer.h>
 
-#include <klocale.h>
-#include <kglobal.h>
-#include <kconfiggroup.h>
+#include <klocalizedstring.h>
 
 #include "filescontroller.h"
 #include "filesmodel.h"
@@ -15,13 +13,12 @@
 
 
 ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
-    : KDialog(pnt),
+    : DialogBase(pnt),
       MainWindowInterface(pnt)
 {
     setObjectName("ItemSelectDialogue");
 
     setModal(true);
-    showButtonSeparator(true);
 
     mTrackList = new QTreeView(this);
     mTrackList->setRootIsDecorated(true);
@@ -47,16 +44,11 @@ ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
     QTimer::singleShot(0, this, SLOT(slotExpandTree()));
 
     setMinimumSize(360, 280);
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
 }
 
 
 ItemSelectDialogue::~ItemSelectDialogue()
 {
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
-
     // Explicitly delete the filter model to avoid a crash:
     //
     // ASSERT failure in QPersistentModelIndex::~QPersistentModelIndex:
@@ -118,7 +110,7 @@ TrackDataItem *ItemSelectDialogue::selectedItem() const
 
 void ItemSelectDialogue::slotSelectionChanged(const QItemSelection &sel, const QItemSelection &desel)
 {
-    enableButtonOk(mTrackList->selectionModel()->selectedIndexes().count()==1);
+    setButtonEnabled(QDialogButtonBox::Ok, mTrackList->selectionModel()->selectedIndexes().count()==1);
     emit selectionChanged();
 }
 

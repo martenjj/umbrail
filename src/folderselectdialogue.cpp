@@ -23,14 +23,14 @@ FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
 {
     setObjectName("FolderSelectDialogue");
 
-    setCaption(i18nc("@title:window", "Select Folder"));
-    setButtons(KDialog::User1|KDialog::Ok|KDialog::Cancel);
-    setButtonText(KDialog::Ok, i18nc("@action:button", "Select"));
-    enableButtonOk(false);
-    setButtonText(KDialog::User1, i18nc("@action:button", "New Folder..."));
-    setButtonIcon(KDialog::User1, QIcon::fromTheme("folder-new"));
+    setWindowTitle(i18nc("@title:window", "Select Folder"));
+    setButtons(QDialogButtonBox::Yes|QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Select"));
+    setButtonEnabled(QDialogButtonBox::Ok, false);
+    setButtonText(QDialogButtonBox::Yes, i18nc("@action:button", "New Folder..."));
+    setButtonIcon(QDialogButtonBox::Yes, QIcon::fromTheme("folder-new"));
 
-    connect(this, SIGNAL(user1Clicked()), SLOT(slotNewFolder()));
+    connect(buttonBox()->button(QDialogButtonBox::Yes), SIGNAL(clicked()), SLOT(slotNewFolder()));
     connect(this, SIGNAL(selectionChanged()), SLOT(slotUpdateButtonStates()));
 
     trackModel()->setMode(TrackData::Folder);		// can select folders
@@ -69,7 +69,7 @@ void FolderSelectDialogue::slotNewFolder()
     Q_ASSERT(newFolder!=NULL);
 
     setSelectedItem(newFolder);
-    button(KDialog::Ok)->setFocus(Qt::OtherFocusReason);
+    buttonBox()->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 }
 
 
@@ -79,8 +79,8 @@ void FolderSelectDialogue::slotUpdateButtonStates()
     const bool isFolder = (dynamic_cast<const TrackDataFolder *>(item)!=NULL);
     const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=NULL);
 
-    enableButtonOk(isFolder);
-    enableButton(KDialog::User1, (isFolder || isFile));
+    setButtonEnabled(QDialogButtonBox::Ok, isFolder);
+    setButtonEnabled(QDialogButtonBox::Yes, (isFolder || isFile));
 }
 
 

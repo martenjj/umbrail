@@ -3,7 +3,8 @@
 #define ITEMSELECTDIALOGUE_H
 
 
-#include <kdialog.h>
+#include <dialogbase.h>
+
 #include "mainwindowinterface.h"
 
 #include "trackdata.h"
@@ -15,7 +16,7 @@ class TrackFilterModel;
 class FilesModel;
 
 
-class ItemSelectDialogue : public KDialog, public MainWindowInterface
+class ItemSelectDialogue : public DialogBase, public MainWindowInterface
 {
     Q_OBJECT
 

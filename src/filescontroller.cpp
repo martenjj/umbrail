@@ -4,8 +4,6 @@
 #include <qundostack.h>
 #include <qaction.h>
 #include <qscopedpointer.h>
-#include <qdialog.h>
-#include <qdialogbuttonbox.h>
 #include <qpushbutton.h>
 #include <qapplication.h>
 #ifdef SORTABLE_VIEW
@@ -835,7 +833,7 @@ void FilesController::slotMoveItem()
     if (dynamic_cast<const TrackDataSegment *>(item)!=NULL) capt = i18nc("@title:window", "Move Segment");
     else if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) capt = i18nc("@title:window", "Move Folder");
     else if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL) capt = i18nc("@title:window", "Move Waypoint");
-    if (!capt.isEmpty()) d.setCaption(capt);
+    if (!capt.isEmpty()) d.setWindowTitle(capt);
 
     if (!d.exec()) return;
 
