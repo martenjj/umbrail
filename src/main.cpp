@@ -33,9 +33,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include <qapplication.h>
+#include <qcommandlineparser.h>
 
-#include <k4aboutdata.h>
-#include <kcmdlineargs.h>
+#include <kaboutdata.h>
+#include <klocalizedstring.h>
 
 #include "mainwindow.h"
 #include "filescontroller.h"
@@ -50,40 +51,46 @@
  
 int main(int argc,char *argv[])
 {
-    K4AboutData aboutData("navtracks",			// appName
-                         NULL,				// catalogName
-                         ki18n("NavTracks"),		// programName
+    KAboutData aboutData("navtracks",			// componentName
+                         i18n("NavTracks"),		// displayName
 #ifdef VCS_HAVE_VERSION
                          ( VERSION " (" VCS_TYPE_STRING " " VCS_REVISION_STRING ")" ),
 #else
-                         VERSION,				// version
+                         VERSION,			// version
 #endif
-                         ki18n("GPS Tracks viewer and editor"),
-                         K4AboutData::License_GPL_V3,
-                         ki18n("Copyright (c) 2014-2016 Jonathan Marten"),
-                         KLocalizedString(),		// text
+                         i18n("GPS track viewer and editor"),
+                         KAboutLicense::GPL_V3,
+                         i18n("Copyright (c) 2014-2016 Jonathan Marten"),
+                         QString::null,			// otherText
                          "http://www.keelhaul.me.uk",	// homePageAddress
                         "jjm@keelhaul.me.uk");		// bugsEmailAddress
-    aboutData.addAuthor(ki18n("Jonathan Marten"),
-                         KLocalizedString(),
+    aboutData.addAuthor(i18n("Jonathan Marten"),
+                        QString::null,
                         "jjm@keelhaul.me.uk",
                         "http://www.keelhaul.me.uk");
 
-    KCmdLineOptions opts;
-    opts.add("f <file>", ki18n("Load a data file"));
-    KCmdLineArgs::addCmdLineOptions(opts);
-
-    KCmdLineArgs::init(argc,argv,&aboutData);
     QApplication app(argc, argv);
-    KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
+    KAboutData::setApplicationData(aboutData);
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(aboutData.shortDescription());
+
+    QCommandLineOption opt((QStringList() << "f" << "file"), i18n("Load a data file."), "file");
+    parser.addOption(opt);
+
+    aboutData.setupCommandLine(&parser);
+    parser.process(app);
 
     MainWindow *w = new MainWindow(NULL);
 
-    KUrl u = args->getOption("f");			// load a project file?
-    if (u.isValid())
+    if (parser.isSet("file"))
     {
-        const bool ok = w->loadProject(u);
-        if (!ok) w->deleteLater();
+        const QUrl u = QUrl::fromUserInput(parser.value("file"));
+        if (u.isValid())
+        {
+            const bool ok = w->loadProject(u);
+            if (!ok) w->deleteLater();
+        }
     }
 
     w->show();

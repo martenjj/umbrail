@@ -3,12 +3,10 @@
 
 #include <qaction.h>
 #include <qmetaobject.h>
+#include <qapplication.h>
 
 #include <kdebug.h>
-#include <klocale.h>
-#include <kglobal.h>
-#include <kcomponentdata.h>
-#include <k4aboutdata.h>
+#include <klocalizedstring.h>
 
 #include "filesmodel.h"
 #include "filesview.h"
@@ -657,7 +655,7 @@ void AddContainerCommand::redo()
         if (mType==TrackData::Track)
         {
             addedItem = new TrackDataTrack(mAddName);
-            addedItem->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+            addedItem->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
         }
         else if (mType==TrackData::Folder)
         {
