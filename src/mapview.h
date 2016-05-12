@@ -9,7 +9,7 @@
 
 using namespace Marble;
 
-class KAction;
+class QAction;
 class TrackDataItem;
 class TrackDataWaypoint;
 class TracksLayer;
@@ -32,7 +32,7 @@ public:
     void setCurrentPosition(const QString &str);
 
     QStringList overlays(bool visibleOnly) const;
-    KAction *actionForOverlay(const QString &id) const;
+    QAction *actionForOverlay(const QString &id) const;
     void showOverlays(const QStringList &list);
     void setMovePointsMode(bool on);
 

@@ -1,31 +1,39 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		08-Jul-14					#
+#  Edit:		12-May-16					#
 #########################################################################
 #									#
 #									#
 #########################################################################
 
 project(navtracks)
-set(VERSION "0.0.1")
+set(VERSION "0.0.2")
 message(STATUS "Configuring for NavTracks version ${VERSION}")
 
 #########################################################################
 #									#
-#  KDE paths and definitions						#
+#  ECM paths and definitions						#
 #									#
 #########################################################################
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
+set(QT_MIN_VERSION "5.4.0")
+set(KF5_MIN_VERSION "5.7.0")
+set(ECM_MIN_VERSION "1.6.0")
+set(EXIV2_MIN_VERSION "0.24")
 
-find_package(KDE4 REQUIRED)
-include(KDE4Defaults)
-include(MacroLibrary)
+find_package(ECM ${ECM_MIN_VERSION} REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+
+include(ECMSetupVersion)
+include(FeatureSummary)
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDEFrameworkCompilerSettings)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${KDE_INSTALL_FULL_DATAROOTDIR}/marble/cmake)
 
 set(QCUSTOMPLOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-
-add_definitions(${QT_DEFINITIONS} ${KDE4_DEFINITIONS} )
-include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES} ${QCUSTOMPLOT_DIR})
 
 #########################################################################
 #									#
@@ -46,9 +54,9 @@ add_custom_target(vcsversion
 #									#
 #########################################################################
 
-macro_optional_add_subdirectory(src)
-macro_optional_add_subdirectory(desktop)
-macro_optional_add_subdirectory(pics)
+add_subdirectory(src)
+add_subdirectory(desktop)
+add_subdirectory(pics)
 
 #########################################################################
 #									#
@@ -56,4 +64,4 @@ macro_optional_add_subdirectory(pics)
 #									#
 #########################################################################
 
-macro_display_feature_log()
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

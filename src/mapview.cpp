@@ -210,12 +210,12 @@ void MapView::showOverlays(const QStringList &list)
 }
 
 
-KAction *MapView::actionForOverlay(const QString &id) const
+QAction *MapView::actionForOverlay(const QString &id) const
 {
     const AbstractFloatItem *item = floatItem(id);
     if (item==NULL) return (NULL);
 
-    KAction *a = new KAction(KIcon(item->icon()),
+    QAction *a = new QAction(item->icon(),
                              i18n("%1 - %2", item->guiString(), item->description()),
                              mainWindow());
     a->setData(id);					// record ID for action
@@ -226,7 +226,7 @@ KAction *MapView::actionForOverlay(const QString &id) const
 
 void MapView::slotShowOverlay()
 {
-    KAction *a = static_cast<KAction*>(sender());	// action that was triggered
+    QAction *a = static_cast<QAction*>(sender());	// action that was triggered
     if (a==NULL) return;
 
     AbstractFloatItem *item = floatItem(a->data().toString());

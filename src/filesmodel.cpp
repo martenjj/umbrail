@@ -2,11 +2,11 @@
 #include "filesmodel.h"
 
 #include <qfont.h>
+#include <qicon.h>
 #include <qitemselectionmodel.h>
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kicon.h>
 #include <kcolorscheme.h>
 
 #include "trackdata.h"
@@ -132,7 +132,7 @@ case COL_NAME:     return (tdi->name());
 case Qt::DecorationRole:
         switch (idx.column())
         {
-case COL_NAME:     return (KIcon(tdi->iconName()));
+case COL_NAME:     return (QIcon::fromTheme(tdi->iconName()));
         }
         break;
 

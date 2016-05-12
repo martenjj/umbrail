@@ -8,7 +8,7 @@
 #include <klocale.h>
 #include <kglobal.h>
 #include <kcomponentdata.h>
-#include <kaboutdata.h>
+#include <k4aboutdata.h>
 
 #include "filesmodel.h"
 #include "filesview.h"
@@ -105,7 +105,7 @@ QString CommandBase::senderText(const QObject *sdr)
     // will never match, if the target language does not use "..."
     QString dotdotdot = i18nc("as added to actions", "...");
     if (t.endsWith(dotdotdot)) t.chop(dotdotdot.length());
-    return (KGlobal::locale()->removeAcceleratorMarker(t));
+    return (KLocalizedString::removeAcceleratorMarker(t));
 }
 
 

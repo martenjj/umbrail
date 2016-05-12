@@ -7,7 +7,6 @@
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kicon.h>
 
 #include "mainwindow.h"
 #include "folderselectdialogue.h"
@@ -27,7 +26,7 @@ FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
     mDestFolder->setPlaceholderText(i18n("Select..."));
     hb->addWidget(mDestFolder);
 
-    QPushButton *reqButton = new QPushButton(KIcon("folder"), QString::null, this);
+    QPushButton *reqButton = new QPushButton(QIcon::fromTheme("folder"), QString::null, this);
     connect(reqButton, SIGNAL(clicked(bool)), SLOT(slotSelectFolder()));
     hb->addWidget(reqButton);
 

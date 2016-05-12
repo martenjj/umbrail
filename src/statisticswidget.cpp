@@ -82,7 +82,7 @@ void StatisticsWidget::addRow(const QString &text, int num, bool withPercent)
 
     if (withPercent)
     {
-        const int pct = qRound(num*100/mTotalPoints);
+        const int pct = qRound(num*100.0/mTotalPoints);
         l = new QLabel(QString("(%1%)").arg(pct), mWidget);
         mLayout->addWidget(l, row, 3);
 

@@ -12,17 +12,16 @@
 #include <qdatetime.h>
 #include <qevent.h>
 #include <qclipboard.h>
+#include <qmimedata.h>
+#include <qstatusbar.h>
 
 #include <kdebug.h>
 #include <klocale.h>
-#include <kapplication.h>
-#include <kaboutdata.h>
 #include <kaction.h>
 #include <ktoggleaction.h>
 #include <kselectaction.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
-#include <kstatusbar.h>
 #include <kfiledialog.h>
 #include <kmessagebox.h>
 #include <ksqueezedtextlabel.h>
@@ -134,32 +133,32 @@ void MainWindow::setupActions()
     KStandardAction::quit(this, SLOT(close()), actionCollection());
     //KStandardAction::close(this, SLOT(close()), actionCollection());
 
-    KAction *a = KStandardAction::openNew(this, SLOT(slotNewProject()), actionCollection());
+    QAction *a = KStandardAction::openNew(this, SLOT(slotNewProject()), actionCollection());
     a = KStandardAction::open(this, SLOT(slotOpenProject()), actionCollection());
     mSaveProjectAction = KStandardAction::save(this, SLOT(slotSaveProject()), actionCollection());
     mSaveProjectAsAction = KStandardAction::saveAs(this, SLOT(slotSaveAs()), actionCollection());
 
     mImportAction = actionCollection()->addAction("file_import");
     mImportAction->setText(i18n("Import..."));
-    mImportAction->setIcon(KIcon("document-import"));
+    mImportAction->setIcon(QIcon::fromTheme("document-import"));
     mImportAction->setShortcut(Qt::CTRL+Qt::Key_I);
     connect(mImportAction, SIGNAL(triggered()), SLOT(slotImportFile()));
 
     mExportAction = actionCollection()->addAction("file_export");
     mExportAction->setText(i18n("Export..."));
-    mExportAction->setIcon(KIcon("document-export"));
+    mExportAction->setIcon(QIcon::fromTheme("document-export"));
     mExportAction->setShortcut(Qt::CTRL+Qt::Key_E);
     connect(mExportAction, SIGNAL(triggered()), SLOT(slotExportFile()));
     mExportAction->setEnabled(false);
 
     a = actionCollection()->addAction("file_add_photo");
     a->setText("Import Photo...");
-    a->setIcon(KIcon("image-loading"));
+    a->setIcon(QIcon::fromTheme("image-loading"));
     connect(a, SIGNAL(triggered()), SLOT(slotImportPhoto()));
 
     mSelectAllAction = KStandardAction::selectAll(filesController()->view(), SLOT(slotSelectAllSiblings()), actionCollection());
     mClearSelectAction = KStandardAction::deselect(filesController()->view(), SLOT(clearSelection()), actionCollection());
-    mClearSelectAction->setIcon(KIcon("edit-clear-list"));
+    mClearSelectAction->setIcon(QIcon::fromTheme("edit-clear-list"));
 
     mUndoAction = KStandardAction::undo(mUndoStack, SLOT(undo()), actionCollection());
     mUndoAction->setEnabled(false);
@@ -175,136 +174,139 @@ void MainWindow::setupActions()
 
     a = actionCollection()->addAction("track_expand_all");
     a->setText(i18n("Expand All"));
-    a->setIcon(KIcon("application_side_tree"));
+    a->setIcon(QIcon::fromTheme("application_side_tree"));
     a->setShortcut(Qt::CTRL+Qt::Key_Period);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(expandAll()));
 
     a = actionCollection()->addAction("track_collapse_all");
     a->setText(i18n("Collapse All"));
-    a->setIcon(KIcon("application_side_list"));
+    a->setIcon(QIcon::fromTheme("application_side_list"));
     a->setShortcut(Qt::CTRL+Qt::Key_Comma);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
 
     mAddTrackAction = actionCollection()->addAction("edit_add_track");
     mAddTrackAction->setText(i18n("Add Track"));
-    mAddTrackAction->setIcon(KIcon("list-add"));
+    mAddTrackAction->setIcon(QIcon::fromTheme("list-add"));
     connect(mAddTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotAddTrack()));
 
     mAddFolderAction = actionCollection()->addAction("edit_add_folder");
     mAddFolderAction->setText(i18n("Add Folder"));
-    mAddFolderAction->setIcon(KIcon("bookmark-new-list"));
+    mAddFolderAction->setIcon(QIcon::fromTheme("bookmark-new-list"));
     connect(mAddFolderAction, SIGNAL(triggered()), filesController(), SLOT(slotAddFolder()));
 
     mAddPointAction = actionCollection()->addAction("edit_add_point");
     mAddPointAction->setText(i18n("Add Point"));
-    mAddPointAction->setIcon(KIcon("list-add"));
+    mAddPointAction->setIcon(QIcon::fromTheme("list-add"));
     connect(mAddPointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddPoint()));
 
     mAddWaypointAction = actionCollection()->addAction("edit_add_waypoint");
     mAddWaypointAction->setText(i18n("Add Waypoint..."));
-    mAddWaypointAction->setIcon(KIcon("list-add"));
+    mAddWaypointAction->setIcon(QIcon::fromTheme("list-add"));
     connect(mAddWaypointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddWaypoint()));
 
     a = actionCollection()->addAction("map_add_waypoint");
     a->setText(i18n("Create Waypoint..."));
-    a->setIcon(KIcon("list-add"));
+    a->setIcon(QIcon::fromTheme("list-add"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotAddWaypoint()));
 
     mDeleteItemsAction = actionCollection()->addAction("edit_delete_track");
     mDeleteItemsAction->setText(i18n("Delete"));
-    mDeleteItemsAction->setIcon(KIcon("edit-delete"));
+    mDeleteItemsAction->setIcon(QIcon::fromTheme("edit-delete"));
     connect(mDeleteItemsAction, SIGNAL(triggered()), filesController(), SLOT(slotDeleteItems()));
 
     mSplitTrackAction = actionCollection()->addAction("track_split");
     mSplitTrackAction->setText(i18n("Split Segment"));
-    mSplitTrackAction->setIcon(KIcon("split"));
+    mSplitTrackAction->setIcon(QIcon::fromTheme("split"));
     connect(mSplitTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotSplitSegment()));
 
     mMergeTrackAction = actionCollection()->addAction("track_merge");
     mMergeTrackAction->setText(i18n("Merge Segments"));
-    mMergeTrackAction->setIcon(KIcon("merge"));
+    mMergeTrackAction->setIcon(QIcon::fromTheme("merge"));
     connect(mMergeTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMergeSegments()));
 
     mMoveItemAction = actionCollection()->addAction("track_move_item");
     mMoveItemAction->setText(i18n("Move Item..."));
-    mMoveItemAction->setIcon(KIcon("go-up"));
+    mMoveItemAction->setIcon(QIcon::fromTheme("go-up"));
     connect(mMoveItemAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveItem()));
 
     mStopDetectAction = actionCollection()->addAction("track_stop_detect");
     mStopDetectAction->setText(i18n("Locate Stops..."));
-    mStopDetectAction->setIcon(KIcon("media-playback-stop"));
+    mStopDetectAction->setIcon(QIcon::fromTheme("media-playback-stop"));
     connect(mStopDetectAction, SIGNAL(triggered()), SLOT(slotTrackStopDetect()));
 
     mPropertiesAction = actionCollection()->addAction("track_properties");
     // text set in slotUpdateActionState() below
-    mPropertiesAction->setShortcut(KShortcut(Qt::CTRL+Qt::Key_Return, Qt::CTRL+Qt::Key_Enter));
-    mPropertiesAction->setIcon(KIcon("document-properties"));
+    QList<QKeySequence> cuts;
+    cuts.append(QKeySequence(Qt::CTRL+Qt::Key_Return));
+    cuts.append(QKeySequence(Qt::CTRL+Qt::Key_Enter));
+    mPropertiesAction->setShortcuts(cuts);
+    mPropertiesAction->setIcon(QIcon::fromTheme("document-properties"));
     connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
 
     mWaypointStatusAction = new KSelectAction(i18nc("@action:inmenu", "Waypoint Status"), this);
     mWaypointStatusAction->setToolBarMode(KSelectAction::MenuMode);
     actionCollection()->addAction("waypoint_status", mWaypointStatusAction);
 
-    a = mWaypointStatusAction->addAction(KIcon("task-reject"), i18n("(None)"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-reject"), i18n("(None)"));
     a->setData(TrackData::StatusNone);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(KIcon("task-ongoing"), i18n("To Do"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-ongoing"), i18n("To Do"));
     a->setData(TrackData::StatusTodo);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(KIcon("task-complete"), i18n("Done"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-complete"), i18n("Done"));
     a->setData(TrackData::StatusDone);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(KIcon("dialog-warning"), i18n("Uncertain"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"));
     a->setData(TrackData::StatusQuestion);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
     mProfileAction = actionCollection()->addAction("track_profile");
     mProfileAction->setText(i18n("Elevation/Speed Profile..."));
-    mProfileAction->setIcon(KIcon("office-chart-line-stacked"));
+    mProfileAction->setIcon(QIcon::fromTheme("office-chart-line-stacked"));
     connect(mProfileAction, SIGNAL(triggered()), SLOT(slotTrackProfile()));
 
     mStatisticsAction = actionCollection()->addAction("track_statistics");
     mStatisticsAction->setText(i18n("Statistics/Quality..."));
-    mStatisticsAction->setIcon(KIcon("kt-check-data"));
+    mStatisticsAction->setIcon(QIcon::fromTheme("kt-check-data"));
     connect(mStatisticsAction, SIGNAL(triggered()), SLOT(slotTrackStatistics()));
 
     a = actionCollection()->addAction("track_play_media");
     a->setText(i18nc("@action:inmenu", "View Media"));
-    a->setIcon(KIcon("media-playback-start"));
+    a->setIcon(QIcon::fromTheme("media-playback-start"));
     a->setShortcut(Qt::CTRL+Qt::Key_P);
     connect(a, SIGNAL(triggered()), SLOT(slotPlayMedia()));
     mPlayMediaAction = a;
 
     a = actionCollection()->addAction("file_open_media");
     a->setText(i18nc("@action:inmenu", "Open Media With..."));
-    a->setIcon(KIcon("document-open"));
+    a->setIcon(QIcon::fromTheme("document-open"));
     connect(a, SIGNAL(triggered()), SLOT(slotOpenMedia()));
     mOpenMediaAction = a;
 
     a = actionCollection()->addAction("file_save_media");
     a->setText(i18nc("@action:inmenu", "Save Media As..."));
-    a->setIcon(KIcon("file-save-as"));
+    a->setIcon(QIcon::fromTheme("file-save-as"));
     connect(a, SIGNAL(triggered()), SLOT(slotSaveMedia()));
     mSaveMediaAction = a;
 
     a = actionCollection()->addAction("map_save");
     a->setText(i18n("Save As Image..."));
-    a->setIcon(KIcon("document-save"));
+    a->setIcon(QIcon::fromTheme("document-save"));
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSaveImage()));
 
     a = actionCollection()->addAction("map_set_home");
     a->setText(i18n("Set Home Position"));
     a->setIconText(i18n("Set Home"));
-    a->setIcon(KIcon("bookmarks"));
+    a->setIcon(QIcon::fromTheme("bookmarks"));
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSetHome()));
 
     a = actionCollection()->addAction("map_go_home");
     a->setText(i18n("Go to Home Position"));
     a->setIconText(i18n("Go Home"));
-    a->setIcon(KIcon("go-home"));
+    a->setIcon(QIcon::fromTheme("go-home"));
     a->setShortcut(Qt::CTRL+Qt::Key_Home);
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotGoHome()));
 
@@ -317,30 +319,30 @@ void MainWindow::setupActions()
     a = actionCollection()->addAction("map_set_zoom");
     a->setText(i18n("Set Standard Zoom"));
     a->setIconText(i18n("Set Zoom"));
-    a->setIcon(KIcon("bookmarks"));
+    a->setIcon(QIcon::fromTheme("bookmarks"));
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSetZoom()));
 
     a = actionCollection()->addAction("map_zoom_standard");
     a->setText(i18n("Reset to Standard Zoom"));
     a->setIconText(i18n("Reset Zoom"));
-    a->setIcon(KIcon("zoom-original"));
+    a->setIcon(QIcon::fromTheme("zoom-original"));
     a->setShortcut(Qt::CTRL+Qt::Key_1);
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotResetZoom()));
 
     mMapGoToAction = actionCollection()->addAction("map_go_selection");
     mMapGoToAction->setText(i18n("Show on Map"));
-    mMapGoToAction->setIcon(KIcon("marble"));
+    mMapGoToAction->setIcon(QIcon::fromTheme("marble"));
     mMapGoToAction->setShortcut(Qt::CTRL+Qt::Key_G);
     connect(mMapGoToAction, SIGNAL(triggered()), SLOT(slotMapGotoSelection()));
 
     a = actionCollection()->addAction("map_select_theme");
     a->setText(i18n("Select Theme..."));
-    a->setIcon(KIcon("image-loading"));
+    a->setIcon(QIcon::fromTheme("image-loading"));
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSelectTheme()));
 
     a = actionCollection()->addAction("map_find_address");
     a->setText(i18n("Find Address..."));
-    a->setIcon(KIcon("view-pim-mail"));
+    a->setIcon(QIcon::fromTheme("view-pim-mail"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
 
     KActionMenu *itemsMenu = new KActionMenu(this);
@@ -361,7 +363,7 @@ void MainWindow::setupActions()
     a = actionCollection()->addAction("map_show_overlays", itemsMenu);
     a->setText(i18n("Show Overlays"));
 
-    mMapDragAction = new KToggleAction(KIcon("transform-move"), i18n("Move Points"), this);
+    mMapDragAction = new KToggleAction(QIcon::fromTheme("transform-move"), i18n("Move Points"), this);
     mMapDragAction->setShortcut(Qt::CTRL+Qt::Key_M);
     connect(mMapDragAction, SIGNAL(triggered()), SLOT(slotMapMovePoints()));
     actionCollection()->addAction("map_move_points", mMapDragAction);
@@ -370,7 +372,7 @@ void MainWindow::setupActions()
 
     a = actionCollection()->addAction("help_about_marble");
     a->setText(i18n("About Marble"));
-    a->setIcon(KIcon("marble"));
+    a->setIcon(QIcon::fromTheme("marble"));
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotAboutMarble()));
 
     setupGUI(KXmlGuiWindow::Default);
@@ -380,18 +382,20 @@ void MainWindow::setupActions()
 
 void MainWindow::setupStatusBar()
 {
-    KStatusBar *sb = statusBar();
+    QStatusBar *sb = statusBar();
 
 //    sb->insertPermanentFixedItem(" 1000% ",sbZoom);
 //    sb->insertPermanentFixedItem(i18n(" X000,Y000 "),sbLocation);
 
     mModifiedIndicator = new QLabel(this);
-    mModifiedIndicator->setPixmap(KIcon("document-save").pixmap(16));
+    mModifiedIndicator->setPixmap(QIcon::fromTheme("document-save").pixmap(16));
     mModifiedIndicator->setFixedWidth(20);
     sb->insertPermanentWidget(sbModified, mModifiedIndicator);
 
     mStatusMessage = new KSqueezedTextLabel(i18n("Initialising..."), sb);
     sb->addWidget(mStatusMessage, 1);
+
+    sb->setSizeGripEnabled(false);
 }
 
 
@@ -482,7 +486,7 @@ bool MainWindow::save(const KUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("position"), mapController()->view()->currentPosition());
 
     // metadata for save file
-    tdf->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+    tdf->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
     if (filesController()->exportFile(savePath, tdf)!=FilesController::StatusOk) return (false);
@@ -546,8 +550,8 @@ void MainWindow::slotNewProject()
 
 void MainWindow::slotOpenProject()
 {
-    KFileDialog d(QString("kfiledialog:///project/"), FilesController::allProjectFilters(true), this);
-    d.setCaption(i18n("Open Tracks File"));
+    KFileDialog d(QUrl("kfiledialog:///project/"), FilesController::allProjectFilters(true), this);
+    d.setWindowTitle(i18n("Open Tracks File"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -604,8 +608,8 @@ void MainWindow::slotSaveProject()
 
 void MainWindow::slotSaveAs()
 {
-    KFileDialog d(QString("kfiledialog:///project/%1").arg("untitled"), FilesController::allProjectFilters(false), this);
-    d.setCaption(i18n("Save Tracks File As"));
+    KFileDialog d(QUrl("kfiledialog:///project/untitled"), FilesController::allProjectFilters(false), this);
+    d.setWindowTitle(i18n("Save Tracks File As"));
     d.setOperationMode(KFileDialog::Saving);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -622,8 +626,8 @@ void MainWindow::slotSaveAs()
 
 void MainWindow::slotImportFile()
 {
-    KFileDialog d(KUrl("kfiledialog:///import"), FilesController::allImportFilters(), this);
-    d.setCaption(i18n("Import File"));
+    KFileDialog d(QUrl("kfiledialog:///import"), FilesController::allImportFilters(), this);
+    d.setWindowTitle(i18n("Import File"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::File|KFile::LocalOnly);
@@ -635,8 +639,8 @@ void MainWindow::slotImportFile()
 
 void MainWindow::slotExportFile()
 {
-    KFileDialog d(KUrl("kfiledialog:///export/"+mProject->name(true)), FilesController::allExportFilters(), this);
-    d.setCaption(i18n("Export File"));
+    KFileDialog d(QUrl("kfiledialog:///export/"+mProject->name(true)), FilesController::allExportFilters(), this);
+    d.setWindowTitle(i18n("Export File"));
     d.setOperationMode(KFileDialog::Saving);
     d.setConfirmOverwrite(true);
     d.setKeepLocation(true);
@@ -652,7 +656,7 @@ void MainWindow::slotImportPhoto()
 {
     const QStringList mimeTypes = KImageIO::mimeTypes(KImageIO::Reading);
     KFileDialog d(KUrl("kfiledialog:///importphoto"), mimeTypes.join(" "), this);
-    d.setCaption(i18n("Import Photo"));
+    d.setWindowTitle(i18n("Import Photo"));
     d.setOperationMode(KFileDialog::Opening);
     d.setKeepLocation(true);
     d.setMode(KFile::Files|KFile::LocalOnly);
@@ -668,7 +672,8 @@ void MainWindow::slotSetModified(bool mod)
     mProject->setModified(mod);
     mSaveProjectAction->setEnabled(mod && mProject->hasFileName());
     mModifiedIndicator->setEnabled(mod);
-    setCaption(mProject->name(), mod);
+    setWindowTitle(mProject->name()+" [*]");
+    setWindowModified(mod);
 
     mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
 }

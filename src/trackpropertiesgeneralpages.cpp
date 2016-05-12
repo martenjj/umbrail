@@ -175,14 +175,14 @@ void TrackItemGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
     mStatusCombo = new QComboBox(this);
     mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());
 
-    mStatusCombo->addItem(KIcon("task-reject"), i18n("(None)"), TrackData::StatusNone);
-    mStatusCombo->addItem(KIcon("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
-    mStatusCombo->addItem(KIcon("task-complete"), i18n("Done"), TrackData::StatusDone);
-    mStatusCombo->addItem(KIcon("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
+    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), i18n("(None)"), TrackData::StatusNone);
+    mStatusCombo->addItem(QIcon::fromTheme("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
+    mStatusCombo->addItem(QIcon::fromTheme("task-complete"), i18n("Done"), TrackData::StatusDone);
+    mStatusCombo->addItem(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
 
     if (items->count()>1)
     {
-        mStatusCombo->addItem(KIcon("task-delegate"), i18n("(No change)"), TrackData::StatusInvalid);
+        mStatusCombo->addItem(QIcon::fromTheme("task-delegate"), i18n("(No change)"), TrackData::StatusInvalid);
         mStatusCombo->setCurrentIndex(mStatusCombo->count()-1);
     }
     else
@@ -425,19 +425,19 @@ default:				typeName = i18n("(Unknown)");	break;
         switch (mWaypoint->waypointType())
         {
 case TrackData::WaypointAudioNote:
-            actionButton = new QPushButton(KIcon("media-playback-start"), QString::null, this);
+            actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), QString::null, this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayAudioNote()));
             break;
 
 case TrackData::WaypointVideoNote:
-            actionButton = new QPushButton(KIcon("media-playback-start"), QString::null, this);
+            actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), QString::null, this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the video note"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayVideoNote()));
             break;
 
 case TrackData::WaypointPhoto:
-            actionButton = new QPushButton(KIcon("document-preview"), QString::null, this);
+            actionButton = new QPushButton(QIcon::fromTheme("document-preview"), QString::null, this);
             actionButton->setToolTip(i18nc("@info:tooltip", "View the photo"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotViewPhotoNote()));
             break;

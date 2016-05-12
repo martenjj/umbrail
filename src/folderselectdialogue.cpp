@@ -28,7 +28,7 @@ FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
     setButtonText(KDialog::Ok, i18nc("@action:button", "Select"));
     enableButtonOk(false);
     setButtonText(KDialog::User1, i18nc("@action:button", "New Folder..."));
-    setButtonIcon(KDialog::User1, KIcon("folder-new"));
+    setButtonIcon(KDialog::User1, QIcon::fromTheme("folder-new"));
 
     connect(this, SIGNAL(user1Clicked()), SLOT(slotNewFolder()));
     connect(this, SIGNAL(selectionChanged()), SLOT(slotUpdateButtonStates()));

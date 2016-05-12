@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Mar-16					#
+#  Edit:		12-May-16					#
 #########################################################################
 
 project(navtracks)
@@ -22,15 +22,31 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 #									#
 #########################################################################
 
-find_package(Marble REQUIRED)
-macro_optional_find_package(Phonon)
-macro_optional_find_package(Exiv2)
-macro_optional_find_package(Kexiv2)
+find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets)
+find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts KIO KDELibs4Support)
 
-macro_log_feature(MARBLE_FOUND "Marble" "Map display library" "http://marble.kde.org" TRUE "" "Required for map display")
-macro_log_feature(PHONON_FOUND "Phonon" "Multimedia playback library" "http://phonon.kde.org" FALSE "" "Required for playback of audio/video notes")
-macro_log_feature(EXIV2_FOUND "Exiv2" "Image metadata support" "http://www.exiv2.org" FALSE "0.19")
-macro_log_feature(KEXIV2_FOUND "LibKExiv2" "Wrapper around Exiv2 library" "http://www.digikam.org/sharedlibs" FALSE "" "Required for geolocation of photos")
+find_package(Marble REQUIRED NO_POLICY_SCOPE)
+find_package(Phonon4Qt5 NO_POLICY_SCOPE)
+find_package(KF5KExiv2 NO_POLICY_SCOPE)
+
+set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
+set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
+set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://www.digikam.org/sharedlibs" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
+
+#########################################################################
+#									#
+#  Rigourousness							#
+#									#
+#########################################################################
+
+add_definitions("-DQT_USE_FAST_CONCATENATION")
+add_definitions("-DQT_USE_FAST_OPERATOR_PLUS")
+add_definitions("-DQT_NO_CAST_FROM_BYTEARRAY")
+add_definitions("-DQT_NO_URL_CAST_FROM_STRING")
+add_definitions("-DQT_NO_CAST_TO_ASCII")
+
+remove_definitions("-DQT_NO_CAST_FROM_ASCII")
+remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
 
 #########################################################################
 #									#
@@ -95,38 +111,47 @@ set(navtracks_SRCS
   ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
 
-if (PHONON_FOUND)
+if (Phonon4Qt5_FOUND)
   set(navtracks_SRCS ${navtracks_SRCS} videoviewer.cpp)
-endif (PHONON_FOUND)
+endif (Phonon4Qt5_FOUND)
 
-kde4_add_kcfg_files(navtracks_SRCS settings.kcfgc)
+kconfig_add_kcfg_files(navtracks_SRCS settings.kcfgc)
 
 add_definitions("-DVERSION=\\\"${VERSION}\\\"")
 if (SORTABLE_VIEW)
   add_definitions("-DSORTABLE_VIEW=1")
 endif (SORTABLE_VIEW)
-if (PHONON_FOUND)
+if (Phonon4Qt5_FOUND)
   add_definitions("-DHAVE_PHONON=1")
-endif (PHONON_FOUND)
-if (EXIV2_FOUND)
-  if (KEXIV2_FOUND)
-    add_definitions("-DHAVE_KEXIV2=1")
-    include_directories(${KEXIV2_INCLUDE_DIR})
-  endif (KEXIV2_FOUND)
-endif (EXIV2_FOUND)
+  include_directories(${PHONON_INCLUDES})
+endif (Phonon4Qt5_FOUND)
+if (KF5KExiv2_FOUND)
+  add_definitions("-DHAVE_KEXIV2=1")
+  include_directories(${KF5KExiv2_INCLUDE_DIR})
+endif (KF5KExiv2_FOUND)
 
-kde4_add_executable(navtracks ${navtracks_SRCS})
-target_link_libraries(navtracks ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} ${KDE4_KPARTS_LIBS} ${MARBLE_LIBRARIES})
-if (PHONON_FOUND)
-  target_link_libraries(navtracks ${PHONON_LIBS})
-endif (PHONON_FOUND)
-if (EXIV2_FOUND)
-  if (KEXIV2_FOUND)
-    target_link_libraries(navtracks ${KEXIV2_LIBRARIES})
-  endif (KEXIV2_FOUND)
-endif (EXIV2_FOUND)
+add_executable(navtracks ${navtracks_SRCS})
+target_link_libraries(navtracks
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Widgets
+  KF5::I18n
+  KF5::ConfigCore
+  KF5::XmlGui
+  KF5::KIOCore KF5::KIOWidgets
+  KF5::Parts
+  KF5::KDELibs4Support
+  ${MARBLE_LIBRARIES})
+if (Phonon4Qt5_FOUND)
+  target_link_libraries(navtracks Phonon::phonon4qt5)
+endif (Phonon4Qt5_FOUND)
+if (KF5KExiv2_FOUND)
+  target_link_libraries(navtracks KF5::KExiv2)
+endif (KF5KExiv2_FOUND)
 
 add_dependencies(navtracks vcsversion)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
+include_directories(${QCUSTOMPLOT_DIR})
 
 #########################################################################
 #									#
@@ -135,4 +160,4 @@ add_dependencies(navtracks vcsversion)
 #########################################################################
 
 install(TARGETS navtracks ${INSTALL_TARGETS_DEFAULT_ARGS})
-install(FILES settings.kcfg DESTINATION ${KCFG_INSTALL_DIR})
+install(FILES settings.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR}/navtracks.kcfg)

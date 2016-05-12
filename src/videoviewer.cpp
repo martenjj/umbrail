@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	17-Jun-15						//
+//  Edit:	12-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -39,7 +39,6 @@
 #include <kglobal.h>
 #include <kconfig.h>
 #include <kconfiggroup.h>
-#include <kicon.h>
 #include <kpushbutton.h>
 
 #ifdef HAVE_PHONON
@@ -62,20 +61,20 @@ VideoViewer::VideoViewer(const KUrl &url, QWidget *pnt)
     gl->addWidget(mPlayer, 0, 0, 1, -1);
     gl->setRowStretch(0, 1);
 
-    mPlayButton = new KPushButton(KIcon("media-playback-start"), i18nc("@action:button", "Play"), this);
+    mPlayButton = new KPushButton(QIcon::fromTheme("media-playback-start"), i18nc("@action:button", "Play"), this);
     mPlayButton->setEnabled(false);
     connect(mPlayButton, SIGNAL(clicked()), SLOT(slotPlay()));
     gl->addWidget(mPlayButton, 1, 0, Qt::AlignLeft);
 
-    mPauseButton = new KPushButton(KIcon("media-playback-pause"), i18nc("@action:button", "Pause"), this);
+    mPauseButton = new KPushButton(QIcon::fromTheme("media-playback-pause"), i18nc("@action:button", "Pause"), this);
     connect(mPauseButton, SIGNAL(clicked()), SLOT(slotPause()));
     gl->addWidget(mPauseButton, 1, 1, Qt::AlignLeft);
 
-    mRewindButton = new KPushButton(KIcon("media-skip-backward"), i18nc("@action:button", "Rewind"), this);
+    mRewindButton = new KPushButton(QIcon::fromTheme("media-skip-backward"), i18nc("@action:button", "Rewind"), this);
     connect(mRewindButton, SIGNAL(clicked()), SLOT(slotRewind()));
     gl->addWidget(mRewindButton, 1, 3, Qt::AlignLeft);
 
-    mStopButton = new KPushButton(KIcon("media-playback-stop"), i18nc("@action:button", "Stop"), this);
+    mStopButton = new KPushButton(QIcon::fromTheme("media-playback-stop"), i18nc("@action:button", "Stop"), this);
     connect(mStopButton, SIGNAL(clicked()), SLOT(slotStop()));
     gl->addWidget(mStopButton, 1, 5, Qt::AlignRight);
 

@@ -11,4 +11,4 @@ set(navtracks_PICS
   chart_point.png
 )
 
-install(FILES ${navtracks_PICS} DESTINATION ${DATA_INSTALL_DIR}/navtracks/pics)
+install(FILES ${navtracks_PICS} DESTINATION ${KDE_INSTALL_DATADIR}/navtracks/pics)

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	18-Nov-14						//
+//  Edit:	12-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,9 +32,9 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include <kdebug.h>
-#include <kapplication.h>
-#include <kaboutdata.h>
+#include <qapplication.h>
+
+#include <k4aboutdata.h>
 #include <kcmdlineargs.h>
 
 #include "mainwindow.h"
@@ -50,7 +50,7 @@
  
 int main(int argc,char *argv[])
 {
-    KAboutData aboutData("navtracks",			// appName
+    K4AboutData aboutData("navtracks",			// appName
                          NULL,				// catalogName
                          ki18n("NavTracks"),		// programName
 #ifdef VCS_HAVE_VERSION
@@ -59,8 +59,8 @@ int main(int argc,char *argv[])
                          VERSION,				// version
 #endif
                          ki18n("GPS Tracks viewer and editor"),
-                         KAboutData::License_GPL_V3,
-                         ki18n("Copyright (c) 2014 Jonathan Marten"),
+                         K4AboutData::License_GPL_V3,
+                         ki18n("Copyright (c) 2014-2016 Jonathan Marten"),
                          KLocalizedString(),		// text
                          "http://www.keelhaul.me.uk",	// homePageAddress
                         "jjm@keelhaul.me.uk");		// bugsEmailAddress
@@ -74,7 +74,7 @@ int main(int argc,char *argv[])
     KCmdLineArgs::addCmdLineOptions(opts);
 
     KCmdLineArgs::init(argc,argv,&aboutData);
-    KApplication app;
+    QApplication app(argc, argv);
     KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 
     MainWindow *w = new MainWindow(NULL);

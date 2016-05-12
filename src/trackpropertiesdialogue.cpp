@@ -7,6 +7,8 @@
 #include <kdebug.h>
 #include <klocale.h>
 #include <ktabwidget.h>
+#include <kglobal.h>
+#include <kiconloader.h>
 
 #include "trackdata.h"
 #include "trackpropertiespage.h"

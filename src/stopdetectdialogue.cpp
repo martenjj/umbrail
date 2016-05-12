@@ -16,6 +16,7 @@
 
 #include <kdebug.h>
 #include <klocale.h>
+#include <kglobal.h>
 #include <kseparator.h>
 #include <ktimezone.h>
 #include <ksystemtimezone.h>
@@ -128,7 +129,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     gl->setRowStretch(1, 1);
     l->setBuddy(mResultsList);
 
-    mShowOnMapButton = new QPushButton(KIcon("marble"), i18n("Show on Map"), w);
+    mShowOnMapButton = new QPushButton(QIcon::fromTheme("marble"), i18n("Show on Map"), w);
     connect(mShowOnMapButton, SIGNAL(clicked(bool)), SLOT(slotShowOnMap()));
     gl->addWidget(mShowOnMapButton, 2, 0, Qt::AlignRight);
 

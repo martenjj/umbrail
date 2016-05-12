@@ -13,13 +13,13 @@ class QLabel;
 class QUndoStack;
 class QUndoCommand;
 class QSplitter;
+class QAction;
 
 class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
 class QMimeData;
 
-class KAction;
 class KToggleAction;
 class KSelectAction;
 class KSqueezedTextLabel;
@@ -107,43 +107,43 @@ private:
     KSqueezedTextLabel *mStatusMessage;
     QLabel *mModifiedIndicator;
 
-    KAction *mSaveProjectAction;
-    KAction *mSaveProjectAsAction;
-    KAction *mExportAction;
-    KAction *mImportAction;
+    QAction *mSaveProjectAction;
+    QAction *mSaveProjectAsAction;
+    QAction *mExportAction;
+    QAction *mImportAction;
 
-    KAction *mPasteAction;
+    QAction *mPasteAction;
 
-    KAction *mUndoAction;
-    KAction *mRedoAction;
+    QAction *mUndoAction;
+    QAction *mRedoAction;
     QString mUndoText;
     QString mRedoText;
 
-    KAction *mSelectAllAction;
-    KAction *mClearSelectAction;
-    KAction *mAddTrackAction;
-    KAction *mAddFolderAction;
-    KAction *mAddPointAction;
-    KAction *mAddWaypointAction;
-    KAction *mDeleteItemsAction;
+    QAction *mSelectAllAction;
+    QAction *mClearSelectAction;
+    QAction *mAddTrackAction;
+    QAction *mAddFolderAction;
+    QAction *mAddPointAction;
+    QAction *mAddWaypointAction;
+    QAction *mDeleteItemsAction;
 
     KSelectAction *mWaypointStatusAction;
 
-    KAction *mSplitTrackAction;
-    KAction *mMergeTrackAction;
-    KAction *mMoveItemAction;
-    KAction *mStopDetectAction;
-    KAction *mPropertiesAction;
-    KAction *mProfileAction;
-    KAction *mStatisticsAction;
+    QAction *mSplitTrackAction;
+    QAction *mMergeTrackAction;
+    QAction *mMoveItemAction;
+    QAction *mStopDetectAction;
+    QAction *mPropertiesAction;
+    QAction *mProfileAction;
+    QAction *mStatisticsAction;
 
-    KAction *mPlayMediaAction;
-    KAction *mOpenMediaAction;
-    KAction *mSaveMediaAction;
+    QAction *mPlayMediaAction;
+    QAction *mOpenMediaAction;
+    QAction *mSaveMediaAction;
 
-    KAction *mMapZoomInAction;
-    KAction *mMapZoomOutAction;
-    KAction *mMapGoToAction;
+    QAction *mMapZoomInAction;
+    QAction *mMapZoomOutAction;
+    QAction *mMapGoToAction;
     KToggleAction *mMapDragAction;
 
     QSplitter *mSplitter;

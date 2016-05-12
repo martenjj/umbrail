@@ -2,14 +2,16 @@
 #include "settingsdialogue.h"
 
 #include <qformlayout.h>
-#include <qformlayout.h>
+#include <qdialogbuttonbox.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qgroupbox.h>
 #include <qspinbox.h>
 
 #include <kdebug.h>
+#include <kdialog.h>
 #include <klocale.h>
+#include <kglobal.h>
 #include <kpagedialog.h>
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
@@ -32,37 +34,36 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     setObjectName("SettingsDialogue");
 
     setModal(true);
-    setButtons(KDialog::Ok|KDialog::Cancel|KDialog::Default);
+    buttonBox()->setStandardButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::RestoreDefaults);
+    buttonBox()->button(QDialogButtonBox::RestoreDefaults)->setIcon(QIcon::fromTheme("edit-undo"));
+
     setFaceType(KPageDialog::Auto);
-    showButtonSeparator(true);
+    //showButtonSeparator(true);
 
     KPageWidgetItem *page = new SettingsMapStylePage(this);
+    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
     addPage(page);
-    connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
-    connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
-    connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
     page = new SettingsFilesPage(this);
+    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
     addPage(page);
-    connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
-    connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
-    connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
     page = new SettingsMediaPage(this);
+    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
     addPage(page);
-    connect(this, SIGNAL(okClicked()), page, SLOT(slotSave()));
-    connect(this, SIGNAL(applyClicked()), page, SLOT(slotSave()));
-    connect(this, SIGNAL(defaultClicked()), page, SLOT(slotDefaults()));
 
-    setMinimumSize(400, 360);
-    restoreDialogSize(KGlobal::config()->group(objectName()));
+    setMinimumSize(440, 360);
+    //restoreDialogSize(KGlobal::config()->group(objectName()));
 }
 
 
 SettingsDialogue::~SettingsDialogue()
 {
     KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
+    //saveDialogSize(grp);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -76,7 +77,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
 {
     setName(i18nc("@title:tab", "Map"));
     setHeader(i18n("Settings for the map display"));
-    setIcon(KIcon("marble"));
+    setIcon(QIcon::fromTheme("marble"));
 
     QWidget *w = widget();
     QFormLayout *fl = new QFormLayout(w);
@@ -176,7 +177,7 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
 {
     setName(i18nc("@title:tab", "Files"));
     setHeader(i18n("Settings for file locations and importing"));
-    setIcon(KIcon("folder"));
+    setIcon(QIcon::fromTheme("folder"));
 
     QWidget *w = widget();
     QFormLayout *fl = new QFormLayout(w);
@@ -191,7 +192,7 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     Q_ASSERT(ski!=NULL);
     mAudioNotesRequester = new KUrlRequester(w);
     mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly);
-    mAudioNotesRequester->setUrl(KUrl(Settings::audioNotesDirectory()));
+    mAudioNotesRequester->setUrl(QUrl(Settings::audioNotesDirectory()));
     mAudioNotesRequester->setToolTip(ski->toolTip());
     fl->addRow(ski->label(), mAudioNotesRequester);
 
@@ -243,7 +244,7 @@ void SettingsFilesPage::slotDefaults()
 {
     KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
     kcsi->setDefault();
-    mAudioNotesRequester->setUrl(KUrl(Settings::audioNotesDirectory()));
+    mAudioNotesRequester->setUrl(QUrl(Settings::audioNotesDirectory()));
 
     kcsi = Settings::self()->photoUseGpsItem();
     kcsi->setDefault();
@@ -277,7 +278,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
 {
     setName(i18nc("@title:tab", "Media"));
     setHeader(i18n("Settings for notes and photographs"));
-    setIcon(KIcon("applications-multimedia"));
+    setIcon(QIcon::fromTheme("applications-multimedia"));
 
     QWidget *w = widget();
     QFormLayout *fl = new QFormLayout(w);
@@ -295,7 +296,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     {
         const KService::Ptr service = (*it);
 
-        mPhotoViewerCombo->addItem(KIcon(service->icon()), service->name(), service->storageId());
+        mPhotoViewerCombo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
         if (service->storageId()==Settings::photoViewMode()) selectIndex = mPhotoViewerCombo->count()-1;
     }
 

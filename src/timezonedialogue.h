@@ -6,7 +6,7 @@
 #include <kdialog.h>
 
 
-class KTimeZoneWidget;
+class K4TimeZoneWidget;
 
 
 
@@ -29,7 +29,7 @@ private slots:
     void slotTimeZoneChanged();
 
 private:
-    KTimeZoneWidget *mTimeZoneWidget;
+    K4TimeZoneWidget *mTimeZoneWidget;
     bool mReturnUTC;
 };
 

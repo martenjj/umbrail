@@ -9,7 +9,7 @@
 #include <klocale.h>
 #include <kglobal.h>
 #include <kconfiggroup.h>
-#include <ktimezonewidget.h>
+#include <k4timezonewidget.h>
 #include <ktreewidgetsearchline.h>
 #include <ksystemtimezone.h>
 
@@ -36,7 +36,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     setMainWidget(w);
     QGridLayout *gl = new QGridLayout(w);
 
-    mTimeZoneWidget = new KTimeZoneWidget(this);
+    mTimeZoneWidget = new K4TimeZoneWidget(this);
     mTimeZoneWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(mTimeZoneWidget, SIGNAL(itemSelectionChanged()), SLOT(slotTimeZoneChanged()));
     gl->addWidget(mTimeZoneWidget, 1, 0, 1, -1);

@@ -4,8 +4,15 @@
 #include <qundostack.h>
 #include <qaction.h>
 #include <qscopedpointer.h>
+#include <qdialog.h>
+#include <qdialogbuttonbox.h>
+#include <qpushbutton.h>
+#include <qapplication.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
+#endif
+#ifdef HAVE_KEXIV2
+#include <qtimezone.h>
 #endif
 
 #include <kdebug.h>
@@ -16,9 +23,9 @@
 #include <kglobal.h>
 
 #ifdef HAVE_KEXIV2
-#include <ktimezone.h>
-#include <ksystemtimezone.h>
-#include <libkexiv2/kexiv2.h>
+// #include <ktimezone.h>
+// #include <ksystemtimezone.h>
+#include <kexiv2/kexiv2.h>
 using namespace KExiv2Iface;
 #endif
 
@@ -169,14 +176,29 @@ case ErrorReporter::Fatal:
 
     // Using the message box indirectly here for versatility.
 
-    KDialog *dlg = new KDialog(mainWindow());
-    dlg->setButtons(detailed ? KDialog::Ok|KDialog::Details : KDialog::Ok);
-    dlg->setCaption(caption);
+//     KDialog *dlg = new KDialog(mainWindow());
+//     dlg->setButtons(detailed ? KDialog::Ok|KDialog::Details : KDialog::Ok);
+//     dlg->setCaption(caption);
 
     bool notAgain = false;
 
+
+    QDialog *dlg = new QDialog(mainWindow());
+    dlg->setWindowTitle(caption);
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
+    if (detailed)
+    {
+        // from KMessageBox::detailedErrorInternal()
+        QPushButton *detailsButton = new QPushButton;
+        detailsButton->setObjectName(QStringLiteral("detailsButton"));
+        detailsButton->setText(QApplication::translate("KMessageBox", "&Details")+QStringLiteral(" >>"));
+        detailsButton->setIcon(QIcon::fromTheme(QStringLiteral("help-about")));
+        buttonBox->addButton(detailsButton, QDialogButtonBox::HelpRole);
+    }
+
     KMessageBox::createKMessageBox(dlg,
-                                   KIcon(iconName),
+                                   buttonBox,
+                                   QIcon::fromTheme(iconName),
                                    message,
                                    QStringList(),
                                    askText,
@@ -360,12 +382,15 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     // in order to correspond with the recording times.  This means that a
     // time zone needs to be set for meaningful results.
 
-    QString zone = model()->rootFileItem()->timeZone();	// get the file time zone set
+    QByteArray zone = model()->rootFileItem()->timeZone().toLocal8Bit();
     if (zone.isEmpty()) return (false);			// if none, can't convert
 
-    KTimeZone tz(KSystemTimeZones::zone(zone));
-    kDebug() << "file time zone" << tz.name() << "offset" << tz.offset(time(NULL));
-    dt = tz.toUtc(dt);
+//     KTimeZone tz(KSystemTimeZones::zone(zone));
+    QTimeZone tz(zone);
+    qDebug() << "file time zone" << tz.displayName(QTimeZone::GenericTime) << "offset" << tz.offsetFromUtc(QDateTime::currentDateTime());
+//     dt = tz.toUtc(dt);
+
+    dt = dt.toTimeZone(tz);
     kDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
     return (true);
 }

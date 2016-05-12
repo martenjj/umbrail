@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	01-Oct-15						//
+//  Edit:	12-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -37,6 +37,7 @@
 #include <kactioncollection.h>
 #include <kstandardaction.h>
 #include <kmenubar.h>
+#include <klocalizedstring.h>
 
 #include "settings.h"
 
@@ -59,7 +60,7 @@ PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
     {							// get the service from that
         if (viewMode.endsWith(".desktop")) viewMode.chop(8);
         service = KService::serviceByDesktopName(viewMode);
-        if (service.isNull())
+        if (service==nullptr)
         {
             kWarning() << "Viewer part" << viewMode << "not available";
             return;
@@ -79,7 +80,7 @@ PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
         service = services.first();			// take the first preference
     }
 
-    Q_ASSERT(!service.isNull());
+    Q_ASSERT(service!=nullptr);
     kDebug() << "  service" << service->name() << "id" << service->storageId();
 
     // from https://techbase.kde.org/Development/Tutorials/Using_KParts

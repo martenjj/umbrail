@@ -9,7 +9,6 @@
 
 #include <klocale.h>
 #include <kdebug.h>
-#include <kicon.h>
 
 
 ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int stdValue)
@@ -43,7 +42,7 @@ ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int s
     if (haveStdButt)
     {
         mStdButt = new QToolButton(this);		// reset button
-        mStdButt->setIcon(KIcon("edit-undo"));
+        mStdButt->setIcon(QIcon::fromTheme("edit-undo"));
         mStdButt->setToolTip(i18n("Reset this setting to its standard value, %1", stdValue));
         mLayout->addWidget(mStdButt);
     }
