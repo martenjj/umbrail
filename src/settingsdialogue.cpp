@@ -9,15 +9,16 @@
 #include <qspinbox.h>
 
 #include <kdebug.h>
-#include <kdialog.h>
-#include <klocale.h>
-#include <kglobal.h>
+#include <klocalizedstring.h>
 #include <kpagedialog.h>
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
 #include <kconfigskeleton.h>
 #include <kservice.h>
 #include <kmimetypetrader.h>
+
+#include <dialogbase.h>
+#include <dialogstatesaver.h>
 
 #include "settings.h"
 #include "style.h"
@@ -38,7 +39,6 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     buttonBox()->button(QDialogButtonBox::RestoreDefaults)->setIcon(QIcon::fromTheme("edit-undo"));
 
     setFaceType(KPageDialog::Auto);
-    //showButtonSeparator(true);
 
     KPageWidgetItem *page = new SettingsMapStylePage(this);
     connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
@@ -56,14 +56,7 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     addPage(page);
 
     setMinimumSize(440, 360);
-    //restoreDialogSize(KGlobal::config()->group(objectName()));
-}
-
-
-SettingsDialogue::~SettingsDialogue()
-{
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    //saveDialogSize(grp);
+    new DialogStateSaver(this);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -95,7 +88,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mShowTrackArrowsCheck->setToolTip(kcsi->toolTip());
     fl->addRow(QString::null, mShowTrackArrowsCheck);
 
-    fl->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
+    fl->addItem(new QSpacerItem(1, DialogBase::verticalSpacing(), QSizePolicy::Minimum, QSizePolicy::Fixed));
 
     kcsi = Settings::self()->selectedUseSystemColoursItem();
     mSelectedUseSystemCheck = new QCheckBox(kcsi->label(), w);
@@ -196,7 +189,7 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     mAudioNotesRequester->setToolTip(ski->toolTip());
     fl->addRow(ski->label(), mAudioNotesRequester);
 
-    fl->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Fixed, QSizePolicy::Fixed));
+    fl->addItem(new QSpacerItem(1, DialogBase::verticalSpacing(), QSizePolicy::Fixed, QSizePolicy::Fixed));
 
     ski = Settings::self()->photoGroupTitleItem();
     Q_ASSERT(ski!=NULL);

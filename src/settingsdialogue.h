@@ -18,15 +18,8 @@ class SettingsDialogue : public KPageDialog
     Q_OBJECT
 
 public:
-    SettingsDialogue(QWidget *pnt = NULL);
-    virtual ~SettingsDialogue();
-
-
-private:
-
-private:
-
-
+    SettingsDialogue(QWidget *pnt = nullptr);
+    virtual ~SettingsDialogue() = default;
 };
 
 
