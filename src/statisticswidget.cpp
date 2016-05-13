@@ -6,14 +6,14 @@
 #include <qgridlayout.h>
 #include <qlabel.h>
 #include <qprogressbar.h>
+#include <qpushbutton.h>
 
-#include <kdebug.h>
-#include <klocale.h>
-#include <kconfiggroup.h>
-#include <kglobal.h>
+#include <klocalizedstring.h>
 #ifdef USE_KCOLORSCHEME
 #include <kcolorscheme.h>
 #endif
+
+#include <dialogstatesaver.h>
 
 #include "mainwindow.h"
 #include "filescontroller.h"
@@ -22,14 +22,11 @@
 
 
 StatisticsWidget::StatisticsWidget(QWidget *pnt)
-    : KDialog(pnt),
+    : DialogBase(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
-
     setObjectName("StatisticsWidget");
-    setButtons(KDialog::Close);
-    showButtonSeparator(true);
+    setButtons(QDialogButtonBox::Close);
 
     mTotalPoints = 0;
     mWithTime = 0;
@@ -44,7 +41,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mLayout = new QGridLayout(mWidget);
 
     addRow(i18nc("@title:row", "Total points:"), mTotalPoints, false);
-    mLayout->setRowMinimumHeight(mLayout->rowCount(), KDialog::spacingHint());
+    mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
     addRow(i18nc("@title:row", "With time:"), mWithTime);
     addRow(i18nc("@title:row", "With elevation:"), mWithElevation);
     addRow(i18nc("@title:row", "With GPS speed:"), mWithGpsSpeed);
@@ -52,21 +49,11 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
 
     mLayout->setRowStretch(mLayout->rowCount(), 1);
     mLayout->setColumnStretch(5, 1);
-    mLayout->setColumnMinimumWidth(2, KDialog::spacingHint());
-    mLayout->setColumnMinimumWidth(4, KDialog::spacingHint());
+    mLayout->setColumnMinimumWidth(2, DialogBase::horizontalSpacing());
+    mLayout->setColumnMinimumWidth(4, DialogBase::horizontalSpacing());
 
     setMainWidget(mWidget);
-
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
-}
-
-
-StatisticsWidget::~StatisticsWidget()
-{
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
-    kDebug() << "done";
+    stateSaver()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
 }
 
 

@@ -6,13 +6,13 @@
 #include <qlayout.h>
 
 #include <kdebug.h>
-#include <kdialog.h>
-#include <klocale.h>
-#include <kglobal.h>
+#include <klocalizedstring.h>
 #include <kiconloader.h>
 #include <klineedit.h>
 #include <ktextedit.h>
 #include <kfiledialog.h>
+
+#include <dialogbase.h>
 
 #include "trackdata.h"
 #include "trackdatalabel.h"
@@ -238,7 +238,7 @@ void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *i
     QWidget *hb = new QWidget(this);
     QHBoxLayout *hlay = new QHBoxLayout(hb);
     hlay->setMargin(0);
-    hlay->setSpacing(KDialog::spacingHint());
+    hlay->setSpacing(DialogBase::horizontalSpacing());
     TrackDataLabel *l = new TrackDataLabel(TrackData::formattedLatLong(mPositionLatitude, mPositionLongitude), this);
     hlay->addWidget(l);
     hlay->addStretch(1);
@@ -415,7 +415,7 @@ default:				typeName = i18n("(Unknown)");	break;
         QWidget *hb = new QWidget(this);
         QHBoxLayout *hlay = new QHBoxLayout(hb);
         hlay->setMargin(0);
-        hlay->setSpacing(KDialog::spacingHint());
+        hlay->setSpacing(DialogBase::horizontalSpacing());
 
         QLabel *l = new QLabel(typeName, this);
         hlay->addWidget(l);

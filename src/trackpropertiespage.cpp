@@ -8,15 +8,13 @@
 #include <qlabel.h>
 
 #include <kdebug.h>
-#include <kdialog.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <ksystemtimezone.h>
 #include <kcolorscheme.h>
 
+#include <dialogbase.h>
+
 #include "trackdata.h"
-
-
-
 
 
 TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt)
@@ -36,16 +34,10 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QW
 }
 
 
-
-
 TrackPropertiesPage::~TrackPropertiesPage()
 {
     delete mTimeZone;
 }
-
-
-
-
 
 
 void TrackPropertiesPage::slotDataChanged()
@@ -54,13 +46,11 @@ void TrackPropertiesPage::slotDataChanged()
 }
 
 
-
-
 void TrackPropertiesPage::addSeparatorField(const QString &title)
 {
     if (title.isEmpty())				// no title, just some space
     {
-        mFormLayout->addItem(new QSpacerItem(1, KDialog::spacingHint(), QSizePolicy::Minimum, QSizePolicy::Fixed));
+        mFormLayout->addItem(new QSpacerItem(1, DialogBase::verticalSpacing(), QSizePolicy::Minimum, QSizePolicy::Fixed));
     }
     else						// title, a separator line
     {
@@ -69,7 +59,6 @@ void TrackPropertiesPage::addSeparatorField(const QString &title)
         mFormLayout->addRow(sep);
     }
 }
-
 
 
 void TrackPropertiesPage::setTimeZone(const QString &name)

@@ -3,7 +3,7 @@
 #ifndef STATISTICSWIDGET_H
 #define STATISTICSWIDGET_H
  
-#include <kdialog.h>
+#include <dialogbase.h>
 #include "mainwindowinterface.h"
 
 
@@ -11,13 +11,13 @@ class QGridLayout;
 class TrackDataItem;
 
 
-class StatisticsWidget : public KDialog, public MainWindowInterface
+class StatisticsWidget : public DialogBase, public MainWindowInterface
 {
     Q_OBJECT
 
 public:
-    explicit StatisticsWidget(QWidget *pnt = NULL);
-    virtual ~StatisticsWidget();
+    explicit StatisticsWidget(QWidget *pnt = nullptr);
+    virtual ~StatisticsWidget() = default;
 
 private:
     void getPointData(const TrackDataItem *item);

@@ -930,7 +930,7 @@ void MainWindow::slotTrackStatistics()
     StatisticsWidget *w = new StatisticsWidget(this);
     w->setAttribute(Qt::WA_DeleteOnClose);
     w->setModal(false);
-    w->setCaption(i18n("Track Statistics/Quality"));
+    w->setWindowTitle(i18n("Track Statistics/Quality"));
     w->show();
 }
 
