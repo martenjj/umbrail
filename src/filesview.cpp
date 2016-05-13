@@ -7,7 +7,7 @@
 #include <qmenu.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kxmlguifactory.h>
 
 #include "mainwindow.h"

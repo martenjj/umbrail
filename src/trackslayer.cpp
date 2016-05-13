@@ -4,7 +4,7 @@
 #include <math.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kcolorscheme.h>
 
 #include <marble/GeoPainter.h>

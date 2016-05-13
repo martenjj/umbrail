@@ -2,7 +2,7 @@
 #include "mapcontroller.h"
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kfiledialog.h>
 #include <kimageio.h>
 #include <kmessagebox.h>

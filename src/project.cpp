@@ -29,7 +29,7 @@
 
 #include <kdebug.h>
 #include <kurl.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 
 Project::Project()

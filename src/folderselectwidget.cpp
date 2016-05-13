@@ -6,7 +6,7 @@
 #include <qlineedit.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include "mainwindow.h"
 #include "folderselectdialogue.h"

@@ -34,7 +34,7 @@
 #include <qtimer.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kurl.h>
 // #include <kglobal.h>
 // #include <kconfig.h>

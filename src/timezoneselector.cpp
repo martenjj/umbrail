@@ -30,7 +30,7 @@
 #include <qpushbutton.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <klineedit.h>
 #include <ksystemtimezone.h>
 

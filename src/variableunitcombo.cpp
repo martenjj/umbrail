@@ -28,7 +28,7 @@
 #include "variableunitcombo.h"
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 
 static const double EARTH_RADIUS_KM = 6371;		// kilometres

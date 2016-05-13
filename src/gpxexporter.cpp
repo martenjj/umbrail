@@ -13,7 +13,7 @@
 #include <QXmlStreamWriter>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include "trackdata.h"
 #include "style.h"

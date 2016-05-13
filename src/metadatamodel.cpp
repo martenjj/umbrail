@@ -2,7 +2,7 @@
 #include "metadatamodel.h"
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"

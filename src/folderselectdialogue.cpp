@@ -4,7 +4,7 @@
 #include <QRegExpValidator>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kglobal.h>
 #include <kconfiggroup.h>
 #include <kinputdialog.h>

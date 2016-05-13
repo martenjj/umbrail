@@ -6,7 +6,7 @@
 #include <qapplication.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kxmlguifactory.h>
 #include <kaction.h>

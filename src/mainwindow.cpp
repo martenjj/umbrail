@@ -16,7 +16,7 @@
 #include <qstatusbar.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kaction.h>
 #include <ktoggleaction.h>
 #include <kselectaction.h>

@@ -12,7 +12,7 @@
 #include <qlabel.h>
 #include <qdebug.h>
 
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kconfiggroup.h>
 #include <kglobal.h>
 #include <ktimezone.h>

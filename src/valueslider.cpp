@@ -7,7 +7,7 @@
 #include <qlabel.h>
 #include <qslider.h>
 
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kdebug.h>
 
 

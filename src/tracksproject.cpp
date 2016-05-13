@@ -29,7 +29,7 @@
 
 #include <kdebug.h>
 //#include <kurl.h>
-//#include <klocale.h>
+//#include <klocalizedstring.h>
 //#include <kmimetype.h>
 #include <kconfig.h>
 #include <kconfiggroup.h>
