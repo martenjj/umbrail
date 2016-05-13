@@ -5,7 +5,6 @@
 #include <QRegExpValidator>
 
 #include <klocalizedstring.h>
-#include <kglobal.h>
 #include <kconfiggroup.h>
 #include <kinputdialog.h>
 #include <kmessagebox.h>

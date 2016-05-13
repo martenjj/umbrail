@@ -31,7 +31,7 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kglobal.h>
+#include <ksharedconfig.h>
 #include <kconfiggroup.h>
 
 
@@ -61,7 +61,7 @@ VariableUnitDisplay::~VariableUnitDisplay()
 {
     if (!mSaveId.isEmpty())
     {
-        KConfigGroup grp = KGlobal::config()->group(objectName());
+        KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
         if (mComboIndex!=-1) grp.writeEntry(mSaveId, mComboIndex);
     }
 }
@@ -150,7 +150,7 @@ void VariableUnitDisplay::setSaveId(const QString &id)
     mSaveId = id;
     if (!mSaveId.isEmpty())
     {
-        const KConfigGroup grp = KGlobal::config()->group(objectName());
+        const KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
         int idx = grp.readEntry(mSaveId, -1);
         if (idx!=-1) mUnitCombo->setCurrentIndex(idx);
     }

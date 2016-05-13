@@ -6,7 +6,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kglobal.h>
 #include <kcolorbutton.h>
 
 #include "trackdata.h"

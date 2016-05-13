@@ -7,7 +7,6 @@
 
 #include <klocalizedstring.h>
 #include <ktabwidget.h>
-#include <kglobal.h>
 #include <kiconloader.h>
 #include <kconfiggroup.h>
 

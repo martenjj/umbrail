@@ -3,11 +3,9 @@
 
 #include <qdebug.h>
 
-#include <kglobal.h>
 #include <klocalizedstring.h>
+#include <ksharedconfig.h>
 #include <kconfiggroup.h>
-
-
 
 
 ItemTypeCombo::ItemTypeCombo(QWidget *pnt)
@@ -22,13 +20,12 @@ ItemTypeCombo::ItemTypeCombo(QWidget *pnt)
 
     QStringList defaultTypes(i18n("(none)"));
     defaultTypes << "Walk" << "Car";
-    const KConfigGroup grp = KGlobal::config()->group(objectName());
+    const KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
     QStringList types = grp.readEntry("types", defaultTypes);
     addItems(types);
 
     mOriginalCount = count();				// how many when we started
 }
-
 
 
 ItemTypeCombo::~ItemTypeCombo()
@@ -39,13 +36,10 @@ ItemTypeCombo::~ItemTypeCombo()
         QStringList types;
         for (int i = 0; i<count(); ++i) types << itemText(i);
         qDebug() << "saving" << types;
-        KConfigGroup grp = KGlobal::config()->group(objectName());
+        KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
         grp.writeEntry("types", types);
     }
 }
-
-
-
 
 
 void ItemTypeCombo::setType(const QString &type)

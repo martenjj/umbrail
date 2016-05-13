@@ -14,7 +14,7 @@
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
-#include <kglobal.h>
+#include <ksharedconfig.h>
 
 #include <dialogbase.h>
 
@@ -151,7 +151,7 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
 
     mTabs->addTab(w, i18n("DMS"));
 
-    KConfigGroup grp = KGlobal::config()->group(objectName());
+    KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
     int idx = grp.readEntry("Index", -1);
     if (idx!=-1) mTabs->setCurrentIndex(idx);
 }
@@ -159,7 +159,7 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
 
 LatLongWidget::~LatLongWidget()
 {
-    KConfigGroup grp = KGlobal::config()->group(objectName());
+    KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
     grp.writeEntry("Index", mTabs->currentIndex());
 }
 

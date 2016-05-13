@@ -14,7 +14,6 @@
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
-#include <kglobal.h>
 #include <ktimezone.h>
 #include <ksystemtimezone.h>
 

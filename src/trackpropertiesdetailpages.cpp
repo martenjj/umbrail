@@ -5,7 +5,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kglobal.h>
 
 #include "trackdata.h"
 #include "trackdatalabel.h"

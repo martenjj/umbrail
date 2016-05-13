@@ -19,11 +19,8 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kmimetype.h>
-#include <kglobal.h>
 
 #ifdef HAVE_KEXIV2
-// #include <ktimezone.h>
-// #include <ksystemtimezone.h>
 #include <kexiv2/kexiv2.h>
 using namespace KExiv2Iface;
 #endif
@@ -110,7 +107,7 @@ void FilesController::saveProperties()
 bool FilesController::fileWarningsIgnored(const QUrl &file) const
 {
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
-    KConfigGroup grp = KGlobal::config()->group("FileWarnings");
+    KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
     return (grp.readEntry(askKey.constData(), false));
 }
 
@@ -119,7 +116,7 @@ void FilesController::setFileWarningsIgnored(const QUrl &file, bool ignore)
 {
     qDebug() << file;
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
-    KConfigGroup grp = KGlobal::config()->group("FileWarnings");
+    KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
     grp.writeEntry(askKey.constData(), ignore);
 }
 
@@ -402,10 +399,8 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     QByteArray zone = model()->rootFileItem()->timeZone().toLocal8Bit();
     if (zone.isEmpty()) return (false);			// if none, can't convert
 
-//     KTimeZone tz(KSystemTimeZones::zone(zone));
     QTimeZone tz(zone);
     qDebug() << "file time zone" << tz.displayName(QTimeZone::GenericTime) << "offset" << tz.offsetFromUtc(QDateTime::currentDateTime());
-//     dt = tz.toUtc(dt);
 
     dt = dt.toTimeZone(tz);
     qDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
