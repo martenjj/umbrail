@@ -4,33 +4,53 @@
 #include <qgridlayout.h>
 #include <qlabel.h>
 #include <qheaderview.h>
+#include <qpushbutton.h>
 
 #include <kdebug.h>
-#include <klocale.h>
-#include <kglobal.h>
+#include <klocalizedstring.h>
+// #include <kglobal.h>
 #include <kconfiggroup.h>
 #include <k4timezonewidget.h>
 #include <ktreewidgetsearchline.h>
 #include <ksystemtimezone.h>
 
 
+void TimeZoneStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+{
+    const TimeZoneDialogue *wid = qobject_cast<const TimeZoneDialogue *>(dialog);
+    if (wid!=nullptr) grp.writeEntry("State", wid->timeZoneWidget()->header()->saveState().toHex());
+    DialogStateSaver::saveConfig(dialog, grp);
+}
+
+
+void TimeZoneStateSaver::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+{
+    TimeZoneDialogue *wid = qobject_cast<TimeZoneDialogue *>(dialog);
+    if (wid!=nullptr)
+    {
+        QString colStates = grp.readEntry("State");
+        if (!colStates.isEmpty()) wid->timeZoneWidget()->header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
+    }
+    DialogStateSaver::restoreConfig(dialog, grp);
+}
 
 
 TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
-    : KDialog(pnt)
+    : DialogBase(pnt)
 {
     setObjectName("TimeZoneDialogue");
 
     setModal(true);
-    setButtons(KDialog::Ok|KDialog::Cancel|KDialog::Reset|KDialog::Default);
-    setButtonText(KDialog::Ok, i18n("Select"));
-    setButtonText(KDialog::Reset, i18nc("@action:button", "Reset to UTC"));
-    setButtonText(KDialog::Default, i18nc("@action:button", "System Time Zone"));
-    setCaption(i18n("Select Time Zone"));
-    showButtonSeparator(true);
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults);
+    setButtonText(QDialogButtonBox::Ok, i18n("Select"));
+    setButtonText(QDialogButtonBox::Reset, i18nc("@action:button", "Reset to UTC"));
+    setButtonText(QDialogButtonBox::RestoreDefaults, i18nc("@action:button", "System Time Zone"));
+    setButtonIcon(QDialogButtonBox::RestoreDefaults, buttonBox()->button(QDialogButtonBox::Reset)->icon());
+    setWindowTitle(i18n("Select Time Zone"));
+    buttonBox()->button(QDialogButtonBox::Ok)->setDefault(true);
 
-    connect(this, SIGNAL(resetClicked()), SLOT(slotUseUTC()));
-    connect(this, SIGNAL(defaultClicked()), SLOT(slotUseSystem()));
+    connect(buttonBox()->button(QDialogButtonBox::Reset), &QPushButton::clicked, this, &TimeZoneDialogue::slotUseUTC);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &TimeZoneDialogue::slotUseSystem);
 
     QWidget *w = new QWidget(this);
     setMainWidget(w);
@@ -50,10 +70,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     gl->addWidget(l, 0, 0);
 
     setMinimumSize(400,320);
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
-    QString colStates = grp.readEntry("State");
-    if (!colStates.isEmpty()) mTimeZoneWidget->header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
+    setStateSaver(new TimeZoneStateSaver(this));
 
     mReturnUTC = false;
     slotTimeZoneChanged();
@@ -61,23 +78,11 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 }
 
 
-
-TimeZoneDialogue::~TimeZoneDialogue()
-{
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
-    grp.writeEntry("State", mTimeZoneWidget->header()->saveState().toHex());
-}
-
-
-
-
 void TimeZoneDialogue::setTimeZone(const QString &zone)
 {
     kDebug() << zone;
     mTimeZoneWidget->setSelected(zone, true);
 }
-
 
 
 QString TimeZoneDialogue::timeZone() const
@@ -88,13 +93,11 @@ QString TimeZoneDialogue::timeZone() const
 }
 
 
-
 void TimeZoneDialogue::slotUseUTC()
 {
     mReturnUTC = true;
     accept();
 }
-
 
 
 void TimeZoneDialogue::slotUseSystem()
@@ -106,5 +109,5 @@ void TimeZoneDialogue::slotUseSystem()
 
 void TimeZoneDialogue::slotTimeZoneChanged()
 {
-    enableButtonOk(!mTimeZoneWidget->selectedItems().isEmpty());
+    setButtonEnabled(QDialogButtonBox::Ok, !mTimeZoneWidget->selectedItems().isEmpty());
 }

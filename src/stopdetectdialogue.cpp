@@ -15,11 +15,12 @@
 #include <qlineedit.h>
 
 #include <kdebug.h>
-#include <klocale.h>
-#include <kglobal.h>
+#include <klocalizedstring.h>
 #include <kseparator.h>
 #include <ktimezone.h>
 #include <ksystemtimezone.h>
+
+#include <dialogstatesaver.h>
 
 #include "filescontroller.h"
 #include "filesview.h"
@@ -50,7 +51,7 @@ static const int minStopPoints = 3;			// minimum points for valid stop
 
 
 StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
-    : KDialog(pnt),
+    : DialogBase(pnt),
       MainWindowInterface(pnt)
 {
     setObjectName("StopDetectDialogue");
@@ -58,11 +59,10 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     setAttribute(Qt::WA_DeleteOnClose);
     setModal(false);
 
-    setCaption(i18nc("@title:window", "Locate Stops"));
-    setButtons(KDialog::Ok|KDialog::Close);
-    showButtonSeparator(true);
-    enableButtonOk(false);
-    setButtonText(KDialog::Ok, i18nc("@action:button", "Commit"));
+    setWindowTitle(i18nc("@title:window", "Locate Stops"));
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Close);
+    setButtonEnabled(QDialogButtonBox::Ok, false);
+    setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Commit"));
 
     mIdleTimer = new QTimer(this);
     mIdleTimer->setInterval(2000);
@@ -106,9 +106,9 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
 
     // Middle: separator
     KSeparator *sep = new KSeparator(Qt::Vertical, w);
-    hb->addSpacing(KDialog::spacingHint());
+    hb->addSpacing(DialogBase::horizontalSpacing());
     hb->addWidget(sep);
-    hb->addSpacing(KDialog::spacingHint());
+    hb->addSpacing(DialogBase::horizontalSpacing());
 
     // Right hand side: results
     QGridLayout *gl = new QGridLayout;
@@ -138,11 +138,9 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     hb->addLayout(gl);
 
     setMainWidget(w);
-    slotSetButtonStates();
-
+    stateSaver()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
     setMinimumSize(460, 280);
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
+    slotSetButtonStates();
 }
 
 
@@ -150,9 +148,6 @@ StopDetectDialogue::~StopDetectDialogue()
 {
     mapController()->view()->setStopLayerData(NULL);
     qDeleteAll(mResultPoints);
-
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
     kDebug() << "done";
 }
 
@@ -439,7 +434,7 @@ void StopDetectDialogue::slotSetButtonStates()
         if (check==Qt::Checked) ++numChecked;
     }
 
-    enableButtonOk(numChecked>0 && !mFolderSelect->folderPath().isEmpty());
+    setButtonEnabled(QDialogButtonBox::Ok, numChecked>0 && !mFolderSelect->folderPath().isEmpty());
     mShowOnMapButton->setEnabled(mResultsList->selectedItems().count()==1);
 }
 

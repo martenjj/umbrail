@@ -3,8 +3,9 @@
 #define STOPDETECTDIALOGUE_H
 
 
-#include <kdialog.h>
+#include <dialogbase.h>
 #include "mainwindowinterface.h"
+
 
 class QTimer;
 class QListWidget;
@@ -19,12 +20,12 @@ class TrackDataWaypoint;
 class FolderSelectWidget;
 
 
-class StopDetectDialogue : public KDialog, public MainWindowInterface
+class StopDetectDialogue : public DialogBase, public MainWindowInterface
 {
     Q_OBJECT
 
 public:
-    explicit StopDetectDialogue(QWidget *pnt = NULL);
+    explicit StopDetectDialogue(QWidget *pnt = nullptr);
     virtual ~StopDetectDialogue();
 
 protected:

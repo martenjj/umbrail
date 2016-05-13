@@ -3,23 +3,39 @@
 #define TIMEZONEDIALOGUE_H
 
 
-#include <kdialog.h>
+#include <dialogbase.h>
+#include <dialogstatesaver.h>
 
 
 class K4TimeZoneWidget;
 
 
-
-class TimeZoneDialogue : public KDialog
+class TimeZoneStateSaver : public DialogStateSaver
 {
     Q_OBJECT
 
 public:
-    explicit TimeZoneDialogue(QWidget *pnt = NULL);
-    virtual ~TimeZoneDialogue();
+    TimeZoneStateSaver(QDialog *pnt) : DialogStateSaver(pnt)	{}
+    virtual ~TimeZoneStateSaver() = default;
+
+protected:
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+};
+
+
+class TimeZoneDialogue : public DialogBase
+{
+    Q_OBJECT
+
+public:
+    explicit TimeZoneDialogue(QWidget *pnt = nullptr);
+    virtual ~TimeZoneDialogue() = default;
 
     void setTimeZone(const QString &zone);
     QString timeZone() const;
+
+    K4TimeZoneWidget *timeZoneWidget() const		{ return (mTimeZoneWidget); }
 
 protected slots:
     void slotUseUTC();
