@@ -1123,7 +1123,7 @@ void AddPhotoCommand::redo()
 
     TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
     Q_ASSERT(tdw!=NULL);				// retrieve the just added point
-    if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.pathOrUrl());
+    if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.toDisplayString());
     if (mDateTime.isValid()) tdw->setTime(mDateTime);
 }
 

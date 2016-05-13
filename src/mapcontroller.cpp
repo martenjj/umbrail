@@ -1,14 +1,18 @@
 
 #include "mapcontroller.h"
+
 #include <qdebug.h>
+#include <qfiledialog.h>
 
 #include <klocalizedstring.h>
-#include <kfiledialog.h>
 #include <kimageio.h>
 #include <kmessagebox.h>
 
 #include <marble/MarbleAboutDialog.h>
 #include <marble/GeoDataLatLonBox.h>
+
+#include <recentsaver.h>
+#include <imagefilter.h>
 
 #include "mapview.h"
 #include "trackdata.h"
@@ -154,34 +158,36 @@ void MapController::slotResetZoom()
 }
 
 
-
-
 void MapController::slotSaveImage()
 {
-    const QStringList mimetypes = KImageIO::mimeTypes(KImageIO::Writing);
-    QString saveFile = KFileDialog::getSaveFileName(KUrl("kfiledialog:///mapsave"),
-                                                    mimetypes.join(" "),
-                                                    mainWindow(),
-                                                    i18n("Save Map as Image"),
-                                                    KFileDialog::ConfirmOverwrite);
-    if (saveFile.isEmpty()) return;
+    RecentSaver saver("mapsave");
+    QUrl file = QFileDialog::getSaveFileUrl(mainWindow(),			// parent
+                                            i18n("Save Map As Image"),		// caption
+                                            saver.recentUrl("untitled"),	// dir
+                                            ImageFilter::qtFilterString(ImageFilter::Writing),
+                                            NULL,				// selectedFilter,
+                                            QFileDialog::Options(),		// options
+                                            QStringList("file"));		// supportedSchemes
+
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
 
     QStringList currentOverlays = view()->overlays(true);
     view()->showOverlays(QStringList());
 
-    emit statusMessage(i18n("Saving map image...", saveFile));
+    emit statusMessage(i18n("Saving map image..."));
     QPixmap pix = view()->mapScreenShot();
-    qDebug() << "size" << pix.size() << "to" << saveFile;
-    if (!pix.save(saveFile))
+    qDebug() << "size" << pix.size() << "to" << file;
+    if (!pix.save(file.path()))
     {
         KMessageBox::error(mainWindow(),
-                           i18n("<qt>Failed to save image file:<br><filename>%1</filename>", saveFile),
+                           i18n("<qt>Failed to save image file:<br><filename>%1</filename>", file.toDisplayString()),
                            i18n("Save Failed"));
         emit statusMessage(i18n("Failed to save map image"));
     }
     else
     {
-        emit statusMessage(i18n("Saved map image to '%1'", saveFile));
+        emit statusMessage(i18n("Saved map image to '%1'", file.toDisplayString()));
     }
 
     view()->showOverlays(currentOverlays);

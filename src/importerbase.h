@@ -8,7 +8,7 @@
 
 
 class QFile;
-class KUrl;
+class QUrl;
 class TrackDataFile;
 
 
@@ -18,12 +18,12 @@ public:
     ImporterBase();
     virtual ~ImporterBase();
 
-    virtual TrackDataFile *load(const KUrl &file) = 0;
+    virtual TrackDataFile *load(const QUrl &file) = 0;
     virtual bool needsResave() const			{ return (false); }
 
 protected:
-    bool prepareLoadFile(const KUrl &file);
-    bool finaliseLoadFile(const KUrl &file);
+    bool prepareLoadFile(const QUrl &file);
+    bool finaliseLoadFile(const QUrl &file);
 
 protected:
     QFile *mFile;

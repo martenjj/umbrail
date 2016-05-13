@@ -165,7 +165,7 @@ case Qt::ToolTipRole:
 case COL_NAME:
             {
                 const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                if (tdf!=NULL) return (i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().pathOrUrl()));
+                if (tdf!=NULL) return (i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString()));
             }
             {
                 const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(tdi);

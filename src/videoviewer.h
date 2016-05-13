@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	17-Jun-15						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -35,7 +35,7 @@
 class QLabel;
 class QPushButton;
 class QTimer;
-class KUrl;
+class QUrl;
 
 namespace Phonon { class VideoPlayer; };
 
@@ -45,7 +45,7 @@ class VideoViewer : public QWidget
     Q_OBJECT
 
 public:
-    VideoViewer(const KUrl &url, QWidget *pnt = NULL);
+    VideoViewer(const QUrl &url, QWidget *pnt = NULL);
     virtual ~VideoViewer();
 
 protected slots:

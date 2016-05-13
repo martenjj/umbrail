@@ -7,7 +7,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kurl.h>
 
 #include "trackdata.h"
 #include "errorreporter.h"
@@ -27,7 +26,7 @@ ExporterBase::~ExporterBase()
 }
 
 
-bool ExporterBase::prepareSaveFile(const KUrl &file)
+bool ExporterBase::prepareSaveFile(const QUrl &file)
 {
     qDebug() << "to" << file;
 

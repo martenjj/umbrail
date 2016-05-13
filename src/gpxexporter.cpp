@@ -284,7 +284,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
 
 
-bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
+bool GpxExporter::save(const QUrl &file, const TrackDataFile *item)
 {
     qDebug() << "item" << item->name() << "to" << file;
 

@@ -27,13 +27,13 @@ private:
 class ErrorRecordFile : public ErrorRecord
 {
 public:
-    ErrorRecordFile(const KUrl &file);
+    ErrorRecordFile(const QUrl &file);
     virtual ~ErrorRecordFile()				{}
 
     QString format() const;
 
 private:
-    KUrl mFile;
+    QUrl mFile;
 };
 
 
@@ -79,7 +79,7 @@ default:			return (i18n("Unknown"));
 }
 
 
-ErrorRecordFile::ErrorRecordFile(const KUrl &file)
+ErrorRecordFile::ErrorRecordFile(const QUrl &file)
     : ErrorRecord(ErrorReporter::NoError)
 {
     mFile = file;
@@ -89,8 +89,8 @@ ErrorRecordFile::ErrorRecordFile(const KUrl &file)
 QString ErrorRecordFile::format() const
 {
     return (i18n("<font color=\"%1\">In file</font> <filename>%2</filename><font color=\"%1\">:</font>",
-errorColour(KColorScheme::InactiveText),
-mFile.pathOrUrl()));
+                 errorColour(KColorScheme::InactiveText),
+                 mFile.toDisplayString()));
 }
 
 
@@ -130,7 +130,7 @@ ErrorReporter::~ErrorReporter()
 }
 
 
-void ErrorReporter::setFile(const KUrl &file)
+void ErrorReporter::setFile(const QUrl &file)
 {
     qDebug() << file;
     mList.append(new ErrorRecordFile(file));

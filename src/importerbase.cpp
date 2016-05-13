@@ -8,7 +8,7 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kurl.h>
+//#include <kurl.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"
@@ -38,7 +38,7 @@ ImporterBase::~ImporterBase()
 
 
 
-bool ImporterBase::prepareLoadFile(const KUrl &file)
+bool ImporterBase::prepareLoadFile(const QUrl &file)
 {
     qDebug() << "from" << file;
 
@@ -78,7 +78,7 @@ static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
 #endif
 
 
-bool ImporterBase::finaliseLoadFile(const KUrl &file)
+bool ImporterBase::finaliseLoadFile(const QUrl &file)
 {
     mFile->close();					// finished with reading file
     if (mDataRoot==NULL) return (false);		// problem reading, no data

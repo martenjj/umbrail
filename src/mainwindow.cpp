@@ -482,8 +482,6 @@ bool MainWindow::save(const QUrl &to)
     qDebug() << "to" << to;
 
     if (!to.isValid()) return (false);			// should never happen
-    QDir d(to.path());					// should be absolute already,
-    QString savePath = d.absolutePath();		// but just make sure
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf==NULL) return (false);			// should never happen
@@ -495,8 +493,8 @@ bool MainWindow::save(const QUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
-    if (filesController()->exportFile(savePath, tdf)!=FilesController::StatusOk) return (false);
-    slotStatusMessage(i18n("<qt>Saved <filename>%1</filename>", savePath));
+    if (filesController()->exportFile(to, tdf)!=FilesController::StatusOk) return (false);
+    slotStatusMessage(i18n("<qt>Saved <filename>%1</filename>", to.toDisplayString()));
     return (true);					// more appropriate message
 }
 
@@ -509,11 +507,8 @@ FilesController::Status MainWindow::load(const QUrl &from)
 
     // TODO: allow non-local files
     if (!from.isValid()) return (FilesController::StatusFailed);
-    QDir d(from.path());				// should be absolute already,
-    QString loadPath = d.absolutePath();		// but just make sure
 
-
-    FilesController::Status status = filesController()->importFile(loadPath);
+    FilesController::Status status = filesController()->importFile(from);
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();

@@ -8,6 +8,7 @@
 #include <qapplication.h>
 #include <qlayout.h>
 #include <qdebug.h>
+#include <qurl.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -18,7 +19,6 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kmimetype.h>
-#include <kurl.h>
 #include <kglobal.h>
 
 #ifdef HAVE_KEXIV2
@@ -107,7 +107,7 @@ void FilesController::saveProperties()
 }
 
 
-bool FilesController::fileWarningsIgnored(const KUrl &file) const
+bool FilesController::fileWarningsIgnored(const QUrl &file) const
 {
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
     KConfigGroup grp = KGlobal::config()->group("FileWarnings");
@@ -115,7 +115,7 @@ bool FilesController::fileWarningsIgnored(const KUrl &file) const
 }
 
 
-void FilesController::setFileWarningsIgnored(const KUrl &file, bool ignore)
+void FilesController::setFileWarningsIgnored(const QUrl &file, bool ignore)
 {
     qDebug() << file;
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
@@ -124,7 +124,7 @@ void FilesController::setFileWarningsIgnored(const KUrl &file, bool ignore)
 }
 
 
-bool FilesController::reportFileError(bool saving, const KUrl &file, const QString &msg)
+bool FilesController::reportFileError(bool saving, const QUrl &file, const QString &msg)
 {
     ErrorReporter rep;
     rep.setError(ErrorReporter::Fatal, msg);
@@ -132,7 +132,7 @@ bool FilesController::reportFileError(bool saving, const KUrl &file, const QStri
 }
 
 
-bool FilesController::reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep)
+bool FilesController::reportFileError(bool saving, const QUrl &file, const ErrorReporter *rep)
 {
     bool detailed = (rep->messageCount()>1);
     QStringList list = rep->messageList();
@@ -154,8 +154,8 @@ case ErrorReporter::Warning:
 
         detailed = true;
         message = (saving ?
-                   i18n("<qt>The file <filename>%1</filename> was saved but with warnings.", file.pathOrUrl()) :
-                   i18n("<qt>The file <filename>%1</filename> was loaded but with warnings.", file.pathOrUrl()));
+                   i18n("<qt>The file <filename>%1</filename> was saved but with warnings.", file.toDisplayString()) :
+                   i18n("<qt>The file <filename>%1</filename> was loaded but with warnings.", file.toDisplayString()));
         caption = (saving ? i18n("File Save Warning") : i18n("File Load Warning"));
         iconName = "dialog-information";
         askText = i18n("Do not show again for this file");
@@ -163,16 +163,16 @@ case ErrorReporter::Warning:
 
 case ErrorReporter::Error:
         message = (saving ?
-                   i18n("<qt>The file <filename>%1</filename> was saved but had errors.", file.pathOrUrl()) :
-                   i18n("<qt>The file <filename>%1</filename> was loaded but had errors.", file.pathOrUrl()));
+                   i18n("<qt>The file <filename>%1</filename> was saved but had errors.", file.toDisplayString()) :
+                   i18n("<qt>The file <filename>%1</filename> was loaded but had errors.", file.toDisplayString()));
         caption = (saving ? i18n("File Save Error") : i18n("File Load Error"));
         iconName = "dialog-warning";
         break;
 
 case ErrorReporter::Fatal:
         message = (saving ?
-                   i18n("<qt>The file <filename>%1</filename> could not be saved.<br>%2", file.pathOrUrl(), list.last()) :
-                   i18n("<qt>The file <filename>%1</filename> could not be loaded.<br>%2", file.pathOrUrl(), list.last()));
+                   i18n("<qt>The file <filename>%1</filename> could not be saved.<br>%2", file.toDisplayString(), list.last()) :
+                   i18n("<qt>The file <filename>%1</filename> could not be loaded.<br>%2", file.toDisplayString(), list.last()));
         caption = (saving ? i18n("File Save Failure") : i18n("File Load Failure"));
         iconName = "dialog-error";
         result = false;
@@ -227,7 +227,7 @@ case ErrorReporter::Fatal:
 }
 
 
-FilesController::Status FilesController::importFile(const KUrl &importFrom)
+FilesController::Status FilesController::importFile(const QUrl &importFrom)
 {
     if (!importFrom.isValid()) return (FilesController::StatusFailed);
     QString importType = KMimeType::extractKnownExtension(importFrom.path());
@@ -254,13 +254,13 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
         return (FilesController::StatusFailed);
     }
 
-    emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.pathOrUrl()));
+    emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
 
     const ErrorReporter *rep = imp->reporter();
     if (!reportFileError(false, importFrom, rep))
     {
-        emit statusMessage(i18n("<qt>Loading <filename>%1</filename> failed", importFrom.pathOrUrl()));
+        emit statusMessage(i18n("<qt>Loading <filename>%1</filename> failed", importFrom.toDisplayString()));
         return (FilesController::StatusFailed);
     }
 
@@ -273,12 +273,12 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
     {
         cmd->redo();					// no, just do the import
         delete cmd;					// no need for this now
-        emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.pathOrUrl()));
+        emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.toDisplayString()));
     }
     else
     {
         mainWindow()->executeCommand(cmd);		// make the operation undo'able
-        emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.pathOrUrl()));
+        emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.toDisplayString()));
     }
 
     emit modified();					// done, finished with importer
@@ -288,7 +288,7 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
 }
 
 
-FilesController::Status FilesController::exportFile(const KUrl &exportTo, const TrackDataFile *tdf)
+FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
     QString exportType = KMimeType::extractKnownExtension(exportTo.path());
@@ -317,8 +317,9 @@ FilesController::Status FilesController::exportFile(const KUrl &exportTo, const 
 
     if (exportTo.isLocalFile() && QFile::exists(exportTo.path()))
     {							// to a local file?
-        KUrl backupFile = exportTo;			// make path for backup file
-        backupFile.setFileName(exportTo.fileName()+".orig");
+        QUrl backupFile = exportTo;			// make path for backup file
+
+        backupFile = exportTo.adjusted(QUrl::RemoveFilename).resolved(QUrl::fromLocalFile(exportTo.fileName()+".orig"));
 // TODO: use KIO
 // ask whether to backup if a remote file (if cannot test for exists)
         if (!QFile::exists(backupFile.path()))		// no backup already?
@@ -332,23 +333,23 @@ FilesController::Status FilesController::exportFile(const KUrl &exportTo, const 
 
             KMessageBox::information(mainWindow(),
                                      i18n("<qt>Original of<br><filename>%1</filename><br>has been backed up as<br><filename>%2</filename>",
-                                          exportTo.pathOrUrl(), backupFile.pathOrUrl()),
+                                          exportTo.toDisplayString(), backupFile.toDisplayString()),
                                      i18n("Original file backed up"),
                                      "fileBackupInfo");
         }
     }
 
-    emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.pathOrUrl()));
+    emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->save(exportTo, tdf);
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))
     {
-        emit statusMessage(i18n("<qt>Saving <filename>%1</filename> failed", exportTo.pathOrUrl()));
+        emit statusMessage(i18n("<qt>Saving <filename>%1</filename> failed", exportTo.toDisplayString()));
         return (FilesController::StatusFailed);
     }
 
-    emit statusMessage(i18n("<qt>Exported <filename>%1</filename>", exportTo.pathOrUrl()));
+    emit statusMessage(i18n("<qt>Exported <filename>%1</filename>", exportTo.toDisplayString()));
     return (FilesController::StatusOk);			// done, finished with exporter
 }
 
@@ -412,7 +413,7 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
 }
 
 
-FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
+FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 {
     int q;						// status for questions
 
@@ -437,13 +438,13 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
 
     for (int i = 0; i<total; ++i)
     {
-        const KUrl &importFrom = urls[i];
+        const QUrl &importFrom = urls[i];
         qDebug() << importFrom;
 
         if (!importFrom.isValid()) continue;
         if (!importFrom.isLocalFile())
         {
-            const QString messageText = i18n("<qt><filename>%1</filename> is not a local file", importFrom.pathOrUrl());
+            const QString messageText = i18n("<qt><filename>%1</filename> is not a local file", importFrom.toDisplayString());
             if (!multiple) KMessageBox::sorry(mainWindow(), messageText, i18n("Cannot Import"));
             else
             {
@@ -482,7 +483,7 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
         if (gpsValid && Settings::photoUseGps())
         {
             messageText = i18n("<qt>The image file <filename>%1</filename> contained a valid GPS position.<nl/>The waypoint will be created at that position.", importFrom.fileName());
-            statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.pathOrUrl());
+            statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.toDisplayString());
             matched = true;
         }
         else
@@ -498,7 +499,7 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
                     messageText = i18np("<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
                                         "<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
                                         closestDiff, closestPoint->name(), importFrom.fileName());
-                    statusText = i18n("<qt>Imported <filename>%1</filename> at date/time position", importFrom.pathOrUrl());
+                    statusText = i18n("<qt>Imported <filename>%1</filename> at date/time position", importFrom.toDisplayString());
 
                     sourcePoint = closestPoint;
                     lat = closestPoint->latitude();
@@ -517,7 +518,7 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
 #endif
         {
             if (messageText.isEmpty()) messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
-            statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.pathOrUrl());
+            statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.toDisplayString());
             lat = mapController()->view()->centerLatitude();
             lon = mapController()->view()->centerLongitude();
         }

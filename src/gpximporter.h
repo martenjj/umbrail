@@ -27,7 +27,7 @@ public:
     static QString filter();
 
     // ImporterBase
-    TrackDataFile *load(const KUrl &file);
+    TrackDataFile *load(const QUrl &file);
     bool needsResave() const;
 
     // QXmlContentHandler

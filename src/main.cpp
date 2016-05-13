@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	12-May-16						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -34,6 +34,7 @@
 
 #include <qapplication.h>
 #include <qcommandlineparser.h>
+#include <qurl.h>
 
 #include <kaboutdata.h>
 #include <klocalizedstring.h>

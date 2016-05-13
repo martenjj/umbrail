@@ -8,8 +8,7 @@
 #include <qstringlist.h>
 
 
-class KUrl;
-
+class QUrl;
 class ErrorRecord;
 
 
@@ -28,7 +27,7 @@ public:
     ErrorReporter();
     virtual ~ErrorReporter();
 
-    void setFile(const KUrl &file);
+    void setFile(const QUrl &file);
     void setError(ErrorReporter::Severity severity, const QString &message, int line = -1);
 
     ErrorReporter::Severity severity() const		{ return (mSeverity); }

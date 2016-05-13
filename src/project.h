@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	18-Jan-14						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -29,7 +29,7 @@
 #define PROJECT_H
 
 
-#include <kurl.h>
+#include <qurl.h>
 
 class KConfig;
 
@@ -97,12 +97,12 @@ public:
     /**
      * Get the project's file name.
      *
-     * @return The file name, or @c Kurl() if none has been set.
+     * @return The file name, or @c QUrl() if none has been set.
      *
      * @see hasFileName()
      * @see setFileName()
      **/
-    KUrl fileName() const			{ return (mSaveFile); }
+    QUrl fileName() const			{ return (mSaveFile); }
 
     /**
      * Check whether the project has a file name set (i.e. is valid).
@@ -122,7 +122,7 @@ public:
      * @see fileName()
      * @see hasFileName()
      **/
-    void setFileName(const KUrl &file);
+    void setFileName(const QUrl &file);
 
     /**
      * Save project data to a configuration file.
@@ -154,7 +154,7 @@ public:
 
 private:
     bool mModified;
-    KUrl mSaveFile;
+    QUrl mSaveFile;
 };
 
  

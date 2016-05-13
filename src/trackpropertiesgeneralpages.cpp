@@ -278,7 +278,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
     {
         TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items->first());
         Q_ASSERT(fileItem!=NULL);
-        mUrlRequester->setText(fileItem->fileName().pathOrUrl());
+        mUrlRequester->setText(fileItem->fileName().toDisplayString());
 
         QString zone = fileItem->metadata("timezone");
         if (!zone.isEmpty()) mTimeZoneSel->setTimeZone(zone);

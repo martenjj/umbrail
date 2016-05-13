@@ -35,7 +35,7 @@ GpxImporter::~GpxImporter()
 }
 
 
-TrackDataFile *GpxImporter::load(const KUrl &file)
+TrackDataFile *GpxImporter::load(const QUrl &file)
 {
     qDebug() << "from" << file;
     if (!ImporterBase::prepareLoadFile(file)) return (NULL);

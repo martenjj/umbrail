@@ -30,7 +30,7 @@
 #include <qevent.h>
 #include <qdebug.h>
 
-#include <kurl.h>
+//#include <kurl.h>
 #include <kservice.h>
 #include <kmimetype.h>
 #include <kmimetypetrader.h>
@@ -42,13 +42,13 @@
 #include "settings.h"
 
 
-PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
+PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
     : KParts::MainWindow(pnt, Qt::Window)
 {
     qDebug() << url;
 
     setObjectName("PhotoViewer");
-    setWindowTitle(i18n("Photo Viewer"));
+    setWindowTitle(i18nc("@title:window", "Photo Viewer"));
     setAttribute(Qt::WA_DeleteOnClose);
     setXMLFile("viewerui.rc");
 

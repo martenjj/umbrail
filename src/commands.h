@@ -337,14 +337,14 @@ public:
         : AddWaypointCommand(fc, parent)		{}
     virtual ~AddPhotoCommand()				{}
 
-    void setLink(const KUrl &link)			{ mLinkUrl = link; }
+    void setLink(const QUrl &link)			{ mLinkUrl = link; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
 
     void redo();
     void undo();
 
 private:
-    KUrl mLinkUrl;
+    QUrl mLinkUrl;
     QDateTime mDateTime;
 };
 

@@ -9,8 +9,9 @@
 #include <qdatetime.h>
 #include <qvector.h>
 
-#include <kurl.h>
+#include <qurl.h>
 
+class QWidget;
 class KTimeZone;
 class Style;
 class TrackDataItem;
@@ -152,7 +153,7 @@ namespace TrackData
     QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
 
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
-};
+}
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -235,8 +236,8 @@ public:
     TrackDataFile(const QString &nm);
     virtual ~TrackDataFile()				{}
 
-    KUrl fileName() const				{ return (mFileName); }
-    void setFileName(const KUrl &file)			{ mFileName = file; }
+    QUrl fileName() const				{ return (mFileName); }
+    void setFileName(const QUrl &file)			{ mFileName = file; }
     QString iconName() const;
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
@@ -245,7 +246,7 @@ public:
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 
 private:
-    KUrl mFileName;
+    QUrl mFileName;
 };
 
 //////////////////////////////////////////////////////////////////////////

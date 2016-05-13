@@ -29,7 +29,7 @@
 
 #include <qdebug.h>
 
-#include <kurl.h>
+//#include <kurl.h>
 #include <klocalizedstring.h>
 
 
@@ -52,7 +52,7 @@ void Project::setModified(bool mod)
 }
 
 
-void Project::setFileName(const KUrl &file)
+void Project::setFileName(const QUrl &file)
 {
     qDebug() << "file=" << file;
     mSaveFile = file;
@@ -82,6 +82,6 @@ QString Project::name(bool onlyIfValid) const
 
 void Project::clear()
 {
-    mSaveFile = KUrl();
+    mSaveFile = QUrl();
     mModified = false;
 }

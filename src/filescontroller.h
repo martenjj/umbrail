@@ -7,11 +7,9 @@
 #include "mainwindowinterface.h"
 
 #include <math.h>
-#include <kurl.h>
 
 class QDateTime;
-
-// class KConfig;
+class QUrl;
 
 class FilesView;
 class FilesModel;
@@ -57,9 +55,9 @@ public:
     void readProperties();
     void saveProperties();
 
-    FilesController::Status importFile(const KUrl &importFrom);
-    FilesController::Status exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
-    FilesController::Status importPhoto(const KUrl::List &urls);
+    FilesController::Status importFile(const QUrl &importFrom);
+    FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf);
+    FilesController::Status importPhoto(const QList<QUrl> &urls);
 
     static QString allImportFilters();
     static QString allExportFilters();
@@ -85,14 +83,14 @@ signals:
     void updateMap();
 
 private:
-    bool reportFileError(bool saving, const KUrl &file, const QString &msg);
-    bool reportFileError(bool saving, const KUrl &file, const ErrorReporter *rep);
+    bool reportFileError(bool saving, const QUrl &file, const QString &msg);
+    bool reportFileError(bool saving, const QUrl &file, const ErrorReporter *rep);
 
-    bool fileWarningsIgnored(const KUrl &file) const;
-    void setFileWarningsIgnored(const KUrl &file, bool ignore = true);
+    bool fileWarningsIgnored(const QUrl &file) const;
+    void setFileWarningsIgnored(const QUrl &file, bool ignore = true);
 
     bool adjustTimeSpec(QDateTime &dt);
-    FilesController::Status importPhotoInternal(const KUrl &importFrom, bool multiple);
+    FilesController::Status importPhotoInternal(const QUrl &importFrom, bool multiple);
 
 private slots:
     void slotUpdateActionState();

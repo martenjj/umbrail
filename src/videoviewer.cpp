@@ -35,7 +35,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kurl.h>
 #include <kpushbutton.h>
 
 #include <dialogstatesaver.h>
@@ -45,7 +44,7 @@
 #endif
 
 
-VideoViewer::VideoViewer(const KUrl &url, QWidget *pnt)
+VideoViewer::VideoViewer(const QUrl &url, QWidget *pnt)
     : QWidget(pnt)
 {
     qDebug() << url;

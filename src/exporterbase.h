@@ -9,8 +9,6 @@
 #include <ksavefile.h>
 
 
-
-class KUrl;
 class TrackDataFile;
 
 
@@ -20,10 +18,10 @@ public:
     ExporterBase();
     virtual ~ExporterBase();
 
-    virtual bool save(const KUrl &file, const TrackDataFile *item) = 0;
+    virtual bool save(const QUrl &file, const TrackDataFile *item) = 0;
 
 protected:
-    bool prepareSaveFile(const KUrl &file);
+    bool prepareSaveFile(const QUrl &file);
 
 protected:
     KSaveFile mSaveFile;
