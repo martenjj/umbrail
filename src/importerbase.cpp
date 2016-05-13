@@ -5,8 +5,8 @@
 #include <errno.h>
 
 #include <qfile.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kurl.h>
 
@@ -22,7 +22,7 @@
 ImporterBase::ImporterBase()
     : ImporterExporterBase()
 {
-    kDebug();
+    qDebug();
     mDataRoot = NULL;
     mFile = NULL;
 }
@@ -33,14 +33,14 @@ ImporterBase::~ImporterBase()
 {
     delete mFile;
     // Do not delete mDataRoot, it is owned by caller
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 
 bool ImporterBase::prepareLoadFile(const KUrl &file)
 {
-    kDebug() << "from" << file;
+    qDebug() << "from" << file;
 
     reporter()->setFile(file);
 
@@ -67,12 +67,12 @@ bool ImporterBase::prepareLoadFile(const KUrl &file)
 #ifdef DEBUG_IMPORT
 static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
 {
-    kDebug() << source.toLatin1().constData();
+    qDebug() << source.toLatin1().constData();
     for (int i = 0; i<DataIndexer::self()->count(); ++i)
     {
         QString s =  tdd->metadata(i);
         if (s.isEmpty()) continue;
-        kDebug() << "  " << i << DataIndexer::self()->name(i) << "=" << s;
+        qDebug() << "  " << i << DataIndexer::self()->name(i) << "=" << s;
     }
 }
 #endif

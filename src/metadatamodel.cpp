@@ -1,7 +1,8 @@
 
 #include "metadatamodel.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
@@ -19,7 +20,7 @@ enum COLUMN
 MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     : QAbstractItemModel(pnt)
 {
-    kDebug() << "for" << item->name();
+    qDebug() << "for" << item->name();
     mItem = item;
 }
 

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	12-May-16						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -28,8 +28,8 @@
 #include "photoviewer.h"
 
 #include <qevent.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <kurl.h>
 #include <kservice.h>
 #include <kmimetype.h>
@@ -45,7 +45,7 @@
 PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
     : KParts::MainWindow(pnt, Qt::Window)
 {
-    kDebug() << url;
+    qDebug() << url;
 
     setObjectName("PhotoViewer");
     setWindowTitle(i18n("Photo Viewer"));
@@ -55,25 +55,25 @@ PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
     KService::Ptr service;
 
     QString viewMode = Settings::photoViewMode();	// selected view mode from settings
-    kDebug() << "view mode from settings" << viewMode;
+    qDebug() << "view mode from settings" << viewMode;
     if (!viewMode.isEmpty())				// if there is one,
     {							// get the service from that
         if (viewMode.endsWith(".desktop")) viewMode.chop(8);
         service = KService::serviceByDesktopName(viewMode);
         if (service==nullptr)
         {
-            kWarning() << "Viewer part" << viewMode << "not available";
+            qWarning() << "Viewer part" << viewMode << "not available";
             return;
         }
     }
     else
     {
         KMimeType::Ptr mimeType = KMimeType::findByUrl(url);
-        kDebug() << "mime type" << mimeType->name();	// get services for MIME type
+        qDebug() << "mime type" << mimeType->name();	// get services for MIME type
         KService::List services = KMimeTypeTrader::self()->query(mimeType->name(), "KParts/ReadOnlyPart");
         if (services.isEmpty())
         {
-            kWarning() << "No viewer parts available for" << mimeType->name();
+            qWarning() << "No viewer parts available for" << mimeType->name();
             return;
         }
 
@@ -81,13 +81,13 @@ PhotoViewer::PhotoViewer(const KUrl &url, QWidget *pnt)
     }
 
     Q_ASSERT(service!=nullptr);
-    kDebug() << "  service" << service->name() << "id" << service->storageId();
+    qDebug() << "  service" << service->name() << "id" << service->storageId();
 
     // from https://techbase.kde.org/Development/Tutorials/Using_KParts
     mPart = service->createInstance<KParts::ReadOnlyPart>(NULL);
     if (mPart==NULL)
     {
-        kWarning() << "Unable to create viewer part";
+        qWarning() << "Unable to create viewer part";
         return;
     }
 
@@ -115,7 +115,7 @@ void PhotoViewer::keyPressEvent(QKeyEvent *ev)
 
 PhotoViewer::~PhotoViewer()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -136,7 +136,7 @@ PhotoViewer::~PhotoViewer()
 
 void PhotoViewer::fixupMenuBar(QMenuBar *bar)
 {
-    kDebug();
+    qDebug();
 
     QAction *sepAct = NULL;
     QAction *helpAct = NULL;
@@ -146,10 +146,10 @@ void PhotoViewer::fixupMenuBar(QMenuBar *bar)
     for (int i = 0; i<acts.count(); ++i)
     {
         QAction *act = acts[i];
-        //kDebug() << "act" << i << act->text() << "menu?" << (act->menu()!=NULL);
+        //qDebug() << "act" << i << act->text() << "menu?" << (act->menu()!=NULL);
         if (sepAct==NULL && act->text().isEmpty())			// the separator?
         {
-            kDebug() << "separator found at" << i;
+            qDebug() << "separator found at" << i;
             sepAct = act;
             if (i>0) settAct = acts[i-1];
             continue;
@@ -157,7 +157,7 @@ void PhotoViewer::fixupMenuBar(QMenuBar *bar)
 
         if (sepAct!=NULL && helpAct==NULL)
         {
-            kDebug() << "help" << act->text() << "found at" << i;
+            qDebug() << "help" << act->text() << "found at" << i;
             helpAct = act;
             break;
         }
@@ -165,21 +165,21 @@ void PhotoViewer::fixupMenuBar(QMenuBar *bar)
 
     if (settAct!=NULL)
     {
-        kDebug() << "moving settings to end";
+        qDebug() << "moving settings to end";
         bar->removeAction(settAct);
         bar->addAction(settAct);
     }
 
     if (sepAct!=NULL)
     {
-        kDebug() << "moving separator to end";
+        qDebug() << "moving separator to end";
         bar->removeAction(sepAct);
         bar->addAction(sepAct);
     }
 
     if (helpAct!=NULL)
     {
-        kDebug() << "moving help to end";
+        qDebug() << "moving help to end";
         bar->removeAction(helpAct);
         bar->addAction(helpAct);
     }

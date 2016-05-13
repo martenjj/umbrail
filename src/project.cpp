@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	13-Feb-14						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,14 +27,15 @@
 
 #include "project.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <kurl.h>
 #include <klocalizedstring.h>
 
 
 Project::Project()
 {
-    kDebug();
+    qDebug();
     clear();
 }
 
@@ -46,28 +47,28 @@ Project::~Project()
 
 void Project::setModified(bool mod)
 {
-    kDebug() << "mod=" << mod;
+    qDebug() << "mod=" << mod;
     mModified = mod;
 }
 
 
 void Project::setFileName(const KUrl &file)
 {
-    kDebug() << "file=" << file;
+    qDebug() << "file=" << file;
     mSaveFile = file;
 }
 
 
 QString Project::save(KConfig *conf)
 {
-    kDebug();
+    qDebug();
     return (QString::null);
 }
 
 
 QString Project::load(const KConfig *conf)
 {
-    kDebug();
+    qDebug();
     return (QString::null);
 }
 

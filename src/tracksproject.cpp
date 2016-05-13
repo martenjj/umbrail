@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	18-Jan-14						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,10 +27,8 @@
 
 #include "tracksproject.h"
 
-#include <kdebug.h>
-//#include <kurl.h>
-//#include <klocalizedstring.h>
-//#include <kmimetype.h>
+#include <qdebug.h>
+
 #include <kconfig.h>
 #include <kconfiggroup.h>
 
@@ -41,7 +39,7 @@
 TracksProject::TracksProject()
     : Project()
 {
-    kDebug();
+    qDebug();
 }
 
 
@@ -52,13 +50,13 @@ TracksProject::~TracksProject()
 
 QString TracksProject::save(KConfig *conf)
 {
-    kDebug();
+    qDebug();
 
     KConfigGroup grp = conf->group(FILES_GROUP);
     for (int i = 0; i<mFileList.count(); ++i)
     {
         const KUrl file = mFileList[i];
-        kDebug() << file;
+        qDebug() << file;
         grp.writeEntry(QString::number(i), file);
     }
 
@@ -68,14 +66,14 @@ QString TracksProject::save(KConfig *conf)
 
 QString TracksProject::load(const KConfig *conf)
 {
-    kDebug();
+    qDebug();
 
     const KConfigGroup grp = conf->group(FILES_GROUP);
     for (int i = 0; ; ++i)
     {
         KUrl file = grp.readEntry(QString::number(i), KUrl());
         if (!file.isValid()) break;
-        kDebug() << file;
+        qDebug() << file;
         mFileList.append(file);
     }
 
@@ -92,7 +90,7 @@ void TracksProject::clear()
 
 void TracksProject::addFile(const KUrl &file)
 {
-    kDebug() << file;
+    qDebug() << file;
 
     if (mFileList.contains(file)) mFileList.removeAll(file);
     mFileList.append(file);

@@ -13,8 +13,8 @@
 #include <qpushbutton.h>
 #include <qcursor.h>
 #include <qlineedit.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kseparator.h>
 #include <ktimezone.h>
@@ -148,13 +148,13 @@ StopDetectDialogue::~StopDetectDialogue()
 {
     mapController()->view()->setStopLayerData(NULL);
     qDeleteAll(mResultPoints);
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 void StopDetectDialogue::showEvent(QShowEvent *ev)
 {
-    kDebug();
+    qDebug();
     QTimer::singleShot(0, this, SLOT(slotDetectStops()));
 }
 
@@ -167,7 +167,7 @@ void StopDetectDialogue::slotShowOnMap()
 
     TrackDataWaypoint *tdw = const_cast<TrackDataWaypoint *>(mResultPoints[idx]);
 
-    kDebug() << "index" << idx << tdw->name();
+    qDebug() << "index" << idx << tdw->name();
 
     QList<TrackDataItem *> its;
     its.append(static_cast<TrackDataItem *>(tdw));
@@ -205,12 +205,12 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataTrack
 
 void StopDetectDialogue::slotDetectStops()
 {
-    kDebug() << "starting";
+    qDebug() << "starting";
 
     const int minTime = mTimeSlider->value();
     const int maxDist = mDistanceSlider->value();
     const int noise = mNoiseSlider->value();
-    kDebug() << "minTime" << minTime << "maxDist" << maxDist << "noise" << noise;
+    qDebug() << "minTime" << minTime << "maxDist" << maxDist << "noise" << noise;
 
     setCursor(Qt::BusyCursor);
 
@@ -226,10 +226,10 @@ void StopDetectDialogue::slotDetectStops()
 
     const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
     for (int i = 0; i<items.count(); ++i) getPointData(items[i], &inputPoints);
-    kDebug() << "total points" << inputPoints.count();
+    qDebug() << "total points" << inputPoints.count();
     if (inputPoints.count()<minInputPoints)
     {
-        kDebug() << "not enough points!";
+        qDebug() << "not enough points!";
         unsetCursor();
         return;
     }
@@ -261,7 +261,7 @@ void StopDetectDialogue::slotDetectStops()
     {
         if (startIndex>=inputPoints.count()) break;	// reached end of points list
 
-        kDebug() << "### loop2: startIndex" << startIndex;
+        qDebug() << "### loop2: startIndex" << startIndex;
 
         pnt = inputPoints[startIndex];			// initial point in run
         double runLat = pnt->latitude();		// centre of current run
@@ -277,36 +277,36 @@ void StopDetectDialogue::slotDetectStops()
 
         for (;;)					// loop 1: looking for a run
         {
-            kDebug() << "### loop1: currentIndex" << currentIndex;
+            qDebug() << "### loop1: currentIndex" << currentIndex;
 
             int foundIndex = -1;			// index of found point
             for (int i = 0; i<=noise; ++i)
             {
                 int searchIndex = currentIndex+1+i;	// index of point being checked
-                kDebug() << "  looking at searchIndex" << searchIndex;
+                qDebug() << "  looking at searchIndex" << searchIndex;
 
                 if (searchIndex>=inputPoints.count()) break;
 							// end of points list
                 pnt = inputPoints[searchIndex];
                 if (withinDistance(pnt, runLat, runLon, maxDist))
                 {					// within distance tolerance?
-                    kDebug() << "  within distance tol";
+                    qDebug() << "  within distance tol";
                     foundIndex = searchIndex;
                     break;
                 }
-                else kDebug() << "  not within tol";
+                else qDebug() << "  not within tol";
             }
 
-            kDebug() << "### foundIndex" << foundIndex;
+            qDebug() << "### foundIndex" << foundIndex;
 
             if (foundIndex<0) break; // loop1
 
             // startIndex = index of start of this run
             // foundIndex = index of end of this run
 
-            kDebug() << "run found from startIndex" << startIndex << "to foundIndex" << foundIndex;
+            qDebug() << "run found from startIndex" << startIndex << "to foundIndex" << foundIndex;
             pnt = inputPoints[startIndex];
-            kDebug() << "  start point" << pnt->name() << "found point" << inputPoints[foundIndex]->name();
+            qDebug() << "  start point" << pnt->name() << "found point" << inputPoints[foundIndex]->name();
 
 #ifdef MOVING_AVERAGING
             pnt = inputPoints[foundIndex];
@@ -314,7 +314,7 @@ void StopDetectDialogue::slotDetectStops()
             sumLon += pnt->longitude();
             ++sumNum;
 
-            kDebug() << "average now of" << sumNum << "points";
+            qDebug() << "average now of" << sumNum << "points";
             runLat = sumLat/sumNum;
             runLon = sumLon/sumNum;
 #else // MOVING_AVERAGING
@@ -330,14 +330,14 @@ void StopDetectDialogue::slotDetectStops()
                  pnt = inputPoints[i];
                  if (withinDistance(pnt, refLat, refLon, maxDist))
                  {
-                     kDebug() << "  including" << i << "in average";
+                     qDebug() << "  including" << i << "in average";
                      lat += pnt->latitude();
                      lon += pnt->longitude();
                      ++num;
                  }
              }
  
-             kDebug() << "average of" << num << "points";
+             qDebug() << "average of" << num << "points";
              runLat = lat/num;
              runLon = lon/num;
 #endif // MOVING_AVERAGING
@@ -350,21 +350,21 @@ void StopDetectDialogue::slotDetectStops()
 
         if ((currentIndex-startIndex)>=minStopPoints)
         {
-            kDebug() << "******** stop found from startIndex" << startIndex << "to currentIndex" << currentIndex;
+            qDebug() << "******** stop found from startIndex" << startIndex << "to currentIndex" << currentIndex;
 
             const TrackDataTrackpoint *startPoint = inputPoints[startIndex];
             const TrackDataTrackpoint *endPoint = inputPoints[currentIndex];
 
-            kDebug() << "  start point" << startPoint->name() << "end point" << endPoint->name();
+            qDebug() << "  start point" << startPoint->name() << "end point" << endPoint->name();
 
             QDateTime dt1(startPoint->time());
             QDateTime dt2(endPoint->time());
             const int dur = dt1.secsTo(dt2);
-            kDebug() << "  duration" << dur;
+            qDebug() << "  duration" << dur;
 
             if (dur>=minTime)				// longer than threshold?
             {
-                kDebug() << "@@@@@@@@@@@ valid stop found";
+                qDebug() << "@@@@@@@@@@@ valid stop found";
 							// do time zone conversion
                 if (tz.isValid()) dt1 = tz.toZoneTime(dt1.toUTC());
 
@@ -380,15 +380,15 @@ void StopDetectDialogue::slotDetectStops()
 
                 startIndex = currentIndex;		// start search again after stop
             }
-            else kDebug() << "time too short";
+            else qDebug() << "time too short";
         }
-        else kDebug() << "not enough points";
+        else qDebug() << "not enough points";
 
         ++startIndex;					// start search again from next
     } // loop2
 
     const int num = mResultPoints.count();
-    kDebug() << "###### found" << num << "stops";
+    qDebug() << "###### found" << num << "stops";
 
 
 
@@ -420,7 +420,7 @@ void StopDetectDialogue::slotDetectStops()
     mapController()->view()->setStopLayerData(&mResultPoints);
     unsetCursor();
 
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -441,7 +441,7 @@ void StopDetectDialogue::slotSetButtonStates()
 
 void StopDetectDialogue::slotCommitResults()
 {
-    kDebug();
+    qDebug();
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
     cmd->setText(i18n("Locate Stops"));

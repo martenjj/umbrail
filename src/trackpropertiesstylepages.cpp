@@ -3,8 +3,8 @@
 
 #include <qformlayout.h>
 #include <qcheckbox.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kglobal.h>
 #include <kcolorbutton.h>
@@ -24,14 +24,14 @@
 TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackItemStylePage");
 
     addSeparatorField();
 
     const TrackDataItem *item = items->first();
     const Style *s = item->style();
-    kDebug() << "initial style" << *s;
+    qDebug() << "initial style" << *s;
 
     mLineColourButton = new KColorButton(MapView::resolveLineColour(item), this);
     mLineColourButton->setAlphaChannelEnabled(false);
@@ -83,7 +83,7 @@ const Style TrackItemStylePage::newStyle() const
 TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFileStylePage");
 
     mLineInheritCheck->setText(i18n("Use application default"));
@@ -98,7 +98,7 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWid
 TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackTrackStylePage");
 }
 
@@ -110,7 +110,7 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QW
 TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackSegmentStylePage");
 }
 
@@ -122,7 +122,7 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items
 TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackPointStylePage");
 }
 
@@ -131,7 +131,7 @@ TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> 
 TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFolderStylePage");
 }
 
@@ -140,7 +140,7 @@ TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> *items, 
 TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackWaypointStylePage");
 }
 

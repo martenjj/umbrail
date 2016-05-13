@@ -4,8 +4,8 @@
 #include <qaction.h>
 #include <qmetaobject.h>
 #include <qapplication.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 
 #include "filesmodel.h"
@@ -71,7 +71,7 @@ ItemContainer::ItemContainer()
     : TrackDataItem(QString::null, "container_%04d", &containerCounter)
 {
 #ifdef DEBUG_ITEMS
-    kDebug() << "created" << name();
+    qDebug() << "created" << name();
 #endif
 }
 
@@ -79,16 +79,16 @@ ItemContainer::ItemContainer()
 ItemContainer::~ItemContainer()
 {
 #ifdef DEBUG_ITEMS
-    kDebug() << "destroying" << name();
+    qDebug() << "destroying" << name();
 #endif
     for (int i = 0; i<childCount(); ++i)
     {
 #ifdef DEBUG_ITEMS
-        kDebug() << "  child" << childAt(i)->name();
+        qDebug() << "  child" << childAt(i)->name();
 #endif
     }
 #ifdef DEBUG_ITEMS
-    kDebug() << "done";
+    qDebug() << "done";
 #endif
 }
 
@@ -152,7 +152,7 @@ void ImportFileCommand::redo()
 {
     Q_ASSERT(mImportData!=NULL);
     mSavedCount = mImportData->childCount();		// how many tracks contained
-    kDebug() << "from" << mImportData->name() << "count" << mSavedCount;
+    qDebug() << "from" << mImportData->name() << "count" << mSavedCount;
 
     TrackDataFile *root = model()->rootFileItem();
     if (root==NULL)					// no data in model yet
@@ -207,7 +207,7 @@ void ImportFileCommand::undo()
         Q_ASSERT(mImportData->childCount()==mSavedCount);
     }
 
-    kDebug() << "saved" << mImportData->name() << "children" << mImportData->childCount();
+    qDebug() << "saved" << mImportData->name() << "children" << mImportData->childCount();
 
     controller()->view()->clearSelection();
     updateMap();
@@ -235,7 +235,7 @@ void ChangeItemNameCommand::redo()
     TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
     mSavedName = item->name();
-    kDebug() << "item" << mSavedName << "->" << mNewName;
+    qDebug() << "item" << mSavedName << "->" << mNewName;
 
     item->setName(mNewName);
     model()->changedItem(item);
@@ -248,7 +248,7 @@ void ChangeItemNameCommand::undo()
     Q_ASSERT(mDataItems.count()==1);
     TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
-    kDebug() << "item" << item->name() << "back to" << mSavedName;
+    qDebug() << "item" << item->name() << "back to" << mSavedName;
 
     item->setName(mSavedName);
     model()->changedItem(item);
@@ -261,7 +261,7 @@ void ChangeItemStyleCommand::redo()
     Q_ASSERT(mDataItems.count()==1);
     TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
-    kDebug() << "item" << item->name() << "->" << mNewStyle.toString();
+    qDebug() << "item" << item->name() << "->" << mNewStyle.toString();
 
     mSavedStyle = *item->style();			// save original item style
     item->setStyle(mNewStyle);				// set new item style
@@ -276,7 +276,7 @@ void ChangeItemStyleCommand::undo()
     Q_ASSERT(mDataItems.count()==1);
     TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
-    kDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
+    qDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
 
     item->setStyle(mSavedStyle);			// restore original style
 
@@ -294,7 +294,7 @@ void ChangeItemDataCommand::redo()
     {
         TrackDataItem *item = (*it);
         Q_ASSERT(item!=NULL);
-        kDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
+        qDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
 
         mSavedValues.append(item->metadata(idx));
         item->setMetadata(idx, mNewValue);
@@ -316,7 +316,7 @@ void ChangeItemDataCommand::undo()
         TrackDataItem *item = (*it);
         Q_ASSERT(item!=NULL);
         QString savedValue = mSavedValues.takeFirst();
-        kDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
+        qDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
         item->setMetadata(idx, savedValue);
         model()->changedItem(item);
 
@@ -401,7 +401,7 @@ void SplitSegmentCommand::redo()
     Q_ASSERT(newSegment!=NULL);
 
     int takeFrom = mSplitIndex+1;
-    kDebug() << "from" << mParentSegment->name() << "start" << takeFrom << "->" << newSegment->name();
+    qDebug() << "from" << mParentSegment->name() << "start" << takeFrom << "->" << newSegment->name();
 
     // Move child items following the split index to the receiving item
     while (mParentSegment->childCount()>takeFrom)
@@ -414,7 +414,7 @@ void SplitSegmentCommand::redo()
     TrackDataItem *parentItem = mParentSegment->parent();
     int parentIndex = (parentItem->childIndex(mParentSegment)+1);
     Q_ASSERT(parentItem!=NULL);
-    kDebug() << "add" << newSegment->name() << "to" << parentItem->name() << "as index" << parentIndex;
+    qDebug() << "add" << newSegment->name() << "to" << parentItem->name() << "as index" << parentIndex;
     parentItem->addChildItem(newSegment, parentIndex);
 
     model()->endLayoutChange();
@@ -441,7 +441,7 @@ void SplitSegmentCommand::undo()
     TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(parentItem->childAt(parentIndex+1));
 
     const int startIndex = 1;				// all apart from first point
-    kDebug() << "from" << newSegment->name() << "count" << newSegment->childCount()
+    qDebug() << "from" << newSegment->name() << "count" << newSegment->childCount()
              << "->" << mParentSegment->name();
 
     // Append all the added segment's child items, apart from the first,
@@ -453,7 +453,7 @@ void SplitSegmentCommand::undo()
     }
 
     // Remove and reclaim the now (effectively) empty source item
-    kDebug() << "remove" << newSegment->name() << "from" << parentItem->name();
+    qDebug() << "remove" << newSegment->name() << "from" << parentItem->name();
     parentItem->removeChildItem(newSegment);
     mNewSegmentContainer->addChildItem(newSegment);
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
@@ -525,7 +525,7 @@ void MergeSegmentsCommand::redo()
         mSourceParents[i] = parent;
         mSourceIndexes[i] = parent->childIndex(item);
 
-        kDebug() << "from" << item->name() << "count" << item->childCount()
+        qDebug() << "from" << item->name() << "count" << item->childCount()
                  << "->" << mMasterSegment->name();
 
         // Append all the source segment's child items to the master segment
@@ -538,7 +538,7 @@ void MergeSegmentsCommand::redo()
         // Remove and adopt the now empty source segment
         TrackDataItem *parentItem = item->parent();
         Q_ASSERT(parentItem!=NULL);
-        kDebug() << "remove" << item->name() << "from" << parentItem->name();
+        qDebug() << "remove" << item->name() << "from" << parentItem->name();
         parentItem->removeChildItem(item);
         mSavedSegmentContainer->addChildItem(item);
     }
@@ -573,7 +573,7 @@ void MergeSegmentsCommand::undo()
         // originally belonged to the former 'item' segment.
 
         int takeFrom = mMasterSegment->childCount()-num;
-        kDebug() << "from" << mMasterSegment->name()  << "start" << takeFrom
+        qDebug() << "from" << mMasterSegment->name()  << "start" << takeFrom
                  << "->" << item->name();
 
         // Move child items following the split index to the original source item
@@ -588,7 +588,7 @@ void MergeSegmentsCommand::undo()
         const int idx = mSourceIndexes[i];
         TrackDataItem *parent = mSourceParents[i];
         Q_ASSERT(parent!=NULL);
-        kDebug() << "add to" << parent->name() << "as index" << idx;
+        qDebug() << "add to" << parent->name() << "as index" << idx;
         parent->addChildItem(item, idx);
     }
 
@@ -664,7 +664,7 @@ void AddContainerCommand::redo()
         }
         Q_ASSERT(addedItem!=NULL);
 
-        kDebug() << "created" << addedItem->name();
+        qDebug() << "created" << addedItem->name();
         mNewItemContainer->addChildItem(addedItem);
     }
 
@@ -752,7 +752,7 @@ void AddPointCommand::redo()
         double lon = (mAtPoint->longitude()+prevPoint->longitude())/2;
         copyPoint->setLatLong(lat, lon);		// interpolate position
 
-        kDebug() << "created" << copyPoint->name();
+        qDebug() << "created" << copyPoint->name();
         mNewPointContainer->addChildItem(copyPoint);
     }
 
@@ -838,7 +838,7 @@ void MoveItemCommand::redo()
         int idx = par->childIndex(item);
         mParentIndexes[i] = idx;
 
-        kDebug() << "move" << item->name()
+        qDebug() << "move" << item->name()
                  << "from" << par->name() << "index" << idx
                  << "->" << mDestination->name();
 
@@ -870,7 +870,7 @@ void MoveItemCommand::undo()
         TrackDataItem *par = mParentItems[i];
         int idx = mParentIndexes[i];
 
-        kDebug() << "move" << item->name() << "from" << mDestination->name()
+        qDebug() << "move" << item->name() << "from" << mDestination->name()
                  << "->" << par->name() << "index" << idx;
 
         mDestination->removeChildItem(item);

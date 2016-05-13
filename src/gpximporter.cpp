@@ -5,8 +5,8 @@
 
 #include <qxml.h>
 #include <qcolor.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kurl.h>
 
@@ -25,19 +25,19 @@
 GpxImporter::GpxImporter()
     : ImporterBase()
 {
-    kDebug();
+    qDebug();
 }
 
 
 GpxImporter::~GpxImporter()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 TrackDataFile *GpxImporter::load(const KUrl &file)
 {
-    kDebug() << "from" << file;
+    qDebug() << "from" << file;
     if (!ImporterBase::prepareLoadFile(file)) return (NULL);
 
     // prepare to read into 'mDataRoot'
@@ -68,7 +68,7 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
     bool ok = xmlReader.parse(xmlSource);
     if (!ok)
     {
-        kDebug() << "XML parsing failed!";
+        qDebug() << "XML parsing failed!";
         delete mDataRoot; mDataRoot = NULL;
     }
 
@@ -129,7 +129,7 @@ TrackDataItem *GpxImporter::currentItem() const
 TrackDataFolder *GpxImporter::createFolder(const QString &path)
 {
 #ifdef DEBUG_DETAILED
-    kDebug() << path;
+    qDebug() << path;
 #endif
 
     QStringList folders = path.split("/");
@@ -143,7 +143,7 @@ TrackDataFolder *GpxImporter::createFolder(const QString &path)
         foundFolder = cur->findChildFolder(name);
         if (foundFolder==NULL)				// nothing existing found
         {
-            kDebug() << "creating folder" << name << "under" << cur->name();
+            qDebug() << "creating folder" << name << "under" << cur->name();
             foundFolder = new TrackDataFolder(name);
             cur->addChildItem(foundFolder);
         }
@@ -182,7 +182,7 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 
 bool GpxImporter::startDocument()
 {
-    kDebug() << "start document";
+    qDebug() << "start document";
 #ifdef DEBUG_DETAILED
     qDebug() << endl << indent().constData() << "START DOCUMENT";
 #endif
@@ -384,7 +384,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else if (localName=="metadata")			// end of a METADATA element
     {
 #ifdef DEBUG_DETAILED
-        kDebug() << "got end of METADATA";
+        qDebug() << "got end of METADATA";
 #endif
         mWithinMetadata = false;
         return (true);
@@ -392,7 +392,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else if (localName=="extensions")			// end of an EXTENSIONS element
     {
 #ifdef DEBUG_DETAILED
-        kDebug() << "got end of EXTENSIONS";
+        qDebug() << "got end of EXTENSIONS";
 #endif
         mWithinExtensions = false;
         return (true);
@@ -407,14 +407,14 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         if (mCurrentSegment!=NULL)			// segment not closed
         {						// (may be an implied one)
 #ifdef DEBUG_IMPORT
-            kDebug() << "got implied TRKSEG:" << mCurrentSegment->name();
+            qDebug() << "got implied TRKSEG:" << mCurrentSegment->name();
 #endif
             mCurrentTrack->addChildItem(mCurrentSegment);
             mCurrentSegment = NULL;			// finished with temporary
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a TRK:" << mCurrentTrack->name();
+        qDebug() << "got a TRK:" << mCurrentTrack->name();
 #endif
         mDataRoot->addChildItem(mCurrentTrack);
         mCurrentTrack = NULL;				// finished with temporary
@@ -428,7 +428,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a TRKSEG:" << mCurrentSegment->name();
+        qDebug() << "got a TRKSEG:" << mCurrentSegment->name();
 #endif
         mCurrentTrack->addChildItem(mCurrentSegment);
         mCurrentSegment = NULL;				// finished with temporary
@@ -442,7 +442,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a TRKPT:" << mCurrentPoint->name();
+        qDebug() << "got a TRKPT:" << mCurrentPoint->name();
 #endif
         Q_ASSERT(mCurrentSegment!=NULL || mCurrentTrack!=NULL);
         if (mCurrentSegment!=NULL) mCurrentSegment->addChildItem(mCurrentPoint);
@@ -458,7 +458,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a WPT:" << mCurrentWaypoint->name();
+        qDebug() << "got a WPT:" << mCurrentWaypoint->name();
 #endif
 
         if (mCurrentWaypoint->isMediaType())
@@ -591,7 +591,7 @@ bool GpxImporter::endDocument()
         warning(makeXmlException("Undefined XML namespaces, re-save file to correct"));
     }
 
-    kDebug() << "end document";
+    qDebug() << "end document";
     return (true);
 }
 

@@ -5,8 +5,8 @@
 #include <qsortfilterproxymodel.h>
 #include <qevent.h>
 #include <qmenu.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kxmlguifactory.h>
 
@@ -20,7 +20,7 @@ FilesView::FilesView(QWidget *pnt)
     : QTreeView(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
+    qDebug();
 
     setObjectName("FilesView");
 
@@ -73,13 +73,13 @@ FilesView::FilesView(QWidget *pnt)
 
 FilesView::~FilesView()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 void FilesView::readProperties()
 {
-    kDebug();
+    qDebug();
 
 #ifdef SORTABLE_VIEW
     QString colStates = Settings::filesViewColumnStates();
@@ -93,7 +93,7 @@ void FilesView::readProperties()
 
 void FilesView::saveProperties()
 {
-    kDebug();
+    qDebug();
 
     Settings::setFilesViewColumnStates(header()->saveState().toHex());
 }
@@ -105,7 +105,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     QTreeView::selectionChanged(sel, desel);		// visually update
 
     ++mSelectionId;					// invalidate previous selection
-    kDebug() << "selection ID is now" << mSelectionId;
+    qDebug() << "selection ID is now" << mSelectionId;
 
     //   int numSelected		how many rows are selected
     //
@@ -251,7 +251,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 //
 //void FilesView::selectRows(const QList<int> &rows)
 //{
-//    kDebug() << rows;
+//    qDebug() << rows;
 //
 //    selectionModel()->reset();
 //    if (!rows.isEmpty())
@@ -261,7 +261,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 //
 //        for (int i = 0; i<rows.count(); ++i)
 //        {
-//            kDebug() << "selecting row" << rows[i];
+//            qDebug() << "selecting row" << rows[i];
 //            selectionModel()->select(pm->mapFromSource(sm->index(rows[i], 0)),
 //                                     QItemSelectionModel::Select|QItemSelectionModel::Rows);
 //        }
@@ -273,7 +273,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 //
 //void FilesView::selectRows(int fromRow, int toRow)
 //{
-//    kDebug() << fromRow << "-" << toRow;
+//    qDebug() << fromRow << "-" << toRow;
 //
 //    QAbstractProxyModel *pm = static_cast<QAbstractProxyModel *>(model());
 //    QAbstractItemModel *sm = pm->sourceModel();
@@ -281,7 +281,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 //    selectionModel()->reset();
 //    for (int i = fromRow; i<=toRow; ++i)
 //    {
-//        kDebug() << "selecting row" << i;
+//        qDebug() << "selecting row" << i;
 //        selectionModel()->select(pm->mapFromSource(sm->index(i, 0)),
 //                                 QItemSelectionModel::Select|QItemSelectionModel::Rows);
 //    }
@@ -345,7 +345,7 @@ void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
 void FilesView::selectItem(const TrackDataItem *item, bool combine)
 {
     QModelIndex idx = qobject_cast<FilesModel *>(model())->indexForItem(item);
-    kDebug() << "index" << idx << "combine?" << combine;
+    qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;
 
     if (!combine) selectionModel()->clear();

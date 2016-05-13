@@ -4,8 +4,8 @@
 #include <qboxlayout.h>
 #include <qpushbutton.h>
 #include <qlineedit.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 
 #include "mainwindow.h"

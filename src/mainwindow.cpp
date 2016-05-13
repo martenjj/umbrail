@@ -14,8 +14,8 @@
 #include <qclipboard.h>
 #include <qmimedata.h>
 #include <qstatusbar.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kaction.h>
 #include <ktoggleaction.h>
@@ -57,7 +57,7 @@ static const char notUsefulOverlays[] = "elevationprofile,GpsInfo,routing,speedo
 MainWindow::MainWindow(QWidget *pnt)
     : KXmlGuiWindow(pnt)
 {
-    kDebug();
+    qDebug();
 
     setObjectName("MainWindow");
     init();
@@ -120,7 +120,7 @@ MainWindow::~MainWindow()
 {
     delete mProject;
 
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -443,7 +443,7 @@ default:						// cancelled
 // or to unique window/file ID
 void MainWindow::saveProperties(KConfigGroup &grp)
 {
-    kDebug() << "to" << grp.name();
+    qDebug() << "to" << grp.name();
     KMainWindow::saveProperties(grp);
 
     mapController()->saveProperties();
@@ -458,7 +458,7 @@ void MainWindow::saveProperties(KConfigGroup &grp)
 
 void MainWindow::readProperties(const KConfigGroup &grp)
 {
-    kDebug() << "from" << grp.name();
+    qDebug() << "from" << grp.name();
     KMainWindow::readProperties(grp);
 
     mapController()->readProperties();
@@ -473,7 +473,7 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 // Error reporting and status messages are done in FilesController::exportFile()
 bool MainWindow::save(const KUrl &to)
 {
-    kDebug() << "to" << to;
+    qDebug() << "to" << to;
 
     if (!to.isValid() || !to.hasPath()) return (false);	// should never happen
     QDir d(to.path());					// should be absolute already,
@@ -499,7 +499,7 @@ bool MainWindow::save(const KUrl &to)
 // Error reporting and status messages are done in FilesController::importFile()
 FilesController::Status MainWindow::load(const KUrl &from)
 {
-    kDebug() << "from" << from;
+    qDebug() << "from" << from;
 
     // TODO: allow non-local files
     if (!from.isValid() || !from.hasPath()) return (FilesController::StatusFailed);
@@ -514,7 +514,7 @@ FilesController::Status MainWindow::load(const KUrl &from)
     if (tdf!=NULL)
     {
         QString s = tdf->metadata("position");
-        kDebug() << "pos metadata" << s;
+        qDebug() << "pos metadata" << s;
         mapController()->view()->blockSignals(true);	// no status bar update from zooming
         if (!s.isEmpty())
         {
@@ -572,7 +572,7 @@ void MainWindow::slotOpenProject()
 bool MainWindow::loadProject(const KUrl &loadFrom)
 {
     if (!loadFrom.isValid()) return (false);
-    kDebug() << "from" << loadFrom;
+    qDebug() << "from" << loadFrom;
 
     FilesController::Status status = load(loadFrom);	// load in data file
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (false);
@@ -595,7 +595,7 @@ void MainWindow::slotSaveProject()
     }
 
     KUrl projectFile = mProject->fileName();
-    kDebug() << "to" << projectFile;
+    qDebug() << "to" << projectFile;
 
     if (save(projectFile))
     {
@@ -683,7 +683,7 @@ void MainWindow::slotUpdateActionState()
 {
     int selCount = filesController()->view()->selectedCount();
     TrackData::Type selType = filesController()->view()->selectedType();
-    kDebug() << "selected" << selCount << "type" << selType;
+    qDebug() << "selected" << selCount << "type" << selType;
 
     bool propsEnabled = false;
     bool profileEnabled = false;
@@ -860,31 +860,31 @@ default:
 
 void MainWindow::slotCanUndoChanged(bool can)
 {
-    kDebug() << can;
+    qDebug() << can;
     mUndoAction->setEnabled(can);
 }
 
 void MainWindow::slotCanRedoChanged(bool can)
 {
-    kDebug() << can;
+    qDebug() << can;
     mRedoAction->setEnabled(can);
 }
 
 void MainWindow::slotUndoTextChanged(const QString &text)
 {
-    kDebug() << text;
+    qDebug() << text;
     mUndoAction->setText(text.isEmpty() ? mUndoText : i18n("%2: %1", text, mUndoText));
 }
 
 void MainWindow::slotRedoTextChanged(const QString &text)
 {
-    kDebug() << text;
+    qDebug() << text;
     mRedoAction->setText(text.isEmpty() ? mRedoText : i18n("%2: %1", text, mRedoText));
 }
 
 void MainWindow::slotCleanUndoChanged(bool clean)
 {
-    kDebug() << "clean" << clean;
+    qDebug() << "clean" << clean;
     slotSetModified(!clean);
 }
 
@@ -1004,10 +1004,10 @@ bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 
         if (imageTypes.contains(mime->name()))
         {
-            kDebug() << "accept image" << url << "mimetype" << mime->name();
+            qDebug() << "accept image" << url << "mimetype" << mime->name();
             validUrls.append(url);
         }
-        else kWarning() << "reject" << url << "mimetype" << mime->name();
+        else qWarning() << "reject" << url << "mimetype" << mime->name();
     }
 
     if (validUrls.isEmpty())				// no usable URLs found

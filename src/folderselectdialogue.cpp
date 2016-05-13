@@ -1,9 +1,9 @@
 
 #include "folderselectdialogue.h"
 
+#include <qdebug.h>
 #include <QRegExpValidator>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kglobal.h>
 #include <kconfiggroup.h>
@@ -86,7 +86,7 @@ void FolderSelectDialogue::slotUpdateButtonStates()
 
 void FolderSelectDialogue::setPath(const QString &path)
 {
-    kDebug() << path;
+    qDebug() << path;
 
     TrackDataFolder *selFolder = TrackData::findFolderByPath(path, filesController()->model()->rootFileItem());
     setSelectedItem(selFolder);				// empty path => NULL => clear selection

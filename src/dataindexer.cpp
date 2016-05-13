@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Mar-14						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,12 +27,10 @@
 
 #include "dataindexer.h"
 
-#include <kdebug.h>
-
+#include <qdebug.h>
 
 
 static DataIndexer *sInstance = NULL;
-
 
 
 DataIndexer::DataIndexer()
@@ -46,7 +44,7 @@ DataIndexer *DataIndexer::self()
     if (sInstance==NULL)
     {
         sInstance = new DataIndexer();
-        kDebug() << "allocated global instance";
+        qDebug() << "allocated global instance";
     }
     return (sInstance);
 }
@@ -60,7 +58,7 @@ int DataIndexer::index(const QString &nm)
     {
         idx = mNextIndex++;				// next integer value
         mIndexHash.insert(nm, idx);
-        kDebug() << "allocated index" << idx << "for" << nm;
+        qDebug() << "allocated index" << idx << "for" << nm;
     }
 
     return (idx);					// existing or new index

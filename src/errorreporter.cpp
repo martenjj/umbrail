@@ -1,7 +1,8 @@
 
 #include "errorreporter.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 #include <kurl.h>
 #include <kcolorscheme.h>
@@ -116,7 +117,7 @@ QString ErrorRecordMessage::format() const
 
 ErrorReporter::ErrorReporter()
 {
-    kDebug();
+    qDebug();
 
     mSeverity = ErrorReporter::NoError;
 }
@@ -125,20 +126,20 @@ ErrorReporter::ErrorReporter()
 ErrorReporter::~ErrorReporter()
 {
     qDeleteAll(mList);
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 void ErrorReporter::setFile(const KUrl &file)
 {
-    kDebug() << file;
+    qDebug() << file;
     mList.append(new ErrorRecordFile(file));
 }
 
 
 void ErrorReporter::setError(ErrorReporter::Severity sev, const QString &message, int line)
 {
-    kDebug() << "severity" << sev << "line" << line << "=" << message;
+    qDebug() << "severity" << sev << "line" << line << "=" << message;
     mList.append(new ErrorRecordMessage(sev, message, line));
     if (sev>mSeverity) mSeverity = sev;
 }

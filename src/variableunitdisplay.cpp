@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	15-Oct-14						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -28,8 +28,8 @@
 #include "variableunitdisplay.h"
 
 #include <qlabel.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kglobal.h>
 #include <kconfiggroup.h>
@@ -38,7 +38,7 @@
 VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QWidget *pnt)
     : KHBox(pnt)
 {
-    kDebug() << "type" << type;
+    qDebug() << "type" << type;
 
     setObjectName("VariableUnitDisplay");
     setSpacing(-1);					// default layout spacing

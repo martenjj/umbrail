@@ -1,7 +1,8 @@
 
 #include "importerexporterbase.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 
 #include "errorreporter.h"
@@ -9,7 +10,7 @@
 
 ImporterExporterBase::ImporterExporterBase()
 {
-    kDebug();
+    qDebug();
     mReporter = new ErrorReporter;
 }
 
@@ -17,5 +18,5 @@ ImporterExporterBase::ImporterExporterBase()
 ImporterExporterBase::~ImporterExporterBase()
 {
     delete mReporter;
-    kDebug() << "done";
+    qDebug() << "done";
 }

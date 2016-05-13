@@ -3,7 +3,8 @@
 
 #include <math.h>
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
 
@@ -42,14 +43,14 @@ static const double ARROW_TRI_HEIGHT = 12.0/3.0;	// third of direction arrow hei
 TracksLayer::TracksLayer(QWidget *pnt)
     : LayerBase(pnt)
 {
-    kDebug();
+    qDebug();
 }
 
 
 
 TracksLayer::~TracksLayer()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -83,7 +84,7 @@ void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
 {
     const int cnt = item->childCount();
 #ifdef DEBUG_PAINTING
-    kDebug() << "trackpoints for" << item->name() << "count" << cnt;
+    qDebug() << "trackpoints for" << item->name() << "count" << cnt;
 #endif
 
     // Scan along the segment, assembling the coordinates into a list,
@@ -103,7 +104,7 @@ void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
     while (start<(cnt-1))				// while more blocks to do
     {
 #ifdef DEBUG_PAINTING
-        kDebug() << "starting at" << start;
+        qDebug() << "starting at" << start;
 #endif
         lines.clear();					// empty the list
         int sofar = 0;					// points so far this block
@@ -118,7 +119,7 @@ void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
         }
 
 #ifdef DEBUG_PAINTING
-        kDebug() << "block of" << sofar << "points";
+        qDebug() << "block of" << sofar << "points";
 #endif
         if (lines.size()<2) break;			// nothing more to draw
         painter->drawPolyline(lines);			// draw track in its colour
@@ -168,7 +169,7 @@ void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
             }
 
 #ifdef DEBUG_PAINTING
-            kDebug() << "arrow at" << i << "length" << len;
+            qDebug() << "arrow at" << i << "length" << len;
 #endif
 
             // Draw the arrow at the midpoint of this line segment,

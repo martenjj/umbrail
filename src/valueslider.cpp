@@ -6,9 +6,9 @@
 #include <qspinbox.h>
 #include <qlabel.h>
 #include <qslider.h>
+#include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kdebug.h>
 
 
 ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int stdValue)

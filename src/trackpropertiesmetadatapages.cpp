@@ -4,8 +4,8 @@
 #include <qtableview.h>
 #include <qheaderview.h>
 #include <qformlayout.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
@@ -16,7 +16,7 @@
 TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackItemMetadataPage");
 
     mView = new QTableView(this);
@@ -53,7 +53,7 @@ TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items
 TrackFileMetadataPage::TrackFileMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFileMetadataPage");
 }
 
@@ -66,7 +66,7 @@ TrackFileMetadataPage::TrackFileMetadataPage(const QList<TrackDataItem *> *items
 TrackTrackMetadataPage::TrackTrackMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackTrackMetadataPage");
 }
 
@@ -78,7 +78,7 @@ TrackTrackMetadataPage::TrackTrackMetadataPage(const QList<TrackDataItem *> *ite
 TrackSegmentMetadataPage::TrackSegmentMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackSegmentMetadataPage");
 }
 
@@ -90,7 +90,7 @@ TrackSegmentMetadataPage::TrackSegmentMetadataPage(const QList<TrackDataItem *> 
 TrackTrackpointMetadataPage::TrackTrackpointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackPointMetadataPage");
 }
 
@@ -99,7 +99,7 @@ TrackTrackpointMetadataPage::TrackTrackpointMetadataPage(const QList<TrackDataIt
 TrackFolderMetadataPage::TrackFolderMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFolderMetadataPage");
 }
 
@@ -108,7 +108,7 @@ TrackFolderMetadataPage::TrackFolderMetadataPage(const QList<TrackDataItem *> *i
 TrackWaypointMetadataPage::TrackWaypointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackWaypointMetadataPage");
 }
 

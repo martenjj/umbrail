@@ -1,7 +1,8 @@
 
 #include "waypointslayer.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
 #include <kiconloader.h>
@@ -35,14 +36,14 @@ static const int POINT_CIRCLE_SIZE = 20;		// size of selected circle
 WaypointsLayer::WaypointsLayer(QWidget *pnt)
     : LayerBase(pnt)
 {
-    kDebug();
+    qDebug();
 }
 
 
 
 WaypointsLayer::~WaypointsLayer()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -76,7 +77,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
 {
     const int cnt = item->childCount();
 #ifdef DEBUG_PAINTING
-    kDebug() << "waypoints for" << item->name() << "count" << cnt;
+    qDebug() << "waypoints for" << item->name() << "count" << cnt;
 #endif
 
     for (int i = 0; i<cnt; ++i)
@@ -85,7 +86,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         if (tdw==NULL) continue;
 
 #ifdef DEBUG_PAINTING
-        kDebug() << "draw waypoint" << tdw->name();
+        qDebug() << "draw waypoint" << tdw->name();
 #endif
         GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
                                  0, GeoDataCoordinates::Degree);

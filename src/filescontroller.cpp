@@ -7,6 +7,7 @@
 #include <qpushbutton.h>
 #include <qapplication.h>
 #include <qlayout.h>
+#include <qdebug.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -14,7 +15,6 @@
 #include <qtimezone.h>
 #endif
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kmimetype.h>
@@ -64,7 +64,7 @@ FilesController::FilesController(QObject *pnt)
     : QObject(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
+    qDebug();
 
     mDataModel = new FilesModel(this);
 
@@ -92,7 +92,7 @@ FilesController::FilesController(QObject *pnt)
 
 FilesController::~FilesController()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -239,7 +239,7 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
     }
 
     importType = importType.toUpper();
-    kDebug() << "from" << importFrom << "type" << importType;
+    qDebug() << "from" << importFrom << "type" << importType;
 
     QScopedPointer<ImporterBase> imp;			// importer for requested format
     if (importType=="GPX")				// import from GPX file
@@ -249,7 +249,7 @@ FilesController::Status FilesController::importFile(const KUrl &importFrom)
 
     if (imp.isNull())					// could not create importer
     {
-        kDebug() << "Unknown import format" << importType;
+        qDebug() << "Unknown import format" << importType;
         reportFileError(false, importFrom, i18n("Unknown import format"));
         return (FilesController::StatusFailed);
     }
@@ -300,7 +300,7 @@ FilesController::Status FilesController::exportFile(const KUrl &exportTo, const 
     }
 
     exportType = exportType.toUpper();
-    kDebug() << "to" << exportTo << "type" << exportType;
+    qDebug() << "to" << exportTo << "type" << exportType;
 
     QScopedPointer<ExporterBase> exp;			// exporter for requested format
     if (exportType=="GPX")				// export to GPX file
@@ -310,7 +310,7 @@ FilesController::Status FilesController::exportFile(const KUrl &exportTo, const 
 
     if (exp.isNull())					// could not create exporter
     {
-        kDebug() << "Unknown export format" << exportType;
+        qDebug() << "Unknown export format" << exportType;
         reportFileError(true, exportTo, i18n("Unknown export format"));
         return (FilesController::StatusFailed);
     }
@@ -364,10 +364,10 @@ static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
     {
         QDateTime pt = p->time();
         const int diff = abs(dt.secsTo(pt));
-        //kDebug() << "  " << p->name() << pt << "diff" << diff;
+        //qDebug() << "  " << p->name() << pt << "diff" << diff;
         if (diff<closestDiff)
         {
-            //kDebug() << "  closest" << p->name() << "diff" << diff;
+            //qDebug() << "  closest" << p->name() << "diff" << diff;
             closestPoint = p;
             closestDiff = diff;
         }
@@ -388,7 +388,7 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     if (ts==Qt::UTC) return (true);			// nothing to do
     if (ts==Qt::OffsetFromUTC)				// not sure what to do
     {
-        kWarning() << "Don't know what to do with OffsetFromUTC time";
+        qWarning() << "Don't know what to do with OffsetFromUTC time";
         return (false);
     }
 
@@ -407,7 +407,7 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
 //     dt = tz.toUtc(dt);
 
     dt = dt.toTimeZone(tz);
-    kDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
+    qDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
     return (true);
 }
 
@@ -438,7 +438,7 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
     for (int i = 0; i<total; ++i)
     {
         const KUrl &importFrom = urls[i];
-        kDebug() << importFrom;
+        qDebug() << importFrom;
 
         if (!importFrom.isValid()) continue;
         if (!importFrom.isLocalFile())
@@ -463,15 +463,15 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
 
 #ifdef HAVE_KEXIV2
         KExiv2 exi(importFrom.toLocalFile());
-        kDebug() << "Exiv2 data:";
-        kDebug() << "  dimensions" << exi.getImageDimensions();
-        kDebug() << "  orientation" << exi.getImageOrientation();
+        qDebug() << "Exiv2 data:";
+        qDebug() << "  dimensions" << exi.getImageDimensions();
+        qDebug() << "  orientation" << exi.getImageOrientation();
 
         // This appears to return the date/time in Qt::LocalTime specification.
         QDateTime dt = exi.getImageDateTime();
-        kDebug() << "  datetime" << dt << "spec" << dt.timeSpec();
+        qDebug() << "  datetime" << dt << "spec" << dt.timeSpec();
         bool gpsValid = exi.getGPSInfo(alt,lat,lon);
-        kDebug() << "  gps valid?" << gpsValid << "alt" << alt << "lat" << lat << "lon" << lon;
+        qDebug() << "  gps valid?" << gpsValid << "alt" << alt << "lat" << lat << "lon" << lon;
 
         QString messageText;
         QString statusText;
@@ -552,10 +552,10 @@ FilesController::Status FilesController::importPhoto(const KUrl::List &urls)
         TrackDataFolder *foundFolder = model()->rootFileItem()->findChildFolder(PHOTO_FOLDER_NAME);
         if (foundFolder==NULL)				// find where to store point
         {
-            if (containerCreated) kDebug() << "new folder already added";
+            if (containerCreated) qDebug() << "new folder already added";
             else
             {
-                kDebug() << "need to add new folder";
+                qDebug() << "need to add new folder";
                 AddContainerCommand *cmd1 = new AddContainerCommand(this, cmd);
                 cmd1->setData(TrackData::Folder, model()->rootFileItem());
                 cmd1->setName(PHOTO_FOLDER_NAME);
@@ -641,7 +641,7 @@ default:                    break;
 
 void FilesController::slotTrackProperties()
 {
-    kDebug();
+    qDebug();
 
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()==0) return;
@@ -656,40 +656,40 @@ void FilesController::slotTrackProperties()
     QUndoCommand *cmd = new QUndoCommand();		// parent command
 
     QString newItemName = d.newItemName();		// new name for item
-    //kDebug() << "new name" << newItemName;
+    //qDebug() << "new name" << newItemName;
     if (!newItemName.isEmpty() && newItemName!=item->name())
     {							// changing the name
-        kDebug() << "name change" << item->name() << "->" << newItemName;
+        qDebug() << "name change" << item->name() << "->" << newItemName;
         ChangeItemNameCommand *cmd1 = new ChangeItemNameCommand(this, cmd);
         cmd1->setDataItem(item);
         cmd1->setData(newItemName);
     }
 
     QString newTimeZone = d.newTimeZone();
-    //kDebug() << "new timezone" << newTimeZone;
+    //qDebug() << "new timezone" << newTimeZone;
     if (newTimeZone!=item->metadata("timezone"))
     {
-        kDebug() << "timezone change" << item->metadata("timezone") << "->" << newTimeZone;
+        qDebug() << "timezone change" << item->metadata("timezone") << "->" << newTimeZone;
         ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
         cmd2->setDataItem(item);
         cmd2->setData("timezone", newTimeZone);
     }
 
     const Style newStyle = d.newStyle();		// item style
-    //kDebug() << "new style" << newStyle;
+    //qDebug() << "new style" << newStyle;
     if (newStyle!=*item->style())			// changing the style
     {
-        kDebug() << "change style" << item->style() << "->" << newStyle;
+        qDebug() << "change style" << item->style() << "->" << newStyle;
         ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
         cmd3->setDataItem(item);
         cmd3->setData(newStyle);
     }
 
     QString newType = d.newTrackType();
-    //kDebug() << "new type" << newType;
+    //qDebug() << "new type" << newType;
     if (newType!="-")					// new type is applicable
     {
-        kDebug() << "change type" << item->metadata("type") << "->" << newType;
+        qDebug() << "change type" << item->metadata("type") << "->" << newType;
         if (newType!=item->metadata("type"))
         {
             ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
@@ -699,10 +699,10 @@ void FilesController::slotTrackProperties()
     }
 
     QString newDesc = d.newItemDesc();
-    //kDebug() << "new description" << newDesc;
+    //qDebug() << "new description" << newDesc;
     if (newDesc!="-" && newDesc!=item->metadata("desc"))
     {							// new description is applicable
-        kDebug() << "change desc" << item->metadata("desc") << "->" << newDesc;
+        qDebug() << "change desc" << item->metadata("desc") << "->" << newDesc;
         ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
         cmd5->setDataItem(item);
         cmd5->setData("desc", newDesc);
@@ -712,7 +712,7 @@ void FilesController::slotTrackProperties()
     double newLon;
     if (d.newPointPosition(&newLat, &newLon))
     {
-        kDebug() << "change position";
+        qDebug() << "change position";
         TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(item);
         Q_ASSERT(p!=NULL);
         MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
@@ -725,7 +725,7 @@ void FilesController::slotTrackProperties()
     if (items.count()>1) oldStatus = TrackData::StatusInvalid;
     if (newStatus!=TrackData::StatusInvalid && newStatus!=oldStatus)
     {
-        kDebug() << "change status" << oldStatus << "->" << newStatus;
+        qDebug() << "change status" << oldStatus << "->" << newStatus;
         ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
         cmd7->setDataItems(items);
         cmd7->setData("status", (newStatus==0) ? QString::null : QString::number(newStatus));
@@ -764,7 +764,7 @@ void FilesController::slotSplitSegment()
 
     TrackDataSegment *pnt = dynamic_cast<TrackDataSegment *>(item->parent());
     if (pnt==NULL) return;
-    kDebug() << "split" << pnt->name() << "at" << item->name();
+    qDebug() << "split" << pnt->name() << "at" << item->name();
 
     int idx = pnt->childIndex(item);
     if (idx==0 || idx>=(pnt->childCount()-1))
@@ -809,14 +809,14 @@ void FilesController::slotMergeSegments()
     if (items.count()<2) return;
     qSort(items.begin(), items.end(), &compareSegmentTimes);
 
-    kDebug() << "sorted segments:";
+    qDebug() << "sorted segments:";
     QDateTime prevEnd;
     for (int i = 0; i<items.count(); ++i)
     {
         const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
         const TrackDataTrackpoint *pnt1 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(0));
         const TrackDataTrackpoint *pnt2 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(tds->childCount()-1));
-        kDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
+        qDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
 
         if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
         {						// all apart from first
@@ -974,7 +974,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     TrackDataFolder *destFolder = d.selectedFolder();
     Q_ASSERT(destFolder!=NULL);
 
-    kDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
+    qDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
 
     AddWaypointCommand *cmd = new AddWaypointCommand(this);
 

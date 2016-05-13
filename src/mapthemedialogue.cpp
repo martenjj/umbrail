@@ -5,8 +5,8 @@
 #include <qlabel.h>
 #include <qlistwidget.h>
 #include <qstandarditemmodel.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 
 
@@ -45,7 +45,7 @@ MapThemeDialogue::MapThemeDialogue(QStandardItemModel *model, QWidget *pnt)
 
 void MapThemeDialogue::setThemeId(const QString &id)
 {
-    kDebug() << id;
+    qDebug() << id;
 
     for (int i = 0; i<mListBox->count(); ++i)
     {
@@ -70,14 +70,14 @@ QString MapThemeDialogue::themeId() const
     if (selected.count()==0) return (QString::null);	// should never happen
 
     QString id = selected.first()->data(Qt::UserRole).toString();
-    kDebug() << id;
+    qDebug() << id;
     return (id);
 }
 
 
 void MapThemeDialogue::createDisplay()
 {
-    kDebug() << "rows" << mModel->rowCount();
+    qDebug() << "rows" << mModel->rowCount();
     for (int i = 0; i<mModel->rowCount(); ++i)
     {
         QStandardItem *themeData = mModel->item(i);
@@ -85,7 +85,7 @@ void MapThemeDialogue::createDisplay()
 
         QString id = themeData->data(Qt::UserRole+1).toString();
         if (!id.startsWith("earth/")) continue;		// only this planet!
-        kDebug() << "  " << i << id;
+        qDebug() << "  " << i << id;
 
         QListWidgetItem *item = new QListWidgetItem();
 

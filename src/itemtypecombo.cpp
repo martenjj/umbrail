@@ -1,7 +1,8 @@
 
 #include "itemtypecombo.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <kglobal.h>
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
@@ -32,12 +33,12 @@ ItemTypeCombo::ItemTypeCombo(QWidget *pnt)
 
 ItemTypeCombo::~ItemTypeCombo()
 {
-    kDebug() << "count" << count() << "original" << mOriginalCount;
+    qDebug() << "count" << count() << "original" << mOriginalCount;
     if (count()>mOriginalCount)				// was anything added?
     {
         QStringList types;
         for (int i = 0; i<count(); ++i) types << itemText(i);
-        kDebug() << "saving" << types;
+        qDebug() << "saving" << types;
         KConfigGroup grp = KGlobal::config()->group(objectName());
         grp.writeEntry("types", types);
     }
@@ -53,7 +54,7 @@ void ItemTypeCombo::setType(const QString &type)
     else
     {
         int idx = findText(type, Qt::MatchFixedString);
-        kDebug() << type << "found at" << idx;
+        qDebug() << type << "found at" << idx;
         if (idx==-1)					// not already in combo
         {
             addItem(type);				// add as new item

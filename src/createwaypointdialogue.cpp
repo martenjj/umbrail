@@ -4,8 +4,8 @@
 #include <qformlayout.h>
 #include <qtreeview.h>
 #include <qlineedit.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 
 #include "filescontroller.h"
@@ -79,7 +79,7 @@ CreateWaypointDialogue::CreateWaypointDialogue(FilesController *fc, QWidget *pnt
 void CreateWaypointDialogue::setSourcePoint(const TrackDataAbstractPoint *point)
 {
     Q_ASSERT(point!=NULL);
-    kDebug() << point->name();
+    qDebug() << point->name();
     mLatLongEdit->setLatLong(point->latitude(), point->longitude());
     slotSetButtonStates();
 }
@@ -87,7 +87,7 @@ void CreateWaypointDialogue::setSourcePoint(const TrackDataAbstractPoint *point)
 
 void CreateWaypointDialogue::setSourceLatLong(double lat, double lon)
 {
-    kDebug() << lat << lon;
+    qDebug() << lat << lon;
     mLatLongEdit->setLatLong(lat, lon);
     slotSetButtonStates();
 }
@@ -96,7 +96,7 @@ void CreateWaypointDialogue::setSourceLatLong(double lat, double lon)
 void CreateWaypointDialogue::setDestinationFolder(const TrackDataFolder *folder)
 {
     Q_ASSERT(folder!=NULL);
-    kDebug() << folder->name();
+    qDebug() << folder->name();
     // nothing to do, it will be selected automatically via the source model
 }
 

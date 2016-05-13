@@ -4,7 +4,8 @@
 #include <string.h>
 #include <errno.h>
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 #include <kurl.h>
 
@@ -16,19 +17,19 @@
 ExporterBase::ExporterBase()
     : ImporterExporterBase()
 {
-    kDebug();
+    qDebug();
 }
 
 
 ExporterBase::~ExporterBase()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 bool ExporterBase::prepareSaveFile(const KUrl &file)
 {
-    kDebug() << "to" << file;
+    qDebug() << "to" << file;
 
     reporter()->setFile(file);
 

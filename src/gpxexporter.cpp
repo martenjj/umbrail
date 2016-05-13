@@ -9,10 +9,10 @@
 
 #include <qfile.h>
 #include <qdatetime.h>
+#include <qdebug.h>
 
 #include <QXmlStreamWriter>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
@@ -33,13 +33,13 @@
 GpxExporter::GpxExporter()
     : ExporterBase()
 {
-    kDebug();
+    qDebug();
 }
 
 
 GpxExporter::~GpxExporter()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -111,7 +111,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
 {
     for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
     {
-        //kDebug() << "metadata" << idx
+        //qDebug() << "metadata" << idx
         //         << "name" << DataIndexer::self()->name(idx)
         //         << "=" << item->metadata(idx);
 
@@ -228,7 +228,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     }
     else						// anything else
     {
-        kDebug() << "unknown item type" << item << item->name();
+        qDebug() << "unknown item type" << item << item->name();
         return (true);					// warning only, don't abort
     }
 
@@ -286,7 +286,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
 bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 {
-    kDebug() << "item" << item->name() << "to" << file;
+    qDebug() << "item" << item->name() << "to" << file;
 
     if (!prepareSaveFile(file)) return (false);
     startedExtensions = false;
@@ -336,7 +336,7 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 
     if (str.hasError())
     {
-        kDebug() << "XML writing failed!";
+        qDebug() << "XML writing failed!";
         mSaveFile.abort();
         return (false);
     }

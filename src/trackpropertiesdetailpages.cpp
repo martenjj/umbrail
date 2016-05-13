@@ -2,8 +2,8 @@
 #include "trackpropertiesdetailpages.h"
 
 #include <qformlayout.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kglobal.h>
 
@@ -17,7 +17,7 @@
 TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackItemDetailPage");
 
     addSeparatorField();
@@ -126,7 +126,7 @@ void TrackItemDetailPage::addMetadataField(const TrackDataItem *tdi, const QStri
 TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFileDetailPage");
 
     int nTracks = 0;
@@ -166,7 +166,7 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
 TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackTrackDetailPage");
 
     addChildCountField(items, i18nc("@label:textbox", "Segments:"));
@@ -189,7 +189,7 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, 
 TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackSegmentDetailPage");
 
     addChildCountField(items, i18nc("@label:textbox", "Points:"));
@@ -219,7 +219,7 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *ite
 TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackPointDetailPage");
 
     if (items->count()==1)				// single selection
@@ -327,7 +327,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFolderDetailPage");
 
     int nWaypoints = 0;
@@ -368,7 +368,7 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
 TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackWaypointDetailPage");
 
     if (items->count()==1)				// single selection

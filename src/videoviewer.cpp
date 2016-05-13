@@ -32,13 +32,10 @@
 #include <qdesktopwidget.h>
 #include <qlabel.h>
 #include <qtimer.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kurl.h>
-// #include <kglobal.h>
-// #include <kconfig.h>
-//#include <kconfiggroup.h>
 #include <kpushbutton.h>
 
 #include <dialogstatesaver.h>
@@ -51,7 +48,7 @@
 VideoViewer::VideoViewer(const KUrl &url, QWidget *pnt)
     : QWidget(pnt)
 {
-    kDebug() << url;
+    qDebug() << url;
 
     setObjectName("VideoViewer");
     setWindowTitle(i18n("Video Viewer"));
@@ -106,13 +103,13 @@ VideoViewer::~VideoViewer()
     DialogStateSaver::saveWindowState(this);
 
     mPlayer->deleteLater();
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 void VideoViewer::slotFinished()
 {
-    kDebug();
+    qDebug();
     mPlayButton->setEnabled(true);
     mPauseButton->setEnabled(false);
     mStopButton->setEnabled(false);

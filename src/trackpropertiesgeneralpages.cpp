@@ -4,8 +4,8 @@
 #include <qformlayout.h>
 #include <qpushbutton.h>
 #include <qlayout.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kiconloader.h>
 #include <klineedit.h>
@@ -27,7 +27,7 @@
 TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackItemGeneralPage");
 
     mNameEdit = new KLineEdit(this);
@@ -261,7 +261,7 @@ void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *i
 TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFileGeneralPage");
 
     mNameEdit->setReadOnly(true);			// can't rename here for files
@@ -315,7 +315,7 @@ bool TrackFileGeneralPage::isDataValid() const
 TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackTrackGeneralPage");
 
     addTimeSpanFields(items);
@@ -336,7 +336,7 @@ QString TrackTrackGeneralPage::typeText(int count) const
 TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackSegmentGeneralPage");
 
     addTimeSpanFields(items);
@@ -357,7 +357,7 @@ QString TrackSegmentGeneralPage::typeText(int count) const
 TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackPointGeneralPage");
 
     addPositionTimeFields(items);
@@ -376,7 +376,7 @@ QString TrackTrackpointGeneralPage::typeText(int count) const
 TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackFolderGeneralPage");
 }
 
@@ -392,7 +392,7 @@ QString TrackFolderGeneralPage::typeText(int count) const
 TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    kDebug();
+    qDebug();
     setObjectName("TrackWaypointGeneralPage");
 
     mWaypoint = NULL;

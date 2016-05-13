@@ -1,7 +1,7 @@
 
 #include "mapcontroller.h"
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kfiledialog.h>
 #include <kimageio.h>
@@ -23,7 +23,7 @@ MapController::MapController(QObject *pnt)
     : QObject(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
+    qDebug();
 
     mView = new MapView(mainWindow());
     connect(mView, SIGNAL(mouseMoveGeoPosition(const QString &)),
@@ -41,13 +41,13 @@ MapController::MapController(QObject *pnt)
 
 MapController::~MapController()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
 void MapController::clear()
 {
-    kDebug();
+    qDebug();
     slotGoHome();
 }
 
@@ -59,7 +59,7 @@ void MapController::readProperties()
     if (!s.isEmpty())
     {
         haveHome = positionFromString(s, &mHomeLat, &mHomeLong, &mHomeZoom);
-        kDebug() << "have home?" << haveHome;
+        qDebug() << "have home?" << haveHome;
     }
 
     view()->readProperties();
@@ -71,7 +71,7 @@ void MapController::readProperties()
 void MapController::saveProperties()
 {
     QString s = positionToString(mHomeLat, mHomeLong, mHomeZoom);
-    kDebug() << "home" << s;
+    qDebug() << "home" << s;
     Settings::setMapHome(s);
 
     view()->saveProperties();
@@ -101,7 +101,7 @@ bool MapController::positionFromString(const QString &str, double *plat, double 
 
 void MapController::slotGoHome()
 {
-    kDebug() << "lat" << mHomeLat << "lon" << mHomeLong << "zoom" << mHomeZoom;
+    qDebug() << "lat" << mHomeLat << "lon" << mHomeLong << "zoom" << mHomeZoom;
     view()->zoomView(mHomeZoom);
     view()->centerOn(mHomeLong, mHomeLat);
 
@@ -148,7 +148,7 @@ void MapController::slotSetZoom()
 
 void MapController::slotResetZoom()
 {
-    kDebug() << "zoom" << mHomeZoom;
+    qDebug() << "zoom" << mHomeZoom;
     view()->zoomView(mHomeZoom);
     emit statusMessage(i18n("At standard zoom %1", mHomeZoom));
 }
@@ -171,7 +171,7 @@ void MapController::slotSaveImage()
 
     emit statusMessage(i18n("Saving map image...", saveFile));
     QPixmap pix = view()->mapScreenShot();
-    kDebug() << "size" << pix.size() << "to" << saveFile;
+    qDebug() << "size" << pix.size() << "to" << saveFile;
     if (!pix.save(saveFile))
     {
         KMessageBox::error(mainWindow(),
@@ -191,13 +191,13 @@ void MapController::slotSaveImage()
 void MapController::slotShowPosition( const QString &pos)
 {
 // TODO: better display format
-//    kDebug() << pos;
+//    qDebug() << pos;
 }
 
 
 void MapController::slotZoomChanged(int zoom)
 {
-    //kDebug() << zoom << "min" << view()->minimumZoom() << "max" << view()->maximumZoom();
+    //qDebug() << zoom << "min" << view()->minimumZoom() << "max" << view()->maximumZoom();
     emit mapZoomChanged((zoom<(view()->maximumZoom())),
                         (zoom>(view()->minimumZoom())));
 // TODO: improve display, check against scale bar!
@@ -210,7 +210,7 @@ void MapController::slotSelectTheme()
 {
     if (mThemeManager==NULL)
     {
-        kDebug() << "creating theme manager";
+        qDebug() << "creating theme manager";
         mThemeManager = new MapThemeManager(this);
     }
 
@@ -219,7 +219,7 @@ void MapController::slotSelectTheme()
     if (!d.exec()) return;
 
     QString newTheme = d.themeId();
-    kDebug() << "new theme" << newTheme;
+    qDebug() << "new theme" << newTheme;
 
     QStringList currentOverlays = view()->overlays(true);
     view()->showOverlays(QStringList());		// save/restore overlays state
@@ -258,7 +258,7 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 
 void MapController::slotDraggedPoints(qreal latOff, qreal lonOff)
 {
-    kDebug() << latOff << lonOff;
+    qDebug() << latOff << lonOff;
 
     MovePointsCommand *cmd = new MovePointsCommand(filesController());
     cmd->setText(i18n("Move Points"));

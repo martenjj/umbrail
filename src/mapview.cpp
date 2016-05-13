@@ -4,8 +4,8 @@
 #include <qmenu.h>
 #include <qevent.h>
 #include <qapplication.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kxmlguifactory.h>
@@ -32,7 +32,7 @@ MapView::MapView(QWidget *pnt)
     : MarbleWidget(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
+    qDebug();
 
     mRunnerManager = NULL;
 
@@ -74,7 +74,7 @@ MapView::MapView(QWidget *pnt)
 MapView::~MapView()
 {
     delete mStopsLayer;
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -86,7 +86,7 @@ QString MapView::currentPosition() const
 
 void MapView::setCurrentPosition(const QString &str)
 {
-    kDebug() << str;
+    qDebug() << str;
 
     double lat,lon;
     int z;
@@ -113,7 +113,7 @@ void MapView::readProperties()
 void MapView::saveProperties()
 {
     QString s = currentPosition();
-    kDebug() << "  current" << s;
+    qDebug() << "  current" << s;
     Settings::setMapCurrent(s);
 
     // TODO: crosshairs etc?
@@ -193,7 +193,7 @@ QStringList MapView::overlays(bool visibleOnly) const
         if (!visibleOnly || item->visible()) result.append(item->nameId());
     }
 
-    kDebug() << "visibleOnly" << visibleOnly << "->" << result;
+    qDebug() << "visibleOnly" << visibleOnly << "->" << result;
     return (result);
 }
 
@@ -251,10 +251,10 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
     while (tdi!=NULL)					// search to root of tree
     {
         const Style *s = tdi->style();			// get style from item
-        //kDebug() << "style for" << tdi->name() << "is" << *s;
+        //qDebug() << "style for" << tdi->name() << "is" << *s;
         if (s->hasLineColour())				// has a style set?
         {
-            //kDebug() << "inherited from" << tdi->name();
+            //qDebug() << "inherited from" << tdi->name();
             return (s->lineColour());			// use colour from that
         }
         tdi = tdi->parent();				// up to parent item
@@ -267,14 +267,14 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 void MapView::slotSystemPaletteChanged()
 {
     bool syscol = Settings::selectedUseSystemColours();
-    kDebug() << "using system?" << syscol;
+    qDebug() << "using system?" << syscol;
     if (syscol) update();
 }
 
 
 void MapView::setMovePointsMode(bool on)
 {
-    kDebug() << on;
+    qDebug() << on;
     mTracksLayer->setMovePointsMode(on);
     mWaypointsLayer->setMovePointsMode(on);
 }

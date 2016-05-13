@@ -1,7 +1,8 @@
 
 #include "stopslayer.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
 #include <kiconloader.h>
@@ -26,14 +27,14 @@
 
 StopsLayer::StopsLayer(QWidget *pnt)
 {
-    kDebug();
+    qDebug();
     mStopsData = NULL;
 }
 
 
 StopsLayer::~StopsLayer()
 {
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -54,7 +55,7 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
 
         // TODO: combine with same in WaypointsLayer
 #ifdef DEBUG_PAINTING
-        kDebug() << "draw stop" << i << tdw->name();
+        qDebug() << "draw stop" << i << tdw->name();
 #endif
         GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
                                  0, GeoDataCoordinates::Degree);
@@ -91,6 +92,6 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
 void StopsLayer::setStopsData(const QList<const TrackDataWaypoint *> *data)
 {
     mStopsData = data;
-    if (mStopsData==NULL) kDebug() << "data cleared";
-    else kDebug() << "data set" << mStopsData->count() << "points";
+    if (mStopsData==NULL) qDebug() << "data cleared";
+    else qDebug() << "data set" << mStopsData->count() << "points";
 }

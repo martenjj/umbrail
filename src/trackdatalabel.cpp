@@ -1,7 +1,8 @@
 
 #include "trackdatalabel.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <ksystemtimezone.h>
 
 #include "trackdata.h"

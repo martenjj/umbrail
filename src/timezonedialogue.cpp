@@ -5,10 +5,9 @@
 #include <qlabel.h>
 #include <qheaderview.h>
 #include <qpushbutton.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
-// #include <kglobal.h>
 #include <kconfiggroup.h>
 #include <k4timezonewidget.h>
 #include <ktreewidgetsearchline.h>
@@ -80,7 +79,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 
 void TimeZoneDialogue::setTimeZone(const QString &zone)
 {
-    kDebug() << zone;
+    qDebug() << zone;
     mTimeZoneWidget->setSelected(zone, true);
 }
 

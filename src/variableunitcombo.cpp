@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	15-Oct-14						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,7 +27,8 @@
 
 #include "variableunitcombo.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
+
 #include <klocalizedstring.h>
 
 
@@ -42,7 +43,7 @@ static const double ELEVATION_FEET = 3.2808;		// feet
 VariableUnitCombo::VariableUnitCombo(VariableUnitCombo::DisplayType displayType, QWidget *pnt)
     : QComboBox(pnt)
 {
-    kDebug() << "type" << displayType;
+    qDebug() << "type" << displayType;
     mType = displayType;
     mPrecision = 1;
 

@@ -3,8 +3,8 @@
 
 #include <qgridlayout.h>
 #include <qlabel.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <ktabwidget.h>
 #include <kglobal.h>

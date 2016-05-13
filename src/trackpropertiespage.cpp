@@ -6,8 +6,8 @@
 #include <qformlayout.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <ksystemtimezone.h>
 #include <kcolorscheme.h>
@@ -63,9 +63,9 @@ void TrackPropertiesPage::addSeparatorField(const QString &title)
 
 void TrackPropertiesPage::setTimeZone(const QString &name)
 {
-    kDebug() << name;
+    qDebug() << name;
     mTimeZone = new KTimeZone(KSystemTimeZones::zone(name));
-    kDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
+    qDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
     emit updateTimeZones(timeZone());
 }
 
@@ -73,7 +73,7 @@ void TrackPropertiesPage::setTimeZone(const QString &name)
 void TrackPropertiesPage::slotPointPositionChanged(double newLat, double newLon)
 {
     if (mPositionLabel==NULL) return;
-    kDebug() << newLat << newLon;
+    qDebug() << newLat << newLon;
 
     mPositionLabel->setText(TrackData::formattedLatLong(newLat, newLon));
 

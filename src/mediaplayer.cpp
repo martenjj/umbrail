@@ -28,8 +28,8 @@
 #include "mediaplayer.h"
 
 #include <qfile.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <kmessagebox.h>
 #include <krun.h>
 #include <kmimetype.h>
@@ -56,7 +56,7 @@ static QString findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointT
     if (item==NULL) return (QString::null);
     if (expectedType!=TrackData::WaypointAny && item->waypointType()!=expectedType)
     {
-        kWarning() << "waypoint" << item->name() << "is not type" << expectedType;
+        qWarning() << "waypoint" << item->name() << "is not type" << expectedType;
         return (QString::null);
     }
 
@@ -64,7 +64,7 @@ static QString findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointT
     if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
     if (n.isEmpty()) n = item->name();			// then the waypoint name
 
-    kDebug() << "item" << item->name() << "link" << n;
+    qDebug() << "item" << item->name() << "link" << n;
 
     if (!n.startsWith("/")) n = Settings::audioNotesDirectory()+"/"+n;
     QFile mediaFile(KUrl(n).path());
@@ -77,7 +77,7 @@ static QString findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointT
     }
 
     QString file = mediaFile.fileName();
-    kDebug() << "media file" << file;
+    qDebug() << "media file" << file;
     return (file);
 }
 
@@ -154,7 +154,7 @@ void MediaPlayer::saveMediaFile(const TrackDataWaypoint *item)
 
     KMimeType::Ptr mimeType = KMimeType::findByPath(file, 0, true);
     KUrl destUrl = KFileDialog::getSaveUrl(startUrl, mimeType->name(), NULL, i18nc("@title:window", "Save Media As"));
-    kDebug() << destUrl;
+    qDebug() << destUrl;
 
     if (!destUrl.isValid()) return;
     KIO::file_copy(sourceUrl, destUrl, -1);

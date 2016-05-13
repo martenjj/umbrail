@@ -27,7 +27,7 @@
 
 #include "style.h"
 
-#include <kdebug.h>
+#include <qdebug.h>
 
 #include "settings.h"
 
@@ -50,7 +50,7 @@ Style *Style::globalStyle()
     if (sGlobalStyle==NULL)
     {
         sGlobalStyle = new Style();
-        kDebug() << "created globalStyle instance";
+        qDebug() << "created globalStyle instance";
 
         // Read the application settings into the global style object
         sGlobalStyle->setLineColour(Settings::lineColour());

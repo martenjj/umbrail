@@ -3,7 +3,7 @@
 
 #include <qfont.h>
 
-#include <kdebug.h>
+#include <qdebug.h>
 
 #include "filesmodel.h"
 #include "trackdata.h"

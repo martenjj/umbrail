@@ -5,8 +5,8 @@
 #include <qapplication.h>
 #include <qevent.h>
 #include <qtimer.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
 
@@ -55,7 +55,7 @@ LayerBase::LayerBase(QWidget *pnt)
     : QObject(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
+    qDebug();
 
     mClickedPoint = NULL;
     mDraggingPoints = NULL;
@@ -69,7 +69,7 @@ LayerBase::LayerBase(QWidget *pnt)
 LayerBase::~LayerBase()
 {
     delete mDraggingPoints;
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -87,7 +87,7 @@ QStringList LayerBase::renderPosition() const
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  className -- This class is the abstract base class of drawing	//
-//  layers.  For kDebug() messages to be useful, they need to identify	//
+//  layers.  For qDebug() messages to be useful, they need to identify	//
 //  the real class name.						//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     if (mDraggingPoints!=NULL)
     {
 #ifdef DEBUG_DRAGGING
-        kDebug() << className(this).constData() << "paint for drag";
+        qDebug() << className(this).constData() << "paint for drag";
 #endif
         for (QList<SelectionRun>::const_iterator it = mDraggingPoints->constBegin();
              it!=mDraggingPoints->constEnd(); ++it)
@@ -150,7 +150,7 @@ void LayerBase::paintDataTree(const TrackDataItem *item, GeoPainter *painter,
 
     bool isSelected = parentSelected || (item->selectionId()==mSelectionId);
 #ifdef DEBUG_PAINTING
-    kDebug() << className(this).constData() << item->name() << "isselected" << isSelected << "doselected" << doSelected;
+    qDebug() << className(this).constData() << item->name() << "isselected" << isSelected << "doselected" << doSelected;
 #endif
 
     // In order to be able to draw tracks, which are drawn on the map as a
@@ -195,7 +195,7 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
                 lon>=mLonMin && lon<=mLonMax)
             {						// check within tolerance
 #ifdef DEBUG_SELECTING
-                kDebug() << className(this).constData() << "found point" << tdp->name();
+                qDebug() << className(this).constData() << "found point" << tdp->name();
 #endif
                 return (tdp);				// clicked point found
             }
@@ -237,7 +237,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
     if (this->isDirectContainer(item))			// look at contained items?
     {
 #ifdef DEBUG_SELECTING
-        kDebug() << className(this).constData() << "consider" << item->name();
+        qDebug() << className(this).constData() << "consider" << item->name();
 #endif
         // If there are any selected points in this container, assemble
         // them into a SelectionRun and add it to the dragging list.
@@ -249,14 +249,14 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
             if (tdp==NULL) continue;
 
 #ifdef DEBUG_SELECTING
-            kDebug() << "  " << i << tdp->name() << "selected?" << (tdp->selectionId()==mSelectionId);
+            qDebug() << "  " << i << tdp->name() << "selected?" << (tdp->selectionId()==mSelectionId);
 #endif
             if (tdp->selectionId()==mSelectionId)	// this point is selected
             {
                 if (run.isEmpty())			// start of a new run
                 {
 #ifdef DEBUG_SELECTING
-                    kDebug() << "    starting new run";
+                    qDebug() << "    starting new run";
 #endif
                     if (i>0)				// not first point in container
                     {
@@ -264,7 +264,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
                         if (prev!=NULL)
                         {
 #ifdef DEBUG_SELECTING
-                            kDebug() << "    setting prev point" << prev->name();
+                            qDebug() << "    setting prev point" << prev->name();
 #endif
                             run.setPrevPoint(GeoDataCoordinates(prev->longitude(), prev->latitude(),
                                                                 0, GeoDataCoordinates::Degree));
@@ -275,7 +275,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
                 GeoDataCoordinates coord(tdp->longitude(), tdp->latitude(),
                                          0, GeoDataCoordinates::Degree);
 #ifdef DEBUG_SELECTING
-                kDebug() << "    add point" << tdp->name();
+                qDebug() << "    add point" << tdp->name();
 #endif
                 run.addPoint(coord);
             }
@@ -284,13 +284,13 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
                 if (!run.isEmpty())
                 {
 #ifdef DEBUG_SELECTING
-                    kDebug() << "    setting next point" << tdp->name();
+                    qDebug() << "    setting next point" << tdp->name();
 #endif
                     run.setNextPoint(GeoDataCoordinates(tdp->longitude(), tdp->latitude(),
                                                         0, GeoDataCoordinates::Degree));
                     mDraggingPoints->append(run);
 #ifdef DEBUG_SELECTING
-                    kDebug() << "    add run";
+                    qDebug() << "    add run";
 #endif
                     run.clear();			// clear for next time
                 }
@@ -300,13 +300,13 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
         if (!run.isEmpty())
         {
 #ifdef DEBUG_SELECTING
-            kDebug() << "add final run";
+            qDebug() << "add final run";
 #endif
             mDraggingPoints->append(run);
         }
 
 #ifdef DEBUG_SELECTING
-        kDebug() << "done" << "with" << mDraggingPoints->count() << "runs";
+        qDebug() << "done" << "with" << mDraggingPoints->count() << "runs";
 #endif
     }
 
@@ -340,7 +340,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
         if (mouseEvent->button()!=Qt::LeftButton) return (false);
 #ifdef DEBUG_DRAGGING
-        kDebug() << className(this).constData() << "press at" << mouseEvent->pos();
+        qDebug() << className(this).constData() << "press at" << mouseEvent->pos();
 #endif
         mClickX = mouseEvent->pos().x();		// record click position
         mClickY = mouseEvent->pos().y();
@@ -350,7 +350,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         qreal lat,lon;
         bool onEarth = mapView->geoCoordinates(mClickX, mClickY, lon, lat);
 #ifdef DEBUG_DRAGGING
-        kDebug() << "  onearth" << onEarth << "lat" << lat << "lon" << lon;
+        qDebug() << "  onearth" << onEarth << "lat" << lat << "lon" << lon;
 #endif
         if (!onEarth) return (false);			// click not on Earth
 
@@ -364,7 +364,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         mLonMin = qMin(lon1, lon2);
         mLonMax = qMax(lon1, lon2);
 #ifdef DEBUG_DRAGGING
-        kDebug() << "  tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
+        qDebug() << "  tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
 #endif
         const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
         if (tdp!=NULL)					// a point was found
@@ -383,7 +383,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
 #ifdef DEBUG_DRAGGING
-        kDebug() << className(this).constData() << "release at" << mouseEvent->pos();
+        qDebug() << className(this).constData() << "release at" << mouseEvent->pos();
 #endif
         const TrackDataAbstractPoint *clickedPoint = mClickedPoint;
         mClickedPoint = NULL;
@@ -391,7 +391,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         if (mDraggingPoints!=NULL)
         {
 #ifdef DEBUG_DRAGGING
-            kDebug() << "  end drag, lat/lon off" << mLatOff << mLonOff;
+            qDebug() << "  end drag, lat/lon off" << mLatOff << mLonOff;
 #endif
             emit draggedPoints(mLatOff, mLonOff);
             delete mDraggingPoints; mDraggingPoints = NULL;
@@ -405,7 +405,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         if (testClickTolerance(mouseEvent))
         {
 #ifdef DEBUG_DRAGGING
-            kDebug() << "  valid click detected";
+            qDebug() << "  valid click detected";
 #endif
             filesModel->clickedPoint(clickedPoint, mouseEvent->modifiers());
             return (true);				// event consumed
@@ -424,7 +424,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
             if (testClickTolerance(mouseEvent))		// check whether in same place
             {
 #ifdef DEBUG_DRAGGING
-                kDebug() << className(this).constData() << "start drag";
+                qDebug() << className(this).constData() << "start drag";
 #endif
                 mClickTimer->invalidate();
 
@@ -432,7 +432,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
                 if (tdp!=NULL && tdp->selectionId()!=mSelectionId)
                 {
 #ifdef DEBUG_DRAGGING
-                    kDebug() << "  but not over a selected point";
+                    qDebug() << "  but not over a selected point";
 #endif
                     return (true);
                 }
@@ -449,7 +449,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
             mLatOff = lat-mClickedPoint->latitude();
             mLonOff = lon-mClickedPoint->longitude();
 #ifdef DEBUG_DRAGGING
-            kDebug() << "  lat/lon off" << mLatOff << mLonOff;
+            qDebug() << "  lat/lon off" << mLatOff << mLonOff;
 #endif
             mapView->update();
         }

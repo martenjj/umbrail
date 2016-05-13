@@ -4,8 +4,8 @@
 #include <qfont.h>
 #include <qicon.h>
 #include <qitemselectionmodel.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
 
@@ -32,7 +32,7 @@ enum COLUMN
 FilesModel::FilesModel(QObject *pnt)
     : QAbstractItemModel(pnt)
 {
-    kDebug();
+    qDebug();
     mRootFileItem = NULL;
 }
 
@@ -40,7 +40,7 @@ FilesModel::FilesModel(QObject *pnt)
 FilesModel::~FilesModel()
 {
     delete mRootFileItem;
-    kDebug() << "done";
+    qDebug() << "done";
 }
 
 
@@ -84,7 +84,7 @@ QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 
     if (row>=tdi->childCount())				// only during initialisation
     {							// without SORTABLE_VIEW
-        kDebug() << "requested index for nonexistent row" << row << "of" << tdi->childCount();
+        qDebug() << "requested index for nonexistent row" << row << "of" << tdi->childCount();
         return (QModelIndex());
     }
 
@@ -224,7 +224,7 @@ TrackDataFile *FilesModel::takeRootFileItem()
     beginResetModel();
     mRootFileItem = NULL;
     endResetModel();
-    kDebug() << "removing root" << root->name();
+    qDebug() << "removing root" << root->name();
     return (root);
 }
 
@@ -233,7 +233,7 @@ void FilesModel::setRootFileItem(TrackDataFile *root)
 {
     Q_ASSERT(mRootFileItem==NULL);
     beginResetModel();
-    kDebug() << "setting root" << root->name();
+    qDebug() << "setting root" << root->name();
     mRootFileItem = root;
     endResetModel();
 }
@@ -265,6 +265,6 @@ void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardMod
     else if (mods==Qt::ControlModifier) selFlags = QItemSelectionModel::Toggle;
     else return;
 
-    kDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
+    qDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
     emit clickedItem(indexForItem(tdp), static_cast<unsigned int>(selFlags));
 }

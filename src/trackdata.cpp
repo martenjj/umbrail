@@ -4,8 +4,8 @@
 
 #include <qhash.h>
 #include <qregexp.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <kglobal.h>
 #include <klocalizedstring.h>
 #include <kmimetype.h>
@@ -263,7 +263,7 @@ QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
     if (tz==NULL) return (KGlobal::locale()->formatDateTime(dt, KLocale::ShortDate, true));
 
     QDateTime tzdt = tz->toZoneTime(dt.toUTC());
-    //kDebug() << dt << "->" << tzdt << tz->abbreviation(dt);
+    //qDebug() << dt << "->" << tzdt << tz->abbreviation(dt);
     return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
 }
 
@@ -317,7 +317,7 @@ TrackDataItem::~TrackDataItem()
 
 void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 {
-    if (data->parent()!=NULL) kWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
+    if (data->parent()!=NULL) qWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
     Q_ASSERT(data->parent()==NULL);
 
     if (mChildren==NULL)
@@ -453,7 +453,7 @@ void TrackDataItem::setStyle(const Style &s)
 {
     if (mStyle==NULL)
     {
-        kDebug() << "set style for" << name();
+        qDebug() << "set style for" << name();
         mStyle = new Style(s);
 #ifdef MEMORY_TRACKING
         ++allocStyle;
@@ -480,7 +480,7 @@ TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
 {
     if (mChildren==NULL) return (NULL);			// no children exist
 
-    //kDebug() << "name" << wantName << "under" << name();
+    //qDebug() << "name" << wantName << "under" << name();
     for (int i = 0; i<mChildren->count(); ++i)
     {
         TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(mChildren->at(i));

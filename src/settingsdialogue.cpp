@@ -7,8 +7,8 @@
 #include <qcombobox.h>
 #include <qgroupbox.h>
 #include <qspinbox.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocalizedstring.h>
 #include <kpagedialog.h>
 #include <kcolorbutton.h>
@@ -284,7 +284,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
 
     int selectIndex = -1;
     KService::List services = KMimeTypeTrader::self()->query("image/jpeg", "KParts/ReadOnlyPart");
-    if (services.isEmpty()) kWarning() << "No viewer part available";
+    if (services.isEmpty()) qWarning() << "No viewer part available";
     for (KService::List::const_iterator it = services.constBegin(); it!=services.constEnd(); ++it)
     {
         const KService::Ptr service = (*it);
