@@ -4,8 +4,7 @@
 #include <qformlayout.h>
 
 #include <kdebug.h>
-#include <kdialog.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kglobal.h>
 
 #include "trackdata.h"

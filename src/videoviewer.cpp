@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	12-May-16						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -36,10 +36,12 @@
 #include <kdebug.h>
 #include <klocale.h>
 #include <kurl.h>
-#include <kglobal.h>
-#include <kconfig.h>
-#include <kconfiggroup.h>
+// #include <kglobal.h>
+// #include <kconfig.h>
+//#include <kconfiggroup.h>
 #include <kpushbutton.h>
+
+#include <dialogstatesaver.h>
 
 #ifdef HAVE_PHONON
 #include <Phonon/VideoPlayer>
@@ -91,17 +93,8 @@ VideoViewer::VideoViewer(const KUrl &url, QWidget *pnt)
     mTickTimer->setInterval(100);
     connect(mTickTimer, SIGNAL(timeout()), SLOT(slotTickTimer()));
 
-    // from KDialog::restoreDialogSize()
-    int scnum = QApplication::desktop()->screenNumber(parentWidget());
-    QRect desk = QApplication::desktop()->screenGeometry(scnum);
-
-    const KConfigGroup grp = KGlobal::config()->group(objectName());
-    if (grp.exists())
-    {
-        int w = grp.readEntry( QString::fromLatin1("Width %1").arg(desk.width()), 400);
-        int h = grp.readEntry(QString::fromLatin1("Height %1").arg(desk.height()), 300);
-        resize(w, h);
-    }
+    setMinimumSize(400, 300);
+    DialogStateSaver::restoreWindowState(this);
 
     mPlayer->play(url.path());
     mTickTimer->start();
@@ -110,15 +103,7 @@ VideoViewer::VideoViewer(const KUrl &url, QWidget *pnt)
 
 VideoViewer::~VideoViewer()
 {
-    // from KDialog::saveDialogSize()
-    int scnum = QApplication::desktop()->screenNumber(parentWidget());
-    QRect desk = QApplication::desktop()->screenGeometry(scnum);
-
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    const QSize sizeToSave = size();
-    grp.writeEntry(QString::fromLatin1("Width %1").arg(desk.width()), sizeToSave.width());
-    grp.writeEntry(QString::fromLatin1("Height %1").arg(desk.height()), sizeToSave.height());
-    grp.sync();
+    DialogStateSaver::saveWindowState(this);
 
     mPlayer->deleteLater();
     kDebug() << "done";

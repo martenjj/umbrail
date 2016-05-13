@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	10-Sep-15						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -30,12 +30,11 @@
 #include <qfile.h>
 
 #include <kdebug.h>
-#include <klocale.h>
-#include <kdialog.h>
 #include <kmessagebox.h>
 #include <krun.h>
 #include <kmimetype.h>
 #include <kfiledialog.h>
+#include <klocalizedstring.h>
 
 #include <kio/job.h>
 
@@ -43,6 +42,8 @@
 #include <Phonon/MediaObject>
 #include <Phonon/AudioOutput>
 #endif
+
+#include <dialogbase.h>
 
 #include "trackdata.h"
 #include "settings.h"
@@ -113,7 +114,7 @@ void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
 
 #ifdef HAVE_PHONON
     VideoViewer *v = new VideoViewer(file, NULL);
-    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Video %1", KUrl(file).fileName())));
+    v->setWindowTitle(i18nc("@title:window", "Video %1", KUrl(file).fileName()));
     v->show();
 #else
     KMessageBox::error(NULL, i18n("Phonon is not available"), i18n("Cannot play media file"));
@@ -128,7 +129,7 @@ void MediaPlayer::viewPhotoNote(const TrackDataWaypoint *item)
     if (file.isEmpty()) return;
 
     PhotoViewer *v = new PhotoViewer(file, NULL);
-    v->setWindowTitle(KDialog::makeStandardCaption(i18nc("@title:window", "Photo %1", KUrl(file).fileName())));
+    v->setWindowTitle(i18nc("@title:window", "Photo %1", KUrl(file).fileName()));
     v->show();
 }
 

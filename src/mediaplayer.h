@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	17-Jun-15						//
+//  Edit:	13-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -40,6 +40,6 @@ namespace MediaPlayer
 
     void openMediaFile(const TrackDataWaypoint *item);
     void saveMediaFile(const TrackDataWaypoint *item);
-};
+}
 
 #endif							// MEDIAPLAYER_H
