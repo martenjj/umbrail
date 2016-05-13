@@ -11,16 +11,26 @@
 
 class QDateTime;
 
-class KConfig;
+// class KConfig;
 
 class FilesView;
 class FilesModel;
 class TrackDataFile;
 class ErrorReporter;
-
 #ifdef SORTABLE_VIEW
 class QSortFilterProxyModel;
 #endif
+
+
+class DialogueConstraintFilter : public QObject
+{
+    Q_OBJECT
+
+public:
+    DialogueConstraintFilter(QObject *pnt) : QObject(pnt)	{}
+    virtual ~DialogueConstraintFilter()				{}
+    bool eventFilter(QObject *obj, QEvent *ev);
+};
 
 
 class FilesController : public QObject, public MainWindowInterface

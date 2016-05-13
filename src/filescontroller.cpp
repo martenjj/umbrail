@@ -48,6 +48,18 @@ using namespace KExiv2Iface;
 #define PHOTO_FOLDER_NAME	"Photos"
 
 
+bool DialogueConstraintFilter::eventFilter(QObject *obj, QEvent *ev)
+{
+    if (ev->type()==QEvent::Show)
+    {
+        QWidget*w = qobject_cast<QWidget *>(obj);	// auto resize when "Details" toggled
+        if (w!=nullptr) w->layout()->setSizeConstraint(QLayout::SetFixedSize);
+    }
+
+    return (false);					// always pass the event on
+}
+
+
 FilesController::FilesController(QObject *pnt)
     : QObject(pnt),
       MainWindowInterface(pnt)
@@ -183,7 +195,8 @@ case ErrorReporter::Fatal:
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
     if (detailed)
     {
-        // from KMessageBox::detailedErrorInternal()
+        // From tier1/kwidgetsaddons/src/kmessagebox.cpp KMessageBox::detailedErrorInternal()
+        // The "Details" button is recognised by its object name.
         QPushButton *detailsButton = new QPushButton;
         detailsButton->setObjectName(QStringLiteral("detailsButton"));
         detailsButton->setText(QApplication::translate("KMessageBox", "&Details")+QStringLiteral(" >>"));
@@ -191,27 +204,25 @@ case ErrorReporter::Fatal:
         buttonBox->addButton(detailsButton, QDialogButtonBox::HelpRole);
     }
 
-    // TODO: this doesn't work
     // Setting the sizeConstraint of the layout is required so that the dialogue
-    // will expand and contract when the "Details" button is used.  However, in order
-    // to be able to set it it means that the NoExec has to be used when creating
-    // the message box.  That means that there is no way to access the result of the
-    // check box when the dialogue is finished.
+    // will expand and contract when the "Details" button is used.  However, there
+    // is a problem with KMessageBox:  if the NoExec option is used so that the
+    // layout constraint can be set before the exec(), then there is no way to
+    // access the state of the check box when the dialogue finished.  Therefore,
+    // we use an event filter to set the constraint when the dialogue is shown.
+    dlg->installEventFilter(new DialogueConstraintFilter(this));
 
-    KMessageBox::createKMessageBox(dlg,
-                                   buttonBox,
-                                   QIcon::fromTheme(iconName),
-                                   message,
-                                   QStringList(),
-                                   askText,
-                                   &notAgain,
-                                   KMessageBox::AllowLink|KMessageBox::NoExec,
-                                   QString("<qt>")+list.join("<br>"));
+    KMessageBox::createKMessageBox(dlg,					// dialog
+                                   buttonBox,				// buttons
+                                   QIcon::fromTheme(iconName),		// icon
+                                   message,				// text
+                                   QStringList(),			// strlist
+                                   askText,				// ask
+                                   &notAgain,				// checkboxReturn
+                                   KMessageBox::AllowLink,  		// options
+                                   QString("<qt>")+list.join("<br>"));	// details
 
-    dlg->layout()->setSizeConstraint(QLayout::SetFixedSize);
-    dlg->exec();					// auto resize when "Details" toggled
     if (notAgain) setFileWarningsIgnored(file, true);
-    dlg->deleteLater();
     return (result);
 }
 
