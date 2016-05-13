@@ -1,21 +1,17 @@
 
 #include "latlongdialogue.h"
 
-#include <kdialog.h>
-#include <klocale.h>
-#include <kconfiggroup.h>
-#include <kglobal.h>
+#include <klocalizedstring.h>
 
 #include "latlongwidget.h"
 
 
 LatLongDialogue::LatLongDialogue(QWidget *pnt)
-    : KDialog(pnt)
+    : DialogBase(pnt)
 {
     setObjectName("LatLongDialogue");
-    setCaption(i18n("Edit Position"));
-    setButtons(KDialog::Ok|KDialog::Cancel);
-    showButtonSeparator(false);
+    setWindowTitle(i18n("Edit Position"));
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
 
     mWidget = new LatLongWidget(this);
     connect(mWidget, SIGNAL(positionChanged(double, double)), SLOT(slotUpdateButtonState()));
@@ -23,16 +19,6 @@ LatLongDialogue::LatLongDialogue(QWidget *pnt)
     setMainWidget(mWidget);
     setMinimumWidth(400);
     setMaximumWidth(440);
-
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
-}
-
-
-LatLongDialogue::~LatLongDialogue()
-{
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
 }
 
 
@@ -45,7 +31,7 @@ void LatLongDialogue::setLatLong(double lat, double lon)
 
 void LatLongDialogue::slotUpdateButtonState()
 {
-    enableButtonOk(mWidget->hasAcceptableInput());
+    setButtonEnabled(QDialogButtonBox::Ok, mWidget->hasAcceptableInput());
 }
 
 

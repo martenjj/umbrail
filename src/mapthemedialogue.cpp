@@ -7,22 +7,21 @@
 #include <qstandarditemmodel.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 
 
 #define PIXMAP_SIZE		40			// size of preview pixmap
 
 
 MapThemeDialogue::MapThemeDialogue(QStandardItemModel *model, QWidget *pnt)
-    : KDialog(pnt)
+    : DialogBase(pnt)
 {
     setObjectName("MapThemeDialogue");
 
     setModal(true);
-    setButtons(KDialog::Ok|KDialog::Cancel);
-    setButtonText(KDialog::Ok, i18n("Select"));
-    setCaption(i18n("Select Map Theme"));
-    showButtonSeparator(true);
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    setButtonText(QDialogButtonBox::Ok, i18n("Select"));
+    setWindowTitle(i18n("Select Map Theme"));
 
     QWidget *vb = new QWidget(this);
     QVBoxLayout *vlay = new QVBoxLayout(vb);
@@ -41,11 +40,6 @@ MapThemeDialogue::MapThemeDialogue(QStandardItemModel *model, QWidget *pnt)
 
     mModel = model;
     createDisplay();
-}
-
-
-MapThemeDialogue::~MapThemeDialogue()
-{
 }
 
 
@@ -98,19 +92,19 @@ void MapThemeDialogue::createDisplay()
         QWidget *hbox = new QWidget(this);
         QHBoxLayout *hlay = new QHBoxLayout(hbox);
         hlay->setMargin(0);
-        hlay->setSpacing(KDialog::spacingHint());
+        hlay->setSpacing(DialogBase::horizontalSpacing());
 
         QLabel *label = new QLabel(hbox);
         QIcon ic = themeData->data(Qt::DecorationRole).value<QIcon>();
         label->setPixmap(ic.pixmap(PIXMAP_SIZE, PIXMAP_SIZE));
-        hlay->addSpacing(KDialog::spacingHint());
+        hlay->addSpacing(DialogBase::horizontalSpacing());
         hlay->addWidget(label);
 
         label = new QLabel(QString("<qt><b>%1</b><br>%2")
                            .arg(themeData->data(Qt::DisplayRole).toString())
                            .arg(id));
         label->setTextInteractionFlags(Qt::NoTextInteraction);
-        hlay->addSpacing(KDialog::spacingHint());
+        hlay->addSpacing(DialogBase::horizontalSpacing());
         hlay->addWidget(label);
 
         hlay->addStretch(1);

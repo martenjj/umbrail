@@ -3,7 +3,7 @@
 #define CREATEWAYPOINTDIALOGUE_H
 
 
-#include <kdialog.h>
+#include <dialogbase.h>
 
 
 class QTreeView;
@@ -14,13 +14,13 @@ class FilesController;
 class LatLongWidget;
 
 
-class CreateWaypointDialogue : public KDialog
+class CreateWaypointDialogue : public DialogBase
 {
     Q_OBJECT
 
 public:
-    explicit CreateWaypointDialogue(FilesController *fc, QWidget *pnt = NULL);
-    virtual ~CreateWaypointDialogue();
+    explicit CreateWaypointDialogue(FilesController *fc, QWidget *pnt = nullptr);
+    virtual ~CreateWaypointDialogue() = default;
 
     void setSourcePoint(const TrackDataAbstractPoint *point);
     void setSourceLatLong(double lat, double lon);

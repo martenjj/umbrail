@@ -123,7 +123,7 @@ void TrackItemGeneralPage::slotChangePosition()
 
     LatLongDialogue d(this);
     d.setLatLong(mPositionLatitude, mPositionLongitude);
-    d.setButtonText(KDialog::Ok, i18nc("@action:button", "Set"));
+    d.setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Set"));
 
     if (d.exec())
     {

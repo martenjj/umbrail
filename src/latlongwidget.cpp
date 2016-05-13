@@ -12,10 +12,11 @@
 #include <QIntValidator>
 #include <QDoubleValidator>
 
-#include <kdialog.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kconfiggroup.h>
 #include <kglobal.h>
+
+#include <dialogbase.h>
 
 
 #define PRECISION	6				// how many decimal places
@@ -142,10 +143,10 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
     gl->addWidget(mLongitudeCombo, 1, 11);
 
     // layout adjustment
-    gl->setColumnMinimumWidth(1, KDialog::spacingHint());
-    gl->setColumnMinimumWidth(4, KDialog::spacingHint());
-    gl->setColumnMinimumWidth(7, KDialog::spacingHint());
-    gl->setColumnMinimumWidth(10, KDialog::spacingHint());
+    gl->setColumnMinimumWidth(1, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(4, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(7, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(10, DialogBase::horizontalSpacing());
     gl->setColumnStretch(12, 1);
 
     mTabs->addTab(w, i18n("DMS"));

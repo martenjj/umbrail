@@ -3,20 +3,20 @@
 #define MAPTHEMEDIALOGUE_H
 
 
-#include <kdialog.h>
+#include <dialogbase.h>
 
 
 class QListWidget;
 class QStandardItemModel;
 
 
-class MapThemeDialogue : public KDialog
+class MapThemeDialogue : public DialogBase
 {
     Q_OBJECT
 
 public:
-    MapThemeDialogue(QStandardItemModel *model, QWidget *pnt = NULL);
-    virtual ~MapThemeDialogue();
+    MapThemeDialogue(QStandardItemModel *model, QWidget *pnt = nullptr);
+    virtual ~MapThemeDialogue() = default;
 
     void setThemeId(const QString &id);
     QString themeId() const;

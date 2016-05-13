@@ -3,10 +3,13 @@
 #ifndef PROFILEWIDGET_H
 #define PROFILEWIDGET_H
  
-#include <kdialog.h>
-#include "mainwindowinterface.h"
+#include <dialogbase.h>
+#include <dialogstatesaver.h>
 
 #include <qvector.h>
+
+#include "mainwindowinterface.h"
+
 
 class QCheckBox;
 class QRadioButton;
@@ -15,15 +18,33 @@ class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
 class KTimeZone;
+class KConfigGroup;
 
 
-class ProfileWidget : public KDialog, public MainWindowInterface
+class ProfileWidgetStateSaver : public DialogStateSaver
 {
     Q_OBJECT
 
 public:
-    explicit ProfileWidget(QWidget *pnt = NULL);
-    virtual ~ProfileWidget();
+    ProfileWidgetStateSaver(QDialog *pnt);
+    virtual ~ProfileWidgetStateSaver() = default;
+
+protected:
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+};
+
+
+class ProfileWidget : public DialogBase, public MainWindowInterface
+{
+    Q_OBJECT
+
+public:
+    explicit ProfileWidget(QWidget *pnt = nullptr);
+    virtual ~ProfileWidget() = default;
+
+    void saveConfig(KConfigGroup &grp) const;
+    void restoreConfig(const KConfigGroup &grp);
 
 private slots:
     void slotUpdatePlot();

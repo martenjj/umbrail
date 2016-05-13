@@ -920,7 +920,7 @@ void MainWindow::slotTrackProfile()
     ProfileWidget *w = new ProfileWidget(this);
     w->setAttribute(Qt::WA_DeleteOnClose);
     w->setModal(false);
-    w->setCaption(i18n("Track Profile"));
+    w->setWindowTitle(i18n("Track Profile"));
     w->show();
 }
 

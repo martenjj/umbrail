@@ -10,8 +10,8 @@
 #include <qradiobutton.h>
 #include <qbuttongroup.h>
 #include <qlabel.h>
+#include <qdebug.h>
 
-#include <kdebug.h>
 #include <klocale.h>
 #include <kconfiggroup.h>
 #include <kglobal.h>
@@ -27,15 +27,36 @@
 #include "variableunitcombo.h"
 
 
+ProfileWidgetStateSaver::ProfileWidgetStateSaver(QDialog *pnt)
+    : DialogStateSaver(pnt)
+{
+}
+
+
+void ProfileWidgetStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+{
+    const ProfileWidget *wid = qobject_cast<const ProfileWidget *>(dialog);
+    if (wid!=nullptr) wid->saveConfig(grp);
+    DialogStateSaver::saveConfig(dialog, grp);
+}
+
+
+void ProfileWidgetStateSaver::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+{
+    ProfileWidget *wid = qobject_cast<ProfileWidget *>(dialog);
+    if (wid!=nullptr) wid->restoreConfig(grp);
+    DialogStateSaver::restoreConfig(dialog, grp);
+}
+
+
 ProfileWidget::ProfileWidget(QWidget *pnt)
-    : KDialog(pnt),
+    : DialogBase(pnt),
       MainWindowInterface(pnt)
 {
-    kDebug();
+    qDebug();
 
     setObjectName("ProfileWidget");
-    setButtons(KDialog::Close);
-    showButtonSeparator(true);
+    setButtons(QDialogButtonBox::Close);
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -48,7 +69,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(mPlot, 0, col, 1, -1);
 
     gl->setRowStretch(0, 1);
-    gl->setRowMinimumHeight(1, KDialog::spacingHint());
+    gl->setRowMinimumHeight(1, DialogBase::verticalSpacing());
 							// First column: elevation/speed label
     QLabel *l = new QLabel(i18n("Show:"), this);
     gl->addWidget(l, 2, 0, Qt::AlignRight);
@@ -74,7 +95,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(mSpeedUnit, 3, col);
 
     ++col;						// New column: spacer
-    gl->setColumnMinimumWidth(col, KDialog::spacingHint());
+    gl->setColumnMinimumWidth(col, DialogBase::horizontalSpacing());
 
     ++col;						// New column: speed source label
     l = new QLabel(i18n("Speed source:"), this);
@@ -94,7 +115,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(mSpeedTrackRadio, 3, col);
 
     ++col;						// New column: spacer
-    gl->setColumnMinimumWidth(col, KDialog::spacingHint());
+    gl->setColumnMinimumWidth(col, DialogBase::horizontalSpacing());
 
     ++col;						// New column: reference label
     l = new QLabel(i18n("Reference:"), this);
@@ -124,7 +145,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(mDistanceUnit, 3, col);
 
     ++col;						// New column: spacer
-    gl->setColumnMinimumWidth(col, KDialog::spacingHint());
+    gl->setColumnMinimumWidth(col, DialogBase::horizontalSpacing());
 
     ++col;						// New column: scaling label
 
@@ -148,10 +169,22 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->setColumnStretch(col, 1);
 
     setMainWidget(w);
+    DialogStateSaver *saver = new ProfileWidgetStateSaver(this);
+    saver->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
+    setStateSaver(saver);
 
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
+    if (!mElevationCheck->isChecked() && !mSpeedCheck->isChecked())
+    {							// if nothing on, set both on
+        mElevationCheck->setChecked(true);
+        mSpeedCheck->setChecked(true);
+    }
 
+    slotUpdatePlot();
+}
+
+
+void ProfileWidget::restoreConfig(const KConfigGroup &grp)
+{
     mElevationCheck->setChecked(grp.readEntry("ShowElevation", true));
     mSpeedCheck->setChecked(grp.readEntry("ShowSpeed", true));
     mElevationUnit->setCurrentIndex(grp.readEntry("UnitElevation", 0));
@@ -164,22 +197,11 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     mDistanceUnit->setCurrentIndex(grp.readEntry("UnitDistance", 0));
     mScaleAutoRadio->setChecked(grp.readEntry("ScaleAuto", true));
     mScaleZeroRadio->setChecked(grp.readEntry("ScaleZero", false));
-
-    if (!mElevationCheck->isChecked() && !mSpeedCheck->isChecked())
-    {
-        mElevationCheck->setChecked(true);
-        mSpeedCheck->setChecked(true);
-    }
-
-    slotUpdatePlot();
 }
 
 
-ProfileWidget::~ProfileWidget()
+void ProfileWidget::saveConfig(KConfigGroup &grp) const
 {
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
-
     grp.writeEntry("ShowElevation", mElevationCheck->isChecked());
     grp.writeEntry("ShowSpeed", mSpeedCheck->isChecked());
     grp.writeEntry("UnitElevation", mElevationUnit->currentIndex());
@@ -189,11 +211,9 @@ ProfileWidget::~ProfileWidget()
     grp.writeEntry("ReferenceTime", mReferenceTimeRadio->isChecked());
     grp.writeEntry("ReferenceDist", mReferenceDistRadio->isChecked());
     grp.writeEntry("UnitTime", mTimeUnit->currentIndex());
-    grp.writeEntry("UnitDist", mDistanceUnit->currentIndex());
+    grp.writeEntry("UnitDistance", mDistanceUnit->currentIndex());
     grp.writeEntry("ScaleAuto", mScaleAutoRadio->isChecked());
     grp.writeEntry("ScaleZero", mScaleZeroRadio->isChecked());
-
-    kDebug() << "done";
 }
 
 
@@ -305,7 +325,7 @@ void ProfileWidget::slotUpdatePlot()
     else mTimeZone = NULL;
 
     for (int i = 0; i<items.count(); ++i) getPlotData(items[i]);
-    kDebug() << "got" << mRefData.count() << "data points";
+    qDebug() << "got" << mRefData.count() << "data points";
 
     QCPGraph *graph = mPlot->graph(0);			// elevation graph
     graph->setData(mRefData, mElevData);

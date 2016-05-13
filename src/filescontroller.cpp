@@ -6,6 +6,7 @@
 #include <qscopedpointer.h>
 #include <qpushbutton.h>
 #include <qapplication.h>
+#include <qlayout.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -14,7 +15,7 @@
 #endif
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kmimetype.h>
 #include <kurl.h>
@@ -104,6 +105,7 @@ bool FilesController::fileWarningsIgnored(const KUrl &file) const
 
 void FilesController::setFileWarningsIgnored(const KUrl &file, bool ignore)
 {
+    qDebug() << file;
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
     KConfigGroup grp = KGlobal::config()->group("FileWarnings");
     grp.writeEntry(askKey.constData(), ignore);
@@ -174,12 +176,7 @@ case ErrorReporter::Fatal:
 
     // Using the message box indirectly here for versatility.
 
-//     KDialog *dlg = new KDialog(mainWindow());
-//     dlg->setButtons(detailed ? KDialog::Ok|KDialog::Details : KDialog::Ok);
-//     dlg->setCaption(caption);
-
     bool notAgain = false;
-
 
     QDialog *dlg = new QDialog(mainWindow());
     dlg->setWindowTitle(caption);
@@ -194,6 +191,13 @@ case ErrorReporter::Fatal:
         buttonBox->addButton(detailsButton, QDialogButtonBox::HelpRole);
     }
 
+    // TODO: this doesn't work
+    // Setting the sizeConstraint of the layout is required so that the dialogue
+    // will expand and contract when the "Details" button is used.  However, in order
+    // to be able to set it it means that the NoExec has to be used when creating
+    // the message box.  That means that there is no way to access the result of the
+    // check box when the dialogue is finished.
+
     KMessageBox::createKMessageBox(dlg,
                                    buttonBox,
                                    QIcon::fromTheme(iconName),
@@ -201,10 +205,13 @@ case ErrorReporter::Fatal:
                                    QStringList(),
                                    askText,
                                    &notAgain,
-                                   KMessageBox::AllowLink,
+                                   KMessageBox::AllowLink|KMessageBox::NoExec,
                                    QString("<qt>")+list.join("<br>"));
 
+    dlg->layout()->setSizeConstraint(QLayout::SetFixedSize);
+    dlg->exec();					// auto resize when "Details" toggled
     if (notAgain) setFileWarningsIgnored(file, true);
+    dlg->deleteLater();
     return (result);
 }
 

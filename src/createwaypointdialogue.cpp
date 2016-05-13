@@ -6,9 +6,7 @@
 #include <qlineedit.h>
 
 #include <kdebug.h>
-#include <klocale.h>
-#include <kglobal.h>
-#include <kconfiggroup.h>
+#include <klocalizedstring.h>
 
 #include "filescontroller.h"
 #include "filesmodel.h"
@@ -19,16 +17,15 @@
 
 
 CreateWaypointDialogue::CreateWaypointDialogue(FilesController *fc, QWidget *pnt)
-    : KDialog(pnt)
+    : DialogBase(pnt)
 {
     setObjectName("CreateWaypointDialogue");
 
     setModal(true);
-    setCaption(i18nc("@title:window", "Create Waypoint"));
-    setButtons(KDialog::Ok|KDialog::Cancel);
-    showButtonSeparator(true);
-    enableButtonOk(false);
-    setButtonText(KDialog::Ok, i18nc("@action:button", "Create"));
+    setWindowTitle(i18nc("@title:window", "Create Waypoint"));
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    setButtonEnabled(QDialogButtonBox::Ok, false);
+    setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Create"));
 
     QWidget *w = new QWidget(this);
     QFormLayout *fl = new QFormLayout(w);
@@ -76,15 +73,6 @@ CreateWaypointDialogue::CreateWaypointDialogue(FilesController *fc, QWidget *pnt
     mNameEdit->setFocus();
 
     setMinimumSize(360, 280);
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
-}
-
-
-CreateWaypointDialogue::~CreateWaypointDialogue()
-{
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
 }
 
 
@@ -140,7 +128,7 @@ TrackDataFolder *CreateWaypointDialogue::selectedFolder() const
 
 void CreateWaypointDialogue::slotSetButtonStates()
 {
-    enableButtonOk(!mNameEdit->text().isEmpty() &&
-                   mLatLongEdit->hasAcceptableInput() &&
-                   selectedFolder()!=NULL);
+    setButtonEnabled(QDialogButtonBox::Ok, !mNameEdit->text().isEmpty() &&
+                                           mLatLongEdit->hasAcceptableInput() &&
+                                           selectedFolder()!=NULL);
 }

@@ -4,19 +4,19 @@
 #define LATLONGDIALOGUE_H
 
 
-#include <kdialog.h>
+#include <dialogbase.h>
 
 
 class LatLongWidget;
 
 
-class LatLongDialogue : public KDialog
+class LatLongDialogue : public DialogBase
 {
     Q_OBJECT
 
 public:
-    explicit LatLongDialogue(QWidget *pnt = NULL);
-    virtual ~LatLongDialogue();
+    explicit LatLongDialogue(QWidget *pnt = nullptr);
+    virtual ~LatLongDialogue() = default;
 
     void setLatLong(double lat, double lon);
     double latitude() const;
