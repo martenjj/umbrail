@@ -6,7 +6,7 @@
 
 #include "importerexporterbase.h"
 
-#include <ksavefile.h>
+#include <qsavefile.h>
 
 
 class TrackDataFile;
@@ -24,7 +24,7 @@ protected:
     bool prepareSaveFile(const QUrl &file);
 
 protected:
-    KSaveFile mSaveFile;
+    QSaveFile mSaveFile;
 };
 
  

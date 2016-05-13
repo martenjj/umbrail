@@ -337,11 +337,11 @@ bool GpxExporter::save(const QUrl &file, const TrackDataFile *item)
     if (str.hasError())
     {
         qDebug() << "XML writing failed!";
-        mSaveFile.abort();
+        mSaveFile.cancelWriting();
         return (false);
     }
 
-    if (!mSaveFile.finalize())
+    if (!mSaveFile.commit())
     {
         reporter()->setError(ErrorReporter::Fatal, mSaveFile.errorString());
         return (false);
