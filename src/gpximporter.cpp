@@ -79,7 +79,7 @@ TrackDataFile *GpxImporter::load(const KUrl &file)
 
 QString GpxImporter::filter()
 {
-    return ("*.gpx|GPX files");
+    return ("GPX files (*.gpx)");
 }
 
 

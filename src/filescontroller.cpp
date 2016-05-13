@@ -989,14 +989,14 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
 
 //////////////////////////////////////////////////////////////////////////
 
-static const char allFilter[] = "*|All Files";
+static const char allFilter[] = "All Files (*)";
 
 
 QString FilesController::allExportFilters()
 {
     QStringList filters;
     filters << GpxExporter::filter();
-    return (filters.join("\n"));
+    return (filters.join(";;"));
 }
 
 
@@ -1006,7 +1006,7 @@ QString FilesController::allImportFilters()
     QStringList filters;
     filters << GpxImporter::filter();
     filters << allFilter;
-    return (filters.join("\n"));
+    return (filters.join(";;"));
 }
 
 
@@ -1016,5 +1016,5 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
     QStringList filters;
     filters << GpxImporter::filter();
     if (includeAllFiles) filters << allFilter;
-    return (filters.join("\n"));
+    return (filters.join(";;"));
 }

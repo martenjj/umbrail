@@ -3,11 +3,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-
 #include <kxmlguiwindow.h>
-#include <kurl.h>
 
 #include "filescontroller.h"
+
 
 class QLabel;
 class QUndoStack;
@@ -19,11 +18,11 @@ class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
 class QMimeData;
+class QUrl;
 
 class KToggleAction;
 class KSelectAction;
 class KSqueezedTextLabel;
-class KUrl;
 
 class MapController;
 class Project;
@@ -41,7 +40,7 @@ public:
     MapController *mapController() const	{ return (mMapController); }
     FilesController *filesController() const	{ return (mFilesController); }
 
-    bool loadProject(const KUrl &loadFrom);
+    bool loadProject(const QUrl &loadFrom);
 
     void executeCommand(QUndoCommand *cmd);
 
@@ -90,8 +89,8 @@ private:
     void setupActions();
     void setupStatusBar();
 
-    bool save(const KUrl &to);
-    FilesController::Status load(const KUrl &from);
+    bool save(const QUrl &to);
+    FilesController::Status load(const QUrl &from);
 
     bool acceptMimeData(const QMimeData *mimeData);
 

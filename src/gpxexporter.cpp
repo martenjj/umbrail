@@ -353,5 +353,5 @@ bool GpxExporter::save(const KUrl &file, const TrackDataFile *item)
 
 QString GpxExporter::filter()
 {
-    return ("*.gpx|GPX files");
+    return ("GPX files (*.gpx)");
 }

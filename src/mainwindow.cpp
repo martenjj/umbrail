@@ -15,6 +15,11 @@
 #include <qmimedata.h>
 #include <qstatusbar.h>
 #include <qdebug.h>
+#include <qurl.h>
+#include <qfiledialog.h>
+#include <qimagereader.h>
+#include <qmimetype.h>
+#include <qmimedatabase.h>
 
 #include <klocalizedstring.h>
 #include <kaction.h>
@@ -22,13 +27,13 @@
 #include <kselectaction.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
-#include <kfiledialog.h>
 #include <kmessagebox.h>
 #include <ksqueezedtextlabel.h>
 #include <kmimetype.h>
-#include <kurl.h>
 #include <kactionmenu.h>
-#include <kimageio.h>
+
+#include <recentsaver.h>
+#include <imagefilter.h>
 
 #include "filescontroller.h"
 #include "filesview.h"
@@ -452,7 +457,7 @@ void MainWindow::saveProperties(KConfigGroup &grp)
 
     Settings::setMainWindowSplitterState(mSplitter->saveState().toBase64());
 
-    Settings::self()->writeConfig();
+    Settings::self()->save();
 }
 
 
@@ -472,11 +477,11 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 
 
 // Error reporting and status messages are done in FilesController::exportFile()
-bool MainWindow::save(const KUrl &to)
+bool MainWindow::save(const QUrl &to)
 {
     qDebug() << "to" << to;
 
-    if (!to.isValid() || !to.hasPath()) return (false);	// should never happen
+    if (!to.isValid()) return (false);			// should never happen
     QDir d(to.path());					// should be absolute already,
     QString savePath = d.absolutePath();		// but just make sure
 
@@ -498,12 +503,12 @@ bool MainWindow::save(const KUrl &to)
 
 
 // Error reporting and status messages are done in FilesController::importFile()
-FilesController::Status MainWindow::load(const KUrl &from)
+FilesController::Status MainWindow::load(const QUrl &from)
 {
     qDebug() << "from" << from;
 
     // TODO: allow non-local files
-    if (!from.isValid() || !from.hasPath()) return (FilesController::StatusFailed);
+    if (!from.isValid()) return (FilesController::StatusFailed);
     QDir d(from.path());				// should be absolute already,
     QString loadPath = d.absolutePath();		// but just make sure
 
@@ -551,26 +556,30 @@ void MainWindow::slotNewProject()
 
 void MainWindow::slotOpenProject()
 {
-    KFileDialog d(QUrl("kfiledialog:///project/"), FilesController::allProjectFilters(true), this);
-    d.setWindowTitle(i18n("Open Tracks File"));
-    d.setOperationMode(KFileDialog::Opening);
-    d.setKeepLocation(true);
-    d.setMode(KFile::File|KFile::LocalOnly);
+    RecentSaver saver("project");
+    QUrl file = QFileDialog::getOpenFileUrl(this,					// parent
+                                            i18n("Open Tracks File"),			// caption
+                                            saver.recentUrl(),				// dir
+                                            FilesController::allProjectFilters(true),	// filter
+                                            NULL,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList("file"));			// supportedSchemes
 
-    if (!d.exec()) return;
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
 
-    if (filesController()->model()->isEmpty()) loadProject(d.selectedUrl());
+    if (filesController()->model()->isEmpty()) loadProject(file);
     else
     {
         MainWindow *w = new MainWindow(NULL);
-        const bool ok = w->loadProject(d.selectedUrl());
+        const bool ok = w->loadProject(file);
         if (ok) w->show();
         else w->deleteLater();
     }
 }
 
 
-bool MainWindow::loadProject(const KUrl &loadFrom)
+bool MainWindow::loadProject(const QUrl &loadFrom)
 {
     if (!loadFrom.isValid()) return (false);
     qDebug() << "from" << loadFrom;
@@ -595,7 +604,7 @@ void MainWindow::slotSaveProject()
         return;
     }
 
-    KUrl projectFile = mProject->fileName();
+    QUrl projectFile = mProject->fileName();
     qDebug() << "to" << projectFile;
 
     if (save(projectFile))
@@ -609,62 +618,72 @@ void MainWindow::slotSaveProject()
 
 void MainWindow::slotSaveAs()
 {
-    KFileDialog d(QUrl("kfiledialog:///project/untitled"), FilesController::allProjectFilters(false), this);
-    d.setWindowTitle(i18n("Save Tracks File As"));
-    d.setOperationMode(KFileDialog::Saving);
-    d.setKeepLocation(true);
-    d.setMode(KFile::File|KFile::LocalOnly);
-    d.setConfirmOverwrite(true);
+    RecentSaver saver("project");
+    QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
+                                            i18n("Save Tracks File As"),		// caption
+                                            saver.recentUrl("untitled"),		// dir
+                                            FilesController::allProjectFilters(false),	// filter
+                                            NULL,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList("file"));			// supportedSchemes
 
-    if (!d.exec()) return;
-    KUrl saveTo = d.selectedUrl();
-    if (!saveTo.isValid()) return;			// should never happen,
-							// but check to avoid recursion
-    mProject->setFileName(saveTo);
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
+
+    mProject->setFileName(file);
     slotSaveProject();
 }
 
 
 void MainWindow::slotImportFile()
 {
-    KFileDialog d(QUrl("kfiledialog:///import"), FilesController::allImportFilters(), this);
-    d.setWindowTitle(i18n("Import File"));
-    d.setOperationMode(KFileDialog::Opening);
-    d.setKeepLocation(true);
-    d.setMode(KFile::File|KFile::LocalOnly);
+    RecentSaver saver("import");
+    QUrl file = QFileDialog::getOpenFileUrl(this,					// parent
+                                            i18n("Import File"),			// caption
+                                            saver.recentUrl(),				// dir
+                                            FilesController::allImportFilters(),	// filter
+                                            NULL,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList("file"));			// supportedSchemes
 
-    if (!d.exec()) return;
-    filesController()->importFile(d.selectedUrl());
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
+    filesController()->importFile(file);
 }
 
 
 void MainWindow::slotExportFile()
 {
-    KFileDialog d(QUrl("kfiledialog:///export/"+mProject->name(true)), FilesController::allExportFilters(), this);
-    d.setWindowTitle(i18n("Export File"));
-    d.setOperationMode(KFileDialog::Saving);
-    d.setConfirmOverwrite(true);
-    d.setKeepLocation(true);
-    d.setMode(KFile::File|KFile::LocalOnly);
+    RecentSaver saver("project");
+    QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
+                                            i18n("Export File As"),			// caption
+                                            saver.recentUrl(mProject->name(true)),	// dir
+                                            FilesController::allExportFilters(),	// filter
+                                            NULL,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList("file"));			// supportedSchemes
 
-    if (!d.exec()) return;
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
 //////// TODO: export selected item
-//    filesController()->exportFile(d.selectedUrl());
+//    filesController()->exportFile(file);
 }
 
 
 void MainWindow::slotImportPhoto()
 {
-    const QStringList mimeTypes = KImageIO::mimeTypes(KImageIO::Reading);
-    KFileDialog d(KUrl("kfiledialog:///importphoto"), mimeTypes.join(" "), this);
-    d.setWindowTitle(i18n("Import Photo"));
-    d.setOperationMode(KFileDialog::Opening);
-    d.setKeepLocation(true);
-    d.setMode(KFile::Files|KFile::LocalOnly);
-    d.setInlinePreviewShown(true);
+    RecentSaver saver("importphoto");
+    QList<QUrl> files = QFileDialog::getOpenFileUrls(this,				// parent
+                                                     i18n("Import Photo"),		// caption
+                                                     saver.recentUrl(),			// dir
+                                                     ImageFilter::qtFilterString(ImageFilter::Reading, ImageFilter::AllImages),
+                                                     NULL,				// selectedFilter,
+                                                     QFileDialog::Options(),		// options
+                                                     QStringList("file"));		// supportedSchemes
 
-    if (!d.exec()) return;
-    filesController()->importPhoto(d.selectedUrls());
+    if (files.isEmpty()) return;			// didn't get a file name
+    saver.save(files.first());
+    filesController()->importPhoto(files);
 }
 
 
@@ -995,20 +1014,20 @@ bool MainWindow::acceptMimeData(const QMimeData *mimeData)
     if (!mimeData->hasUrls()) return (false);
     QList<QUrl> urls = mimeData->urls();
 
-    const QStringList imageTypes = KImageIO::mimeTypes(KImageIO::Reading);
+    QList<QByteArray> imageTypes = QImageReader::supportedMimeTypes();
 
-    KUrl::List validUrls;
-    for (QList<QUrl>::const_iterator it = urls.constBegin(); it!=urls.constEnd(); ++it)
+    QMimeDatabase db;
+    QList<QUrl> validUrls;
+    foreach (const QUrl &url, urls)
     {
-        const KUrl url = (*it);
-        const KMimeType::Ptr mime = KMimeType::findByUrl(url);
-
-        if (imageTypes.contains(mime->name()))
+        const QMimeType mime = db.mimeTypeForUrl(url);
+        const QByteArray name = mime.name().toLatin1();
+        if (imageTypes.contains(name))
         {
-            qDebug() << "accept image" << url << "mimetype" << mime->name();
+            qDebug() << "accept image" << url << "mimetype" << name;
             validUrls.append(url);
         }
-        else qWarning() << "reject" << url << "mimetype" << mime->name();
+        else qWarning() << "reject" << url << "mimetype" << name;
     }
 
     if (validUrls.isEmpty())				// no usable URLs found
