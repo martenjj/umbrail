@@ -5,10 +5,11 @@
 #include <qlabel.h>
 
 #include <kdebug.h>
-#include <klocale.h>
+#include <klocalizedstring.h>
 #include <ktabwidget.h>
 #include <kglobal.h>
 #include <kiconloader.h>
+#include <kconfiggroup.h>
 
 #include "trackdata.h"
 #include "trackpropertiespage.h"
@@ -19,15 +20,30 @@
 #include "style.h"
 
 
+void TrackPropertiesStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+{
+    const TrackPropertiesDialogue *wid = qobject_cast<const TrackPropertiesDialogue *>(dialog);
+    if (wid!=nullptr) grp.writeEntry("Index", wid->tabWidget()->currentIndex());
+    DialogStateSaver::saveConfig(dialog, grp);
+}
+
+
+void TrackPropertiesStateSaver::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+{
+    TrackPropertiesDialogue *wid = qobject_cast<TrackPropertiesDialogue *>(dialog);
+    if (wid!=nullptr) wid->tabWidget()->setCurrentIndex(grp.readEntry("Index", 0));
+    DialogStateSaver::restoreConfig(dialog, grp);
+}
+
 
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : KDialog(pnt)
+    : DialogBase(pnt)
 {
     setObjectName("TrackPropertiesDialogue");
 
     setModal(true);
-    setButtons(KDialog::Ok|KDialog::Cancel);
-    showButtonSeparator(false);
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    setButtonSeparatorShown(false);
 
     Q_ASSERT(!items->isEmpty());
     const TrackDataItem *item = items->first();
@@ -37,9 +53,9 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
 
-    gl->setColumnMinimumWidth(0, KDialog::marginHint());
+    gl->setColumnMinimumWidth(0, DialogBase::horizontalSpacing());
     gl->setColumnStretch(1, 1);
-    gl->setColumnMinimumWidth(3, KDialog::marginHint());
+    gl->setColumnMinimumWidth(3, DialogBase::horizontalSpacing());
 
     QLabel *typeLabel = new QLabel("?", this);
     gl->addWidget(typeLabel, 0, 1, Qt::AlignLeft);
@@ -104,10 +120,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     mTabWidget->addTab(page, i18nc("@title:tab", "Metadata"));
 
     setMinimumSize(320,380);
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    restoreDialogSize(grp);
-    int idx = grp.readEntry("Index", -1);
-    if (idx!=-1) mTabWidget->setCurrentIndex(idx);
+    setStateSaver(new TrackPropertiesStateSaver(this));
 
     // TODO: hasStyle() a virtual of TrackDataItem
     bool styleEnabled = (items->count()==1);		// whether "Style" is applicable here
@@ -121,20 +134,9 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 }
 
 
-TrackPropertiesDialogue::~TrackPropertiesDialogue()
-{
-    KConfigGroup grp = KGlobal::config()->group(objectName());
-    saveDialogSize(grp);
-    grp.writeEntry("Index", mTabWidget->currentIndex());
-}
-
-
-
-
-
 void TrackPropertiesDialogue::slotDataChanged()
 {
-    enableButtonOk(mGeneralPage->isDataValid() && mDetailPage->isDataValid() && mStylePage->isDataValid());
+    setButtonEnabled(QDialogButtonBox::Ok, mGeneralPage->isDataValid() && mDetailPage->isDataValid() && mStylePage->isDataValid());
 }
 
 

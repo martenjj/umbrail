@@ -5,7 +5,8 @@
 
 #include <qlist.h>
 
-#include <kdialog.h>
+#include <dialogbase.h>
+#include <dialogstatesaver.h>
 
 #include "trackdata.h"
 
@@ -20,13 +21,27 @@ class TrackItemStylePage;
 class TrackItemMetadataPage;
 
 
-class TrackPropertiesDialogue : public KDialog
+class TrackPropertiesStateSaver : public DialogStateSaver
+{
+    Q_OBJECT
+
+public:
+    TrackPropertiesStateSaver(QDialog *pnt) : DialogStateSaver(pnt)	{}
+    virtual ~TrackPropertiesStateSaver() = default;
+
+protected:
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+};
+
+
+class TrackPropertiesDialogue : public DialogBase
 {
     Q_OBJECT
 
 public:
     TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt = NULL);
-    virtual ~TrackPropertiesDialogue();
+    virtual ~TrackPropertiesDialogue() = default;
 
     QString newItemName() const;
     QString newItemDesc() const;
@@ -35,6 +50,8 @@ public:
     QString newTimeZone() const;
     bool newPointPosition(double *newLat, double *newLon) const;
     TrackData::WaypointStatus newWaypointStatus() const;
+
+    KTabWidget *tabWidget() const			{ return (mTabWidget); }
 
 protected slots:
     void slotDataChanged();

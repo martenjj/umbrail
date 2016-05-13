@@ -648,7 +648,7 @@ void FilesController::slotTrackProperties()
 
     TrackPropertiesDialogue d(&items, view());
     QString actText = CommandBase::senderText(sender());
-    d.setCaption(actText);
+    d.setWindowTitle(actText);
 
     if (!d.exec()) return;
 
