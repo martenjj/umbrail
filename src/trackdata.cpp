@@ -6,7 +6,6 @@
 #include <qregexp.h>
 #include <qdebug.h>
 
-#include <kglobal.h>
 #include <klocalizedstring.h>
 #include <kmimetype.h>
 #include <ktimezone.h>
@@ -260,11 +259,11 @@ QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
 QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
 {
     if (!dt.isValid()) return (i18nc("an unknown quantity", "unknown"));
-    if (tz==NULL) return (KGlobal::locale()->formatDateTime(dt, KLocale::ShortDate, true));
+    if (tz==NULL) return (QLocale().toString(dt, QLocale::ShortFormat));
 
     QDateTime tzdt = tz->toZoneTime(dt.toUTC());
     //qDebug() << dt << "->" << tzdt << tz->abbreviation(dt);
-    return (KGlobal::locale()->formatDateTime(tzdt, KLocale::ShortDate, true)+" "+tz->abbreviation(dt).constData());
+    return (QLocale().toString(tzdt, QLocale::ShortFormat)+" "+tz->abbreviation(dt).constData());
 }
 
 

@@ -64,8 +64,17 @@ void TrackPropertiesPage::addSeparatorField(const QString &title)
 void TrackPropertiesPage::setTimeZone(const QString &name)
 {
     qDebug() << name;
-    mTimeZone = new KTimeZone(KSystemTimeZones::zone(name));
-    qDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
+    delete mTimeZone;
+    if (name.isEmpty())
+    {
+        mTimeZone = NULL;
+        qDebug() << "set to no zone";
+    }
+    else
+    {
+        mTimeZone = new KTimeZone(KSystemTimeZones::zone(name));
+        qDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
+    }
     emit updateTimeZones(timeZone());
 }
 
