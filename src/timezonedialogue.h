@@ -7,7 +7,7 @@
 #include <dialogstatesaver.h>
 
 
-class K4TimeZoneWidget;
+class TimeZoneWidget;
 
 
 class TimeZoneStateSaver : public DialogStateSaver
@@ -32,10 +32,10 @@ public:
     explicit TimeZoneDialogue(QWidget *pnt = nullptr);
     virtual ~TimeZoneDialogue() = default;
 
-    void setTimeZone(const QString &zone);
+    void setTimeZone(const QByteArray &zone);
     QString timeZone() const;
 
-    K4TimeZoneWidget *timeZoneWidget() const		{ return (mTimeZoneWidget); }
+    TimeZoneWidget *timeZoneWidget() const		{ return (mTimeZoneWidget); }
 
 protected slots:
     void slotUseUTC();
@@ -45,7 +45,7 @@ private slots:
     void slotTimeZoneChanged();
 
 private:
-    K4TimeZoneWidget *mTimeZoneWidget;
+    TimeZoneWidget *mTimeZoneWidget;
     bool mReturnUTC;
 };
 

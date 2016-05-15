@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	15-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -81,6 +81,6 @@ QString TimeZoneSelector::timeZone() const
 void TimeZoneSelector::slotChangeZone()
 {
     TimeZoneDialogue d(this);
-    d.setTimeZone(timeZone());
+    d.setTimeZone(timeZone().toLatin1());
     if (d.exec()) setTimeZone(d.timeZone());		// will emit the signal
 }

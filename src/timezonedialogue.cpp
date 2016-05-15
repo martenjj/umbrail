@@ -6,12 +6,12 @@
 #include <qheaderview.h>
 #include <qpushbutton.h>
 #include <qdebug.h>
+#include <qtimezone.h>
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
-#include <k4timezonewidget.h>
+#include <timezonewidget.h>
 #include <ktreewidgetsearchline.h>
-#include <ksystemtimezone.h>
 
 
 void TimeZoneStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
@@ -41,12 +41,12 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 
     setModal(true);
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults);
+    buttonBox()->button(QDialogButtonBox::Ok)->setDefault(true);
     setButtonText(QDialogButtonBox::Ok, i18n("Select"));
     setButtonText(QDialogButtonBox::Reset, i18nc("@action:button", "Reset to UTC"));
     setButtonText(QDialogButtonBox::RestoreDefaults, i18nc("@action:button", "System Time Zone"));
     setButtonIcon(QDialogButtonBox::RestoreDefaults, buttonBox()->button(QDialogButtonBox::Reset)->icon());
     setWindowTitle(i18n("Select Time Zone"));
-    buttonBox()->button(QDialogButtonBox::Ok)->setDefault(true);
 
     connect(buttonBox()->button(QDialogButtonBox::Reset), &QPushButton::clicked, this, &TimeZoneDialogue::slotUseUTC);
     connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &TimeZoneDialogue::slotUseSystem);
@@ -55,7 +55,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     setMainWidget(w);
     QGridLayout *gl = new QGridLayout(w);
 
-    mTimeZoneWidget = new K4TimeZoneWidget(this);
+    mTimeZoneWidget = new TimeZoneWidget(this);
     mTimeZoneWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(mTimeZoneWidget, SIGNAL(itemSelectionChanged()), SLOT(slotTimeZoneChanged()));
     gl->addWidget(mTimeZoneWidget, 1, 0, 1, -1);
@@ -77,7 +77,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 }
 
 
-void TimeZoneDialogue::setTimeZone(const QString &zone)
+void TimeZoneDialogue::setTimeZone(const QByteArray &zone)
 {
     qDebug() << zone;
     mTimeZoneWidget->setSelected(zone, true);
@@ -101,7 +101,7 @@ void TimeZoneDialogue::slotUseUTC()
 
 void TimeZoneDialogue::slotUseSystem()
 {
-    mTimeZoneWidget->setSelected(KSystemTimeZones::local().name(), true);
+    mTimeZoneWidget->setSelected(QTimeZone::systemTimeZone().id(), true);
     accept();
 }
 
