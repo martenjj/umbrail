@@ -58,7 +58,6 @@ private:
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
-    void slotSystemPaletteChanged();
 
 private:
     ReverseGeocodingRunnerManager *mRunnerManager;

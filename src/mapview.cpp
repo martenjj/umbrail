@@ -11,7 +11,6 @@
 #include <kxmlguifactory.h>
 #include <kaction.h>
 #include <kcolorscheme.h>
-#include <kglobalsettings.h>
 
 #include <marble/MarbleWidgetInputHandler.h>
 #include <marble/GeoDataPlacemark.h>
@@ -48,9 +47,6 @@ MapView::MapView(QWidget *pnt)
     MarbleWidgetInputHandler *ih = inputHandler();
     disconnect(ih, SIGNAL(rmbRequest(int,int)), NULL, NULL);
     connect(ih, SIGNAL(rmbRequest(int,int)), SLOT(slotRmbRequest(int,int)));
-
-    // Watch for system palette changes
-    connect(KGlobalSettings::self(), SIGNAL(kdisplayPaletteChanged()), SLOT(slotSystemPaletteChanged()));
 
     // Modify cursor shape
     installEventFilter(this);
@@ -264,14 +260,6 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 }
 
 
-void MapView::slotSystemPaletteChanged()
-{
-    bool syscol = Settings::selectedUseSystemColours();
-    qDebug() << "using system?" << syscol;
-    if (syscol) update();
-}
-
-
 void MapView::setMovePointsMode(bool on)
 {
     qDebug() << on;
@@ -287,6 +275,13 @@ bool MapView::eventFilter(QObject *obj, QEvent *ev)
         // Marble forces the "hand" cursor while idle, see
         // MarbleWidgetDefaultInputHandler::eventFilter()
         if (cursor().shape()==Qt::OpenHandCursor) setCursor(Qt::CrossCursor);
+    }
+    else if (ev->type()==QEvent::PaletteChange)		// watch for palette changes
+    {
+        // formerly in slotSystemPaletteChanged()
+        bool syscol = Settings::selectedUseSystemColours();
+        qDebug() << "using system?" << syscol;
+        if (syscol) update();
     }
 
     return (false);					// pass event on
