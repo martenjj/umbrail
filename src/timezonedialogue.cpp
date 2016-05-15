@@ -10,8 +10,9 @@
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
-#include <timezonewidget.h>
 #include <ktreewidgetsearchline.h>
+
+#include "timezonewidget.h"
 
 
 void TimeZoneStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const

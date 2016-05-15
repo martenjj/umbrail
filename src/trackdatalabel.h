@@ -5,11 +5,8 @@
 #include <qlabel.h>
 #include <qdatetime.h>
 
-class KTimeZone;
+class QTimeZone;
 class TrackDataItem;
-
-
-
 
 
 class TrackDataLabel : public QLabel
@@ -17,16 +14,16 @@ class TrackDataLabel : public QLabel
     Q_OBJECT
 
 public:
-    TrackDataLabel(const QString &str, QWidget *pnt = NULL);
-    TrackDataLabel(int i, QWidget *pnt = NULL);
-    TrackDataLabel(const QDateTime &dt, QWidget *pnt = NULL);
+    explicit TrackDataLabel(const QString &str, QWidget *pnt = NULL);
+    explicit TrackDataLabel(int i, QWidget *pnt = NULL);
+    explicit TrackDataLabel(const QDateTime &dt, QWidget *pnt = NULL);
     TrackDataLabel(double lat, double lon, QWidget *pnt = NULL);
     TrackDataLabel(double lat, double lon, bool blankIfUnknown, QWidget *pnt = NULL);
 
-    virtual ~TrackDataLabel()					{}
+    virtual ~TrackDataLabel() = default;
 
 private slots:
-    void slotTimeZoneChanged(const KTimeZone *tz);
+    void slotTimeZoneChanged(const QTimeZone *tz);
 
 private:
     void init();
@@ -34,7 +31,5 @@ private:
 private:
     QDateTime mDateTime;
 };
-
-
 
 #endif							// TRACKDATALABEL_H

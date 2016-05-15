@@ -5,11 +5,10 @@
 #include <qhash.h>
 #include <qregexp.h>
 #include <qdebug.h>
+#include <qtimezone.h>
 
 #include <klocalizedstring.h>
 #include <kmimetype.h>
-#include <ktimezone.h>
-#include <ksystemtimezone.h>
 
 #include "style.h"
 #include "dataindexer.h"
@@ -216,7 +215,7 @@ static QString toDMS(double d, int degWidth, char posMark, char negMark)
 
     return (QString("%1%2%3'%4\"%5")
             .arg(deg, degWidth)
-            .arg(QLatin1Char(0xB0))
+            .arg(QChar(0xB0))
             .arg(min, 2, 10, QLatin1Char('0'))
             .arg(d, 4, 'f', 1, QLatin1Char('0'))
             .arg(mark));
@@ -256,14 +255,15 @@ QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
 }
 
 
-QString TrackData::formattedTime(const QDateTime &dt, const KTimeZone *tz)
+QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 {
     if (!dt.isValid()) return (i18nc("an unknown quantity", "unknown"));
     if (tz==NULL) return (QLocale().toString(dt, QLocale::ShortFormat));
 
-    QDateTime tzdt = tz->toZoneTime(dt.toUTC());
+    QDateTime tzdt = dt.toUTC().toTimeZone(*tz);
+    // QDateTime tzdt = tz->toZoneTime(dt.toUTC());
     //qDebug() << dt << "->" << tzdt << tz->abbreviation(dt);
-    return (QLocale().toString(tzdt, QLocale::ShortFormat)+" "+tz->abbreviation(dt).constData());
+    return (QLocale().toString(tzdt, QLocale::ShortFormat)+" "+tz->abbreviation(dt));
 }
 
 
@@ -584,8 +584,9 @@ QString TrackDataAbstractPoint::formattedTime(bool withZone) const
         QString zoneName = timeZone();
         if (!zoneName.isEmpty())
         {
-            const KTimeZone tz = KSystemTimeZones::zone(zoneName);
-            return (TrackData::formattedTime(mDateTime, &tz));
+            QTimeZone tz(zoneName.toLatin1());
+            if (tz.isValid()) return (TrackData::formattedTime(mDateTime, &tz));
+            qWarning() << "unknown time zone" << zoneName;
         }
     }
 

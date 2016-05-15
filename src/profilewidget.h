@@ -13,11 +13,11 @@
 
 class QCheckBox;
 class QRadioButton;
+class QTimeZone;
 class TrackDataItem;
 class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
-class KTimeZone;
 class KConfigGroup;
 
 
@@ -41,7 +41,7 @@ class ProfileWidget : public DialogBase, public MainWindowInterface
 
 public:
     explicit ProfileWidget(QWidget *pnt = nullptr);
-    virtual ~ProfileWidget() = default;
+    virtual ~ProfileWidget();
 
     void saveConfig(KConfigGroup &grp) const;
     void restoreConfig(const KConfigGroup &grp);
@@ -78,7 +78,7 @@ private:
     const TrackDataTrackpoint *mPrevPoint;
 
     time_t mBaseTime;
-    KTimeZone *mTimeZone;
+    QTimeZone *mTimeZone;
 };
 
 #endif							// PROFILEWIDGET_H

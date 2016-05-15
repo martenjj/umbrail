@@ -30,6 +30,9 @@
 #include <klocalizedstring.h>
 
 
+#undef DEBUG_ZONES
+
+
 enum Columns
 {
     CityColumn = 0,
@@ -78,8 +81,9 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
     {
         const QTimeZone zone(zoneId);
         const QString continentCity = zone.id();
+#ifdef DEBUG_ZONES
         qDebug() << "zone:" << continentCity;
-
+#endif
         const int separator = continentCity.lastIndexOf('/');
         // Make up the localized key that will be used for sorting.
         // Example: i18n(Asia/Tokyo) -> key = "i18n(Tokyo)|i18n(Asia)|Asia/Tokyo"
@@ -95,8 +99,9 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
     {
         const QTimeZone zone = zonesByCity.value(key);
         const QByteArray tzName = zone.id();
+#ifdef DEBUG_ZONES
         qDebug() << "city" << key << "zone" << tzName;
-
+#endif
         QString comment = zone.comment();
         if (!comment.isEmpty()) comment = i18n(comment.toLocal8Bit().constData());
 
@@ -120,14 +125,16 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
             if (countryCode.contains('_')) countryCode = countryCode.section('_', -1).toLower();
         }
         else qWarning() << "no locales found for country" << zone.country();
+#ifdef DEBUG_ZONES
         qDebug() << "  country code" << countryCode;
-
+#endif
         QString countryName = QLocale::countryToString(zone.country());
 #ifdef Q_OS_UNIX
         if (countryCode=="C") countryName = i18n("POSIX");
 #endif
+#ifdef DEBUG_ZONES
         qDebug() << "  country name" << countryName;
-
+#endif
         if (countryName.isEmpty())
         {
             if (countryCode.isEmpty()) continentCity.removeLast();
@@ -138,8 +145,9 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
             continentCity.removeLast();
             if (continentCity.isEmpty() || countryName!=continentCity.last()) continentCity.append(countryName);
         }
+#ifdef DEBUG_ZONES
         qDebug() << "  cc" << continentCity.join('|');
-
+#endif
         listItem->setText(RegionColumn, continentCity.join(QChar('/')));
         listItem->setText(CommentColumn, comment);
         listItem->setData(CityColumn, ZoneRole, tzName);	// store zone ID in custom role

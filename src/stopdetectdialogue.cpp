@@ -14,11 +14,10 @@
 #include <qcursor.h>
 #include <qlineedit.h>
 #include <qdebug.h>
+#include <qtimezone.h>
 
 #include <klocalizedstring.h>
 #include <kseparator.h>
-#include <ktimezone.h>
-#include <ksystemtimezone.h>
 
 #include <dialogstatesaver.h>
 
@@ -155,6 +154,7 @@ StopDetectDialogue::~StopDetectDialogue()
 void StopDetectDialogue::showEvent(QShowEvent *ev)
 {
     qDebug();
+    DialogBase::showEvent(ev);
     QTimer::singleShot(0, this, SLOT(slotDetectStops()));
 }
 
@@ -237,9 +237,9 @@ void StopDetectDialogue::slotDetectStops()
 // may need sorting for time here
 
     // Resolve the file time zone
-    KTimeZone tz;
+    QTimeZone tz;
     QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
-    if (!zoneName.isEmpty()) tz = KSystemTimeZones::zone(zoneName);
+    if (!zoneName.isEmpty()) tz = QTimeZone(zoneName.toLatin1());
 
 // Detect stops 
 //
@@ -366,7 +366,7 @@ void StopDetectDialogue::slotDetectStops()
             {
                 qDebug() << "@@@@@@@@@@@ valid stop found";
 							// do time zone conversion
-                if (tz.isValid()) dt1 = tz.toZoneTime(dt1.toUTC());
+                if (tz.isValid()) dt1 = dt1.toUTC().toTimeZone(tz);
 
                 QString text1 = dt1.toString("hh:mm:ss");
                 QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));

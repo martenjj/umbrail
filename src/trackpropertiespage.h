@@ -5,9 +5,9 @@
 #include <qwidget.h>
 
 class QFormLayout;
-class KTimeZone;
-class TrackDataItem;
+class QTimeZone;
 class QLabel;
+class TrackDataItem;
 
 
 #define CREATE_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
@@ -29,7 +29,7 @@ public:
 
     virtual bool isDataValid() const				{ return (true); }
 
-    KTimeZone *timeZone() const					{ return (mTimeZone); }
+    QTimeZone *timeZone() const					{ return (mTimeZone); }
     bool isEmpty() const					{ return (mIsEmpty); }
 
 public slots:
@@ -51,11 +51,11 @@ protected slots:
 
 signals:
     void dataChanged();
-    void updateTimeZones(const KTimeZone *tz);
+    void updateTimeZones(const QTimeZone *tz);
 
 private:
     bool mIsEmpty;
-    KTimeZone *mTimeZone;
+    QTimeZone *mTimeZone;
 };
 
 #endif							// TRACKPROPERTIESPAGE_H

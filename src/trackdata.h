@@ -12,7 +12,7 @@
 #include <qurl.h>
 
 class QWidget;
-class KTimeZone;
+class QTimeZone;
 class Style;
 class TrackDataItem;
 class TrackDataFolder;
@@ -150,7 +150,7 @@ namespace TrackData
 
     QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
     QString formattedDuration(unsigned t, bool blankIfZero = false);
-    QString formattedTime(const QDateTime &dt, const KTimeZone *tz = NULL);
+    QString formattedTime(const QDateTime &dt, const QTimeZone *tz = NULL);
 
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
 }

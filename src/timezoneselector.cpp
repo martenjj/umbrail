@@ -32,7 +32,6 @@
 
 #include <klocalizedstring.h>
 #include <klineedit.h>
-#include <ksystemtimezone.h>
 
 #include "timezonedialogue.h"
 

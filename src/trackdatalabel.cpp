@@ -3,11 +3,8 @@
 
 #include <qdebug.h>
 
-#include <ksystemtimezone.h>
-
 #include "trackdata.h"
 #include "trackpropertiespage.h"
-
 
 
 TrackDataLabel::TrackDataLabel(const QString &str, QWidget *pnt)
@@ -15,7 +12,6 @@ TrackDataLabel::TrackDataLabel(const QString &str, QWidget *pnt)
 {
     init();
 }
-
 
 
 TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
@@ -26,7 +22,7 @@ TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
     TrackPropertiesPage *page = qobject_cast<TrackPropertiesPage *>(pnt);
     if (page!=NULL)					// part of a parent page
     {
-        connect(page, SIGNAL(updateTimeZones(const KTimeZone *)), SLOT(slotTimeZoneChanged(const KTimeZone *)));
+        connect(page, SIGNAL(updateTimeZones(const QTimeZone *)), SLOT(slotTimeZoneChanged(const QTimeZone *)));
         slotTimeZoneChanged(page->timeZone());
     }
     else slotTimeZoneChanged(NULL);
@@ -34,13 +30,11 @@ TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
 }
 
 
-
-void TrackDataLabel::slotTimeZoneChanged(const KTimeZone *tz)
+void TrackDataLabel::slotTimeZoneChanged(const QTimeZone *tz)
 {
     if (!mDateTime.isValid()) return;			// not a date/time label
     setText(TrackData::formattedTime(mDateTime, tz));	// date/time with zone
 }
-
 
 
 TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *pnt)
@@ -50,7 +44,6 @@ TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *pnt)
 }
 
 
-
 TrackDataLabel::TrackDataLabel(double lat, double lon, bool blankIfUnknown, QWidget *pnt)
     : QLabel(TrackData::formattedLatLong(lat, lon, blankIfUnknown), pnt)
 {
@@ -58,13 +51,11 @@ TrackDataLabel::TrackDataLabel(double lat, double lon, bool blankIfUnknown, QWid
 }
 
 
-
 TrackDataLabel::TrackDataLabel(int i, QWidget *pnt)
     : QLabel(QString::number(i), pnt)
 {
     init();
 }
-
 
 
 void TrackDataLabel::init()

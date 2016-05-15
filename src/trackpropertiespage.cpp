@@ -1,15 +1,13 @@
 
 #include "trackpropertiesdetailpages.h"
 
-#include "time.h"
-
 #include <qformlayout.h>
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qdebug.h>
+#include <qtimezone.h>
 
 #include <klocalizedstring.h>
-#include <ksystemtimezone.h>
 #include <kcolorscheme.h>
 
 #include <dialogbase.h>
@@ -72,9 +70,16 @@ void TrackPropertiesPage::setTimeZone(const QString &name)
     }
     else
     {
-        mTimeZone = new KTimeZone(KSystemTimeZones::zone(name));
-        qDebug() << "set to" << mTimeZone->name() << "offset" << mTimeZone->offset(time(NULL));
+        mTimeZone = new QTimeZone(name.toLatin1());
+        if (!mTimeZone->isValid())
+        {
+            qWarning() << "unknown time zone" << name;
+            delete mTimeZone;
+            mTimeZone = NULL;
+        }
+        else qDebug() << "set to" << mTimeZone->id() << "offset" << mTimeZone->offsetFromUtc(QDateTime::currentDateTime());
     }
+
     emit updateTimeZones(timeZone());
 }
 

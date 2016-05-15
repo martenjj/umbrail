@@ -14,8 +14,6 @@
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
-#include <ktimezone.h>
-#include <ksystemtimezone.h>
 
 #include "qcustomplot.h"
 #include "mainwindow.h"
@@ -56,6 +54,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     setObjectName("ProfileWidget");
     setButtons(QDialogButtonBox::Close);
+
+    mTimeZone = NULL;
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -182,6 +182,12 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 }
 
 
+ProfileWidget::~ProfileWidget()
+{
+    delete mTimeZone;
+}
+
+
 void ProfileWidget::restoreConfig(const KConfigGroup &grp)
 {
     mElevationCheck->setChecked(grp.readEntry("ShowElevation", true));
@@ -226,7 +232,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
 
         QDateTime dt = tdp->time();
         // do time zone conversion
-        if (mTimeZone!=NULL) dt = mTimeZone->toZoneTime(dt.toUTC());
+        if (mTimeZone!=NULL) dt = dt.toUTC().toTimeZone(*mTimeZone);
 
         if (mPrevPoint!=NULL)
         {
@@ -313,15 +319,21 @@ void ProfileWidget::slotUpdatePlot()
     mSpeedData.clear();
     mBaseTime = 0;
 
+    delete mTimeZone;
+    mTimeZone = NULL;
     // Resolve the file time zone
-    KTimeZone tz;
     QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
     if (!zoneName.isEmpty())
     {
-        tz = KSystemTimeZones::zone(zoneName);
-        mTimeZone = &tz;
+        QTimeZone *tz = new QTimeZone(zoneName.toLatin1());
+        if (!tz->isValid())
+        {
+            qWarning() << "unknown time zone" << zoneName;
+            tz = NULL;
+        }
+
+        mTimeZone = tz;
     }
-    else mTimeZone = NULL;
 
     for (int i = 0; i<items.count(); ++i) getPlotData(items[i]);
     qDebug() << "got" << mRefData.count() << "data points";
