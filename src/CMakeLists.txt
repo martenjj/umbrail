@@ -22,7 +22,7 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 #									#
 #########################################################################
 
-find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
 find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO KDELibs4Support)
 
 find_package(Marble REQUIRED NO_POLICY_SCOPE)
@@ -149,6 +149,7 @@ target_link_libraries(navtracks
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
+  Qt5::PrintSupport
   KF5::I18n
   KF5::ConfigCore
   KF5::XmlGui
@@ -156,7 +157,6 @@ target_link_libraries(navtracks
   KF5::IconThemes
   KF5::ItemViews
   KF5::Parts
-  KF5::KDELibs4Support
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
   target_link_libraries(navtracks Phonon::phonon4qt5)
