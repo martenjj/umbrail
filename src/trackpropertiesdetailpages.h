@@ -2,8 +2,6 @@
 #ifndef TRACKPROPERTIESDETAILPAGES_H
 #define TRACKPROPERTIESDETAILPAGES_H
 
-#include <kurl.h>
-
 #include "trackpropertiespage.h"
 
 class QLabel;

@@ -2,9 +2,9 @@
 #include "errorreporter.h"
 
 #include <qdebug.h>
+#include <qurl.h>
 
 #include <klocalizedstring.h>
-#include <kurl.h>
 #include <kcolorscheme.h>
 
 

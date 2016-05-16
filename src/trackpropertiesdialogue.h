@@ -10,7 +10,7 @@
 
 #include "trackdata.h"
 
-class KTabWidget;
+class QTabWidget;
 
 class TrackDataItem;
 class Style;
@@ -51,13 +51,13 @@ public:
     bool newPointPosition(double *newLat, double *newLon) const;
     TrackData::WaypointStatus newWaypointStatus() const;
 
-    KTabWidget *tabWidget() const			{ return (mTabWidget); }
+    QTabWidget *tabWidget() const			{ return (mTabWidget); }
 
 protected slots:
     void slotDataChanged();
 
 private:
-    KTabWidget *mTabWidget;
+    QTabWidget *mTabWidget;
 
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;

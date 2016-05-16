@@ -9,7 +9,6 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kxmlguifactory.h>
-#include <kaction.h>
 #include <kcolorscheme.h>
 
 #include <marble/MarbleWidgetInputHandler.h>

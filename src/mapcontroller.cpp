@@ -5,7 +5,6 @@
 #include <qfiledialog.h>
 
 #include <klocalizedstring.h>
-#include <kimageio.h>
 #include <kmessagebox.h>
 
 #include <marble/MarbleAboutDialog.h>

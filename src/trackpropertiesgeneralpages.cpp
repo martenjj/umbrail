@@ -10,7 +10,6 @@
 #include <klocalizedstring.h>
 #include <kiconloader.h>
 #include <ktextedit.h>
-#include <kfiledialog.h>
 
 #include <dialogbase.h>
 

@@ -2,13 +2,12 @@
 #include "folderselectdialogue.h"
 
 #include <qdebug.h>
-#include <QRegExpValidator>
+#include <qinputdialog.h>
+#include <qpushbutton.h>
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
-#include <kinputdialog.h>
 #include <kmessagebox.h>
-#include <kpushbutton.h>
 
 #include "mainwindow.h"
 #include "filesmodel.h"
@@ -40,11 +39,16 @@ FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
 
 void FolderSelectDialogue::slotNewFolder()
 {
-    QRegExpValidator *val = new QRegExpValidator(QRegExp("^[^/]+$"), this);
-    QString name = KInputDialog::getText(i18nc("@title:window", "New Folder"),
-                                         i18nc("@label:textbox", "Folder name:"),
-                                         QString::null, NULL, this, val);
+    // Qt5 regression: There is no way to set a validator on a QInputDialog
+    // in text mode, and no way to create a subclass to do so.  This is because
+    // there is no access to the text edit or button box buttons.
+    // TODO: maybe can do so by querying the object tree
+    //QRegExpValidator *val = new QRegExpValidator(QRegExp("^[^/]+$"), this);
+    QString name = QInputDialog::getText(this,						// parent
+                                         i18nc("@title:window", "New Folder"),		// title
+                                         i18nc("@label:textbox", "Folder name:"));	// label
     if (name.isEmpty()) return;
+    if (name.contains('/')) return;
 
     TrackDataItem *item = selectedItem();
     TrackDataFolder *foundFolder = item->findChildFolder(name);
@@ -62,12 +66,11 @@ void FolderSelectDialogue::slotNewFolder()
     cmd->setName(name);
     mainWindow()->executeCommand(cmd);
 
-// select the added folder
-
+    // select the added folder
     TrackDataFolder *newFolder = item->findChildFolder(name);
     Q_ASSERT(newFolder!=NULL);
-
     setSelectedItem(newFolder);
+
     buttonBox()->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
 }
 

@@ -30,37 +30,34 @@
 #include <qpushbutton.h>
 #include <qdebug.h>
 #include <qlineedit.h>
+#include <qboxlayout.h>
 
 #include <klocalizedstring.h>
 
 #include "timezonedialogue.h"
 
 
-
-
 TimeZoneSelector::TimeZoneSelector(QWidget *pnt)
-    : KHBox(pnt)
+    : QFrame(pnt)
 {
     setObjectName("TimeZoneSelector");
-    setSpacing(-1);					// default layout spacing
+
+    QHBoxLayout *hb = new QHBoxLayout(this);
+    hb->setMargin(0);
 
     mZoneDisplay = new QLineEdit(this);
     mZoneDisplay->setReadOnly(true);
     mZoneDisplay->setPlaceholderText(i18n("(UTC)"));
+    hb->addWidget(mZoneDisplay);
     connect(mZoneDisplay, SIGNAL(textChanged(const QString &)), SIGNAL(zoneChanged(const QString &)));
 
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
+    hb->addWidget(b);
     connect(b, SIGNAL(clicked()), SLOT(slotChangeZone()));
 
     setFocusProxy(b);
     setFocusPolicy(Qt::StrongFocus);
 }
-
-
-TimeZoneSelector::~TimeZoneSelector()
-{
-}
-
 
 
 void TimeZoneSelector::setTimeZone(const QString &zone)
@@ -69,12 +66,10 @@ void TimeZoneSelector::setTimeZone(const QString &zone)
 }
 
 
-
 QString TimeZoneSelector::timeZone() const
 {
     return (mZoneDisplay->text());
 }
-
 
 
 void TimeZoneSelector::slotChangeZone()

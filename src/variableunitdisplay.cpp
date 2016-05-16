@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -29,6 +29,7 @@
 
 #include <qlabel.h>
 #include <qdebug.h>
+#include <qboxlayout.h>
 
 #include <klocalizedstring.h>
 #include <ksharedconfig.h>
@@ -36,19 +37,23 @@
 
 
 VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QWidget *pnt)
-    : KHBox(pnt)
+    : QFrame(pnt)
 {
     qDebug() << "type" << type;
 
     setObjectName("VariableUnitDisplay");
-    setSpacing(-1);					// default layout spacing
+
+    QHBoxLayout *hb = new QHBoxLayout(this);
+    hb->setMargin(0);
 
     mValue = 0.0;
 
     mValueLabel = new QLabel("---", this);
     mValueLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    hb->addWidget(mValueLabel);
 
     mUnitCombo = new VariableUnitCombo(type, this);
+    hb->addWidget(mUnitCombo);
     connect(mUnitCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdateDisplay()));
 
     setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
@@ -84,7 +89,7 @@ void VariableUnitDisplay::slotUpdateDisplay()
     if (mUnitCombo->type()==VariableUnitCombo::Bearing)
     {
         QString sign;
-        QString degs(QLatin1Char(0xB0));
+        QString degs(QChar(0xB0));
         switch (qRound(mUnitCombo->factor()))
         {
 case VariableUnitCombo::BrgAbsolute:
@@ -116,7 +121,7 @@ case VariableUnitCombo::BrgNautical:
 
 void VariableUnitDisplay::showEvent(QShowEvent *ev)
 {
-    KHBox::showEvent(ev);
+    QFrame::showEvent(ev);
 
     QObject *pnt = parent();				// no GUI parent?
     if (pnt==NULL) return;				// should never happen

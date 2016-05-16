@@ -4,9 +4,9 @@
 #include <qgridlayout.h>
 #include <qlabel.h>
 #include <qdebug.h>
+#include <qtabwidget.h>
 
 #include <klocalizedstring.h>
-#include <ktabwidget.h>
 #include <kiconloader.h>
 #include <kconfiggroup.h>
 
@@ -68,7 +68,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
                                                          KIconLoader::SizeMedium));
     gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);
 
-    mTabWidget = new KTabWidget(this);
+    mTabWidget = new QTabWidget(this);
     mTabWidget->setTabsClosable(false);
     gl->addWidget(mTabWidget, 1, 0, 1, -1);
 

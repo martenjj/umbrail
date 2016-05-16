@@ -31,12 +31,12 @@
 #include <qdebug.h>
 #include <qmimetype.h>
 #include <qmimedatabase.h>
+#include <qmenubar.h>
 
 #include <kservice.h>
 #include <kmimetypetrader.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
-#include <kmenubar.h>
 #include <klocalizedstring.h>
 
 #include "settings.h"

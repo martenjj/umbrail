@@ -8,7 +8,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kurl.h>
 
 #include "trackdata.h"
 #include "style.h"

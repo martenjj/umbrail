@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,9 +33,10 @@
 #include <qlabel.h>
 #include <qtimer.h>
 #include <qdebug.h>
+#include <qpushbutton.h>
 
 #include <klocalizedstring.h>
-#include <kpushbutton.h>
+#include <kstandardguiitem.h>
 
 #include <dialogstatesaver.h>
 
@@ -59,24 +60,26 @@ VideoViewer::VideoViewer(const QUrl &url, QWidget *pnt)
     gl->addWidget(mPlayer, 0, 0, 1, -1);
     gl->setRowStretch(0, 1);
 
-    mPlayButton = new KPushButton(QIcon::fromTheme("media-playback-start"), i18nc("@action:button", "Play"), this);
+    mPlayButton = new QPushButton(QIcon::fromTheme("media-playback-start"), i18nc("@action:button", "Play"), this);
     mPlayButton->setEnabled(false);
     connect(mPlayButton, SIGNAL(clicked()), SLOT(slotPlay()));
     gl->addWidget(mPlayButton, 1, 0, Qt::AlignLeft);
 
-    mPauseButton = new KPushButton(QIcon::fromTheme("media-playback-pause"), i18nc("@action:button", "Pause"), this);
+    mPauseButton = new QPushButton(QIcon::fromTheme("media-playback-pause"), i18nc("@action:button", "Pause"), this);
     connect(mPauseButton, SIGNAL(clicked()), SLOT(slotPause()));
     gl->addWidget(mPauseButton, 1, 1, Qt::AlignLeft);
 
-    mRewindButton = new KPushButton(QIcon::fromTheme("media-skip-backward"), i18nc("@action:button", "Rewind"), this);
+    mRewindButton = new QPushButton(QIcon::fromTheme("media-skip-backward"), i18nc("@action:button", "Rewind"), this);
     connect(mRewindButton, SIGNAL(clicked()), SLOT(slotRewind()));
     gl->addWidget(mRewindButton, 1, 3, Qt::AlignLeft);
 
-    mStopButton = new KPushButton(QIcon::fromTheme("media-playback-stop"), i18nc("@action:button", "Stop"), this);
+    mStopButton = new QPushButton(QIcon::fromTheme("media-playback-stop"), i18nc("@action:button", "Stop"), this);
     connect(mStopButton, SIGNAL(clicked()), SLOT(slotStop()));
     gl->addWidget(mStopButton, 1, 5, Qt::AlignRight);
 
-    QPushButton *but = new KPushButton(KStandardGuiItem::close(), this);
+    QPushButton *but = new QPushButton(this);
+    KGuiItem::assign(but, KStandardGuiItem::close());
+
     connect(but, SIGNAL(clicked()), SLOT(close()));
     gl->addWidget(but, 1, 6, Qt::AlignRight);
 

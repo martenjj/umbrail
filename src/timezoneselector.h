@@ -29,21 +29,19 @@
 #define TIMEZONESELECTOR_H
 
 
-
-#include <khbox.h>
+#include <qframe.h>
 
 
 class QLineEdit;
 
 
-
-class TimeZoneSelector : public KHBox
+class TimeZoneSelector : public QFrame
 {
     Q_OBJECT
 
 public:
     explicit TimeZoneSelector(QWidget *pnt = NULL);
-    virtual ~TimeZoneSelector();
+    virtual ~TimeZoneSelector() = default;
 
     void setTimeZone(const QString &zone);
     QString timeZone() const;
@@ -57,6 +55,5 @@ signals:
 private:
     QLineEdit *mZoneDisplay;
 };
-
  
 #endif							// TIMEZONESELECTOR_H

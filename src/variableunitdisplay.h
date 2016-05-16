@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	11-Jul-14						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -29,7 +29,7 @@
 #define VARIABLEUNITDISPLAY_H
 
 
-#include <khbox.h>
+#include <qframe.h>
 
 #include "variableunitcombo.h"
 
@@ -38,7 +38,7 @@ class QLabel;
 class QShowEvent;
 
 
-class VariableUnitDisplay : public KHBox
+class VariableUnitDisplay : public QFrame
 {
     Q_OBJECT
 
