@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -67,13 +67,18 @@ static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType
     if (n.isEmpty()) n = item->name();			// then the waypoint name
     qDebug() << "item" << item->name() << "link" << n;
 
-    QUrl file = QUrl::fromUserInput(n, Settings::audioNotesDirectory(), QUrl::AssumeLocalFile);
-    if (!QFile::exists(file.path()))
+    QUrl file(n);
+    if (file.isRelative()) file = Settings::audioNotesDirectory().resolved(file);
+    qDebug() << "->" << file;
+    if (file.isLocalFile())				// can check for existence here
     {
-        KMessageBox::error(NULL,
-                           i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
-                           i18n("Cannot play media file"));
-        return (QUrl());
+        if (!QFile::exists(file.path()))
+        {
+            KMessageBox::error(NULL,
+                               i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
+                               i18n("Cannot play media file"));
+            return (QUrl());
+        }
     }
 
     qDebug() << "media file" << file;

@@ -184,8 +184,8 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     ski = Settings::self()->audioNotesDirectoryItem();
     Q_ASSERT(ski!=NULL);
     mAudioNotesRequester = new KUrlRequester(w);
-    mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly);
-    mAudioNotesRequester->setUrl(QUrl(Settings::audioNotesDirectory()));
+    mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly);
+    mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
     mAudioNotesRequester->setToolTip(ski->toolTip());
     fl->addRow(ski->label(), mAudioNotesRequester);
 
@@ -226,7 +226,10 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
 
 void SettingsFilesPage::slotSave()
 {
-    Settings::setAudioNotesDirectory(mAudioNotesRequester->url().url());
+    QUrl u = mAudioNotesRequester->url().adjusted(QUrl::StripTrailingSlash);
+    u.setPath(u.path()+'/');
+    Settings::setAudioNotesDirectory(u);
+
     Settings::setPhotoUseGps(mUseGpsCheck->isChecked());
     Settings::setPhotoUseTime(mUseTimeCheck->isChecked());
     Settings::setPhotoTimeThreshold(mTimeThresholdSpinbox->value());
@@ -237,7 +240,7 @@ void SettingsFilesPage::slotDefaults()
 {
     KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
     kcsi->setDefault();
-    mAudioNotesRequester->setUrl(QUrl(Settings::audioNotesDirectory()));
+    mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
 
     kcsi = Settings::self()->photoUseGpsItem();
     kcsi->setDefault();

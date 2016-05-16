@@ -5,6 +5,7 @@
                           http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
   <kcfgfile></kcfgfile>
   <include>qcolor.h</include>
+  <include>qdir.h</include>
 
   <group name="DefaultStyle">
     <entry name="LineColour" type="Color">
@@ -44,10 +45,10 @@
       <label>Paths</label>
     </entry>
 
-    <entry name="AudioNotesDirectory" type="Path">
+    <entry name="AudioNotesDirectory" type="Url">
       <label>Audio notes:</label>
       <tooltip>The directory where OsmAnd+ audio notes are stored.</tooltip>
-      <default>$HOME</default>
+      <default code="true">QUrl::fromLocalFile(QDir::homePath()+'/')</default>
     </entry>
   </group>
 
