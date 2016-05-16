@@ -56,7 +56,26 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     setMainWidget(w);
     QGridLayout *gl = new QGridLayout(w);
 
-    mTimeZoneWidget = new TimeZoneWidget(this);
+    // Filter the available time zones so that the list does not need too
+    // much scrolling.  Accept only those zones which start with "Europe/"
+    // or "UTC", and whose time offset is within 3 hours from UTC.
+    // TODO: make this configurable, offset from current system time zone
+    QList<QByteArray> allZoneIds = QTimeZone::availableTimeZoneIds();
+    QList<QByteArray> zoneIds;
+    foreach (const QByteArray &zone, allZoneIds)
+    {
+        if (zone.startsWith("Europe/") || zone.startsWith("UTC"))
+        {
+            QTimeZone tz(zone);
+            if (qAbs(tz.offsetFromUtc(QDateTime::currentDateTime()))<=(3*3600))
+            {
+                zoneIds.append(zone);
+            }
+        }
+    }
+    //qDebug() << zoneIds;
+
+    mTimeZoneWidget = new TimeZoneWidget(this, zoneIds);
     mTimeZoneWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     connect(mTimeZoneWidget, SIGNAL(itemSelectionChanged()), SLOT(slotTimeZoneChanged()));
     gl->addWidget(mTimeZoneWidget, 1, 0, 1, -1);
