@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	15-May-16						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -29,9 +29,9 @@
 
 #include <qpushbutton.h>
 #include <qdebug.h>
+#include <qlineedit.h>
 
 #include <klocalizedstring.h>
-#include <klineedit.h>
 
 #include "timezonedialogue.h"
 
@@ -44,9 +44,9 @@ TimeZoneSelector::TimeZoneSelector(QWidget *pnt)
     setObjectName("TimeZoneSelector");
     setSpacing(-1);					// default layout spacing
 
-    mZoneDisplay = new KLineEdit(this);
+    mZoneDisplay = new QLineEdit(this);
     mZoneDisplay->setReadOnly(true);
-    mZoneDisplay->setClickMessage(i18n("(UTC)"));
+    mZoneDisplay->setPlaceholderText(i18n("(UTC)"));
     connect(mZoneDisplay, SIGNAL(textChanged(const QString &)), SIGNAL(zoneChanged(const QString &)));
 
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	27-Feb-14						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,7 +33,7 @@
 #include <khbox.h>
 
 
-class KLineEdit;
+class QLineEdit;
 
 
 
@@ -55,7 +55,7 @@ signals:
     void zoneChanged(const QString &zone);
 
 private:
-    KLineEdit *mZoneDisplay;
+    QLineEdit *mZoneDisplay;
 };
 
  

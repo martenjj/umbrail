@@ -9,7 +9,7 @@ class QLabel;
 class QDateTime;
 class QFormLayout;
 class QComboBox;
-class KLineEdit;
+class QLineEdit;
 class KTextEdit;
 class ItemTypeCombo;
 class TrackDataItem;
@@ -56,7 +56,7 @@ signals:
     void pointPositionChanged(double newLat, double newLon);
 
 protected:
-    KLineEdit *mNameEdit;
+    QLineEdit *mNameEdit;
     ItemTypeCombo *mTypeCombo;
     KTextEdit *mDescEdit;
     TimeZoneSelector *mTimeZoneSel;
@@ -84,7 +84,7 @@ public:
     QString typeText(int count) const;
 
 private:
-    KLineEdit *mUrlRequester;
+    QLineEdit *mUrlRequester;
 };
 
 

@@ -5,10 +5,10 @@
 #include <qpushbutton.h>
 #include <qlayout.h>
 #include <qdebug.h>
+#include <qlineedit.h>
 
 #include <klocalizedstring.h>
 #include <kiconloader.h>
-#include <klineedit.h>
 #include <ktextedit.h>
 #include <kfiledialog.h>
 
@@ -30,7 +30,7 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
     qDebug();
     setObjectName("TrackItemGeneralPage");
 
-    mNameEdit = new KLineEdit(this);
+    mNameEdit = new QLineEdit(this);
     if (items->count()==1) mNameEdit->setText(items->first()->name());
     else mNameEdit->setEnabled(false);
     connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
@@ -266,7 +266,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
 
     mNameEdit->setReadOnly(true);			// can't rename here for files
 
-    mUrlRequester = new KLineEdit(this);
+    mUrlRequester = new QLineEdit(this);
     mUrlRequester->setReadOnly(true);
     connect(mUrlRequester, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
