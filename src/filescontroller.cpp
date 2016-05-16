@@ -9,6 +9,8 @@
 #include <qlayout.h>
 #include <qdebug.h>
 #include <qurl.h>
+#include <qmimetype.h>
+#include <qmimedatabase.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -18,7 +20,6 @@
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
-#include <kmimetype.h>
 
 #ifdef HAVE_KEXIV2
 #include <kexiv2/kexiv2.h>
@@ -227,7 +228,9 @@ case ErrorReporter::Fatal:
 FilesController::Status FilesController::importFile(const QUrl &importFrom)
 {
     if (!importFrom.isValid()) return (FilesController::StatusFailed);
-    QString importType = KMimeType::extractKnownExtension(importFrom.path());
+
+    QMimeDatabase db;
+    QString importType = db.suffixForFileName(importFrom.path());
     if (importType.isEmpty())
     {
         QString fileName = importFrom.fileName();
@@ -288,7 +291,9 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
 FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
-    QString exportType = KMimeType::extractKnownExtension(exportTo.path());
+
+    QMimeDatabase db;
+    QString exportType = db.suffixForFileName(exportTo.path());
     if (exportType.isEmpty())
     {
         QString fileName = exportTo.fileName();

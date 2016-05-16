@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	16-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -29,10 +29,10 @@
 
 #include <qevent.h>
 #include <qdebug.h>
+#include <qmimetype.h>
+#include <qmimedatabase.h>
 
-//#include <kurl.h>
 #include <kservice.h>
-#include <kmimetype.h>
 #include <kmimetypetrader.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
@@ -68,12 +68,13 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
     }
     else
     {
-        KMimeType::Ptr mimeType = KMimeType::findByUrl(url);
-        qDebug() << "mime type" << mimeType->name();	// get services for MIME type
-        KService::List services = KMimeTypeTrader::self()->query(mimeType->name(), "KParts/ReadOnlyPart");
+        QMimeDatabase db;
+        QMimeType mimeType = db.mimeTypeForUrl(url);
+        qDebug() << "mime type" << mimeType.name();	// get services for MIME type
+        KService::List services = KMimeTypeTrader::self()->query(mimeType.name(), "KParts/ReadOnlyPart");
         if (services.isEmpty())
         {
-            qWarning() << "No viewer parts available for" << mimeType->name();
+            qWarning() << "No viewer parts available for" << mimeType.name();
             return;
         }
 

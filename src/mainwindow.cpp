@@ -29,7 +29,6 @@
 #include <kstandardaction.h>
 #include <kmessagebox.h>
 #include <ksqueezedtextlabel.h>
-#include <kmimetype.h>
 #include <kactionmenu.h>
 
 #include <recentsaver.h>

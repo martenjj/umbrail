@@ -8,7 +8,8 @@
 #include <qtimezone.h>
 
 #include <klocalizedstring.h>
-#include <kmimetype.h>
+
+#include <kio/global.h>
 
 #include "style.h"
 #include "dataindexer.h"
@@ -509,7 +510,7 @@ TrackDataFile::TrackDataFile(const QString &nm)
 
 QString TrackDataFile::iconName() const
 {
-    return (KMimeType::iconNameForUrl(mFileName));
+    return (KIO::iconNameForUrl(mFileName));
 }
 
 //////////////////////////////////////////////////////////////////////////
