@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	13-May-16						//
+//  Edit:	17-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -81,6 +81,7 @@ int main(int argc,char *argv[])
 
     aboutData.setupCommandLine(&parser);
     parser.process(app);
+    aboutData.processCommandLine(&parser);
 
     MainWindow *w = new MainWindow(NULL);
 
