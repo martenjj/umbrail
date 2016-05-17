@@ -422,7 +422,7 @@ bool MainWindow::queryClose()
     if (!mProject->isModified()) return (true);		// not modified, OK to close
 
     QString query;
-    if (mProject->hasFileName()) query = i18n("<qt>File <b>%1</b> has been modified. Save changes?", mProject->name());
+    if (mProject->hasFileName()) query = xi18nc("@info", "File <emphasis strong=\"1\"><filename>%1</filename></emphasis> has been modified. Save changes?", mProject->name());
     else query = i18n("File has been modified. Save changes?");
 
     switch (KMessageBox::warningYesNoCancel(this, query, QString::null,
@@ -492,7 +492,7 @@ bool MainWindow::save(const QUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
     if (filesController()->exportFile(to, tdf)!=FilesController::StatusOk) return (false);
-    slotStatusMessage(i18n("<qt>Saved <filename>%1</filename>", to.toDisplayString()));
+    slotStatusMessage(xi18nc("@info", "Saved <filename>%1</filename>", to.toDisplayString()));
     return (true);					// more appropriate message
 }
 

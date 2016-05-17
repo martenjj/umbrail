@@ -118,7 +118,7 @@ void MapController::slotSetHome()
     double lng = view()->centerLongitude();
 
     if (KMessageBox::questionYesNo(mainWindow(),
-                                   i18n("<qt>Set home position to <b>%1</b>?", TrackData::formattedLatLong(lat, lng)),
+                                   xi18nc("@info", "Set home position to <emphasis strong=\"1\">%1</emphasis>?", TrackData::formattedLatLong(lat, lng)),
                                    i18n("Set Home Position?"),
                                    KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
                                    KStandardGuiItem::cancel(),
@@ -138,7 +138,7 @@ void MapController::slotSetZoom()
     int zoom = view()->zoom();
 
     if (KMessageBox::questionYesNo(mainWindow(),
-                                   i18n("<qt>Set standard zoom to <b>%1</b>?", zoom),
+                                   xi18nc("@info", "Set standard zoom to <emphasis strong=\"1\">%1</emphasis>?", zoom),
                                    i18n("Set Standard Zoom?"),
                                    KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
                                    KStandardGuiItem::cancel(),
@@ -180,7 +180,7 @@ void MapController::slotSaveImage()
     if (!pix.save(file.path()))
     {
         KMessageBox::error(mainWindow(),
-                           i18n("<qt>Failed to save image file:<br><filename>%1</filename>", file.toDisplayString()),
+                           xi18nc("@info", "Failed to save image file:<nl/><filename>%1</filename>", file.toDisplayString()),
                            i18n("Save Failed"));
         emit statusMessage(i18n("Failed to save map image"));
     }

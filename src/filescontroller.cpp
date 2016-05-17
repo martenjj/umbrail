@@ -152,8 +152,8 @@ case ErrorReporter::Warning:
 
         detailed = true;
         message = (saving ?
-                   i18n("<qt>The file <filename>%1</filename> was saved but with warnings.", file.toDisplayString()) :
-                   i18n("<qt>The file <filename>%1</filename> was loaded but with warnings.", file.toDisplayString()));
+                   xi18nc("@info", "The file <filename>%1</filename> was saved but with warnings.", file.toDisplayString()) :
+                   xi18nc("@info", "The file <filename>%1</filename> was loaded but with warnings.", file.toDisplayString()));
         caption = (saving ? i18n("File Save Warning") : i18n("File Load Warning"));
         iconName = "dialog-information";
         askText = i18n("Do not show again for this file");
@@ -161,16 +161,16 @@ case ErrorReporter::Warning:
 
 case ErrorReporter::Error:
         message = (saving ?
-                   i18n("<qt>The file <filename>%1</filename> was saved but had errors.", file.toDisplayString()) :
-                   i18n("<qt>The file <filename>%1</filename> was loaded but had errors.", file.toDisplayString()));
+                   xi18nc("@info", "The file <filename>%1</filename> was saved but had errors.", file.toDisplayString()) :
+                   xi18nc("@info", "The file <filename>%1</filename> was loaded but had errors.", file.toDisplayString()));
         caption = (saving ? i18n("File Save Error") : i18n("File Load Error"));
         iconName = "dialog-warning";
         break;
 
 case ErrorReporter::Fatal:
         message = (saving ?
-                   i18n("<qt>The file <filename>%1</filename> could not be saved.<br>%2", file.toDisplayString(), list.last()) :
-                   i18n("<qt>The file <filename>%1</filename> could not be loaded.<br>%2", file.toDisplayString(), list.last()));
+                   xi18nc("@info", "The file <filename>%1</filename> could not be saved.<nl/>%2", file.toDisplayString(), list.last()) :
+                   xi18nc("@info", "The file <filename>%1</filename> could not be loaded.<nl/>%2", file.toDisplayString(), list.last()));
         caption = (saving ? i18n("File Save Failure") : i18n("File Load Failure"));
         iconName = "dialog-error";
         result = false;
@@ -260,7 +260,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
     const ErrorReporter *rep = imp->reporter();
     if (!reportFileError(false, importFrom, rep))
     {
-        emit statusMessage(i18n("<qt>Loading <filename>%1</filename> failed", importFrom.toDisplayString()));
+        emit statusMessage(xi18nc("@info", "Loading <filename>%1</filename> failed", importFrom.toDisplayString()));
         return (FilesController::StatusFailed);
     }
 
@@ -273,12 +273,12 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
     {
         cmd->redo();					// no, just do the import
         delete cmd;					// no need for this now
-        emit statusMessage(i18n("<qt>Loaded <filename>%1</filename>", importFrom.toDisplayString()));
+        emit statusMessage(xi18nc("@info", "Loaded <filename>%1</filename>", importFrom.toDisplayString()));
     }
     else
     {
         mainWindow()->executeCommand(cmd);		// make the operation undo'able
-        emit statusMessage(i18n("<qt>Imported <filename>%1</filename>", importFrom.toDisplayString()));
+        emit statusMessage(xi18nc("@info", "Imported <filename>%1</filename>", importFrom.toDisplayString()));
     }
 
     emit modified();					// done, finished with importer
@@ -334,7 +334,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
             }
 
             KMessageBox::information(mainWindow(),
-                                     i18n("<qt>Original of<br><filename>%1</filename><br>has been backed up as<br><filename>%2</filename>",
+                                     xi18nc("@info", "Original of<nl/><filename>%1</filename><nl/>has been backed up as<nl/><filename>%2</filename>",
                                           exportTo.toDisplayString(), backupFile.toDisplayString()),
                                      i18n("Original file backed up"),
                                      "fileBackupInfo");
@@ -347,11 +347,11 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))
     {
-        emit statusMessage(i18n("<qt>Saving <filename>%1</filename> failed", exportTo.toDisplayString()));
+        emit statusMessage(xi18nc("@info", "Saving <filename>%1</filename> failed", exportTo.toDisplayString()));
         return (FilesController::StatusFailed);
     }
 
-    emit statusMessage(i18n("<qt>Exported <filename>%1</filename>", exportTo.toDisplayString()));
+    emit statusMessage(xi18nc("@info", "Exported <filename>%1</filename>", exportTo.toDisplayString()));
     return (FilesController::StatusOk);			// done, finished with exporter
 }
 
@@ -421,7 +421,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
     if (zone.isEmpty() && !mWarnedNoTimezone)		// message only once per file
     {
         q = KMessageBox::warningContinueCancel(mainWindow(),
-                                               i18n("<qt>No time zone has been set for this file.<nl/>Locating by time and/or the time of<nl/>created waypoints may be incorrect."),
+                                               xi18nc("@info", "No time zone has been set for this file.<nl/>Locating by time and/or the time of<nl/>created waypoints may be incorrect."),
                                                i18n("No Time Zone"));
 
         if (q==KMessageBox::Cancel) return (FilesController::StatusCancelled);
@@ -444,7 +444,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         if (!importFrom.isValid()) continue;
         if (!importFrom.isLocalFile())
         {
-            const QString messageText = i18n("<qt><filename>%1</filename> is not a local file", importFrom.toDisplayString());
+            const QString messageText = xi18nc("@info", "<filename>%1</filename> is not a local file", importFrom.toDisplayString());
             if (!multiple) KMessageBox::sorry(mainWindow(), messageText, i18n("Cannot Import"));
             else
             {
@@ -482,8 +482,8 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
         if (gpsValid && Settings::photoUseGps())
         {
-            messageText = i18n("<qt>The image file <filename>%1</filename> contained a valid GPS position.<nl/>The waypoint will be created at that position.", importFrom.fileName());
-            statusText = i18n("<qt>Imported <filename>%1</filename> at GPS position", importFrom.toDisplayString());
+            messageText = xi18nc("@info", "The image file <filename>%1</filename> contained a valid GPS position.<nl/>The waypoint will be created at that position.", importFrom.fileName());
+            statusText = xi18nc("@info", "Imported <filename>%1</filename> at GPS position", importFrom.toDisplayString());
             matched = true;
         }
         else
@@ -496,10 +496,10 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
                 if (closestPoint!=NULL && closestDiff<=Settings::photoTimeThreshold())
                 {
-                    messageText = i18np("<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
-                                        "<qt>The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
+                    messageText = xi18ncp("@info", "The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
+                                          "The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
                                         closestDiff, closestPoint->name(), importFrom.fileName());
-                    statusText = i18n("<qt>Imported <filename>%1</filename> at date/time position", importFrom.toDisplayString());
+                    statusText = xi18nc("@info", "Imported <filename>%1</filename> at date/time position", importFrom.toDisplayString());
 
                     sourcePoint = closestPoint;
                     lat = closestPoint->latitude();
@@ -509,7 +509,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
                 }
                 else
                 {
-                    messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
+                    messageText = xi18nc("@info", "The image file <filename>%1</filename> had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
                 }
             }
         }
@@ -517,8 +517,8 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         if (!matched)
 #endif
         {
-            if (messageText.isEmpty()) messageText = i18n("<qt>The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
-            statusText = i18n("<qt>Imported <filename>%1</filename> at map centre", importFrom.toDisplayString());
+            if (messageText.isEmpty()) messageText = xi18nc("@info", "The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
+            statusText = xi18nc("@info", "Imported <filename>%1</filename> at map centre", importFrom.toDisplayString());
             lat = mapController()->view()->centerLatitude();
             lon = mapController()->view()->centerLongitude();
         }
@@ -771,7 +771,7 @@ void FilesController::slotSplitSegment()
     if (idx==0 || idx>=(pnt->childCount()-1))
     {
         KMessageBox::sorry(mainWindow(),
-                           i18n("<qt>Cannot split the segment here<br>(at its start or end point)"),
+                           xi18nc("@info", "Cannot split the segment here<nl/>(at its start or end point)"),
                            i18n("Cannot split segment"));
         return;
     }
@@ -821,7 +821,7 @@ void FilesController::slotMergeSegments()
 
         if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
         {						// all apart from first
-            KMessageBox::sorry(mainWindow(), i18n("<qt>Cannot merge these segments<p>Start time of segment \"%1\"<br>overlaps the previous \"%2\"",
+            KMessageBox::sorry(mainWindow(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
                                                   tds->name(), items[i-1]->name()),
                                i18n("Cannot merge segments"));
             return;
@@ -918,11 +918,11 @@ void FilesController::slotDeleteItems()
         const TrackDataItem *tdi = items.first();
         if (tdi->childCount()==0)
         {
-            query = i18n("Delete the selected item \"%1\"?", tdi->name());
+            query = xi18nc("@info", "Delete the selected item \"<emphasis strong=\"1\">%1</emphasis>\"?", tdi->name());
         }
         else
         {
-            query = i18n("<qt>Delete the selected item \"%1\"<br>and everything under it?", tdi->name());
+            query = xi18nc("@info", "Delete the selected item \"<emphasis strong=\"1\">%1</emphasis>\"<nl/>and everything under it?", tdi->name());
         }
     }
     else
