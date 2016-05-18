@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		16-May-16					#
+#  Edit:		18-May-16					#
 #########################################################################
 
 project(navtracks)
@@ -31,7 +31,7 @@ find_package(KF5KExiv2 NO_POLICY_SCOPE)
 
 set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
 set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
-set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://www.digikam.org/sharedlibs" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
+set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://quickgit.kde.org/?p=libkexiv2.git" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 
 find_library(LIBDIALOGUTIL_FOUND "libdialogutil.so")
 if (LIBDIALOGUTIL_FOUND)
