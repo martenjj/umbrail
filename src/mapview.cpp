@@ -259,6 +259,22 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 }
 
 
+QColor MapView::resolvePointColour(const TrackDataItem *tdi)
+{
+    while (tdi!=NULL)					// search to root of tree
+    {
+        const Style *s = tdi->style();			// get style from item
+        if (s->hasPointColour())				// has a style set?
+        {
+            return (s->pointColour());			// use colour from that
+        }
+        tdi = tdi->parent();				// up to parent item
+    }
+
+    return (Style::globalStyle()->pointColour());	// finally application default
+}
+
+
 void MapView::setMovePointsMode(bool on)
 {
     qDebug() << on;

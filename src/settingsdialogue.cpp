@@ -75,11 +75,17 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     QWidget *w = widget();
     QFormLayout *fl = new QFormLayout(w);
 
+    const KConfigSkeletonItem *kcsi = Settings::self()->lineColourItem();
     mLineColourButton = new KColorButton(Settings::lineColour(), w);
     mLineColourButton->setAlphaChannelEnabled(false);
-    const KConfigSkeletonItem *kcsi = Settings::self()->lineColourItem();
     mLineColourButton->setToolTip(kcsi->toolTip());
     fl->addRow(kcsi->label(), mLineColourButton);
+
+    kcsi = Settings::self()->pointColourItem();
+    mPointColourButton = new KColorButton(Settings::pointColour(), w);
+    mPointColourButton->setAlphaChannelEnabled(false);
+    mPointColourButton->setToolTip(kcsi->toolTip());
+    fl->addRow(kcsi->label(), mPointColourButton);
 
     kcsi = Settings::self()->showTrackArrowsItem();
     mShowTrackArrowsCheck = new QCheckBox(kcsi->label(), w);
@@ -116,6 +122,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
 void SettingsMapStylePage::slotSave()
 {
     Settings::setLineColour(mLineColourButton->color());
+    Settings::setPointColour(mPointColourButton->color());
     Settings::setSelectedMarkOuter(mSelectedOuterButton->color());
     Settings::setSelectedMarkInner(mSelectedInnerButton->color());
     Settings::setSelectedUseSystemColours(mSelectedUseSystemCheck->isChecked());
@@ -131,6 +138,9 @@ void SettingsMapStylePage::slotDefaults()
     KConfigSkeletonItem *kcsi = Settings::self()->lineColourItem();
     kcsi->setDefault();
     mLineColourButton->setColor(Settings::lineColour());
+    kcsi = Settings::self()->pointColourItem();
+    kcsi->setDefault();
+    mPointColourButton->setColor(Settings::pointColour());
 
     kcsi = Settings::self()->showTrackArrowsItem();
     kcsi->setDefault();

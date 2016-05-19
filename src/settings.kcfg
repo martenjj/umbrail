@@ -14,6 +14,12 @@
       <default code="true">Qt::magenta</default>
     </entry>
 
+    <entry name="PointColour" type="Color">
+      <label>Default waypoint colour:</label>
+      <tooltip>The default colour used to display waypoints, if none has been explictly set.</tooltip>
+      <default code="true">Qt::yellow</default>
+    </entry>
+
     <entry name="ShowTrackArrows" type="Bool">
       <label>Show track direction of travel</label>
       <tooltip>Show the direction of travel using arrows on tracks.</tooltip>

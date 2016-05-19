@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	24-Feb-14						//
+//  Edit:	19-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -64,14 +64,14 @@ public:
     /**
      * Create a new empty style object.
      *
-     * The line colour is initialised to be inherited.
+     * The colours are initialised to be inherited.
      **/
     Style();
 
     /**
      * Destructor.
      **/
-    ~Style()						{}
+    ~Style() = default;
 
     /**
      * Create (if necessary) and retrieve the application default style object.
@@ -101,6 +101,28 @@ public:
      * @return @c true if a colour has been set.
      **/
     bool hasLineColour() const				{ return (mLineColour.isValid()); }
+
+    /**
+     * Set the point colour for this style object.  A colour of @c InheritColour
+     * means that the colour is to be inherited from the parent.
+     *
+     * @p col The colour to be set
+     **/
+    void setPointColour(const QColor &col);
+
+    /**
+     * Retrieve the point colour.
+     *
+     * @return the point colour, or @c Inherit if to be inherited from the parent.
+     **/
+    QColor pointColour() const				{ return (mPointColour); }
+
+    /**
+     * Check whether an explicit point colour has been set.
+     *
+     * @return @c true if a colour has been set.
+     **/
+    bool hasPointColour() const				{ return (mPointColour.isValid()); }
 
     /**
      * See if this style is empty, i.e. inherits everything
@@ -135,6 +157,7 @@ public:
 
 private:
     QColor mLineColour;
+    QColor mPointColour;
 };
 
  

@@ -15,11 +15,6 @@
 #include "mapview.h"
 
 
-
-
-
-
-
 TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
@@ -28,55 +23,52 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
 
     addSeparatorField();
 
+    mLineColourButton = NULL;
+    mPointColourButton = NULL;
+
     const TrackDataItem *item = items->first();
     const Style *s = item->style();
     qDebug() << "initial style" << *s;
 
-    mLineColourButton = new KColorButton(MapView::resolveLineColour(item), this);
-    mLineColourButton->setAlphaChannelEnabled(false);
-    connect(mLineColourButton, SIGNAL(changed(const QColor &)), SLOT(slotColourChanged(const QColor &)));
-    mFormLayout->addRow(i18n("Line colour:"), mLineColourButton);
+    if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL)
+    {							// waypoints have "Point colour"
+        mPointColourButton = new KColorButton(MapView::resolvePointColour(item), this);
+        mPointColourButton->setAlphaChannelEnabled(false);
+        connect(mPointColourButton, SIGNAL(changed(const QColor &)), SLOT(slotColourChanged(const QColor &)));
+        mFormLayout->addRow(i18n("Point colour:"), mPointColourButton);
 
-    mLineInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
-    mLineInheritCheck->setChecked(!s->hasLineColour());
-    mFormLayout->addRow(QString::null, mLineInheritCheck);
+        mPointInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
+        mPointInheritCheck->setChecked(!s->hasPointColour());
+        mFormLayout->addRow(QString::null, mPointInheritCheck);
+    }
+    else						// others have "Line colour"
+    {
+        mLineColourButton = new KColorButton(MapView::resolveLineColour(item), this);
+        mLineColourButton->setAlphaChannelEnabled(false);
+        connect(mLineColourButton, SIGNAL(changed(const QColor &)), SLOT(slotColourChanged(const QColor &)));
+        mFormLayout->addRow(i18n("Line colour:"), mLineColourButton);
+
+        mLineInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
+        mLineInheritCheck->setChecked(!s->hasLineColour());
+        mFormLayout->addRow(QString::null, mLineInheritCheck);
+    }
 }
-
-
-
-
-
 
 
 void TrackItemStylePage::slotColourChanged(const QColor &col)
 {
-    mLineInheritCheck->setChecked(!col.isValid());
+    if (mLineColourButton!=NULL) mLineInheritCheck->setChecked(!mLineColourButton->color().isValid());
+    if (mPointColourButton!=NULL) mPointInheritCheck->setChecked(!mPointColourButton->color().isValid());
 }
-
-
-
-
-
-
-
-
-
-
 
 
 const Style TrackItemStylePage::newStyle() const
 {
-    if (mLineInheritCheck->isChecked()) return (Style::null);
     Style result;
-    result.setLineColour(mLineColourButton->color());
+    if (mLineColourButton!=NULL && !mLineInheritCheck->isChecked()) result.setLineColour(mLineColourButton->color());
+    if (mPointColourButton!=NULL && !mPointInheritCheck->isChecked()) result.setPointColour(mPointColourButton->color());
     return (result);
 }
-
-
-
-
-
-
 
 
 TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
@@ -85,7 +77,8 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWid
     qDebug();
     setObjectName("TrackFileStylePage");
 
-    mLineInheritCheck->setText(i18n("Use application default"));
+    if (mLineColourButton!=NULL) mLineInheritCheck->setText(i18n("Use application default"));
+    if (mPointColourButton!=NULL) mPointInheritCheck->setText(i18n("Use application default"));
 }
 
 

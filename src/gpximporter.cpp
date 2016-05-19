@@ -362,7 +362,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         else warning(makeXmlException("missing LINK/HREF attribute on LINK element"));
     }
 
-    mContainedChars = QString::null;			// clear contained data
+    mContainedChars.clear();				// clear element contents
     return (true);
 }
 
@@ -496,7 +496,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
 
     if (localName=="ele")				// end of an ELE element
     {
-        const double ele = mContainedChars.toDouble();
+        const double ele = elementContents().toDouble();
         if (mCurrentPoint!=NULL) mCurrentPoint->setElevation(ele);
         else if (mCurrentWaypoint!=NULL) mCurrentWaypoint->setElevation(ele);
         else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
@@ -507,7 +507,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         {
             // The time spec of the decoded date/time is UTC, which is what we want.
             TrackDataAbstractPoint *p = static_cast<TrackDataAbstractPoint *>(currentItem());
-            p->setTime(QDateTime::fromString(mContainedChars, Qt::ISODate));
+            p->setTime(QDateTime::fromString(elementContents(), Qt::ISODate));
         }
         else
         {
@@ -520,14 +520,14 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // <wpt> ...
             //
             if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRKPT, WPT or METADATA"));
-            mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
+            mDataRoot->setMetadata(DataIndexer::self()->index(localName), elementContents());
         }
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
         TrackDataItem *item = currentItem();		// find innermost current element
-        if (item!=NULL) item->setName(mContainedChars);	// assign its name
-        else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), mContainedChars);
+        if (item!=NULL) item->setName(elementContents());	// assign its name
+        else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), elementContents());
         else warning(makeXmlException("NAME not within TRK, TRKSEG, TRKPT, WPT or METADATA"));
     }
     else if (localName=="color")			// end of a COLOR element
@@ -535,22 +535,42 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item==NULL)
         {
-            return (error(makeXmlException("COLOR end not within TRK, TRKSEG or TRKPT")));
+            return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
         }
 
         bool ok;
-        QString rgbString = mContainedChars;
+        QString rgbString = elementContents();
         if (rgbString.startsWith('#')) rgbString.remove(0, 1);
         unsigned int rgb = rgbString.toUInt(&ok, 16);
         if (!ok) return (error(makeXmlException("invalid value for COLOR")));
 
         Style s = *item->style();
-        s.setLineColour(QColor(rgb));
+        if (dynamic_cast<TrackDataWaypoint *>(item)!=NULL) s.setPointColour(QColor(rgb));
+        else s.setLineColour(QColor(rgb));
         item->setStyle(s);
+    }
+    else if (localName=="category")			// end of a CATEGORY element
+    {
+        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        if (item==NULL) return (warning(makeXmlException("CATEGORY end not within WPT")));
+
+        item->setMetadata(DataIndexer::self()->index(localName), elementContents());
+    }
+    else if (localName=="type")				// end of a TYPE element
+    {							// a synonym for CATEGORY
+        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        if (item==NULL) return (warning(makeXmlException("TYPE end not within WPT")));
+							// only if no CATEGORY already
+        int idx = DataIndexer::self()->index("category");
+        if (item->metadata(idx).isEmpty()) item->setMetadata(idx, elementContents());
+    }
+    else if (localName=="Category" && qName.startsWith("gpxx:"))
+    {							// ignore this, covered in CATEGORY/TYPE
+        (void) elementContents();
     }
     else						// Unknown tag, save as metadata
     {
-        if (mContainedChars.isEmpty()) return (true);	// if there is anything to save
+        if (!hasElementContents()) return (true);	// if there is anything to save
 
         TrackDataItem *item = currentItem();		// find innermost current element
 
@@ -559,8 +579,8 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         if (key=="description") key = "desc";
         int idx = DataIndexer::self()->index(key);
 
-        if (item!=NULL) item->setMetadata(idx, mContainedChars);
-        else if (mWithinMetadata) mDataRoot->setMetadata(idx, mContainedChars);
+        if (item!=NULL) item->setMetadata(idx, elementContents());
+        else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementContents());
         else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TRKPT, WPT or METADATA"));
     }
 

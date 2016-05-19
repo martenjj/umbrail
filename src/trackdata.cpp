@@ -453,7 +453,7 @@ void TrackDataItem::setStyle(const Style &s)
 {
     if (mStyle==NULL)
     {
-        qDebug() << "set style for" << name();
+        //qDebug() << "set style for" << name();
         mStyle = new Style(s);
 #ifdef MEMORY_TRACKING
         ++allocStyle;
