@@ -190,7 +190,7 @@ case ErrorReporter::Fatal:
 
     QDialog *dlg = new QDialog(mainWindow());
     dlg->setWindowTitle(caption);
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, dlg);
     if (detailed)
     {
         // From tier1/kwidgetsaddons/src/kmessagebox.cpp KMessageBox::detailedErrorInternal()
