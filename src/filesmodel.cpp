@@ -132,7 +132,7 @@ case COL_NAME:     return (tdi->name());
 case Qt::DecorationRole:
         switch (idx.column())
         {
-case COL_NAME:     return (QIcon::fromTheme(tdi->iconName()));
+case COL_NAME:     return (tdi->icon());
         }
         break;
 

@@ -63,9 +63,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     // of mixed types (although we only support GPX files at present), the
     // icon should be "unknown".
     QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(KIconLoader::global()->loadIcon(item->iconName(),
-                                                         KIconLoader::NoGroup,
-                                                         KIconLoader::SizeMedium));
+    iconLabel->setPixmap(item->icon().pixmap(KIconLoader::SizeMedium));
     gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);
 
     mTabWidget = new QTabWidget(this);

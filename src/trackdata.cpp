@@ -6,8 +6,11 @@
 #include <qregexp.h>
 #include <qdebug.h>
 #include <qtimezone.h>
+#include <qicon.h>
+#include <qstandardpaths.h>
 
 #include <klocalizedstring.h>
+#include <kiconloader.h>
 
 #include <kio/global.h>
 
@@ -493,6 +496,12 @@ TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
     return (NULL);
 }
 
+
+QIcon TrackDataItem::icon() const
+{
+    return (QIcon::fromTheme(this->iconName()));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFile							//
@@ -766,6 +775,90 @@ bool TrackDataWaypoint::isMediaType() const
     return (wpt==TrackData::WaypointAudioNote ||
             wpt==TrackData::WaypointVideoNote ||
             wpt==TrackData::WaypointPhoto);
+}
+
+
+void TrackDataWaypoint::setStyle(const Style &s)
+{
+    TrackDataItem::setStyle(s);
+    mIcon = QIcon();					// reset cached icon
+}
+
+
+void TrackDataWaypoint::setMetadata(int idx, const QString &value)
+{
+    TrackDataItem::setMetadata(idx, value);
+    mIcon = QIcon();					// reset cached icon
+}
+
+
+// This is a global cache for the loaded master (colour keyed)
+// images, one for each requested size.
+typedef QHash<int,QImage> ImageHash;
+Q_GLOBAL_STATIC(ImageHash, sImageMap);
+
+
+#define COLOURKEY_FG		0xFF00FF		// magenta
+
+
+static void setIconPixmap(QIcon *icon, QColor col, int size)
+{
+    if (!sImageMap->contains(size))			// not cached already
+    {
+        QString picFile = "pics/waypoint_"+QString::number(size)+".png";
+        QString imgFile = QStandardPaths::locate(QStandardPaths::AppDataLocation, picFile);
+        if (imgFile.isEmpty())				// look for master image file
+        {
+            qWarning() << "cannot find image file" << picFile;
+            sImageMap->insert(size, QImage());		// don't bother trying again
+            return;
+        }
+
+        QImage img(imgFile);				// load master source image
+        if (img.isNull())
+        {
+            qWarning() << "cannot load image" << imgFile;
+            sImageMap->insert(size, QImage());		// don't bother trying again
+            return;
+        }
+
+        qDebug() << "loaded" << imgFile << "size" << img.size();
+        sImageMap->insert(size, img);
+    }
+
+    QImage img = sImageMap->value(size);		// get existing from cache
+    if (img.isNull()) return;				// do nothing if null image
+
+    for (int x = 0; x<img.width(); ++x)
+    {
+        for (int y = 0; y<img.height(); ++y)
+        {
+            QRgb pix = img.pixel(x, y);
+            int pval = pix & 0x00FFFFFF;
+            if (pval==COLOURKEY_FG) img.setPixel(x, y, col.rgb());
+        }
+    }
+
+    icon->addPixmap(QPixmap::fromImage(img));
+}
+
+
+QIcon TrackDataWaypoint::icon() const
+{
+    if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
+    if (!style()->hasPointColour()) return (TrackDataItem::icon());
+    if (!mIcon.isNull()) return (mIcon);
+
+    // TODO: style inheritance
+    QColor col = style()->pointColour();
+
+    qDebug() << "need icon for waypoint" << name() << "col" << col;
+
+    setIconPixmap(&mIcon, col, KIconLoader::SizeSmall);
+    setIconPixmap(&mIcon, col, KIconLoader::SizeMedium);
+    if (mIcon.isNull()) return (TrackDataItem::icon());	// hope that did something
+
+    return (mIcon);
 }
 
 //////////////////////////////////////////////////////////////////////////

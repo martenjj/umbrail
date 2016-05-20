@@ -9,6 +9,9 @@ set(navtracks_PICS
   chart_track.png
   chart_segment.png
   chart_point.png
+  waypoint_16.png
+  waypoint_24.png
+  waypoint_32.png
 )
 
 install(FILES ${navtracks_PICS} DESTINATION ${KDE_INSTALL_DATADIR}/navtracks/pics)

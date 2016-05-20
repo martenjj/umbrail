@@ -2,6 +2,7 @@
 #include "waypointslayer.h"
 
 #include <qdebug.h>
+#include <qicon.h>
 
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
@@ -100,8 +101,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         }
 
         // Then the waypoint icon image
-        const QPixmap img = KIconLoader::global()->loadIcon(tdw->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
-                                                            KIconLoader::DefaultState, QStringList(), NULL, true);
+        const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
         if (!img.isNull())				// icon image available
         {
             painter->drawPixmap(coord, img);
