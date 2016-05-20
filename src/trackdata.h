@@ -6,14 +6,13 @@
 
 #include <qstring.h>
 #include <qlist.h>
-#include <qicon.h>
 #include <qdatetime.h>
 #include <qvector.h>
 #include <qurl.h>
 
 class QWidget;
 class QTimeZone;
-//class QIcon;
+class QIcon;
 class Style;
 class TrackDataItem;
 class TrackDataFolder;
@@ -187,9 +186,9 @@ public:
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
     const Style *style() const;
-    virtual void setStyle(const Style &s);
+    void setStyle(const Style &s);
 
-    virtual void setMetadata(int idx, const QString &value);
+    void setMetadata(int idx, const QString &value);
     QString metadata(int idx) const;
     QString metadata(const QString &key) const;
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
@@ -396,8 +395,6 @@ public:
     virtual ~TrackDataWaypoint()			{}
 
     virtual QIcon icon() const;
-    virtual void setStyle(const Style &s);
-    virtual void setMetadata(int idx, const QString &value);
 
     TrackData::WaypointType waypointType() const;
     bool isMediaType() const;
@@ -409,9 +406,6 @@ public:
 
 protected:
     QString iconName() const;
-
-private:
-    mutable QIcon mIcon;
 };
 
 #endif							// TRACKDATA_H
