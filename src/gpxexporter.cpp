@@ -73,12 +73,17 @@ static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
     const Style *s = item->style();
     if (s->isEmpty()) return;
 
-    if (s->hasLineColour())
+    if (s->hasLineColour())				// for a track element
     {
-        // <topografix:color>c0c0c0</topografix:color>
+        // GPX: <topografix:color>c0c0c0</topografix:color>
         startExtensions(str);
-        str.writeTextElement("topografix:color",
-                             QString("%1").arg(QString::number(s->lineColour().rgb() & 0x00FFFFFF, 16), 6, QChar('0')));
+        str.writeTextElement("topografix:color", s->lineColour().name());
+    }
+    else if (s->hasPointColour())			// for a waypoint
+    {
+        // OsmAnd: <color>#c0c0c0</color>
+        startExtensions(str);
+        str.writeTextElement("color", '#'+s->pointColour().name());
     }
 }
 
@@ -257,6 +262,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     }
     else if (tdw!=NULL)					// extensions for WPT
     {
+        writeStyle(tdw, str);
         writeMetadata(tdw, str, true);
         const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
         if (fold!=NULL)					// within a folder?

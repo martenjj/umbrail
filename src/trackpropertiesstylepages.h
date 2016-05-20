@@ -34,6 +34,8 @@ protected:
 protected:
     KColorButton *mLineColourButton;
     QCheckBox *mLineInheritCheck;
+    KColorButton *mPointColourButton;
+    QCheckBox *mPointInheritCheck;
 
 protected slots:
     void slotColourChanged(const QColor &col);

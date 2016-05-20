@@ -2,19 +2,29 @@
 
 #include "trackdata.h"
 
-#include <qhash.h>
 #include <qregexp.h>
 #include <qdebug.h>
 #include <qtimezone.h>
+#include <qicon.h>
+#include <qstandardpaths.h>
 
 #include <klocalizedstring.h>
+#include <kiconloader.h>
 
 #include <kio/global.h>
 
 #include "style.h"
 #include "dataindexer.h"
+#include "waypointimageprovider.h"
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 #undef MEMORY_TRACKING
+#undef DEBUG_ICONS
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -453,7 +463,7 @@ void TrackDataItem::setStyle(const Style &s)
 {
     if (mStyle==NULL)
     {
-        qDebug() << "set style for" << name();
+        //qDebug() << "set style for" << name();
         mStyle = new Style(s);
 #ifdef MEMORY_TRACKING
         ++allocStyle;
@@ -491,6 +501,12 @@ TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
     }
 
     return (NULL);
+}
+
+
+QIcon TrackDataItem::icon() const
+{
+    return (QIcon::fromTheme(this->iconName()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -766,6 +782,23 @@ bool TrackDataWaypoint::isMediaType() const
     return (wpt==TrackData::WaypointAudioNote ||
             wpt==TrackData::WaypointVideoNote ||
             wpt==TrackData::WaypointPhoto);
+}
+
+
+QIcon TrackDataWaypoint::icon() const
+{
+    if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
+    if (!style()->hasPointColour()) return (TrackDataItem::icon());
+
+    // TODO: style inheritance
+    QColor col = style()->pointColour();
+#ifdef DEBUG_ICONS
+    qDebug() << "need icon for waypoint" << name() << "col" << col.name();
+#endif
+    QIcon ic = WaypointImageProvider::self()->icon(col);
+
+    if (ic.isNull()) return (TrackDataItem::icon());	// icon image not available
+    return (ic);
 }
 
 //////////////////////////////////////////////////////////////////////////

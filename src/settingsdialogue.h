@@ -40,6 +40,7 @@ private slots:
 
 private:
     KColorButton *mLineColourButton;
+    KColorButton *mPointColourButton;
     QCheckBox *mSelectedUseSystemCheck;
     QCheckBox *mShowTrackArrowsCheck;
     KColorButton *mSelectedOuterButton;

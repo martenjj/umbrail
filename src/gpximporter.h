@@ -51,6 +51,9 @@ private:
     TrackDataFolder *createFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);
 
+    bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
+    QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
+
 private:
     TrackDataTrack *mCurrentTrack;
     TrackDataSegment *mCurrentSegment;

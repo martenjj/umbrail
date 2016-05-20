@@ -36,7 +36,8 @@ public:
     void showOverlays(const QStringList &list);
     void setMovePointsMode(bool on);
 
-    static QColor resolveLineColour(const TrackDataItem *tdd);
+    static QColor resolveLineColour(const TrackDataItem *tdi);
+    static QColor resolvePointColour(const TrackDataItem *tdi);
 
     void setStopLayerData(const QList<const TrackDataWaypoint *> *data);
 

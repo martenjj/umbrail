@@ -8,11 +8,11 @@
 #include <qlist.h>
 #include <qdatetime.h>
 #include <qvector.h>
-
 #include <qurl.h>
 
 class QWidget;
 class QTimeZone;
+class QIcon;
 class Style;
 class TrackDataItem;
 class TrackDataFolder;
@@ -169,7 +169,7 @@ public:
     QString name() const				{ return (mName); }
     void setName(const QString &newName)		{ mName = newName; }
 
-    virtual QString iconName() const = 0;
+    virtual QIcon icon() const;
 
     int childCount() const				{ return (mChildren==NULL ? 0 : mChildren->count()); }
     TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=NULL); return (mChildren->at(idx)); }
@@ -210,6 +210,8 @@ public:
 protected:
     TrackDataItem(const QString &nm, const char *format = NULL, int *counter = NULL);
 
+    virtual QString iconName() const = 0;
+
 private:
     TrackDataItem(const TrackDataItem &other);
     TrackDataItem &operator=(const TrackDataItem &other);
@@ -238,12 +240,14 @@ public:
 
     QUrl fileName() const				{ return (mFileName); }
     void setFileName(const QUrl &file)			{ mFileName = file; }
-    QString iconName() const;
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+
+protected:
+    QString iconName() const;
 
 private:
     QUrl mFileName;
@@ -261,12 +265,13 @@ public:
     TrackDataTrack(const QString &nm);
     virtual ~TrackDataTrack()				{}
 
-    QString iconName() const				{ return ("chart_track"); }
-
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+
+protected:
+    QString iconName() const				{ return ("chart_track"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -281,14 +286,15 @@ public:
     TrackDataSegment(const QString &nm);
     virtual ~TrackDataSegment()				{}
 
-    QString iconName() const				{ return ("chart_segment"); }
-
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 
     TimeRange timeSpan() const;
+
+protected:
+    QString iconName() const				{ return ("chart_segment"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -303,14 +309,15 @@ public:
     TrackDataFolder(const QString &nm);
     virtual ~TrackDataFolder()				{}
 
-    QString iconName() const				{ return ("folder-favorites"); }
-
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 
     QString path() const;
+
+protected:
+    QString iconName() const				{ return ("folder-favorites"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -366,12 +373,13 @@ public:
     TrackDataTrackpoint(const QString &nm);
     virtual ~TrackDataTrackpoint()			{}
 
-    QString iconName() const				{ return ("chart_point"); }
-
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+
+protected:
+    QString iconName() const				{ return ("chart_point"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -386,7 +394,8 @@ public:
     TrackDataWaypoint(const QString &nm);
     virtual ~TrackDataWaypoint()			{}
 
-    QString iconName() const;
+    virtual QIcon icon() const;
+
     TrackData::WaypointType waypointType() const;
     bool isMediaType() const;
 
@@ -394,6 +403,9 @@ public:
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+
+protected:
+    QString iconName() const;
 };
 
 #endif							// TRACKDATA_H

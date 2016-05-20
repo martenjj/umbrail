@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	11-Feb-14						//
+//  Edit:	18-May-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,16 +32,15 @@
 #include "settings.h"
 
 
-
 static Style *sGlobalStyle = NULL;
 
 const Style Style::null = Style();
 
 
-
 Style::Style()
 {
     mLineColour = QColor();
+    mPointColour = QColor();
 }
 
 
@@ -54,6 +53,7 @@ Style *Style::globalStyle()
 
         // Read the application settings into the global style object
         sGlobalStyle->setLineColour(Settings::lineColour());
+        sGlobalStyle->setPointColour(Settings::pointColour());
     }
 
     return (sGlobalStyle);
@@ -67,11 +67,16 @@ void Style::setLineColour(const QColor &col)
 }
 
 
+void Style::setPointColour(const QColor &col)
+{
+    if (col==Qt::transparent) mPointColour = QColor();
+    else mPointColour = col;
+}
 
 
 bool Style::isEmpty() const
 {
-    return (!hasLineColour());
+    return (!hasLineColour() && !hasPointColour());
 }
 
 
@@ -79,18 +84,19 @@ bool Style::operator==(const Style &other) const
 {
     if (isEmpty()) return (other.isEmpty());		// two null styles are equal
     if (other.isEmpty()) return (false);		// valid never equals null
-    return (mLineColour==other.mLineColour);		// compare colours for equality
+    return (mLineColour==other.mLineColour &&		// compare colours for equality
+            mPointColour==other.mPointColour);
 }
-
 
 
 QString Style::toString() const
 {
-    return (QString("[linecol=%1%2]")
+    return (QString("[linecol=%1%2 pointcol=%3%4]")
             .arg(QString::number(mLineColour.rgba(), 16), 8, QChar('0'))
-            .arg(!hasLineColour() ? " inherit" : ""));
+            .arg(!hasLineColour() ? " inherit" : "")
+            .arg(QString::number(mPointColour.rgba(), 16), 8, QChar('0'))
+            .arg(!hasPointColour() ? " inherit" : ""));
 }
-
 
 
 QDebug operator<<(QDebug str, const Style &style)

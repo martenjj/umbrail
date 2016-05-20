@@ -2,6 +2,7 @@
 #include "stopslayer.h"
 
 #include <qdebug.h>
+#include <qicon.h>
 
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
@@ -61,8 +62,7 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
                                  0, GeoDataCoordinates::Degree);
 
         // First the icon image
-        const QPixmap img = KIconLoader::global()->loadIcon(tdw->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
-                                                            KIconLoader::DefaultState, QStringList(), NULL, true);
+        const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
         if (!img.isNull())				// icon image available
         {
             painter->drawPixmap(coord, img);

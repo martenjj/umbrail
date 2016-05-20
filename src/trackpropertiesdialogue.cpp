@@ -63,9 +63,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     // of mixed types (although we only support GPX files at present), the
     // icon should be "unknown".
     QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(KIconLoader::global()->loadIcon(item->iconName(),
-                                                         KIconLoader::NoGroup,
-                                                         KIconLoader::SizeMedium));
+    iconLabel->setPixmap(item->icon().pixmap(KIconLoader::SizeMedium));
     gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);
 
     mTabWidget = new QTabWidget(this);
@@ -124,7 +122,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     // TODO: hasStyle() a virtual of TrackDataItem
     bool styleEnabled = (items->count()==1);		// whether "Style" is applicable here
     if (styleEnabled && dynamic_cast<const TrackDataTrackpoint *>(items->first())!=NULL) styleEnabled = false;
-    if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items->first())!=NULL) styleEnabled = false;
+    //if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items->first())!=NULL) styleEnabled = false;
     if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items->first())!=NULL) styleEnabled = false;
     mTabWidget->setTabEnabled(2, styleEnabled);
 
