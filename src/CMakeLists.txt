@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		20-May-16					#
+#  Edit:		15-Jun-16					#
 #########################################################################
 
 project(navtracks)
@@ -28,23 +28,12 @@ find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts
 find_package(Marble REQUIRED NO_POLICY_SCOPE)
 find_package(Phonon4Qt5 NO_POLICY_SCOPE)
 find_package(KF5KExiv2 NO_POLICY_SCOPE)
+find_package(DialogUtil REQUIRED NO_POLICY_SCOPE)
 
 set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
 set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
 set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://quickgit.kde.org/?p=libkexiv2.git" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
-
-find_library(LIBDIALOGUTIL_FOUND "libdialogutil.so")
-if (LIBDIALOGUTIL_FOUND)
-  get_filename_component(LIBDIALOGUTIL_DIR ${LIBDIALOGUTIL_FOUND} DIRECTORY)
-  get_filename_component(LIBDIALOGUTIL_LIBRARY ${LIBDIALOGUTIL_FOUND} NAME)
-  message(STATUS "Found libdialogutil library: ${LIBDIALOGUTIL_DIR}")
-
-  find_file(HDRDIALOGUTIL_FOUND "dialogbase.h" HINTS ${KDE_INSTALL_FULL_INCLUDEDIR} PATH_SUFFIXES "KF5")
-  get_filename_component(HDRDIALOGUTIL_DIR ${HDRDIALOGUTIL_FOUND} DIRECTORY)
-  message(STATUS "Found libdialogutil headers: ${HDRDIALOGUTIL_DIR}")
-else (LIBDIALOGUTIL_FOUND)
-  message(FATAL_ERROR "This project requires the libdialogutil library")
-endif (LIBDIALOGUTIL_FOUND)
+set_package_properties("DialogUtil" PROPERTIES DESCRIPTION "Dialogue utility library" TYPE REQUIRED PURPOSE "Required to build the project")
 
 #########################################################################
 #									#
@@ -158,6 +147,7 @@ target_link_libraries(navtracks
   KF5::IconThemes
   KF5::ItemViews
   KF5::Parts
+  ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
   target_link_libraries(navtracks Phonon::phonon4qt5)
@@ -165,8 +155,6 @@ endif (Phonon4Qt5_FOUND)
 if (KF5KExiv2_FOUND)
   target_link_libraries(navtracks KF5::KExiv2)
 endif (KF5KExiv2_FOUND)
-
-target_link_libraries(navtracks ${LIBDIALOGUTIL_LIBRARY})
 
 add_dependencies(navtracks vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
