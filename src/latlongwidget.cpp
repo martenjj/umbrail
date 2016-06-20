@@ -307,6 +307,7 @@ void LatLongWidget::slotPasteCoordinates()
         double lat = rx1.cap(1).toDouble();		// assume success, because
         double lon = rx1.cap(2).toDouble();		// of regexp match above
         setLatLong(lat, lon);
+        textChanged();
         return;
     }
 
@@ -330,6 +331,7 @@ void LatLongWidget::slotPasteCoordinates()
         if (lonSign=='W') lon = -lon;
 
         setLatLong(lat, lon);
+        textChanged();
         return;
     }
 
