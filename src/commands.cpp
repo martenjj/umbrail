@@ -610,7 +610,7 @@ void MergeSegmentsCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Add Container (track or folder)					//
+//  Add Container (track, route or folder)				//
 //									//
 //  We create the new container, and store it when required.  The	//
 //  parent container is only referred to, and can be NULL meaning	//
@@ -1106,6 +1106,95 @@ void AddWaypointCommand::undo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(mWaypointFolder);
+    updateMap();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Add Routepoint							//
+//									//
+//  We create the new point and store it.  We only refer to the		//
+//  input folder to identify where to create it.			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+AddRoutepointCommand::AddRoutepointCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mRoutepointRoute = NULL;
+    mSourcePoint = NULL;
+    mNewRoutepointContainer = NULL;
+}
+
+
+AddRoutepointCommand::~AddRoutepointCommand()
+{
+    delete mNewRoutepointContainer;
+}
+
+
+void AddRoutepointCommand::setData(const QString &name, qreal lat, qreal lon,
+                                 TrackDataRoute *route,
+                                 const TrackDataAbstractPoint *sourcePoint)
+{
+    mRoutepointName = name;
+    mRoutepointRoute = route;
+    mLatitude = lat;
+    mLongitude = lon;
+    mSourcePoint = sourcePoint;
+}
+
+
+void AddRoutepointCommand::redo()
+{
+    Q_ASSERT(mRoutepointRoute!=NULL);
+
+    controller()->view()->clearSelection();
+    model()->startLayoutChange();
+
+    if (mNewRoutepointContainer==NULL)			// need to create new routepoint
+    {
+        mNewRoutepointContainer = new ItemContainer;
+
+        TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint(mRoutepointName);
+        newRoutepoint->setLatLong(mLatitude, mLongitude);
+        if (mSourcePoint!=NULL)
+        {
+//             newRoutepoint->setElevation(mSourcePoint->elevation());
+//             newRoutepoint->setTime(mSourcePoint->time());
+            newRoutepoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
+//             const QString stopData = mSourcePoint->metadata("stop");
+//             if (!stopData.isEmpty()) newRoutepoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
+        }
+
+        mNewRoutepointContainer->addChildItem(newRoutepoint);
+    }
+
+    Q_ASSERT(mNewRoutepointContainer->childCount()==1);
+    TrackDataItem *newPoint = mNewRoutepointContainer->takeFirstChildItem();
+    mRoutepointRoute->addChildItem(newPoint);
+
+    model()->endLayoutChange();
+    controller()->view()->selectItem(newPoint);
+    updateMap();
+}
+
+
+void AddRoutepointCommand::undo()
+{
+    Q_ASSERT(mNewRoutepointContainer!=NULL);
+    Q_ASSERT(mNewRoutepointContainer->childCount()==0);
+    Q_ASSERT(mRoutepointRoute!=NULL);
+
+    controller()->view()->clearSelection();
+    model()->startLayoutChange();
+
+    TrackDataItem *newPoint = mRoutepointRoute->takeLastChildItem();
+    mNewRoutepointContainer->addChildItem(newPoint);
+    Q_ASSERT(mNewRoutepointContainer->childCount()==1);
+
+    model()->endLayoutChange();
+    controller()->view()->selectItem(mRoutepointRoute);
     updateMap();
 }
 

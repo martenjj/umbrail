@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Mar-16					#
+#  Edit:		20-Jun-16					#
 #########################################################################
 
 project(navtracks)
@@ -43,6 +43,7 @@ set(navtracks_SRCS
   autotooltipdelegate.cpp
   commands.cpp
   createwaypointdialogue.cpp
+  createroutepointdialogue.cpp
   dataindexer.cpp
   errorreporter.cpp
   exporterbase.cpp

@@ -21,6 +21,7 @@
       <Action name="edit_add_folder"/>
       <Action name="edit_add_point"/>
       <Action name="edit_add_waypoint"/>
+      <Action name="edit_add_routepoint"/>
       <Action name="edit_delete_track"/>
       <Separator/>
       <Action name="map_move_points"/>
@@ -84,6 +85,7 @@
     <Action name="map_find_address"/>
     <Separator/>
     <Action name="map_add_waypoint"/>
+    <Action name="map_add_routepoint"/>
   </Menu>
 
  

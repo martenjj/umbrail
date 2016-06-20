@@ -180,6 +180,15 @@ void MapView::slotAddWaypoint()
 }
 
 
+void MapView::slotAddRoutepoint()
+{
+   qreal lat = 0.0;
+   qreal lon = 0.0;
+   const bool valid = geoCoordinates(mPopupX, mPopupY, lon, lat, GeoDataCoordinates::Degree);
+   if (valid) emit createRoutepoint(lat, lon);
+}
+
+
 QStringList MapView::overlays(bool visibleOnly) const
 {
     QStringList result;

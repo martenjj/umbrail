@@ -330,6 +330,31 @@ private:
 
 
 
+class AddRoutepointCommand : public FilesCommandBase
+{
+public:
+    AddRoutepointCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    virtual ~AddRoutepointCommand();
+
+    void setData(const QString &name, qreal lat, qreal lon,
+                 TrackDataRoute *route, const TrackDataAbstractPoint *sourcePoint = NULL);
+
+    void redo();
+    void undo();
+
+protected:
+    TrackDataRoute *mRoutepointRoute;
+
+private:
+    QString mRoutepointName;
+    qreal mLatitude;
+    qreal mLongitude;
+    const TrackDataAbstractPoint *mSourcePoint;
+    ItemContainer *mNewRoutepointContainer;
+};
+
+
+
 class AddPhotoCommand : public AddWaypointCommand
 {
 public:

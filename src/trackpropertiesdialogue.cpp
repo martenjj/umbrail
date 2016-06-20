@@ -111,6 +111,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     bool styleEnabled = (items->count()==1);		// whether "Style" is applicable here
     if (styleEnabled && dynamic_cast<const TrackDataTrackpoint *>(items->first())!=NULL) styleEnabled = false;
     if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items->first())!=NULL) styleEnabled = false;
+    if (styleEnabled && dynamic_cast<const TrackDataRoutepoint *>(items->first())!=NULL) styleEnabled = false;
     if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items->first())!=NULL) styleEnabled = false;
     mTabWidget->setTabEnabled(2, styleEnabled);
 

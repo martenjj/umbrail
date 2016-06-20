@@ -67,6 +67,7 @@ public slots:
     void slotAddPoint();
     void slotDeleteItems();
     void slotAddWaypoint(qreal lat = NAN, qreal lon = NAN);
+    void slotAddRoutepoint(qreal lat = NAN, qreal lon = NAN);
     void slotSetWaypointStatus();
 
 signals:

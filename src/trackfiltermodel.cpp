@@ -56,6 +56,10 @@ case TrackData::Folder:
         if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) return (true);
         break;
 
+case TrackData::Route:
+        if (dynamic_cast<const TrackDataRoute *>(item)!=NULL) return (true);
+        break;
+
 case TrackData::Waypoint:
         if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) return (true);
         if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL) return (true);
@@ -161,6 +165,30 @@ case TrackData::Waypoint:
         // it the immediate parent of a source waypoint.
 
         if (dynamic_cast<const TrackDataFolder *>(item)!=NULL)
+        {
+            if (mSourceItems!=NULL)
+            {
+                for (int i = 0; i<mSourceItems->count(); ++i)
+                {
+                    const TrackDataItem *srcItem = mSourceItems->at(i);
+                    if (srcItem->parent()==item)
+                    {
+                        sourceOk = false;
+                        break;
+                    }
+                }
+            }
+        }
+        else sourceOk = false;
+
+        if (sourceOk) return (Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        break;
+
+case TrackData::Route:
+        // In route mode, any route can be selected unless it
+        // it the immediate parent of a source point.
+
+        if (dynamic_cast<const TrackDataRoute *>(item)!=NULL)
         {
             if (mSourceItems!=NULL)
             {
