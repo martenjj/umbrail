@@ -22,7 +22,6 @@ LatLongDialogue::LatLongDialogue(QWidget *pnt)
 
     setMainWidget(mWidget);
     setMinimumWidth(400);
-    setMaximumWidth(440);
 
     KConfigGroup grp = KGlobal::config()->group(objectName());
     restoreDialogSize(grp);

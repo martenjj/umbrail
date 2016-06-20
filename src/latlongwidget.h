@@ -26,6 +26,9 @@ public:
 
     bool hasAcceptableInput() const;
 
+protected slots:
+    void slotPasteCoordinates();
+
 signals:
     void positionChanged(double lat, double lon);
     void positionValid(bool valid);
