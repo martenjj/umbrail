@@ -195,7 +195,14 @@ TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, 
 
     addChildCountField(items, i18nc("@label:textbox", "Points:"));
     addBoundingAreaField(items);
-    addTimeDistanceSpeedFields(items, false);
+    addSeparatorField();
+
+    double dist = TrackData::sumTotalTravelDistance(items, false);
+    VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
+    vl->setSaveId("totaltraveldistance");
+    vl->setValue(dist);
+    mFormLayout->addRow(i18nc("@label:textbox", "Length:"), vl);
+    disableIfEmpty(vl);
 
     if (items->count()==1)				// should always be so
     {

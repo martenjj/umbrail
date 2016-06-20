@@ -164,7 +164,7 @@ double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> *items, bo
     {
         for (int i = 0; i<num; ++i)			// sum over all of them
         {
-            dist += items->at(i)->totalTravelDistance();
+            dist += items->at(i)->totalTravelDistance(tracksOnly);
         }
     }
 
@@ -389,9 +389,9 @@ TimeRange TrackDataItem::timeSpan() const
 }
 
 
-double TrackDataItem::totalTravelDistance() const
+double TrackDataItem::totalTravelDistance(bool tracksOnly) const
 {
-    return (TrackData::sumTotalTravelDistance(mChildren));
+    return (TrackData::sumTotalTravelDistance(mChildren, tracksOnly));
 }
 
 

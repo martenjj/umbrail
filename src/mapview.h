@@ -13,6 +13,7 @@ class KAction;
 class TrackDataItem;
 class TrackDataWaypoint;
 class TracksLayer;
+class RoutesLayer;
 class WaypointsLayer;
 class StopsLayer;
 
@@ -68,6 +69,7 @@ private:
     int mPopupY;
 
     TracksLayer *mTracksLayer;
+    RoutesLayer *mRoutesLayer;
     WaypointsLayer *mWaypointsLayer;
     StopsLayer *mStopsLayer;
 };

@@ -387,7 +387,7 @@ TrackRoutepointGeneralPage::TrackRoutepointGeneralPage(const QList<TrackDataItem
 
 QString TrackRoutepointGeneralPage::typeText(int count) const
 {
-    return (i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", count));
+    return (i18ncp("@item:intable", "<b>Route point</b>", "<b>%1 route points</b>", count));
 }
 
 
@@ -515,8 +515,7 @@ TrackRouteGeneralPage::TrackRouteGeneralPage(const QList<TrackDataItem *> *items
     kDebug();
     setObjectName("TrackRouteGeneralPage");
 
-//     addTimeSpanFields(items);
-//     addSeparatorField();
+    addSeparatorField();
     addTypeField(items);
     addDescField(items);
 }

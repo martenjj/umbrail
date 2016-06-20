@@ -204,7 +204,7 @@ public:
 
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
-    virtual double totalTravelDistance() const;
+    virtual double totalTravelDistance(bool tracksOnly = true) const;
     virtual unsigned int totalTravelTime() const;
     QString timeZone() const;
 
@@ -429,7 +429,7 @@ public:
     TrackDataRoutepoint(const QString &nm);
     virtual ~TrackDataRoutepoint()			{}
 
-    QString iconName() const				{ return ("chart_point"); }
+    QString iconName() const				{ return ("flag"); }
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;

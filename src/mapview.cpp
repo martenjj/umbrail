@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "trackslayer.h"
 #include "waypointslayer.h"
+#include "routeslayer.h"
 #include "stopslayer.h"
 
 
@@ -65,8 +66,13 @@ MapView::MapView(QWidget *pnt)
     connect(mWaypointsLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
     addLayer(mWaypointsLayer);
 
+    // Routes display layer
+    mRoutesLayer = new RoutesLayer(this);
+    connect(mRoutesLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
+    addLayer(mRoutesLayer);
+
     // Temporary stops display layer
-    mStopsLayer = new StopsLayer;
+    mStopsLayer = new StopsLayer;			// don't want auto delete for this
     addLayer(mStopsLayer);
 }
 
@@ -286,6 +292,7 @@ void MapView::setMovePointsMode(bool on)
     kDebug() << on;
     mTracksLayer->setMovePointsMode(on);
     mWaypointsLayer->setMovePointsMode(on);
+    mRoutesLayer->setMovePointsMode(on);
 }
 
 

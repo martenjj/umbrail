@@ -72,6 +72,7 @@ set(navtracks_SRCS
   photoviewer.cpp
   profilewidget.cpp
   project.cpp
+  routeslayer.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
   stopdetectdialogue.cpp
