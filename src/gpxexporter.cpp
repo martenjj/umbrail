@@ -94,6 +94,10 @@ static bool shouldBeInExtensions(const TrackDataItem *item, const QString &name)
     {							// track - these not in extensions
         return (!(name=="name" || name=="desc" || name=="type"));
     }
+    else if (dynamic_cast<const TrackDataRoute *>(item)!=NULL)
+    {							// route - these not in extensions
+        return (!(name=="name" || name=="desc" || name=="type"));
+    }
     else if (dynamic_cast<const TrackDataSegment *>(item)!=NULL)
     {							// segment - all in extensions
         return (true);
@@ -164,10 +168,12 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
     // what sort of element?
     const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
+    const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
     const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
     const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataRoutepoint *tdm = dynamic_cast<const TrackDataRoutepoint *>(item);
 
     // start tag
     if (tdt!=NULL)					// element TRK
@@ -181,12 +187,23 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         writeMetadata(tdt, str, false);
         // <cmt> xsd:string </cmt>
     }
+    else if (tdr!=NULL)					// element RTE
+    {
+        str.writeCharacters("\n\n  ");
+        str.writeStartElement("rte");
+        // <name> xsd:string </name>
+        str.writeTextElement("name", tdr->name());
+        // <desc> xsd:string </desc>
+        // <type> xsd:string </type>
+        writeMetadata(tdr, str, false);
+        // <cmt> xsd:string </cmt>
+    }
     else if (tds!=NULL)					// element TRKSEG
     {
         str.writeStartElement("trkseg");
         writeMetadata(tds, str, false);
     }
-    else if (tdp!=NULL || tdw!=NULL)			// element TRKPT or WPT
+    else if (tdp!=NULL || tdw!=NULL || tdm!=NULL)	// element TRKPT or WPT
     {
         const TrackDataAbstractPoint *p;
         if (tdp!=NULL)					// element TRKPT
@@ -194,11 +211,17 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
             p = tdp;
             str.writeStartElement("trkpt");
         }
-        else						// element WPT
+        else if (tdw!=NULL)				// element WPT
         {
             p = tdw;
             str.writeCharacters("\n\n  ");
             str.writeStartElement("wpt");
+        }
+        else						// element RTEPT
+        {
+            p = tdm;
+            str.writeCharacters("\n\n    ");
+            str.writeStartElement("rtept");
         }
 
         // lat="latitudeType"
@@ -241,6 +264,11 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     {
         writeMetadata(tdt, str, true);
         writeStyle(tdt, str);
+    }
+    else if (tdr!=NULL)					// extensions for RTE
+    {
+        writeMetadata(tdr, str, true);
+        writeStyle(tdr, str);
     }
     else if (tds!=NULL)					// extensions for TRKSEG
     {
