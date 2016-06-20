@@ -373,6 +373,25 @@ QString TrackTrackpointGeneralPage::typeText(int count) const
 
 
 
+TrackRoutepointGeneralPage::TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemGeneralPage(items, pnt)
+{
+    kDebug();
+    setObjectName("TrackPointGeneralPage");
+
+    addPositionTimeFields(items);
+    if (items->count()>1) addTimeSpanFields(items);
+}
+
+
+
+QString TrackRoutepointGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", count));
+}
+
+
+
 TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
@@ -514,6 +533,7 @@ CREATE_PROPERTIES_PAGE(File, General);
 CREATE_PROPERTIES_PAGE(Track, General);
 CREATE_PROPERTIES_PAGE(Segment, General);
 CREATE_PROPERTIES_PAGE(Trackpoint, General);
+CREATE_PROPERTIES_PAGE(Routepoint, General);
 CREATE_PROPERTIES_PAGE(Folder, General);
 CREATE_PROPERTIES_PAGE(Waypoint, General);
 CREATE_PROPERTIES_PAGE(Route, General);

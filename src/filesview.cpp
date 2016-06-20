@@ -153,6 +153,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
             else if (dynamic_cast<const TrackDataFile *>(mSelectedItem)!=NULL) mSelectedType = TrackData::File;
             else if (dynamic_cast<const TrackDataFolder *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Folder;
             else if (dynamic_cast<const TrackDataWaypoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Waypoint;
+            else if (dynamic_cast<const TrackDataRoutepoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Routepoint;
             else mSelectedType = TrackData::None;
         }
     }

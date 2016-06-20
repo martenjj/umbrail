@@ -113,11 +113,12 @@ namespace TrackData
         Mixed,
         File,
         Track,
+        Route,
         Segment,
         Point,
         Folder,
         Waypoint,
-        Route
+        Routepoint
     };
 
     // Finer grained classification for waypoints,
@@ -409,6 +410,26 @@ public:
     virtual ~TrackDataRoute()				{}
 
     QString iconName() const				{ return ("chart_route"); }
+
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataRoutepoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataRoutepoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
+{
+public:
+    TrackDataRoutepoint(const QString &nm);
+    virtual ~TrackDataRoutepoint()			{}
+
+    QString iconName() const				{ return ("chart_point"); }
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;

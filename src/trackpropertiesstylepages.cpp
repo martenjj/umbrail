@@ -105,6 +105,12 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QW
 
 
 
+TrackRouteStylePage::TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemStylePage(items, pnt)
+{
+    kDebug();
+    setObjectName("TrackRouteStylePage");
+}
 
 
 
@@ -114,9 +120,6 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items
     kDebug();
     setObjectName("TrackSegmentStylePage");
 }
-
-
-
 
 
 
@@ -147,19 +150,20 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
 
 
 
-TrackRouteStylePage::TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
+TrackRoutepointStylePage::TrackRoutepointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     kDebug();
-    setObjectName("TrackRouteStylePage");
+    setObjectName("TrackRoutepointStylePage");
 }
 
 
 
 CREATE_PROPERTIES_PAGE(File, Style);
 CREATE_PROPERTIES_PAGE(Track, Style);
+CREATE_PROPERTIES_PAGE(Route, Style);
 CREATE_PROPERTIES_PAGE(Segment, Style);
 CREATE_PROPERTIES_PAGE(Trackpoint, Style);
 CREATE_PROPERTIES_PAGE(Folder, Style);
 CREATE_PROPERTIES_PAGE(Waypoint, Style);
-CREATE_PROPERTIES_PAGE(Route, Style);
+CREATE_PROPERTIES_PAGE(Routepoint, Style);

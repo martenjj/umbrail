@@ -738,6 +738,13 @@ case TrackData::Point:
         profileEnabled = (selCount>1);
         break;
 
+case TrackData::Routepoint:
+        propsText = i18ncp("@action:inmenu", "Routepoint Properties...", "Routepoints Properties...", selCount);
+        propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Routepoint", "Delete Routepoints", selCount);
+        selectedContainer = filesController()->view()->selectedItem()->parent();
+        break;
+
 case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;

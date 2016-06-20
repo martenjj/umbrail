@@ -68,6 +68,19 @@ public:
 
 
 
+class TrackRouteStylePage : public TrackItemStylePage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteStylePage()				{}
+
+
+};
+
+
+
 class TrackSegmentStylePage : public TrackItemStylePage
 {
     Q_OBJECT
@@ -120,13 +133,13 @@ public:
 
 
 
-class TrackRouteStylePage : public TrackItemStylePage
+class TrackRoutepointStylePage : public TrackItemStylePage
 {
     Q_OBJECT
 
 public:
-    TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRouteStylePage()				{}
+    TrackRoutepointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRoutepointStylePage()				{}
 
 
 };
