@@ -205,6 +205,11 @@ void MainWindow::setupActions()
     mAddWaypointAction->setIcon(KIcon("list-add"));
     connect(mAddWaypointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddWaypoint()));
 
+    mAddRouteAction = actionCollection()->addAction("edit_add_route");
+    mAddRouteAction->setText(i18n("Add Route"));
+    mAddRouteAction->setIcon(KIcon("list-add"));
+    connect(mAddRouteAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoute()));
+
     a = actionCollection()->addAction("map_add_waypoint");
     a->setText(i18n("Create Waypoint..."));
     a->setIcon(KIcon("list-add"));
@@ -709,6 +714,12 @@ case TrackData::Track:
         profileEnabled = true;
         break;
 
+case TrackData::Route:
+        propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
+        propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
+        break;
+
 case TrackData::Segment:
         propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
         propsEnabled = true;
@@ -805,6 +816,7 @@ default:
     mMoveItemAction->setText(moveText);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
                                                  selType==TrackData::Folder));
     mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||

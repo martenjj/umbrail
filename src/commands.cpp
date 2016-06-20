@@ -659,6 +659,11 @@ void AddContainerCommand::redo()
             addedItem = new TrackDataTrack(mAddName);
             addedItem->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
         }
+        else if (mType==TrackData::Route)
+        {
+            addedItem = new TrackDataRoute(mAddName);
+            addedItem->setMetadata(DataIndexer::self()->index("creator"), KGlobal::mainComponent().aboutData()->appName());
+        }
         else if (mType==TrackData::Folder)
         {
             lastCreatedFolder = new TrackDataFolder(mAddName);

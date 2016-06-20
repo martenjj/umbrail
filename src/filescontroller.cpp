@@ -836,6 +836,20 @@ void FilesController::slotAddTrack()
 }
 
 
+void FilesController::slotAddRoute()
+{
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+    TrackDataItem *pnt = items.first();			// parent item (must be file)
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL);
+
+    AddContainerCommand *cmd = new AddContainerCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(TrackData::Route);
+    mainWindow()->executeCommand(cmd);
+}
+
+
 void FilesController::slotAddFolder()
 {
     QList<TrackDataItem *> items = view()->selectedItems();

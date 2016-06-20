@@ -479,9 +479,33 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
 
 
 
+TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemDetailPage(items, pnt)
+{
+    kDebug();
+    setObjectName("TrackRouteDetailPage");
+
+    addChildCountField(items, i18nc("@label:textbox", "Points:"));
+    addBoundingAreaField(items);
+    addTimeDistanceSpeedFields(items, false);
+
+    if (items->count()==1)				// should always be so
+    {
+        const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(items->first());
+        Q_ASSERT(tdr!=NULL);
+
+        addSeparatorField(i18nc("@title:group", "Source"));
+        addMetadataField(tdr, "creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField(tdr, "time", i18nc("@label:textbox", "Time:"));
+    }
+}
+
+
+
 CREATE_PROPERTIES_PAGE(File, Detail);
 CREATE_PROPERTIES_PAGE(Track, Detail);
 CREATE_PROPERTIES_PAGE(Segment, Detail);
 CREATE_PROPERTIES_PAGE(Trackpoint, Detail);
 CREATE_PROPERTIES_PAGE(Folder, Detail);
 CREATE_PROPERTIES_PAGE(Waypoint, Detail);
+CREATE_PROPERTIES_PAGE(Route, Detail);

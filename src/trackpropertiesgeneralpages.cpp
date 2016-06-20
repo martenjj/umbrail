@@ -490,6 +490,24 @@ void TrackWaypointGeneralPage::slotViewPhotoNote()
 }
 
 
+TrackRouteGeneralPage::TrackRouteGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemGeneralPage(items, pnt)
+{
+    kDebug();
+    setObjectName("TrackRouteGeneralPage");
+
+//     addTimeSpanFields(items);
+//     addSeparatorField();
+    addTypeField(items);
+    addDescField(items);
+}
+
+
+
+QString TrackRouteGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>Route</b>", "<b>%1 routes</b>", count));
+}
 
 
 CREATE_PROPERTIES_PAGE(File, General);
@@ -498,3 +516,4 @@ CREATE_PROPERTIES_PAGE(Segment, General);
 CREATE_PROPERTIES_PAGE(Trackpoint, General);
 CREATE_PROPERTIES_PAGE(Folder, General);
 CREATE_PROPERTIES_PAGE(Waypoint, General);
+CREATE_PROPERTIES_PAGE(Route, General);

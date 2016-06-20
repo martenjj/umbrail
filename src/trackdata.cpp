@@ -16,6 +16,7 @@
 #include "dataindexer.h"
 
 #undef MEMORY_TRACKING
+#define MEMORY_TRACKING
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -40,6 +41,7 @@ static int counterSegment = 0;
 static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
+static int counterRoute = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
@@ -48,6 +50,7 @@ static int allocSegment = 0;
 static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
+static int allocRoute = 0;
 static int allocStyle = 0;
 static int allocChildren = 0;
 static int allocMetadata = 0;
@@ -769,6 +772,20 @@ bool TrackDataWaypoint::isMediaType() const
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataRoute							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataRoute::TrackDataRoute(const QString &nm)
+    : TrackDataItem(nm, "route_%02d", &counterRoute)
+{
+#ifdef MEMORY_TRACKING
+    ++allocRoute;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  Memory tracking							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -795,6 +812,7 @@ MemoryTracker::MemoryTracker()
     qDebug() << "folder" << sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "route" << sizeof(TrackDataRoute) << "bytes";
     qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
@@ -809,6 +827,7 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "folder allocated" << allocFolder << "items, total" << allocFolder*sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "route allocated" << allocRoute << "items, total" << allocRoute*sizeof(TrackDataRoute) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;

@@ -125,6 +125,7 @@ private:
     KAction *mAddFolderAction;
     KAction *mAddPointAction;
     KAction *mAddWaypointAction;
+    KAction *mAddRouteAction;
     KAction *mDeleteItemsAction;
 
     KSelectAction *mWaypointStatusAction;

@@ -164,4 +164,16 @@ private:
 };
 
 
+class TrackRouteGeneralPage : public TrackItemGeneralPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteGeneralPage()				{}
+
+    QString typeText(int count) const;
+};
+
+
 #endif							// TRACKPROPERTIESGENERALPAGES_H

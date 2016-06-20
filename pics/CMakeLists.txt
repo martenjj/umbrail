@@ -9,6 +9,7 @@ set(navtracks_PICS
   chart_track.png
   chart_segment.png
   chart_point.png
+  chart_route.png
 )
 
 install(FILES ${navtracks_PICS} DESTINATION ${DATA_INSTALL_DIR}/navtracks/pics)

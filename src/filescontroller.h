@@ -62,6 +62,7 @@ public slots:
     void slotMergeSegments();
     void slotMoveItem();
     void slotAddTrack();
+    void slotAddRoute();
     void slotAddFolder();
     void slotAddPoint();
     void slotDeleteItems();

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="navmarks"
-     version="6"
+     version="7"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -17,6 +17,7 @@
 
     <Menu name="edit">
       <Action name="edit_add_track"/>
+      <Action name="edit_add_route"/>
       <Action name="edit_add_folder"/>
       <Action name="edit_add_point"/>
       <Action name="edit_add_waypoint"/>

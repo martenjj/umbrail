@@ -105,4 +105,18 @@ public:
 };
 
 
+
+class TrackRouteMetadataPage : public TrackItemMetadataPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteMetadataPage()				{}
+
+
+};
+
+
+
 #endif							// TRACKPROPERTIESMETADATAPAGES_H

@@ -120,4 +120,17 @@ public:
 
 
 
+class TrackRouteStylePage : public TrackItemStylePage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteStylePage()				{}
+
+
+};
+
+
+
 #endif							// TRACKPROPERTIESSTYLEPAGES_H

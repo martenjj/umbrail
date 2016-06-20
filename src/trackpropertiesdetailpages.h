@@ -103,4 +103,15 @@ public:
 };
 
 
+class TrackRouteDetailPage : public TrackItemDetailPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteDetailPage()				{}
+};
+
+
+
 #endif							// TRACKPROPERTIESDETAILPAGES_H
