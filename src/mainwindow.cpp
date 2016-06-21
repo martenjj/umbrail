@@ -101,6 +101,8 @@ void MainWindow::init()
 
     connect(mMapController->view(), SIGNAL(createWaypoint(qreal,qreal)),
             mFilesController, SLOT(slotAddWaypoint(qreal,qreal)));
+    connect(mMapController->view(), SIGNAL(createRoutepoint(qreal,qreal)),
+            mFilesController, SLOT(slotAddRoutepoint(qreal,qreal)));
 
     mSplitter->addWidget(mFilesController->view());
     mSplitter->addWidget(mMapController->view());
@@ -208,10 +210,25 @@ void MainWindow::setupActions()
     mAddWaypointAction->setIcon(QIcon::fromTheme("list-add"));
     connect(mAddWaypointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddWaypoint()));
 
+    mAddRouteAction = ac->addAction("edit_add_route");
+    mAddRouteAction->setText(i18n("Add Route"));
+    mAddRouteAction->setIcon(QIcon::fromTheme("list-add"));
+    connect(mAddRouteAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoute()));
+
+    mAddRoutepointAction = ac->addAction("edit_add_routepoint");
+    mAddRoutepointAction->setText(i18n("Add Route Point..."));
+    mAddRoutepointAction->setIcon(QIcon::fromTheme("list-add"));
+    connect(mAddRoutepointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoutepoint()));
+
     a = ac->addAction("map_add_waypoint");
     a->setText(i18n("Create Waypoint..."));
     a->setIcon(QIcon::fromTheme("list-add"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotAddWaypoint()));
+
+    a = ac->addAction("map_add_routepoint");
+    a->setText(i18n("Create Route Point..."));
+    a->setIcon(QIcon::fromTheme("list-add"));
+    connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotAddRoutepoint()));
 
     mDeleteItemsAction = ac->addAction("edit_delete_track");
     mDeleteItemsAction->setText(i18n("Delete"));
@@ -727,6 +744,12 @@ case TrackData::Track:
         profileEnabled = true;
         break;
 
+case TrackData::Route:
+        propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
+        propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
+        break;
+
 case TrackData::Segment:
         propsText = i18ncp("@action:inmenu", "Segment Properties...", "Segments Properties...", selCount);
         propsEnabled = true;
@@ -743,6 +766,13 @@ case TrackData::Point:
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
         profileEnabled = (selCount>1);
+        break;
+
+case TrackData::Routepoint:
+        propsText = i18ncp("@action:inmenu", "Route Point Properties...", "Route Points Properties...", selCount);
+        propsEnabled = true;
+        delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
+        selectedContainer = filesController()->view()->selectedItem()->parent();
         break;
 
 case TrackData::Folder:
@@ -823,11 +853,15 @@ default:
     mMoveItemAction->setText(moveText);
     mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
                                                  selType==TrackData::Folder));
     mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
                                                    selType==TrackData::Point ||
                                                    selType==TrackData::Waypoint));
+    mAddRoutepointAction->setEnabled(selCount==1 && (selType==TrackData::Route ||
+                                                     selType==TrackData::Point ||
+                                                     selType==TrackData::Waypoint));
 
     mWaypointStatusAction->setEnabled(statusEnabled);
     QList<QAction *> acts = mWaypointStatusAction->actions();

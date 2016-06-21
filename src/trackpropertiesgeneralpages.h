@@ -130,6 +130,20 @@ private:
 };
 
 
+class TrackRoutepointGeneralPage : public TrackItemGeneralPage
+{
+    Q_OBJECT
+
+public:
+    TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRoutepointGeneralPage()				{}
+
+    QString typeText(int count) const;
+
+private:
+};
+
+
 class TrackFolderGeneralPage : public TrackItemGeneralPage
 {
     Q_OBJECT
@@ -161,6 +175,18 @@ protected slots:
 
 private:
     const TrackDataWaypoint *mWaypoint;
+};
+
+
+class TrackRouteGeneralPage : public TrackItemGeneralPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteGeneralPage()				{}
+
+    QString typeText(int count) const;
 };
 
 

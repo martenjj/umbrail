@@ -9,12 +9,20 @@
 #include <qformlayout.h>
 #include <qtabwidget.h>
 #include <qcombobox.h>
+#include <qpushbutton.h>
+#include <qclipboard.h>
+#include <qapplication.h>
+#include <qregexp.h>
+#include <qdebug.h>
+
 #include <QIntValidator>
 #include <QDoubleValidator>
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
 #include <ksharedconfig.h>
+#include <kstandardaction.h>
+#include <kmessagebox.h>
 
 #include <dialogbase.h>
 
@@ -29,9 +37,9 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
 
     // Tab container
     mTabs = new QTabWidget(this);
-    QVBoxLayout *vb = new QVBoxLayout(this);
-    vb->setMargin(0);
-    vb->addWidget(mTabs);
+    QHBoxLayout *hb = new QHBoxLayout(this);
+    hb->setMargin(0);
+    hb->addWidget(mTabs);
 
     // Tab for "Decimal" format
     QWidget *w = new QWidget(this);
@@ -150,6 +158,12 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
     gl->setColumnStretch(12, 1);
 
     mTabs->addTab(w, i18n("DMS"));
+
+    // "Paste" button
+    QAction *act = KStandardAction::paste(this);
+    QPushButton *pasteButton = new QPushButton(act->icon(), act->text(), this);
+    connect(pasteButton, SIGNAL(clicked()), SLOT(slotPasteCoordinates()));
+    hb->addWidget(pasteButton);
 
     KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
     int idx = grp.readEntry("Index", -1);
@@ -274,4 +288,52 @@ bool LatLongWidget::hasAcceptableInput() const
     if (!mLongitudeSec->hasAcceptableInput()) ok = false;
 
     return (ok);
+}
+
+
+void LatLongWidget::slotPasteCoordinates()
+{
+    QString text = QApplication::clipboard()->text().simplified();
+    qDebug() << text;
+    if (text.isEmpty())					// nothing to paste
+    {
+        KMessageBox::sorry(this, i18n("Nothing (or not text) to paste"));
+        return;
+    }
+
+    QRegExp rx1("^(\\d+\\.\\d+)\\D+(\\d+\\.\\d+)");
+    if (text.contains(rx1))				// try match in decimal format
+    {
+        double lat = rx1.cap(1).toDouble();		// assume success, because
+        double lon = rx1.cap(2).toDouble();		// of regexp match above
+        setLatLong(lat, lon);
+        textChanged();
+        return;
+    }
+
+    QRegExp rx2("^(\\d+)\\D+(\\d+)\\D(\\d+(\\.\\d+))\\D*([NnSs])\\D+(\\d+)\\D+(\\d+)\\D(\\d+(\\.\\d+))\\D*([EeWw])");
+    if (text.contains(rx2))				// try match in DMS format
+    {
+        int latD = rx2.cap(1).toInt();
+        int latM = rx2.cap(2).toInt();
+        double latS = rx2.cap(3).toDouble();
+        QChar latSign = (rx2.cap(5).left(1).toUpper())[0];
+
+        int lonD = rx2.cap(6).toInt();
+        int lonM = rx2.cap(7).toInt();
+        double lonS = rx2.cap(8).toDouble();
+        QChar lonSign = (rx2.cap(10).left(1).toUpper())[0];
+
+        double lat = latD+(latM/60.0)+(latS/3600.0);
+        if (latSign=='S') lat = -lat;
+
+        double lon = lonD+(lonM/60.0)+(lonS/3600.0);
+        if (lonSign=='W') lon = -lon;
+
+        setLatLong(lat, lon);
+        textChanged();
+        return;
+    }
+
+    KMessageBox::sorry(this, i18n("Coordinate format not recognised"));
 }

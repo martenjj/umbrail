@@ -114,10 +114,12 @@ namespace TrackData
         Mixed,
         File,
         Track,
+        Route,
         Segment,
         Point,
         Folder,
-        Waypoint
+        Waypoint,
+        Routepoint
     };
 
     // Finer grained classification for waypoints,
@@ -203,7 +205,7 @@ public:
 
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
-    virtual double totalTravelDistance() const;
+    virtual double totalTravelDistance(bool tracksOnly = true) const;
     virtual unsigned int totalTravelTime() const;
     QString timeZone() const;
 
@@ -406,6 +408,46 @@ public:
 
 protected:
     QString iconName() const;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataRoute							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataRoute : public TrackDataItem, public TrackPropertiesInterface
+{
+public:
+    TrackDataRoute(const QString &nm);
+    virtual ~TrackDataRoute()				{}
+
+    QString iconName() const				{ return ("chart_route"); }
+
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataRoutepoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataRoutepoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
+{
+public:
+    TrackDataRoutepoint(const QString &nm);
+    virtual ~TrackDataRoutepoint()			{}
+
+    QString iconName() const				{ return ("flag"); }
+
+    TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
+    TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
 };
 
 #endif							// TRACKDATA_H

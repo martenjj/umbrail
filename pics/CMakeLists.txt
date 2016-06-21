@@ -9,6 +9,7 @@ set(navtracks_PICS
   chart_track.png
   chart_segment.png
   chart_point.png
+  chart_route.png
   waypoint_16.png
   waypoint_24.png
   waypoint_32.png

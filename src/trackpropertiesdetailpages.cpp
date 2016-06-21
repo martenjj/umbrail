@@ -185,6 +185,36 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, 
 
 
 
+TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemDetailPage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRouteDetailPage");
+
+    addChildCountField(items, i18nc("@label:textbox", "Points:"));
+    addBoundingAreaField(items);
+    addSeparatorField();
+
+    double dist = TrackData::sumTotalTravelDistance(items, false);
+    VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
+    vl->setSaveId("totaltraveldistance");
+    vl->setValue(dist);
+    mFormLayout->addRow(i18nc("@label:textbox", "Length:"), vl);
+    disableIfEmpty(vl);
+
+    if (items->count()==1)				// should always be so
+    {
+        const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(items->first());
+        Q_ASSERT(tdr!=NULL);
+
+        addSeparatorField(i18nc("@title:group", "Source"));
+        addMetadataField(tdr, "creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField(tdr, "time", i18nc("@label:textbox", "Time:"));
+    }
+}
+
+
+
 TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemDetailPage(items, pnt)
 {
@@ -477,9 +507,124 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
 
 
 
+TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemDetailPage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRoutepointDetailPage");
+
+    if (items->count()==1)				// single selection
+    {
+        const TrackDataRoutepoint *tdp = dynamic_cast<const TrackDataRoutepoint *>(items->first());
+        Q_ASSERT(tdp!=NULL);
+
+        TrackDataLabel *l = new TrackDataLabel(tdp->formattedPosition(), this);
+        mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
+        mPositionLabel = l;
+
+//         l = new TrackDataLabel(tdp->time(), this);
+//         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
+// 
+//         double ele = tdp->elevation();
+//         if (!isnan(ele))
+//         {
+//             addSeparatorField();
+// 
+//             VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
+//             vl->setSaveId("elevation");
+//             vl->setValue(ele);
+//             mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
+//         }
+
+//         addSeparatorField();
+
+//         QLabel *pathDisplay = new QLabel(this);
+//         pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+//         mFormLayout->addRow(i18nc("@label:textbox", "Folder:"), pathDisplay);
+// 
+//         TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(tdp->parent());
+//         Q_ASSERT(folderItem!=NULL);
+//         pathDisplay->setText(folderItem->path());
+    }
+    else						// multiple selection
+    {
+        addBoundingAreaField(items);
+
+        const TrackDataItem *seg = items->first()->parent();
+        Q_ASSERT(seg!=NULL);				// find parent segment
+        int firstIdx = seg->childIndex(items->first());	// its index of first item
+        int num = items->count();
+
+        bool contiguousSelection = true;		// assume so at start
+        for (int i = 1; i<num; ++i)			// look at following items
+        {
+            if (seg->childAt(firstIdx+i)!=items->at(i))	// mismatch children/selection
+            {
+                contiguousSelection = false;
+                break;
+            }
+        }
+
+        if (contiguousSelection)			// selection is contiguous
+        {
+            addTimeDistanceSpeedFields(items, false, false);
+        }
+
+        if (items->count()==2)				// exactly two points selected
+        {						// (nocontiguous doesn't matter)
+            TrackDataItem *item1 = items->first();
+            TrackDataItem *item2 = items->last();
+
+            int idx1 = seg->childIndex(item1);
+            int idx2 = seg->childIndex(item2);
+            if (idx1>idx2) qSwap(idx1, idx2);		// order by index = time
+
+//             QList<TrackDataItem *> items2;
+//             for (int i = idx1; i<=idx2; ++i) items2.append(seg->childAt(i));
+// 
+//             if (!contiguousSelection)			// not already added above
+//             {
+//                 addTimeDistanceSpeedFields(&items2, false, false);
+//             }
+            addSeparatorField();
+
+            TrackDataRoutepoint *pnt1 = dynamic_cast<TrackDataRoutepoint *>(seg->childAt(idx1));
+            TrackDataRoutepoint *pnt2 = dynamic_cast<TrackDataRoutepoint *>(seg->childAt(idx2));
+            Q_ASSERT(pnt1!=NULL && pnt2!=NULL);
+
+            VariableUnitDisplay *vl = new VariableUnitDisplay(VariableUnitCombo::Bearing, this);
+            vl->setSaveId("bearing");
+            vl->setValue(pnt1->bearingTo(pnt2));
+            mFormLayout->addRow(i18nc("@label:textbox", "Relative bearing:"), vl);
+
+            if (!contiguousSelection)
+            {
+                vl = new VariableUnitDisplay(VariableUnitCombo::Distance, this);
+                vl->setSaveId("crowflies");
+                vl->setValue(pnt1->distanceTo(pnt2, true));
+                mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
+            }
+
+//             double ele1 = pnt1->elevation();
+//             double ele2 = pnt2->elevation();
+//             if (!isnan(ele1) && !isnan(ele2))
+//             {
+//                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
+//                 vl->setSaveId("elediff");
+//                 vl->setValue(ele2-ele1);
+//                 mFormLayout->addRow(i18nc("@label:textbox", "Elevation difference:"), vl);
+//             }
+        }
+    }
+}
+
+
+
 CREATE_PROPERTIES_PAGE(File, Detail);
 CREATE_PROPERTIES_PAGE(Track, Detail);
+CREATE_PROPERTIES_PAGE(Route, Detail);
 CREATE_PROPERTIES_PAGE(Segment, Detail);
 CREATE_PROPERTIES_PAGE(Trackpoint, Detail);
 CREATE_PROPERTIES_PAGE(Folder, Detail);
 CREATE_PROPERTIES_PAGE(Waypoint, Detail);
+CREATE_PROPERTIES_PAGE(Routepoint, Detail);

@@ -48,18 +48,12 @@ TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items
 
 
 
-
-
 TrackFileMetadataPage::TrackFileMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
 {
     qDebug();
     setObjectName("TrackFileMetadataPage");
 }
-
-
-
-
 
 
 
@@ -72,6 +66,12 @@ TrackTrackMetadataPage::TrackTrackMetadataPage(const QList<TrackDataItem *> *ite
 
 
 
+TrackRouteMetadataPage::TrackRouteMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemMetadataPage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRouteMetadataPage");
+}
 
 
 
@@ -81,9 +81,6 @@ TrackSegmentMetadataPage::TrackSegmentMetadataPage(const QList<TrackDataItem *> 
     qDebug();
     setObjectName("TrackSegmentMetadataPage");
 }
-
-
-
 
 
 
@@ -113,9 +110,21 @@ TrackWaypointMetadataPage::TrackWaypointMetadataPage(const QList<TrackDataItem *
 }
 
 
+
+TrackRoutepointMetadataPage::TrackRoutepointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemMetadataPage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRoutepointMetadataPage");
+}
+
+
+
 CREATE_PROPERTIES_PAGE(File, Metadata);
 CREATE_PROPERTIES_PAGE(Track, Metadata);
+CREATE_PROPERTIES_PAGE(Route, Metadata);
 CREATE_PROPERTIES_PAGE(Segment, Metadata);
 CREATE_PROPERTIES_PAGE(Trackpoint, Metadata);
 CREATE_PROPERTIES_PAGE(Folder, Metadata);
 CREATE_PROPERTIES_PAGE(Waypoint, Metadata);
+CREATE_PROPERTIES_PAGE(Routepoint, Metadata);

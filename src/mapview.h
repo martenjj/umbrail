@@ -13,6 +13,7 @@ class QAction;
 class TrackDataItem;
 class TrackDataWaypoint;
 class TracksLayer;
+class RoutesLayer;
 class WaypointsLayer;
 class StopsLayer;
 
@@ -46,6 +47,7 @@ public slots:
     void slotFindAddress();
     void slotShowOverlay();
     void slotAddWaypoint();
+    void slotAddRoutepoint();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *ev);
@@ -53,6 +55,7 @@ protected:
 signals:
     void draggedPoints(qreal latOff, qreal lonOff);
     void createWaypoint(qreal lat, qreal lon);
+    void createRoutepoint(qreal lat, qreal lon);
 
 private:
     bool mouseCoordinates(GeoDataCoordinates *coords) const;
@@ -66,6 +69,7 @@ private:
     int mPopupY;
 
     TracksLayer *mTracksLayer;
+    RoutesLayer *mRoutesLayer;
     WaypointsLayer *mWaypointsLayer;
     StopsLayer *mStopsLayer;
 };

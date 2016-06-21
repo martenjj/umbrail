@@ -70,10 +70,12 @@ public slots:
     void slotMergeSegments();
     void slotMoveItem();
     void slotAddTrack();
+    void slotAddRoute();
     void slotAddFolder();
     void slotAddPoint();
     void slotDeleteItems();
     void slotAddWaypoint(qreal lat = NAN, qreal lon = NAN);
+    void slotAddRoutepoint(qreal lat = NAN, qreal lon = NAN);
     void slotSetWaypointStatus();
 
 signals:

@@ -124,6 +124,8 @@ private:
     QAction *mAddFolderAction;
     QAction *mAddPointAction;
     QAction *mAddWaypointAction;
+    QAction *mAddRoutepointAction;
+    QAction *mAddRouteAction;
     QAction *mDeleteItemsAction;
 
     KSelectAction *mWaypointStatusAction;

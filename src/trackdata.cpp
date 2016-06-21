@@ -45,18 +45,22 @@ const BoundingArea BoundingArea::null = BoundingArea();
 
 static int counterFile = 0;
 static int counterTrack = 0;
+static int counterRoute = 0;
 static int counterSegment = 0;
 static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
+static int counterRoutepoint = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
 static int allocTrack = 0;
+static int allocRoute = 0;
 static int allocSegment = 0;
 static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
+static int allocRoutepoint = 0;
 static int allocStyle = 0;
 static int allocChildren = 0;
 static int allocMetadata = 0;
@@ -168,7 +172,7 @@ double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> *items, bo
     {
         for (int i = 0; i<num; ++i)			// sum over all of them
         {
-            dist += items->at(i)->totalTravelDistance();
+            dist += items->at(i)->totalTravelDistance(tracksOnly);
         }
     }
 
@@ -394,9 +398,9 @@ TimeRange TrackDataItem::timeSpan() const
 }
 
 
-double TrackDataItem::totalTravelDistance() const
+double TrackDataItem::totalTravelDistance(bool tracksOnly) const
 {
-    return (TrackData::sumTotalTravelDistance(mChildren));
+    return (TrackData::sumTotalTravelDistance(mChildren, tracksOnly));
 }
 
 
@@ -803,6 +807,34 @@ QIcon TrackDataWaypoint::icon() const
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataRoute							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataRoute::TrackDataRoute(const QString &nm)
+    : TrackDataItem(nm, "route_%02d", &counterRoute)
+{
+#ifdef MEMORY_TRACKING
+    ++allocRoute;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataRoutepoint							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataRoutepoint::TrackDataRoutepoint(const QString &nm)
+    : TrackDataAbstractPoint(nm, "rpt_%04d", &counterRoutepoint)
+{
+#ifdef MEMORY_TRACKING
+    ++allocRoutepoint;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  Memory tracking							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -824,11 +856,13 @@ MemoryTracker::MemoryTracker()
     qDebug() << "item" << sizeof(TrackDataItem) << "bytes";
     qDebug() << "file" << sizeof(TrackDataFile) << "bytes";
     qDebug() << "track" << sizeof(TrackDataTrack) << "bytes";
+    qDebug() << "route" << sizeof(TrackDataRoute) << "bytes";
     qDebug() << "segment" << sizeof(TrackDataSegment) << "bytes";
     qDebug() << "point" << sizeof(TrackDataAbstractPoint) << "bytes";
     qDebug() << "folder" << sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "routepoint" << sizeof(TrackDataRoutepoint) << "bytes";
     qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
@@ -839,10 +873,12 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "*********** Memory statistics:";
     qDebug() << "file allocated" << allocFile << "items, total" << allocFile*sizeof(TrackDataFile) << "bytes";
     qDebug() << "track allocated" << allocTrack << "items, total" << allocTrack*sizeof(TrackDataTrack) << "bytes";
+    qDebug() << "route allocated" << allocRoute << "items, total" << allocRoute*sizeof(TrackDataRoute) << "bytes";
     qDebug() << "segment allocated" << allocSegment << "items, total" << allocSegment*sizeof(TrackDataSegment) << "bytes";
     qDebug() << "folder allocated" << allocFolder << "items, total" << allocFolder*sizeof(TrackDataFolder) << "bytes";
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
+    qDebug() << "routepoint allocated" << allocRoutepoint << "items, total" << allocRoutepoint*sizeof(TrackDataRoutepoint) << "bytes";
     qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;

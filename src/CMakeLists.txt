@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		15-Jun-16					#
+#  Edit:		21-Jun-16					#
 #########################################################################
 
 project(navtracks)
@@ -61,6 +61,7 @@ set(navtracks_SRCS
   autotooltipdelegate.cpp
   commands.cpp
   createwaypointdialogue.cpp
+  createroutepointdialogue.cpp
   dataindexer.cpp
   errorreporter.cpp
   exporterbase.cpp
@@ -89,6 +90,7 @@ set(navtracks_SRCS
   photoviewer.cpp
   profilewidget.cpp
   project.cpp
+  routeslayer.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
   stopdetectdialogue.cpp

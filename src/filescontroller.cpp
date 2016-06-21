@@ -35,6 +35,7 @@ using namespace KExiv2Iface;
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
 #include "createwaypointdialogue.h"
+#include "createroutepointdialogue.h"
 #include "style.h"
 #include "errorreporter.h"
 #include "mapview.h"
@@ -878,6 +879,20 @@ void FilesController::slotAddTrack()
 }
 
 
+void FilesController::slotAddRoute()
+{
+    QList<TrackDataItem *> items = view()->selectedItems();
+    if (items.count()!=1) return;
+    TrackDataItem *pnt = items.first();			// parent item (must be file)
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL);
+
+    AddContainerCommand *cmd = new AddContainerCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(TrackData::Route);
+    mainWindow()->executeCommand(cmd);
+}
+
+
 void FilesController::slotAddFolder()
 {
     QList<TrackDataItem *> items = view()->selectedItems();
@@ -984,6 +999,42 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     else cmd->setSenderText(sdr);
 
     cmd->setData(name, lat, lon, destFolder, selPoint);
+    mainWindow()->executeCommand(cmd);
+}
+
+
+void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
+{
+    CreateRoutepointDialogue d(this);
+    QList<TrackDataItem *> items = view()->selectedItems();
+    const TrackDataAbstractPoint *selPoint = NULL;
+
+    if (!isnan(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
+    else if (items.count()==1)				// there is a selected item
+    {							// a source point?
+        selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
+        if (selPoint!=NULL) d.setSourcePoint(selPoint);
+							// the destination route?
+        const TrackDataRoute *selRoute = dynamic_cast<const TrackDataRoute *>(items.first());
+        if (selRoute!=NULL) d.setDestinationRoute(selRoute);
+    }
+
+    if (!d.exec()) return;
+
+    d.routepointPosition(&lat, &lon);
+    const QString name = d.routepointName();
+    TrackDataRoute *destRoute = d.selectedRoute();
+    Q_ASSERT(destRoute!=NULL);
+
+    qDebug() << "create" << name << "in" << destRoute->name() << "at" << lat << lon;
+
+    AddRoutepointCommand *cmd = new AddRoutepointCommand(this);
+
+    QObject *sdr = sender();				// may be called directly
+    if (qobject_cast<MapView *>(sdr)!=NULL) cmd->setText(i18n("Create Route Point on Map"));
+    else cmd->setSenderText(sdr);
+
+    cmd->setData(name, lat, lon, destRoute, selPoint);
     mainWindow()->executeCommand(cmd);
 }
 

@@ -58,6 +58,17 @@ public:
 
 
 
+class TrackRouteDetailPage : public TrackItemDetailPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteDetailPage()				{}
+};
+
+
+
 class TrackSegmentDetailPage : public TrackItemDetailPage
 {
     Q_OBJECT
@@ -99,6 +110,17 @@ public:
     TrackWaypointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointDetailPage()				{}
 };
+
+
+class TrackRoutepointDetailPage : public TrackItemDetailPage
+{
+    Q_OBJECT
+
+public:
+    TrackRoutepointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRoutepointDetailPage()			{}
+};
+
 
 
 #endif							// TRACKPROPERTIESDETAILPAGES_H
