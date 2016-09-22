@@ -223,7 +223,9 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     mTimeThresholdSpinbox = new QSpinBox(w);
     mTimeThresholdSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
     mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
+    mTimeThresholdSpinbox->setSuffix(i18n(" seconds"));
     mTimeThresholdSpinbox->setToolTip(ski->toolTip());
+
     fl->addRow(ski->label(), mTimeThresholdSpinbox);
 
     slotItemChanged();
