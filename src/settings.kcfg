@@ -77,7 +77,7 @@
     </entry>
 
     <entry name="PhotoTimeThreshold" type="Int">
-      <label>Time tolerance (seconds):</label>
+      <label>Time tolerance:</label>
       <tooltip>How close in time a photo needs to be in order to match at a point.</tooltip>
       <default>30</default>
       <min>1</min>
