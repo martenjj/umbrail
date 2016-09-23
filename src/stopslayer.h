@@ -3,10 +3,12 @@
 #ifndef STOPSLAYER_H
 #define STOPSLAYER_H
  
+#include <qstring.h>
 #include <marble/LayerInterface.h>
 
 using namespace Marble;
 
+class QWidget;
 class TrackDataWaypoint;
 
 
