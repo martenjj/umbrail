@@ -21,21 +21,7 @@ class TrackItemStylePage;
 class TrackItemMetadataPage;
 
 
-class TrackPropertiesStateSaver : public DialogStateSaver
-{
-    Q_OBJECT
-
-public:
-    TrackPropertiesStateSaver(QDialog *pnt) : DialogStateSaver(pnt)	{}
-    virtual ~TrackPropertiesStateSaver() = default;
-
-protected:
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
-};
-
-
-class TrackPropertiesDialogue : public DialogBase
+class TrackPropertiesDialogue : public DialogBase, public DialogStateSaver
 {
     Q_OBJECT
 
@@ -51,7 +37,8 @@ public:
     bool newPointPosition(double *newLat, double *newLon) const;
     TrackData::WaypointStatus newWaypointStatus() const;
 
-    QTabWidget *tabWidget() const			{ return (mTabWidget); }
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
 
 protected slots:
     void slotDataChanged();

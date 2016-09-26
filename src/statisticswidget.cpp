@@ -13,7 +13,7 @@
 #include <kcolorscheme.h>
 #endif
 
-#include <dialogstatesaver.h>
+#include <dialogstatewatcher.h>
 
 #include "mainwindow.h"
 #include "filescontroller.h"
@@ -53,7 +53,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mLayout->setColumnMinimumWidth(4, DialogBase::horizontalSpacing());
 
     setMainWidget(mWidget);
-    stateSaver()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
+    stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
 }
 
 

@@ -15,28 +15,9 @@
 #include "timezonewidget.h"
 
 
-void TimeZoneStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
-{
-    const TimeZoneDialogue *wid = qobject_cast<const TimeZoneDialogue *>(dialog);
-    if (wid!=nullptr) grp.writeEntry("State", wid->timeZoneWidget()->header()->saveState().toHex());
-    DialogStateSaver::saveConfig(dialog, grp);
-}
-
-
-void TimeZoneStateSaver::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
-{
-    TimeZoneDialogue *wid = qobject_cast<TimeZoneDialogue *>(dialog);
-    if (wid!=nullptr)
-    {
-        QString colStates = grp.readEntry("State");
-        if (!colStates.isEmpty()) wid->timeZoneWidget()->header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
-    }
-    DialogStateSaver::restoreConfig(dialog, grp);
-}
-
-
 TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
-    : DialogBase(pnt)
+    : DialogBase(pnt),
+      DialogStateSaver(this)
 {
     setObjectName("TimeZoneDialogue");
 
@@ -89,7 +70,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     gl->addWidget(l, 0, 0);
 
     setMinimumSize(400,320);
-    setStateSaver(new TimeZoneStateSaver(this));
+    setStateSaver(this);
 
     mReturnUTC = false;
     slotTimeZoneChanged();
@@ -129,4 +110,19 @@ void TimeZoneDialogue::slotUseSystem()
 void TimeZoneDialogue::slotTimeZoneChanged()
 {
     setButtonEnabled(QDialogButtonBox::Ok, !mTimeZoneWidget->selectedItems().isEmpty());
+}
+
+
+void TimeZoneDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+{
+    grp.writeEntry("State", mTimeZoneWidget->header()->saveState().toHex());
+    DialogStateSaver::saveConfig(dialog, grp);
+}
+
+
+void TimeZoneDialogue::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+{
+    QString colStates = grp.readEntry("State");
+    if (!colStates.isEmpty()) mTimeZoneWidget->header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
+    DialogStateSaver::restoreConfig(dialog, grp);
 }

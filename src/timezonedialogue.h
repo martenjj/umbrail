@@ -10,21 +10,7 @@
 class TimeZoneWidget;
 
 
-class TimeZoneStateSaver : public DialogStateSaver
-{
-    Q_OBJECT
-
-public:
-    TimeZoneStateSaver(QDialog *pnt) : DialogStateSaver(pnt)	{}
-    virtual ~TimeZoneStateSaver() = default;
-
-protected:
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
-};
-
-
-class TimeZoneDialogue : public DialogBase
+class TimeZoneDialogue : public DialogBase, public DialogStateSaver
 {
     Q_OBJECT
 
@@ -35,7 +21,8 @@ public:
     void setTimeZone(const QByteArray &zone);
     QString timeZone() const;
 
-    TimeZoneWidget *timeZoneWidget() const		{ return (mTimeZoneWidget); }
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
 
 protected slots:
     void slotUseUTC();
