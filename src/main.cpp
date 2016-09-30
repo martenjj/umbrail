@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	17-May-16						//
+//  Edit:	30-Sep-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -34,6 +34,7 @@
 
 #include <qapplication.h>
 #include <qcommandlineparser.h>
+#include <qdir.h>
 #include <qurl.h>
 
 #include <kaboutdata.h>
@@ -87,7 +88,9 @@ int main(int argc,char *argv[])
 
     if (parser.isSet("file"))
     {
-        const QUrl u = QUrl::fromUserInput(parser.value("file"));
+        // Parsing file arguments as URLs, as recommended at
+        // http://marc.info/?l=kde-core-devel&m=141359279227385&w=2
+        const QUrl u = QUrl::fromUserInput(parser.value("file"), QDir::currentPath(), QUrl::AssumeLocalFile);
         if (u.isValid())
         {
             const bool ok = w->loadProject(u);
