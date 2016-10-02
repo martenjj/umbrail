@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	30-Sep-16						//
+//  Edit:	02-Oct-16						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -36,6 +36,7 @@
 #include <qcommandlineparser.h>
 #include <qdir.h>
 #include <qurl.h>
+#include <qdebug.h>
 
 #include <kaboutdata.h>
 #include <klocalizedstring.h>
@@ -77,27 +78,36 @@ int main(int argc,char *argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription(aboutData.shortDescription());
 
-    QCommandLineOption opt((QStringList() << "f" << "file"), i18n("Load a data file."), "file");
-    parser.addOption(opt);
+    parser.addPositionalArgument("file", i18n("File to load"), i18n("[file...]"));
 
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
 
-    MainWindow *w = new MainWindow(NULL);
-
-    if (parser.isSet("file"))
+    MainWindow *w = NULL;
+    QStringList args = parser.positionalArguments();
+    for (int i = 0; i<args.count(); ++i)		// load project or data files
     {
         // Parsing file arguments as URLs, as recommended at
         // http://marc.info/?l=kde-core-devel&m=141359279227385&w=2
-        const QUrl u = QUrl::fromUserInput(parser.value("file"), QDir::currentPath(), QUrl::AssumeLocalFile);
-        if (u.isValid())
+        const QUrl u = QUrl::fromUserInput(args[i], QDir::currentPath(), QUrl::AssumeLocalFile);
+        if (!u.isValid())
         {
-            const bool ok = w->loadProject(u);
-            if (!ok) w->deleteLater();
+            qWarning() << "Invalid URL" << u;
+            continue;
         }
+
+        w = new MainWindow(NULL);
+        const bool ok = w->loadProject(u);
+        if (!ok) w->deleteLater();
+        else w->show();
     }
 
-    w->show();
+    if (w==NULL)					// no project or file loaded
+    {
+        w = new MainWindow(NULL);
+        w->show();
+    }
+
     return (app.exec());
 }
