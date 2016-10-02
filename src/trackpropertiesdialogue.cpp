@@ -19,24 +19,9 @@
 #include "style.h"
 
 
-void TrackPropertiesStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
-{
-    const TrackPropertiesDialogue *wid = qobject_cast<const TrackPropertiesDialogue *>(dialog);
-    if (wid!=nullptr) grp.writeEntry("Index", wid->tabWidget()->currentIndex());
-    DialogStateSaver::saveConfig(dialog, grp);
-}
-
-
-void TrackPropertiesStateSaver::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
-{
-    TrackPropertiesDialogue *wid = qobject_cast<TrackPropertiesDialogue *>(dialog);
-    if (wid!=nullptr) wid->tabWidget()->setCurrentIndex(grp.readEntry("Index", 0));
-    DialogStateSaver::restoreConfig(dialog, grp);
-}
-
-
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : DialogBase(pnt)
+    : DialogBase(pnt),
+      DialogStateSaver(this)
 {
     setObjectName("TrackPropertiesDialogue");
 
@@ -117,7 +102,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     mTabWidget->addTab(page, i18nc("@title:tab", "Metadata"));
 
     setMinimumSize(320,380);
-    setStateSaver(new TrackPropertiesStateSaver(this));
+    setStateSaver(this);
 
     // TODO: hasStyle() a virtual of TrackDataItem
     bool styleEnabled = (items->count()==1);		// whether "Style" is applicable here
@@ -185,3 +170,17 @@ QString TrackPropertiesDialogue::newTrackType() const
 
     return ("-");					// not applicable, but
 }							// not the same as "blank"
+
+
+void TrackPropertiesDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+{
+    grp.writeEntry("Index", mTabWidget->currentIndex());
+    DialogStateSaver::saveConfig(dialog, grp);
+}
+
+
+void TrackPropertiesDialogue::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+{
+    mTabWidget->setCurrentIndex(grp.readEntry("Index", 0));
+    DialogStateSaver::restoreConfig(dialog, grp);
+}

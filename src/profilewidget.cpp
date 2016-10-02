@@ -15,6 +15,8 @@
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
 
+#include <dialogstatewatcher.h>
+
 #include "qcustomplot.h"
 #include "mainwindow.h"
 #include "filescontroller.h"
@@ -24,30 +26,9 @@
 #include "variableunitcombo.h"
 
 
-ProfileWidgetStateSaver::ProfileWidgetStateSaver(QDialog *pnt)
-    : DialogStateSaver(pnt)
-{
-}
-
-
-void ProfileWidgetStateSaver::saveConfig(QDialog *dialog, KConfigGroup &grp) const
-{
-    const ProfileWidget *wid = qobject_cast<const ProfileWidget *>(dialog);
-    if (wid!=nullptr) wid->saveConfig(grp);
-    DialogStateSaver::saveConfig(dialog, grp);
-}
-
-
-void ProfileWidgetStateSaver::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
-{
-    ProfileWidget *wid = qobject_cast<ProfileWidget *>(dialog);
-    if (wid!=nullptr) wid->restoreConfig(grp);
-    DialogStateSaver::restoreConfig(dialog, grp);
-}
-
-
 ProfileWidget::ProfileWidget(QWidget *pnt)
     : DialogBase(pnt),
+      DialogStateSaver(this),
       MainWindowInterface(pnt)
 {
     qDebug();
@@ -168,9 +149,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->setColumnStretch(col, 1);
 
     setMainWidget(w);
-    DialogStateSaver *saver = new ProfileWidgetStateSaver(this);
-    saver->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
-    setStateSaver(saver);
+    setStateSaver(this);
+    stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
 
     if (!mElevationCheck->isChecked() && !mSpeedCheck->isChecked())
     {							// if nothing on, set both on
@@ -188,7 +168,7 @@ ProfileWidget::~ProfileWidget()
 }
 
 
-void ProfileWidget::restoreConfig(const KConfigGroup &grp)
+void ProfileWidget::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
     mElevationCheck->setChecked(grp.readEntry("ShowElevation", true));
     mSpeedCheck->setChecked(grp.readEntry("ShowSpeed", true));
@@ -202,10 +182,12 @@ void ProfileWidget::restoreConfig(const KConfigGroup &grp)
     mDistanceUnit->setCurrentIndex(grp.readEntry("UnitDistance", 0));
     mScaleAutoRadio->setChecked(grp.readEntry("ScaleAuto", true));
     mScaleZeroRadio->setChecked(grp.readEntry("ScaleZero", false));
+
+    DialogStateSaver::restoreConfig(dialog, grp);
 }
 
 
-void ProfileWidget::saveConfig(KConfigGroup &grp) const
+void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
     grp.writeEntry("ShowElevation", mElevationCheck->isChecked());
     grp.writeEntry("ShowSpeed", mSpeedCheck->isChecked());
@@ -219,6 +201,8 @@ void ProfileWidget::saveConfig(KConfigGroup &grp) const
     grp.writeEntry("UnitDistance", mDistanceUnit->currentIndex());
     grp.writeEntry("ScaleAuto", mScaleAutoRadio->isChecked());
     grp.writeEntry("ScaleZero", mScaleZeroRadio->isChecked());
+
+    DialogStateSaver::saveConfig(dialog, grp);
 }
 
 

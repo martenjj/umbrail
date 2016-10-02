@@ -21,21 +21,7 @@ class QCustomPlot;
 class KConfigGroup;
 
 
-class ProfileWidgetStateSaver : public DialogStateSaver
-{
-    Q_OBJECT
-
-public:
-    ProfileWidgetStateSaver(QDialog *pnt);
-    virtual ~ProfileWidgetStateSaver() = default;
-
-protected:
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
-};
-
-
-class ProfileWidget : public DialogBase, public MainWindowInterface
+class ProfileWidget : public DialogBase, public DialogStateSaver, public MainWindowInterface
 {
     Q_OBJECT
 
@@ -43,8 +29,8 @@ public:
     explicit ProfileWidget(QWidget *pnt = nullptr);
     virtual ~ProfileWidget();
 
-    void saveConfig(KConfigGroup &grp) const;
-    void restoreConfig(const KConfigGroup &grp);
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
 
 private slots:
     void slotUpdatePlot();

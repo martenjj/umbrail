@@ -19,7 +19,7 @@
 #include <klocalizedstring.h>
 #include <kseparator.h>
 
-#include <dialogstatesaver.h>
+#include <dialogstatewatcher.h>
 
 #include "filescontroller.h"
 #include "filesview.h"
@@ -137,7 +137,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     hb->addLayout(gl);
 
     setMainWidget(w);
-    stateSaver()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
+    stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
     setMinimumSize(460, 280);
     slotSetButtonStates();
 }
