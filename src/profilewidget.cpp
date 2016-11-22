@@ -10,6 +10,7 @@
 #include <qradiobutton.h>
 #include <qbuttongroup.h>
 #include <qlabel.h>
+#include <qtimer.h>
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
@@ -38,6 +39,11 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     mTimeZone = NULL;
 
+    mUpdateTimer = new QTimer(this);
+    mUpdateTimer->setSingleShot(true);
+    mUpdateTimer->setInterval(50);
+    connect(mUpdateTimer, SIGNAL(timeout()), SLOT(slotUpdatePlot()));
+
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
 
@@ -57,21 +63,21 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     ++col;						// New column: elevation/speed checks
 
     mElevationCheck = new QCheckBox(i18n("Elevation"), this);
-    connect(mElevationCheck, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
+    connect(mElevationCheck, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mElevationCheck, 2, col);
 
     mSpeedCheck = new QCheckBox(i18n("Speed"), this);
-    connect(mSpeedCheck, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
+    connect(mSpeedCheck, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mSpeedCheck, 3, col);
 
     ++col;						// New column: elevation/speed units
 
     mElevationUnit = new VariableUnitCombo(VariableUnitCombo::Elevation);
-    connect(mElevationUnit, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdatePlot()));
+    connect(mElevationUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mElevationUnit, 2, col);
 
     mSpeedUnit = new VariableUnitCombo(VariableUnitCombo::Speed);
-    connect(mSpeedUnit, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdatePlot()));
+    connect(mSpeedUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mSpeedUnit, 3, col);
 
     ++col;						// New column: spacer
@@ -85,13 +91,13 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     QButtonGroup *bg = new QButtonGroup(this);
 
     mSpeedGpsRadio = new QRadioButton(i18n("GPS"), this);
+    connect(mSpeedGpsRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mSpeedGpsRadio);
-    connect(mSpeedGpsRadio, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
     gl->addWidget(mSpeedGpsRadio, 2, col);
 
     mSpeedTrackRadio = new QRadioButton(i18n("Track"), this);
+    connect(mSpeedTrackRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mSpeedTrackRadio);
-    connect(mSpeedTrackRadio, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
     gl->addWidget(mSpeedTrackRadio, 3, col);
 
     ++col;						// New column: spacer
@@ -105,23 +111,23 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     bg = new QButtonGroup(this);
 
     mReferenceTimeRadio = new QRadioButton(i18n("Time"), this);
+    connect(mReferenceTimeRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mReferenceTimeRadio);
-    connect(mReferenceTimeRadio, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
     gl->addWidget(mReferenceTimeRadio, 2, col);
 
     mReferenceDistRadio = new QRadioButton(i18n("Distance"), this);
+    connect(mReferenceDistRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mReferenceDistRadio);
-    connect(mReferenceDistRadio, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
     gl->addWidget(mReferenceDistRadio, 3, col);
 
     ++col;						// New column: distance/time units
 
     mTimeUnit = new VariableUnitCombo(VariableUnitCombo::Time);
-    connect(mTimeUnit, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdatePlot()));
+    connect(mTimeUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mTimeUnit, 2, col);
 
     mDistanceUnit = new VariableUnitCombo(VariableUnitCombo::Distance);
-    connect(mDistanceUnit, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdatePlot()));
+    connect(mDistanceUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mDistanceUnit, 3, col);
 
     ++col;						// New column: spacer
@@ -136,13 +142,13 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     bg = new QButtonGroup(this);
 
     mScaleAutoRadio = new QRadioButton(i18n("Auto Range"), this);
+    connect(mScaleAutoRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mScaleAutoRadio);
-    connect(mScaleAutoRadio, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
     gl->addWidget(mScaleAutoRadio, 2, col);
 
     mScaleZeroRadio = new QRadioButton(i18n("Zero Origin"), this);
+    connect(mScaleZeroRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mScaleZeroRadio);
-    connect(mScaleZeroRadio, SIGNAL(toggled(bool)), SLOT(slotUpdatePlot()));
     gl->addWidget(mScaleZeroRadio, 3, col);
 
     ++col;						// New column: stretch
@@ -158,7 +164,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
         mSpeedCheck->setChecked(true);
     }
 
-    slotUpdatePlot();
+    mUpdateTimer->start();				// do the first plot update
 }
 
 
@@ -238,11 +244,35 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
             if (!dt.isValid()) return;			// no time available this point
 
             time_t tm = dt.toTime_t();
-            if (mBaseTime==0) mBaseTime = tm;		// use first as base time
+
+            if (mTimeZone!=NULL)			// file time zone available
+            {
+                // Axis times to be displayed by QCustomPlot are passed to it
+                // as double values representing a time_t.  They may either be
+                // local time or UTC, and the corresponding setting passed to
+                // QCPAxis::setDateTimeSpec() gives the correct display.
+                //
+                // However, it is not possible to display the value converted to
+                // a time zone time, which is what is required.  So that is done
+                // manually here instead, using the offset from UTC to the file
+                // time zone, and setting the axis to display UTC values.  The
+                // offset can vary depending on the time of year (i.e. whether
+                // DST is in operation), so it is calculated here at the time of
+                // the data point.  This hopefully means that the displayed time
+                // values will be correct even if they span DST transitions.
+
+                tm += mTimeZone->offsetFromUtc(dt);
+            }
+
+            if (mBaseTime==0)				// this is the first point
+            {
+                mBaseTime = tm;				// use this as base time
+                qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
+            }
 
             if (mTimeUnit->factor()==VariableUnitCombo::TimeRelative)
             {						// to make times start at zero
-                tm = static_cast<time_t>(difftime(tm, mBaseTime)-3600);
+                tm = static_cast<time_t>(difftime(tm, mBaseTime));
             }
             mRefData.append(tm);
         }
@@ -304,19 +334,15 @@ void ProfileWidget::slotUpdatePlot()
     mBaseTime = 0;
 
     delete mTimeZone;
-    mTimeZone = NULL;
+    mTimeZone = NULL;					// no time zone available yet
+
     // Resolve the file time zone
     QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
     if (!zoneName.isEmpty())
     {
         QTimeZone *tz = new QTimeZone(zoneName.toLatin1());
-        if (!tz->isValid())
-        {
-            qWarning() << "unknown time zone" << zoneName;
-            tz = NULL;
-        }
-
-        mTimeZone = tz;
+        if (tz->isValid()) mTimeZone = tz;		// use as time zone
+        else qWarning() << "unknown time zone" << zoneName;
     }
 
     for (int i = 0; i<items.count(); ++i) getPlotData(items[i]);
@@ -339,6 +365,8 @@ void ProfileWidget::slotUpdatePlot()
         mPlot->xAxis->setLabel(i18n("Time (%1)", mTimeUnit->currentText()));
         mPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
         mPlot->xAxis->setDateTimeFormat("hh:mm");
+        // See the comment in getPlotData() above
+        mPlot->xAxis->setDateTimeSpec(Qt::UTC);
     }
     else
     {

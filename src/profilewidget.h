@@ -11,6 +11,7 @@
 #include "mainwindowinterface.h"
 
 
+class QTimer;
 class QCheckBox;
 class QRadioButton;
 class QTimeZone;
@@ -57,6 +58,7 @@ private:
     QVector<double> mSpeedData;
 
     QCustomPlot *mPlot;
+    QTimer *mUpdateTimer;
 
     bool mUseGpsSpeed;
     bool mUseTravelDistance;
