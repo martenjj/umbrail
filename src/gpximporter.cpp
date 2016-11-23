@@ -628,12 +628,22 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         item->setMetadata(DataIndexer::self()->index(localName), elementContents());
     }
     else if (localName=="type")				// end of a TYPE element
-    {							// a synonym for CATEGORY
-        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
-        if (item==NULL) return (warning(makeXmlException("TYPE end not within WPT")));
-							// only if no CATEGORY already
-        int idx = DataIndexer::self()->index("category");
-        if (item->metadata(idx).isEmpty()) item->setMetadata(idx, elementContents());
+    {
+        TrackDataItem *item = currentItem();
+
+        if (dynamic_cast<TrackDataWaypoint *>(item)!=NULL)
+        {
+            // For a waypoint, a synonym for CATEGORY but only if
+            // there is no CATEGORY already.
+            int idx = DataIndexer::self()->index("category");
+            if (item->metadata(idx).isEmpty()) item->setMetadata(idx, elementContents());
+        }
+        else if (dynamic_cast<TrackDataTrack *>(item)!=NULL || dynamic_cast<TrackDataSegment *>(item)!=NULL)
+        {
+            // For a track or segment, normal metadata.
+            item->setMetadata(DataIndexer::self()->index(localName), elementContents());
+        }
+        else return (warning(makeXmlException("TYPE end not within WPT, TRK or TRKSEG")));
     }
     else if (localName=="Category" && qName.startsWith("gpxx:"))
     {							// ignore this, covered in CATEGORY/TYPE
