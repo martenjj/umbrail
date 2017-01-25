@@ -11,6 +11,7 @@
 #include <qurl.h>
 #include <qmimetype.h>
 #include <qmimedatabase.h>
+#include <qtimer.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -20,6 +21,7 @@
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
+#include <kactioncollection.h>
 
 #ifdef HAVE_KEXIV2
 #include <kexiv2/kexiv2.h>
@@ -638,6 +640,19 @@ default:                    break;
     }
 
     emit updateActionState();
+}
+
+
+void FilesController::slotFileProperties()
+{
+    // Select the top-level file item.
+    view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
+                            QItemSelectionModel::ClearAndSelect);
+
+    // Trigger the action, so that the dialogue can get its text for the window caption.
+    QAction *act = mainWindow()->actionCollection()->action("track_properties");
+    Q_ASSERT(act!=NULL);
+    QTimer::singleShot(0, act, SLOT(trigger()));
 }
 
 

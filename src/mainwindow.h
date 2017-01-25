@@ -97,6 +97,7 @@ private:
 private slots:
     void slotUpdateActionState();
     void slotUpdatePasteState();
+    void slotCheckTimeZone();
 
 private:
     Project *mProject;

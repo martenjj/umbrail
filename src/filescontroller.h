@@ -63,9 +63,9 @@ public:
     static QString allExportFilters();
     static QString allProjectFilters(bool includeAllFiles);
 
-
 public slots:               
     void slotTrackProperties();
+    void slotFileProperties();
     void slotSplitSegment();
     void slotMergeSegments();
     void slotMoveItem();

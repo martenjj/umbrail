@@ -20,6 +20,7 @@
 #include <qimagereader.h>
 #include <qmimetype.h>
 #include <qmimedatabase.h>
+#include <qtimer.h>
 
 #include <klocalizedstring.h>
 #include <ktoggleaction.h>
@@ -491,6 +492,24 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 
 
 
+void MainWindow::slotCheckTimeZone()
+{
+    TrackDataFile *tdf = filesController()->model()->rootFileItem();
+    if (tdf==NULL) return;
+
+    QString zone = tdf->timeZone();			// get current zone from file
+    if (!zone.isEmpty()) return;			// time zone is already set
+
+    if (KMessageBox::questionYesNo(this,
+                                   i18n("The file does not have a time zone set.\nDo you want to set or look up one?"),
+                                   i18n("No Time Zone"))==KMessageBox::Yes)
+    {
+        QTimer::singleShot(0, filesController(), SLOT(slotFileProperties()));
+    }
+}
+
+
+
 // Error reporting and status messages are done in FilesController::exportFile()
 bool MainWindow::save(const QUrl &to)
 {
@@ -544,6 +563,8 @@ FilesController::Status MainWindow::load(const QUrl &from)
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments
+							// check time zone is set
+    QTimer::singleShot(0, this, SLOT(slotCheckTimeZone()));
     return (status);
 }
 
