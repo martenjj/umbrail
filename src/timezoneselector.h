@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	22-Jan-17						//
+//  Edit:	23-Jan-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -34,7 +34,6 @@
 
 class QLineEdit;
 class QPushButton;
-class KJob;
 class TrackDataItem;
 
 
@@ -56,7 +55,7 @@ protected slots:
     void slotGuessZone();
 
 private slots:
-    void slotGuessJobFinished(KJob *job);
+    void slotGuessJobFinished(const QString &zone);
 
 signals:
     void zoneChanged(const QString &zone);

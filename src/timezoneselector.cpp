@@ -36,7 +36,7 @@
 #include <kmessagebox.h>
 
 #include "timezonedialogue.h"
-#include "timezonejob.h"
+#include "timezoneprovider.h"
 #include "trackdata.h"
 
 
@@ -91,9 +91,8 @@ void TimeZoneSelector::slotGuessZone()
 {
     qDebug() << "for lat" << mItemsLat << "lon" << mItemsLon;
 
-    KJob *job = new TimeZoneJob(mItemsLat, mItemsLon, this);
-    connect(job, SIGNAL(finished(KJob *)), SLOT(slotGuessJobFinished(KJob *)));
-    job->start();
+    TimeZoneProvider *job = new TimeZoneProvider(mItemsLat, mItemsLon, this);
+    connect(job, SIGNAL(result(const QString &)), SLOT(slotGuessJobFinished(const QString &)));
 }
 
 
@@ -108,22 +107,8 @@ void TimeZoneSelector::setItems(const QList<TrackDataItem *> *items)
 }
 
 
-void TimeZoneSelector::slotGuessJobFinished(KJob *job)
+void TimeZoneSelector::slotGuessJobFinished(const QString &zone)
 {
-    qDebug() << "error" << job->error();
-
-    TimeZoneJob *tzjob = qobject_cast<TimeZoneJob *>(job);
-    Q_ASSERT(tzjob!=nullptr);
-
-    if (job->error())
-    {
-        KMessageBox::error(this,
-                           xi18nc("@info", "Error fetching <link>%1</link><nl/><message>%2</message>",
-                                  tzjob->url().toDisplayString(), job->errorString()),
-                           i18n("Error getting time zone"));
-        return;
-    }
-
-    QString tz = tzjob->timeZone();
-    if (!tz.isEmpty()) mZoneDisplay->setText(tz);
+    if (!zone.isEmpty()) mZoneDisplay->setText(zone);
+    sender()->deleteLater();
 }

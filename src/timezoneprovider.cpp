@@ -1,16 +1,18 @@
 
-#include "timezonejob.h"
+#include "timezoneprovider.h"
 
 #include <qdebug.h>
 #include <qurl.h>
 #include <qurlquery.h>
 #include <qregexp.h>
 
+#include <klocalizedstring.h>
+#include <kmessagebox.h>
 #include <kio/transferjob.h>
 
 
-TimeZoneJob::TimeZoneJob(double lat, double lon, QObject *pnt)
-    : KCompositeJob(pnt)
+TimeZoneProvider::TimeZoneProvider(double lat, double lon, QObject *pnt)
+    : QObject(pnt)
 {
     // http://api.geonames.org/timezone?lat=51.46&lng=-0.30&username=jmarten
     mUrl = QUrl("http://api.geonames.org/timezone");
@@ -25,21 +27,25 @@ TimeZoneJob::TimeZoneJob(double lat, double lon, QObject *pnt)
     KJob *job = KIO::get(mUrl);
     connect(job, SIGNAL(data(KIO::Job *, const QByteArray &)), SLOT(slotDataReceived(KIO::Job *, const QByteArray &)));
     connect(job, SIGNAL(result(KJob *)), SLOT(slotDataResult(KJob *)));
-    addSubjob(job);
+    job->start();
 }
 
 
-void TimeZoneJob::slotDataReceived(KIO::Job *job, const QByteArray &data)
+void TimeZoneProvider::slotDataReceived(KIO::Job *job, const QByteArray &data)
 {
-    qDebug() << "got" << data;
+    qDebug() << "received" << data;
     if (!data.isEmpty()) mReceivedData += data;
 }
 
 
-void TimeZoneJob::slotDataResult(KJob *job)
+void TimeZoneProvider::slotDataResult(KJob *job)
 {
     qDebug() << "error?" << job->error();
-    if (job->error()) return;
+    if (job->error())
+    {
+        reportError(job->errorText());
+        return;
+    }
 
     QRegExp rx1("<timezoneId>(\\S+)</timezoneId>");
     QRegExp rx2("<status message=\"([^\"]+)\"");
@@ -52,16 +58,27 @@ void TimeZoneJob::slotDataResult(KJob *job)
         {
             mTimeZone = rx1.cap(1);
             qDebug() << "from" << line << "got" << mTimeZone;
-            break;
+            emit result(mTimeZone);
+            return;
         }
 
         if (line.contains(rx2))				// look for error message
         {
-            setError(KJob::UserDefinedError);
-            setErrorText(rx2.cap(1));
-            break;
+            reportError(rx2.cap(1));
+            return;
         }
     }
 
-    emitResult();
+    reportError(i18n("No time zone found in result"));
+}
+
+
+void TimeZoneProvider::reportError(const QString &msg)
+{
+    QWidget *pnt = qobject_cast<QWidget *>(parent());	// NULL if none or not a widget
+    KMessageBox::error(pnt,
+                       xi18nc("@info", "Error fetching <link>%1</link><nl/><message>%2</message>",
+                              mUrl.toDisplayString(), msg),
+                       i18n("Error getting time zone"));
+    emit result(QString::null);
 }
