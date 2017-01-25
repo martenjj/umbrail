@@ -65,7 +65,6 @@ public:
 
 public slots:               
     void slotTrackProperties();
-    void slotFileProperties();
     void slotSplitSegment();
     void slotMergeSegments();
     void slotMoveItem();
@@ -77,6 +76,7 @@ public slots:
     void slotAddWaypoint(qreal lat = NAN, qreal lon = NAN);
     void slotAddRoutepoint(qreal lat = NAN, qreal lon = NAN);
     void slotSetWaypointStatus();
+    void slotCheckTimeZone();
 
 signals:
     void statusMessage(const QString &text);
@@ -88,8 +88,8 @@ private:
     bool reportFileError(bool saving, const QUrl &file, const QString &msg);
     bool reportFileError(bool saving, const QUrl &file, const ErrorReporter *rep);
 
-    bool fileWarningsIgnored(const QUrl &file) const;
-    void setFileWarningsIgnored(const QUrl &file, bool ignore = true);
+    bool fileWarningIgnored(const QUrl &file, const QByteArray &type) const;
+    void setFileWarningIgnored(const QUrl &file, const QByteArray &type);
 
     bool adjustTimeSpec(QDateTime &dt);
     FilesController::Status importPhotoInternal(const QUrl &importFrom, bool multiple);
