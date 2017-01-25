@@ -185,9 +185,23 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     QWidget *w = widget();
     QFormLayout *fl = new QFormLayout(w);
 
-    const KConfigSkeletonItem *ski = Settings::self()->pathsGroupTitleItem();
+    const KConfigSkeletonItem *ski = Settings::self()->generalGroupTitleItem();
     Q_ASSERT(ski!=NULL);
     QGroupBox *g = new QGroupBox(ski->label(), w);
+    g->setFlat(true);
+    fl->addRow(g);
+
+    ski = Settings::self()->fileCheckTimezoneItem();
+    Q_ASSERT(ski!=NULL);
+
+    mTimezoneCheck = new QCheckBox(ski->label(), w);
+    mTimezoneCheck->setToolTip(ski->toolTip());
+    mTimezoneCheck->setChecked(Settings::fileCheckTimezone());
+    fl->addRow(mTimezoneCheck);
+
+    ski = Settings::self()->pathsGroupTitleItem();
+    Q_ASSERT(ski!=NULL);
+    g = new QGroupBox(ski->label(), w);
     g->setFlat(true);
     fl->addRow(g);
 
@@ -238,6 +252,8 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
 
 void SettingsFilesPage::slotSave()
 {
+    Settings::setFileCheckTimezone(mTimezoneCheck->isChecked());
+
     QUrl u = mAudioNotesRequester->url().adjusted(QUrl::StripTrailingSlash);
     u.setPath(u.path()+'/');
     Settings::setAudioNotesDirectory(u);
@@ -250,7 +266,11 @@ void SettingsFilesPage::slotSave()
 
 void SettingsFilesPage::slotDefaults()
 {
-    KConfigSkeletonItem *kcsi = Settings::self()->audioNotesDirectoryItem();
+    KConfigSkeletonItem *kcsi = Settings::self()->fileCheckTimezoneItem();
+    kcsi->setDefault();
+    mTimezoneCheck->setChecked(Settings::fileCheckTimezone());
+
+    kcsi = Settings::self()->audioNotesDirectoryItem();
     kcsi->setDefault();
     mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
 

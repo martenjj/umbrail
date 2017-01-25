@@ -545,8 +545,10 @@ FilesController::Status MainWindow::load(const QUrl &from)
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments
-							// check time zone is set
-    QTimer::singleShot(0, filesController(), SLOT(slotCheckTimeZone()));
+    if (Settings::fileCheckTimezone())			// check time zone is set
+    {
+        QTimer::singleShot(0, filesController(), SLOT(slotCheckTimeZone()));
+    }
     return (status);
 }
 
