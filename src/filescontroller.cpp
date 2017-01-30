@@ -408,7 +408,13 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     QTimeZone tz(zone);
     qDebug() << "file time zone" << tz.displayName(QTimeZone::GenericTime) << "offset" << tz.offsetFromUtc(QDateTime::currentDateTime());
 
-    dt = dt.toTimeZone(tz);
+    // The local time is already in the time zone of the camera (which is
+    // assumed to be the same as the GPS recording and hence the file).
+    // So all that needs to be done is to set the time zone, which will
+    // change the time spec to Qt::TimeZone.  We do not want to use
+    // QDateTime::toTimeZone() here, that will also adjust the time!
+    dt.setTimeZone(tz);
+
     qDebug() << "  new datetime" << dt << "spec" << dt.timeSpec();
     return (true);
 }
