@@ -146,7 +146,7 @@ void MainWindow::setupActions()
     mSaveProjectAsAction = KStandardAction::saveAs(this, SLOT(slotSaveAs()), ac);
 
     mImportAction = ac->addAction("file_import");
-    mImportAction->setText(i18n("Import..."));
+    mImportAction->setText(i18n("Import File..."));
     mImportAction->setIcon(QIcon::fromTheme("document-import"));
     ac->setDefaultShortcut(mImportAction, Qt::CTRL+Qt::Key_I);
     connect(mImportAction, SIGNAL(triggered()), SLOT(slotImportFile()));
