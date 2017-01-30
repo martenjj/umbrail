@@ -11,6 +11,7 @@
 #include <qurl.h>
 #include <qmimetype.h>
 #include <qmimedatabase.h>
+#include <qtimer.h>
 #ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
 #endif
@@ -20,6 +21,7 @@
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
+#include <kactioncollection.h>
 
 #ifdef HAVE_KEXIV2
 #include <kexiv2/kexiv2.h>
@@ -106,20 +108,31 @@ void FilesController::saveProperties()
 }
 
 
-bool FilesController::fileWarningsIgnored(const QUrl &file) const
+bool FilesController::fileWarningIgnored(const QUrl &file, const QByteArray &type) const
 {
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
     KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
-    return (grp.readEntry(askKey.constData(), false));
+    QStringList list = grp.readEntry(askKey.constData(), QStringList());
+
+    // If the list contains the type value, then the warning is ignored.
+    // The old single value "false" in the list is ignored.
+    return (list.contains(QString::fromLocal8Bit(type)));
 }
 
 
-void FilesController::setFileWarningsIgnored(const QUrl &file, bool ignore)
+void FilesController::setFileWarningIgnored(const QUrl &file, const QByteArray &type)
 {
-    qDebug() << file;
+    qDebug() << type << "for" << file;
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
     KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
-    grp.writeEntry(askKey.constData(), ignore);
+
+    QStringList list = grp.readEntry(askKey.constData(), QStringList());
+    QString typeString = QString::fromLocal8Bit(type);
+    if (!list.contains(typeString))			// if not set already
+    {
+        list.append(typeString);
+        grp.writeEntry(askKey.constData(), list);
+    }
 }
 
 
@@ -149,7 +162,7 @@ case ErrorReporter::NoError:
         return (result);
 
 case ErrorReporter::Warning:
-        if (fileWarningsIgnored(file)) return (result);
+        if (fileWarningIgnored(file, "warnings")) return (result);
 
         detailed = true;
         message = (saving ?
@@ -221,7 +234,7 @@ case ErrorReporter::Fatal:
                                    KMessageBox::AllowLink,  		// options
                                    QString("<qt>")+list.join("<br>"));	// details
 
-    if (notAgain) setFileWarningsIgnored(file, true);
+    if (notAgain) setFileWarningIgnored(file, "warnings");
     return (result);
 }
 
@@ -284,7 +297,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
 
     emit modified();					// done, finished with importer
 
-    if (imp->needsResave() && !fileWarningsIgnored(importFrom)) return (FilesController::StatusResave);
+    if (imp->needsResave() && !fileWarningIgnored(importFrom, "warnings")) return (FilesController::StatusResave);
     return (FilesController::StatusOk);
 }
 
@@ -644,6 +657,50 @@ default:                    break;
     }
 
     emit updateActionState();
+}
+
+
+void FilesController::slotCheckTimeZone()
+{
+    TrackDataFile *tdf = model()->rootFileItem();
+    if (tdf==NULL) return;				// check model not empty
+
+    QString zone = tdf->timeZone();			// get current file time zone
+    if (!zone.isEmpty()) return;			// time zone is already set
+
+    QUrl file = tdf->fileName();			// URL of loaded file
+    if (!file.isValid()) return;			// file must be loaded
+
+    bool notAgain = fileWarningIgnored(file, "timezone");
+    if (notAgain) return;				// see if ignored for this file
+
+    QDialog *dlg = new QDialog(mainWindow());
+    dlg->setWindowTitle(i18n("No Time Zone"));
+
+    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Yes|QDialogButtonBox::No, dlg);
+
+    QDialogButtonBox::StandardButton but = KMessageBox::createKMessageBox(
+        dlg,						// dialog
+        buttonBox,					// buttons
+        QIcon::fromTheme("dialog-warning"),		// icon
+        i18n("The file does not have a time zone set.\nDo you want to set or look up one?"),
+							// text
+        QStringList(),					// strlist
+        i18n("Do not ask again for this file"),	// ask
+        &notAgain,					// checkBoxReturn
+        KMessageBox::Notify);				// options
+
+    if (notAgain) setFileWarningIgnored(file, "timezone");
+    if (but==QDialogButtonBox::No) return;
+
+    // Select the top-level file item.
+    view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
+                            QItemSelectionModel::ClearAndSelect);
+
+    // Trigger the action, so that the dialogue can get its text for the window caption.
+    QAction *act = mainWindow()->actionCollection()->action("track_properties");
+    Q_ASSERT(act!=NULL);
+    QTimer::singleShot(0, act, SLOT(trigger()));
 }
 
 

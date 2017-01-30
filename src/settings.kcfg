@@ -45,6 +45,19 @@
     </entry>
   </group>
 
+  <group name="Files">
+
+    <entry name="GeneralGroupTitle" type="String">
+      <label>General</label>
+    </entry>
+
+    <entry name="FileCheckTimezone" type="Bool">
+      <label>Check time zone when loading</label>
+      <tooltip>Check when loading that a file has a time zone set, and ask if it does not.</tooltip>
+      <default>true</default>
+    </entry>
+  </group>
+
   <group name="Paths">
 
     <entry name="PathsGroupTitle" type="String">

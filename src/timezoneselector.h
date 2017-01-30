@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	16-May-16						//
+//  Edit:	23-Jan-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,6 +33,8 @@
 
 
 class QLineEdit;
+class QPushButton;
+class TrackDataItem;
 
 
 class TimeZoneSelector : public QFrame
@@ -46,14 +48,23 @@ public:
     void setTimeZone(const QString &zone);
     QString timeZone() const;
 
+    void setItems(const QList<TrackDataItem *> *items);
+
 protected slots:
     void slotChangeZone();
+    void slotGuessZone();
+
+private slots:
+    void slotGuessJobFinished(const QString &zone);
 
 signals:
     void zoneChanged(const QString &zone);
 
 private:
     QLineEdit *mZoneDisplay;
+    QPushButton *mGuessButton;
+    double mItemsLat;
+    double mItemsLon;
 };
  
 #endif							// TIMEZONESELECTOR_H

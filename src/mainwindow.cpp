@@ -20,6 +20,7 @@
 #include <qimagereader.h>
 #include <qmimetype.h>
 #include <qmimedatabase.h>
+#include <qtimer.h>
 
 #include <klocalizedstring.h>
 #include <ktoggleaction.h>
@@ -544,6 +545,10 @@ FilesController::Status MainWindow::load(const QUrl &from)
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments
+    if (Settings::fileCheckTimezone())			// check time zone is set
+    {
+        QTimer::singleShot(0, filesController(), SLOT(slotCheckTimeZone()));
+    }
     return (status);
 }
 

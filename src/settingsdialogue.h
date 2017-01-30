@@ -64,6 +64,7 @@ private slots:
     void slotItemChanged();
 
 private:
+    QCheckBox *mTimezoneCheck;
     KUrlRequester *mAudioNotesRequester;
     QCheckBox *mUseGpsCheck;
     QCheckBox *mUseTimeCheck;

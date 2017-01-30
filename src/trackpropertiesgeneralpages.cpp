@@ -281,6 +281,8 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
 
         QString zone = fileItem->metadata("timezone");
         if (!zone.isEmpty()) mTimeZoneSel->setTimeZone(zone);
+
+        mTimeZoneSel->setItems(items);			// use these to get timezone
     }
     else						// may be mixed MIME types
     {
@@ -290,6 +292,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
 
     mFormLayout->insertRow(mFormLayout->rowCount()-1, i18nc("@label:textbox", "File:"), mUrlRequester);
     mFormLayout->addRow(i18nc("@label:textbox", "Time zone:"), mTimeZoneSel);
+    addSeparatorField();
 
     addTimeSpanFields(items);
 }

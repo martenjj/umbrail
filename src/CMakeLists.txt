@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		21-Jun-16					#
+#  Edit:		23-Jan-17					#
 #########################################################################
 
 project(navtracks)
@@ -97,6 +97,7 @@ set(navtracks_SRCS
   stopslayer.cpp
   style.cpp
   timezonedialogue.cpp
+  timezoneprovider.cpp
   timezoneselector.cpp
   timezonewidget.cpp
   trackdata.cpp
