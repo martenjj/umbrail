@@ -328,7 +328,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="time")
     {							// start of a TIME element
-        if (mCurrentPoint==NULL && mCurrentWaypoint==NULL && !mWithinMetadata)
+        if (mCurrentPoint==NULL && mCurrentWaypoint==NULL && mCurrentTrack==NULL && !mWithinMetadata)
         {						// check properly nested
             warning(makeXmlException(localName.toUpper()+" start not within TRKPT, WPT or METADATA"));
         }
@@ -578,6 +578,10 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             TrackDataAbstractPoint *p = static_cast<TrackDataAbstractPoint *>(currentItem());
             p->setTime(QDateTime::fromString(elementContents(), Qt::ISODate));
         }
+        else if (mCurrentTrack!=NULL)
+        {
+            mCurrentTrack->setMetadata(DataIndexer::self()->index(localName), elementContents());
+        }
         else
         {
             // GPSbabel does not enclose TIME within METADATA:
@@ -588,7 +592,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // <bounds minlat="46.827816667" minlon="8.370250000" maxlat="46.850700000" maxlon="8.391166667"/>
             // <wpt> ...
             //
-            if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRKPT, WPT or METADATA"));
+            if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRK, TRKPT, WPT or METADATA"));
             mDataRoot->setMetadata(DataIndexer::self()->index(localName), elementContents());
         }
     }
