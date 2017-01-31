@@ -310,13 +310,13 @@ void MainWindow::setupActions()
 
     a = ac->addAction("file_save_media");
     a->setText(i18nc("@action:inmenu", "Save Media As..."));
-    a->setIcon(QIcon::fromTheme("file-save-as"));
+    a->setIcon(QIcon::fromTheme("folder-video"));
     connect(a, SIGNAL(triggered()), SLOT(slotSaveMedia()));
     mSaveMediaAction = a;
 
     a = ac->addAction("map_save");
     a->setText(i18n("Save As Image..."));
-    a->setIcon(QIcon::fromTheme("document-save"));
+    a->setIcon(QIcon::fromTheme("folder-picture"));
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSaveImage()));
 
     a = ac->addAction("map_set_home");
