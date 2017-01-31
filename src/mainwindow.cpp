@@ -265,7 +265,7 @@ void MainWindow::setupActions()
     mPropertiesAction->setIcon(QIcon::fromTheme("document-properties"));
     connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
 
-    mWaypointStatusAction = new KSelectAction(i18nc("@action:inmenu", "Waypoint Status"), this);
+    mWaypointStatusAction = new KSelectAction(QIcon::fromTheme("favorites"), i18nc("@action:inmenu", "Waypoint Status"), this);
     mWaypointStatusAction->setToolBarMode(KSelectAction::MenuMode);
     ac->addAction("waypoint_status", mWaypointStatusAction);
 
@@ -281,7 +281,7 @@ void MainWindow::setupActions()
     a->setData(TrackData::StatusDone);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-attempt"), i18n("Uncertain"));
     a->setData(TrackData::StatusQuestion);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
