@@ -1,8 +1,6 @@
 
 #include "gpximporter.h"
 
-#include <math.h>
-
 #include <qxml.h>
 #include <qcolor.h>
 #include <qdebug.h>
@@ -318,7 +316,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on TRKPT element"));
         }
 
-        if (!isnan(lat) && !isnan(lon)) mCurrentPoint->setLatLong(lat, lon);
+        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentPoint->setLatLong(lat, lon);
         else warning(makeXmlException("missing lat/lon on TRKPT element"));
     }
     else if (localName=="ele")				// start of an ELEvation element
@@ -360,7 +358,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on WPT element"));
         }
 
-        if (!isnan(lat) && !isnan(lon)) mCurrentWaypoint->setLatLong(lat, lon);
+        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentWaypoint->setLatLong(lat, lon);
         else warning(makeXmlException("missing LAT/LON attribute on WPT element"));
     }
     else if (localName=="rtept")			// start of an RTEPT element
@@ -388,7 +386,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on RTEPT element"));
         }
 
-        if (!isnan(lat) && !isnan(lon)) mCurrentRoutepoint->setLatLong(lat, lon);
+        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentRoutepoint->setLatLong(lat, lon);
         else warning(makeXmlException("missing LAT/LON attribute on RTEPT element"));
     }
     else if (localName=="link")				// start of a LINK element

@@ -3,6 +3,7 @@
 #define TRACKDATA_H
 
 #include <math.h>
+#define ISNAN(x)	std::isnan(x)			// to cover variations
 
 #include <qstring.h>
 #include <qlist.h>
@@ -84,7 +85,7 @@ public:
     double south() const				{ return (mLatSouth); }
     double east() const					{ return (mLonEast); }
     double west() const					{ return (mLonWest); }
-    bool isValid() const				{ return (!isnan(mLatNorth) && !isnan(mLonWest)); }
+    bool isValid() const				{ return (!ISNAN(mLatNorth) && !ISNAN(mLonWest)); }
 
     BoundingArea united(const BoundingArea &other) const;
 

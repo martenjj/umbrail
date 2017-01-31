@@ -1,8 +1,6 @@
 
 #include "routeslayer.h"
 
-#include <math.h>
-
 #include <qdebug.h>
 
 #include <klocalizedstring.h>

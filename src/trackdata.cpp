@@ -239,7 +239,7 @@ static QString toDMS(double d, int degWidth, char posMark, char negMark)
 
 QString TrackData::formattedLatLong(double lat, double lon, bool blankIfUnknown)
 {
-    if (isnan(lat) || isnan(lon))
+    if (ISNAN(lat) || ISNAN(lon))
     {
         if (blankIfUnknown) return (QString::null);
         return (i18nc("an unknown quantity", "unknown"));
@@ -593,7 +593,7 @@ TrackDataAbstractPoint::TrackDataAbstractPoint(const QString &nm, const char *fo
 
 QString TrackDataAbstractPoint::formattedElevation() const
 {
-    if (isnan(mElevation)) return (i18nc("an unknown quantity", "unknown"));
+    if (ISNAN(mElevation)) return (i18nc("an unknown quantity", "unknown"));
     return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
 }
 
@@ -646,7 +646,7 @@ double TrackDataAbstractPoint::distanceTo(double lat, double lon, bool accurate)
     {
         // Spherical cosines for maximum accuracy
         const double d = (acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2)*cos(lon2-lon1)));
-        if (!isnan(d)) return (d);
+        if (!ISNAN(d)) return (d);
     }
 
     // Pythagoras is good enough for small distances

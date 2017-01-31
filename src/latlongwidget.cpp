@@ -1,8 +1,6 @@
 
 #include "latlongwidget.h"
 
-#include <math.h>
-
 #include <qlineedit.h>
 #include <qlabel.h>
 #include <qgridlayout.h>
@@ -25,6 +23,8 @@
 #include <kmessagebox.h>
 
 #include <dialogbase.h>
+
+#include "trackdata.h"
 
 
 #define PRECISION	6				// how many decimal places
@@ -214,7 +214,7 @@ void LatLongWidget::setLatLong(double lat, double lon)
     mLatitude = lat;
     mLongitude = lon;
 
-    if (!isnan(mLatitude))
+    if (!ISNAN(mLatitude))
     {
         mLatitudeEdit->setText(QString::number(mLatitude, 'f', PRECISION));
         setDMS(mLatitude, mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo);
@@ -227,7 +227,7 @@ void LatLongWidget::setLatLong(double lat, double lon)
         mLatitudeSec->clear();
     }
 
-    if (!isnan(mLongitude))
+    if (!ISNAN(mLongitude))
     {
         mLongitudeEdit->setText(QString::number(mLongitude, 'f', PRECISION));
         setDMS(mLongitude, mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo);

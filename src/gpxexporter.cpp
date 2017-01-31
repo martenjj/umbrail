@@ -5,7 +5,6 @@
 
 #include <errno.h>
 #include <string.h>
-#include <math.h>
 
 #include <qfile.h>
 #include <qdatetime.h>
@@ -236,7 +235,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
         // <ele> xsd:decimal </ele>
         double ele = p->elevation();
-        if (!isnan(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 3));
+        if (!ISNAN(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 3));
 
         // <time> xsd:dateTime </time>
         QDateTime dt = p->time();

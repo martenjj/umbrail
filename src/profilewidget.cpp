@@ -1,7 +1,6 @@
 
 #include "profilewidget.h"
 
-#include <math.h>
 #include <time.h>
 
 #include <qgridlayout.h>

@@ -264,7 +264,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
 
         double ele = tdp->elevation();
-        if (!isnan(ele))
+        if (!ISNAN(ele))
         {
             addSeparatorField();
 
@@ -340,7 +340,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 
             double ele1 = pnt1->elevation();
             double ele2 = pnt2->elevation();
-            if (!isnan(ele1) && !isnan(ele2))
+            if (!ISNAN(ele1) && !ISNAN(ele2))
             {
                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
                 vl->setSaveId("elediff");
@@ -413,7 +413,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
 
         double ele = tdp->elevation();
-        if (!isnan(ele))
+        if (!ISNAN(ele))
         {
             addSeparatorField();
 
@@ -494,7 +494,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
 
             double ele1 = pnt1->elevation();
             double ele2 = pnt2->elevation();
-            if (!isnan(ele1) && !isnan(ele2))
+            if (!ISNAN(ele1) && !ISNAN(ele2))
             {
                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
                 vl->setSaveId("elediff");
@@ -526,7 +526,7 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
 //         mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
 // 
 //         double ele = tdp->elevation();
-//         if (!isnan(ele))
+//         if (!ISNAN(ele))
 //         {
 //             addSeparatorField();
 // 
@@ -607,7 +607,7 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
 
 //             double ele1 = pnt1->elevation();
 //             double ele2 = pnt2->elevation();
-//             if (!isnan(ele1) && !isnan(ele2))
+//             if (!ISNAN(ele1) && !ISNAN(ele2))
 //             {
 //                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
 //                 vl->setSaveId("elediff");

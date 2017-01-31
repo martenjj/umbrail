@@ -6,7 +6,6 @@
 #include <qobject.h>
 #include "mainwindowinterface.h"
 
-#include <math.h>
 
 class QDateTime;
 class QUrl;

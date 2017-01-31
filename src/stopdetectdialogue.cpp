@@ -1,8 +1,6 @@
 
 #include "stopdetectdialogue.h"
 
-#include <math.h>
-
 #include <qformlayout.h>
 #include <qlistwidget.h>
 #include <qtimer.h>
@@ -187,8 +185,8 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataTrack
     const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     if (tdp!=NULL)					// is this a point?
     {
-        if (isnan(tdp->latitude())) return;		// check position is valid
-        if (isnan(tdp->longitude())) return;
+        if (ISNAN(tdp->latitude())) return;		// check position is valid
+        if (ISNAN(tdp->longitude())) return;
 
         const QDateTime dt = tdp->time();		// check time is valid
         if (!dt.isValid()) return;

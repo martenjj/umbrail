@@ -1036,7 +1036,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     QList<TrackDataItem *> items = view()->selectedItems();
     const TrackDataAbstractPoint *selPoint = NULL;
 
-    if (!isnan(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
+    if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
     else if (items.count()==1)				// there is a selected item
     {							// a source point?
         selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
@@ -1072,7 +1072,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     QList<TrackDataItem *> items = view()->selectedItems();
     const TrackDataAbstractPoint *selPoint = NULL;
 
-    if (!isnan(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
+    if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
     else if (items.count()==1)				// there is a selected item
     {							// a source point?
         selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
