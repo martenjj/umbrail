@@ -674,24 +674,16 @@ void FilesController::slotCheckTimeZone()
     bool notAgain = fileWarningIgnored(file, "timezone");
     if (notAgain) return;				// see if ignored for this file
 
-    QDialog *dlg = new QDialog(mainWindow());
-    dlg->setWindowTitle(i18n("No Time Zone"));
-
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Yes|QDialogButtonBox::No, dlg);
-
-    QDialogButtonBox::StandardButton but = KMessageBox::createKMessageBox(
-        dlg,						// dialog
-        buttonBox,					// buttons
-        QIcon::fromTheme("dialog-warning"),		// icon
+    KMessageBox::ButtonCode but = KMessageBox::questionYesNoCancel(mainWindow(),
         i18n("The file does not have a time zone set.\nDo you want to set or look up one?"),
-							// text
-        QStringList(),					// strlist
-        i18n("Do not ask again for this file"),	// ask
-        &notAgain,					// checkBoxReturn
-        KMessageBox::Notify);				// options
+									// text
+        i18n("No Time Zone"),					 	// caption
+        KStandardGuiItem::yes(),				 	// buttonYes
+        KGuiItem(i18n("Never"), QIcon::fromTheme("edit-clear-list")), 	// buttonNo
+        KStandardGuiItem::no());					// buttonCancel
 
-    if (notAgain) setFileWarningIgnored(file, "timezone");
-    if (but==QDialogButtonBox::No) return;
+    if (but==KMessageBox::No) setFileWarningIgnored(file, "timezone");
+    if (but!=KMessageBox::Yes) return;
 
     // Select the top-level file item.
     view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
