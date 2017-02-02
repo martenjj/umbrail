@@ -689,6 +689,7 @@ void FilesController::slotCheckTimeZone()
     view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
                             QItemSelectionModel::ClearAndSelect);
 
+    TrackPropertiesDialogue::setNextPageIndex(0);	// open at "General" page
     // Trigger the action, so that the dialogue can get its text for the window caption.
     QAction *act = mainWindow()->actionCollection()->action("track_properties");
     Q_ASSERT(act!=NULL);

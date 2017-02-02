@@ -40,6 +40,8 @@ public:
     void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
     void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
 
+    static void setNextPageIndex(int page);
+
 protected slots:
     void slotDataChanged();
 

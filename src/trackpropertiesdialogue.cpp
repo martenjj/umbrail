@@ -19,6 +19,9 @@
 #include "style.h"
 
 
+static int sNextPageIndex = -1;				// page index to open with
+
+
 TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt)
     : DialogBase(pnt),
       DialogStateSaver(this)
@@ -181,6 +184,16 @@ void TrackPropertiesDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) con
 
 void TrackPropertiesDialogue::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
-    mTabWidget->setCurrentIndex(grp.readEntry("Index", 0));
+    int page = sNextPageIndex;				// page explicitly requested
+    sNextPageIndex = -1;				// note as now used
+    if (page==-1) page = grp.readEntry("Index", 0);	// if none set, get from config
+    mTabWidget->setCurrentIndex(page);
+
     DialogStateSaver::restoreConfig(dialog, grp);
+}
+
+
+void TrackPropertiesDialogue::setNextPageIndex(int page)
+{
+    sNextPageIndex = page;				// page to open next time
 }
