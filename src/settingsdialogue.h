@@ -62,13 +62,11 @@ public slots:
 
 private slots:
     void slotItemChanged();
+    void slotClearFileWarnings();
 
 private:
     QCheckBox *mTimezoneCheck;
     KUrlRequester *mAudioNotesRequester;
-    QCheckBox *mUseGpsCheck;
-    QCheckBox *mUseTimeCheck;
-    QSpinBox *mTimeThresholdSpinbox;
 };
 
 
@@ -89,6 +87,9 @@ private slots:
 
 private:
     QComboBox *mPhotoViewerCombo;
+    QCheckBox *mUseGpsCheck;
+    QCheckBox *mUseTimeCheck;
+    QSpinBox *mTimeThresholdSpinbox;
 };
 
 #endif							// SETTINGSDIALOGUE_H

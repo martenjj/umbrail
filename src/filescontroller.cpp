@@ -108,7 +108,7 @@ void FilesController::saveProperties()
 }
 
 
-bool FilesController::fileWarningIgnored(const QUrl &file, const QByteArray &type) const
+bool FilesController::fileWarningIgnored(const QUrl &file, const QByteArray &type)
 {
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
     KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
@@ -133,6 +133,16 @@ void FilesController::setFileWarningIgnored(const QUrl &file, const QByteArray &
         list.append(typeString);
         grp.writeEntry(askKey.constData(), list);
     }
+}
+
+
+void FilesController::resetAllFileWarnings()
+{
+    qDebug();
+
+    KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
+    grp.deleteGroup();
+    grp.sync();
 }
 
 

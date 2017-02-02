@@ -22,6 +22,7 @@
 
 #include "settings.h"
 #include "style.h"
+#include "filescontroller.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -94,7 +95,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mShowTrackArrowsCheck->setToolTip(kcsi->toolTip());
     fl->addRow(QString::null, mShowTrackArrowsCheck);
 
-    fl->addItem(new QSpacerItem(1, DialogBase::verticalSpacing(), QSizePolicy::Minimum, QSizePolicy::Fixed));
+    fl->addItem(DialogBase::verticalSpacerItem());
 
     kcsi = Settings::self()->selectedUseSystemColoursItem();
     mSelectedUseSystemCheck = new QCheckBox(kcsi->label(), w);
@@ -179,7 +180,7 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     : KPageWidgetItem(new QWidget(pnt))
 {
     setName(i18nc("@title:tab", "Files"));
-    setHeader(i18n("Settings for file locations and importing"));
+    setHeader(i18n("Settings for files and locations"));
     setIcon(QIcon::fromTheme("folder"));
 
     QWidget *w = widget();
@@ -199,6 +200,20 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     mTimezoneCheck->setChecked(Settings::fileCheckTimezone());
     fl->addRow(mTimezoneCheck);
 
+    QHBoxLayout *lay = new QHBoxLayout;
+    lay->addStretch(1);
+
+    fl->addItem(DialogBase::verticalSpacerItem());
+
+    QPushButton *but = new QPushButton(QIcon::fromTheme("edit-clear"), i18n("Clear all file warnings"), w);
+    but->setToolTip(i18n("Clear all remembered file questions and warnings."));
+
+    connect(but, SIGNAL(clicked()), SLOT(slotClearFileWarnings()));
+    lay->addWidget(but);
+    fl->addRow(lay);
+
+    fl->addItem(DialogBase::verticalSpacerItem());
+
     ski = Settings::self()->pathsGroupTitleItem();
     Q_ASSERT(ski!=NULL);
     g = new QGroupBox(ski->label(), w);
@@ -213,39 +228,6 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     mAudioNotesRequester->setToolTip(ski->toolTip());
     fl->addRow(ski->label(), mAudioNotesRequester);
 
-    fl->addItem(new QSpacerItem(1, DialogBase::verticalSpacing(), QSizePolicy::Fixed, QSizePolicy::Fixed));
-
-    ski = Settings::self()->photoGroupTitleItem();
-    Q_ASSERT(ski!=NULL);
-    g = new QGroupBox(ski->label(), w);
-    g->setFlat(true);
-    fl->addRow(g);
-
-    ski = Settings::self()->photoUseGpsItem();
-    Q_ASSERT(ski!=NULL);
-    mUseGpsCheck = new QCheckBox(ski->label(), w);
-    mUseGpsCheck->setToolTip(ski->toolTip());
-    mUseGpsCheck->setChecked(Settings::photoUseGps());
-    fl->addRow(mUseGpsCheck);
-
-    ski = Settings::self()->photoUseTimeItem();
-    Q_ASSERT(ski!=NULL);
-    mUseTimeCheck = new QCheckBox(ski->label(), w);
-    mUseTimeCheck->setToolTip(ski->toolTip());
-    mUseTimeCheck->setChecked(Settings::photoUseTime());
-    connect(mUseTimeCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
-    fl->addRow(mUseTimeCheck);
-
-    ski = Settings::self()->photoTimeThresholdItem();
-    Q_ASSERT(ski!=NULL);
-    mTimeThresholdSpinbox = new QSpinBox(w);
-    mTimeThresholdSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
-    mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
-    mTimeThresholdSpinbox->setSuffix(i18n(" seconds"));
-    mTimeThresholdSpinbox->setToolTip(ski->toolTip());
-
-    fl->addRow(ski->label(), mTimeThresholdSpinbox);
-
     slotItemChanged();
 }
 
@@ -257,10 +239,6 @@ void SettingsFilesPage::slotSave()
     QUrl u = mAudioNotesRequester->url().adjusted(QUrl::StripTrailingSlash);
     u.setPath(u.path()+'/');
     Settings::setAudioNotesDirectory(u);
-
-    Settings::setPhotoUseGps(mUseGpsCheck->isChecked());
-    Settings::setPhotoUseTime(mUseTimeCheck->isChecked());
-    Settings::setPhotoTimeThreshold(mTimeThresholdSpinbox->value());
 }
 
 
@@ -274,25 +252,21 @@ void SettingsFilesPage::slotDefaults()
     kcsi->setDefault();
     mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
 
-    kcsi = Settings::self()->photoUseGpsItem();
-    kcsi->setDefault();
-    mUseGpsCheck->setChecked(Settings::photoUseGps());
-
-    kcsi = Settings::self()->photoUseTimeItem();
-    kcsi->setDefault();
-    mUseTimeCheck->setChecked(Settings::photoUseGps());
-
-    kcsi = Settings::self()->photoTimeThresholdItem();
-    kcsi->setDefault();
-    mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
-
     slotItemChanged();
 }
 
 
 void SettingsFilesPage::slotItemChanged()
 {
-    mTimeThresholdSpinbox->setEnabled(mUseTimeCheck->isChecked());
+}
+
+
+void SettingsFilesPage::slotClearFileWarnings()
+{
+    FilesController::resetAllFileWarnings();
+
+    QPushButton *but = qobject_cast<QPushButton *>(sender());
+    if (but!=NULL) but->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -331,6 +305,39 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     if (selectIndex!=-1) mPhotoViewerCombo->setCurrentIndex(selectIndex);
     if (mPhotoViewerCombo->count()==0) mPhotoViewerCombo->setEnabled(false);
 
+    fl->addItem(DialogBase::verticalSpacerItem());
+
+    ski = Settings::self()->photoGroupTitleItem();
+    Q_ASSERT(ski!=NULL);
+    QGroupBox *g = new QGroupBox(ski->label(), w);
+    g->setFlat(true);
+    fl->addRow(g);
+
+    ski = Settings::self()->photoUseGpsItem();
+    Q_ASSERT(ski!=NULL);
+    mUseGpsCheck = new QCheckBox(ski->label(), w);
+    mUseGpsCheck->setToolTip(ski->toolTip());
+    mUseGpsCheck->setChecked(Settings::photoUseGps());
+    fl->addRow(mUseGpsCheck);
+
+    ski = Settings::self()->photoUseTimeItem();
+    Q_ASSERT(ski!=NULL);
+    mUseTimeCheck = new QCheckBox(ski->label(), w);
+    mUseTimeCheck->setToolTip(ski->toolTip());
+    mUseTimeCheck->setChecked(Settings::photoUseTime());
+    connect(mUseTimeCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    fl->addRow(mUseTimeCheck);
+
+    ski = Settings::self()->photoTimeThresholdItem();
+    Q_ASSERT(ski!=NULL);
+    mTimeThresholdSpinbox = new QSpinBox(w);
+    mTimeThresholdSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
+    mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
+    mTimeThresholdSpinbox->setSuffix(i18n(" seconds"));
+    mTimeThresholdSpinbox->setToolTip(ski->toolTip());
+
+    fl->addRow(ski->label(), mTimeThresholdSpinbox);
+
     slotItemChanged();
 }
 
@@ -339,6 +346,10 @@ void SettingsMediaPage::slotSave()
 {
     if (!mPhotoViewerCombo->isEnabled()) return;
     Settings::setPhotoViewMode(mPhotoViewerCombo->itemData(mPhotoViewerCombo->currentIndex()).toString());
+
+    Settings::setPhotoUseGps(mUseGpsCheck->isChecked());
+    Settings::setPhotoUseTime(mUseTimeCheck->isChecked());
+    Settings::setPhotoTimeThreshold(mTimeThresholdSpinbox->value());
 }
 
 
@@ -346,10 +357,24 @@ void SettingsMediaPage::slotDefaults()
 {
     if (!mPhotoViewerCombo->isEnabled()) return;
     mPhotoViewerCombo->setCurrentIndex(0);
+
+    KConfigSkeletonItem *kcsi = Settings::self()->photoUseGpsItem();
+    kcsi->setDefault();
+    mUseGpsCheck->setChecked(Settings::photoUseGps());
+
+    kcsi = Settings::self()->photoUseTimeItem();
+    kcsi->setDefault();
+    mUseTimeCheck->setChecked(Settings::photoUseGps());
+
+    kcsi = Settings::self()->photoTimeThresholdItem();
+    kcsi->setDefault();
+    mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
+
     slotItemChanged();
 }
 
 
 void SettingsMediaPage::slotItemChanged()
 {
+    mTimeThresholdSpinbox->setEnabled(mUseTimeCheck->isChecked());
 }

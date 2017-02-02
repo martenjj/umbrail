@@ -62,6 +62,8 @@ public:
     static QString allExportFilters();
     static QString allProjectFilters(bool includeAllFiles);
 
+    static void resetAllFileWarnings();
+
 public slots:               
     void slotTrackProperties();
     void slotSplitSegment();
@@ -87,8 +89,8 @@ private:
     bool reportFileError(bool saving, const QUrl &file, const QString &msg);
     bool reportFileError(bool saving, const QUrl &file, const ErrorReporter *rep);
 
-    bool fileWarningIgnored(const QUrl &file, const QByteArray &type) const;
-    void setFileWarningIgnored(const QUrl &file, const QByteArray &type);
+    static bool fileWarningIgnored(const QUrl &file, const QByteArray &type);
+    static void setFileWarningIgnored(const QUrl &file, const QByteArray &type);
 
     bool adjustTimeSpec(QDateTime &dt);
     FilesController::Status importPhotoInternal(const QUrl &importFrom, bool multiple);
