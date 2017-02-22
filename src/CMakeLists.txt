@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jan-17					#
+#  Edit:		22-Feb-17					#
 #########################################################################
 
 project(navtracks)
@@ -136,6 +136,9 @@ if (KF5KExiv2_FOUND)
   add_definitions("-DHAVE_KEXIV2=1")
   include_directories(${KF5KExiv2_INCLUDE_DIR})
 endif (KF5KExiv2_FOUND)
+
+# see https://cgit.kde.org/marble.git/tree/examples/cpp/hello-marble/CMakeLists.txt.external
+set(MARBLE_LIBRARIES "Marble")
 
 add_executable(navtracks ${navtracks_SRCS})
 target_link_libraries(navtracks
