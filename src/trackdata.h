@@ -142,7 +142,8 @@ namespace TrackData
         StatusNone = 0,
         StatusTodo,
         StatusDone,
-        StatusQuestion
+        StatusQuestion,
+        StatusUnwanted
     };
 
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);

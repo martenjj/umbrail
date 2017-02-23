@@ -174,10 +174,11 @@ void TrackItemGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
     mStatusCombo = new QComboBox(this);
     mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());
 
-    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), i18n("(None)"), TrackData::StatusNone);
+    mStatusCombo->addItem(QIcon::fromTheme("unknown"), i18n("(None)"), TrackData::StatusNone);
     mStatusCombo->addItem(QIcon::fromTheme("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
     mStatusCombo->addItem(QIcon::fromTheme("task-complete"), i18n("Done"), TrackData::StatusDone);
     mStatusCombo->addItem(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
+    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), i18n("Unwanted"), TrackData::StatusUnwanted);
 
     if (items->count()>1)
     {

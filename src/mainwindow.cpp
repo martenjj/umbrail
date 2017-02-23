@@ -269,7 +269,7 @@ void MainWindow::setupActions()
     mWaypointStatusAction->setToolBarMode(KSelectAction::MenuMode);
     ac->addAction("waypoint_status", mWaypointStatusAction);
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-reject"), i18n("(None)"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("unknown"), i18n("(None)"));
     a->setData(TrackData::StatusNone);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
@@ -283,6 +283,10 @@ void MainWindow::setupActions()
 
     a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-attempt"), i18n("Uncertain"));
     a->setData(TrackData::StatusQuestion);
+    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-reject"), i18n("Unwanted"));
+    a->setData(TrackData::StatusUnwanted);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
     mProfileAction = ac->addAction("track_profile");
