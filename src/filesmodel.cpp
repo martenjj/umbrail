@@ -148,6 +148,7 @@ case COL_NAME:
                 if (s==TrackData::StatusTodo) return (sch.foreground(KColorScheme::NegativeText));
                 if (s==TrackData::StatusDone) return (sch.foreground(KColorScheme::PositiveText));
                 if (s==TrackData::StatusQuestion) return (sch.foreground(KColorScheme::NeutralText));
+                if (s==TrackData::StatusUnwanted) return (sch.foreground(KColorScheme::NeutralText));
             }
         }
         break;
