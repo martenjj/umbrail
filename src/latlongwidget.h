@@ -33,12 +33,15 @@ signals:
 private slots:
     void slotDecimalTextChanged();
     void slotDmsTextChanged();
+    void slotSwissTextChanged();
 
 private:
-    void setDMS(double d, QLineEdit *deg, QLineEdit *min,
-                QLineEdit *sec, QComboBox *sign);
-    double getDMS(QLineEdit *deg, QLineEdit *min,
-                  QLineEdit *sec, QComboBox *sign) const;
+    void setDMS(double d, QLineEdit *deg, QLineEdit *min, QLineEdit *sec, QComboBox *sign);
+    double getDMS(QLineEdit *deg, QLineEdit *min, QLineEdit *sec, QComboBox *sign) const;
+
+    void setSwiss(double lat, double lon, QLineEdit *east, QLineEdit *north);
+    void getSwiss(QLineEdit *east, QLineEdit *north, double *latp, double *lonp) const;
+
     void textChanged();
 
 private:
@@ -56,6 +59,9 @@ private:
     QLineEdit *mLongitudeMin;
     QLineEdit *mLongitudeSec;
     QComboBox *mLongitudeCombo;
+
+    QLineEdit *mSwissNorthEdit;
+    QLineEdit *mSwissEastEdit;
 
     double mLatitude;
     double mLongitude;
