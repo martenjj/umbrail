@@ -50,6 +50,7 @@ public:
     FilesController::Status importFile(const KUrl &importFrom);
     FilesController::Status exportFile(const KUrl &exportTo, const TrackDataFile *tdf);
     FilesController::Status importPhoto(const KUrl::List &urls);
+    void initNew();
 
     static QString allImportFilters();
     static QString allExportFilters();

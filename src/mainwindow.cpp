@@ -539,6 +539,7 @@ void MainWindow::slotStatusMessage(const QString &text)
 void MainWindow::slotNewProject()
 {
     MainWindow *w = new MainWindow(NULL);
+    w->filesController()->initNew();
     w->show();
 }
 
