@@ -108,6 +108,15 @@ void FilesController::saveProperties()
 }
 
 
+void FilesController::initNew()
+{
+    Q_ASSERT(model()->rootFileItem()==NULL);
+
+    TrackDataFile *fileItem = new TrackDataFile(QString::null);
+    model()->setRootFileItem(fileItem);
+}
+
+
 bool FilesController::fileWarningIgnored(const QUrl &file, const QByteArray &type)
 {
     QByteArray askKey = QUrl::toPercentEncoding(file.url());
