@@ -14,7 +14,7 @@ public:
     explicit WaypointsLayer(QWidget *pnt = NULL);
     virtual ~WaypointsLayer();
 
-    qreal zValue() const override		{ return (2.0); }
+    qreal zValue() const override		{ return (4.0); }
     QString id() const override			{ return ("waypoints"); }
     QString name() const override		{ return (i18n("Waypoints")); }
 

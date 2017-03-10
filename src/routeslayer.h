@@ -14,7 +14,7 @@ public:
     explicit RoutesLayer(QWidget *pnt = NULL);
     virtual ~RoutesLayer();
 
-    qreal zValue() const override		{ return (1.0); }
+    qreal zValue() const override		{ return (3.0); }
     QString id() const override			{ return ("routes"); }
     QString name() const override		{ return (i18n("Routes")); }
 
