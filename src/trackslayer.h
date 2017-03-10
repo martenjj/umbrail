@@ -14,7 +14,9 @@ public:
     explicit TracksLayer(QWidget *pnt = NULL);
     virtual ~TracksLayer();
 
-    qreal zValue() const			{ return (1.0); }
+    qreal zValue() const override		{ return (1.0); }
+    QString id() const override			{ return ("tracks"); }
+    QString name() const override		{ return (i18n("Tracks")); }
 
 protected:
     virtual bool isApplicableItem(const TrackDataItem *item) const;

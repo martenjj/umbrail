@@ -3,6 +3,7 @@
 #ifndef MAPVIEW_H
 #define MAPVIEW_H
  
+#include <qmap.h>
 #include <marble/MarbleWidget.h>
 #include <marble/ReverseGeocodingRunnerManager.h>
 #include "mainwindowinterface.h"
@@ -12,9 +13,7 @@ using namespace Marble;
 class QAction;
 class TrackDataItem;
 class TrackDataWaypoint;
-class TracksLayer;
-class RoutesLayer;
-class WaypointsLayer;
+class LayerBase;
 class StopsLayer;
 
 
@@ -32,20 +31,24 @@ public:
     QString currentPosition() const;
     void setCurrentPosition(const QString &str);
 
-    QStringList overlays(bool visibleOnly) const;
+    QStringList allOverlays(bool visibleOnly) const;
+    QStringList allLayers(bool visibleOnly) const;
+
     QAction *actionForOverlay(const QString &id) const;
+    QAction *actionForLayer(const QString &id) const;
     void showOverlays(const QStringList &list);
     void setMovePointsMode(bool on);
 
     static QColor resolveLineColour(const TrackDataItem *tdi);
     static QColor resolvePointColour(const TrackDataItem *tdi);
 
-    void setStopLayerData(const QList<const TrackDataWaypoint *> *data);
+    void setStopLayerData(const QList<const TrackDataWaypoint *> *stops);
 
 public slots:               
     void slotRmbRequest(int mx, int my);
     void slotFindAddress();
     void slotShowOverlay();
+    void slotShowLayer();
     void slotAddWaypoint();
     void slotAddRoutepoint();
 
@@ -59,6 +62,7 @@ signals:
 
 private:
     bool mouseCoordinates(GeoDataCoordinates *coords) const;
+    void addLayer(LayerBase *layer);
 
 private slots:
     void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
@@ -68,10 +72,8 @@ private:
     int mPopupX;
     int mPopupY;
 
-    TracksLayer *mTracksLayer;
-    RoutesLayer *mRoutesLayer;
-    WaypointsLayer *mWaypointsLayer;
-    StopsLayer *mStopsLayer;
+    QMap<QString,LayerBase *> mLayers;			// normal display layers
+    StopsLayer *mStopsLayer;				// this one is special
 };
 
 #endif							// MAPVIEW_H

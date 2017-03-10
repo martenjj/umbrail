@@ -2,7 +2,9 @@
 
 #ifndef LAYERBASE_H
 #define LAYERBASE_H
+
  
+#include <klocalizedstring.h>
 #include <marble/LayerInterface.h>
 #include <marble/GeoDataCoordinates.h>
 #include <marble/GeoDataLineString.h>
@@ -60,12 +62,17 @@ public:
 
     QStringList renderPosition() const;
     virtual qreal zValue() const = 0;
+    virtual QString id() const = 0;
+    virtual QString name() const = 0;
+
     bool render(GeoPainter *painter, ViewportParams *viewport,
                 const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL);
 
     bool eventFilter(QObject *obj, QEvent *ev);
 
     void setMovePointsMode(bool on);
+    bool isVisible() const				{ return (mVisible); }
+    void setVisible(bool on)				{ mVisible = on; }
 
 signals:
     void draggedPoints(qreal latOff, qreal lonOff);
@@ -94,6 +101,7 @@ private slots:
     void slotInstallEventFilter();
 
 private:
+    bool mVisible;
     bool mMovePointsMode;
 
     QElapsedTimer *mClickTimer;

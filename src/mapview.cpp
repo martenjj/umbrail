@@ -10,6 +10,7 @@
 #include <kmessagebox.h>
 #include <kxmlguifactory.h>
 #include <kcolorscheme.h>
+#include <ktoggleaction.h>
 
 #include <marble/MarbleWidgetInputHandler.h>
 #include <marble/GeoDataPlacemark.h>
@@ -48,27 +49,14 @@ MapView::MapView(QWidget *pnt)
     disconnect(ih, SIGNAL(rmbRequest(int,int)), NULL, NULL);
     connect(ih, SIGNAL(rmbRequest(int,int)), SLOT(slotRmbRequest(int,int)));
 
-    // Modify cursor shape
-    installEventFilter(this);
+    installEventFilter(this);				// modify cursor shape
 
-    // Tracks display layer
-    mTracksLayer = new TracksLayer(this);
-    connect(mTracksLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
-    addLayer(mTracksLayer);
+    addLayer(new TracksLayer(this));			// tracks display layer
+    addLayer(new WaypointsLayer(this));			// waypoints display layer
+    addLayer(new RoutesLayer(this));			// routes display layer
 
-    // Waypoints display layer
-    mWaypointsLayer = new WaypointsLayer(this);
-    connect(mWaypointsLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
-    addLayer(mWaypointsLayer);
-
-    // Routes display layer
-    mRoutesLayer = new RoutesLayer(this);
-    connect(mRoutesLayer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
-    addLayer(mRoutesLayer);
-
-    // Temporary stops display layer
-    mStopsLayer = new StopsLayer;			// don't want auto delete for this
-    addLayer(mStopsLayer);
+    mStopsLayer = new StopsLayer;			// temporary stops display layer
+    MarbleWidget::addLayer(mStopsLayer);
 }
 
 
@@ -76,6 +64,15 @@ MapView::~MapView()
 {
     delete mStopsLayer;
     qDebug() << "done";
+}
+
+
+void MapView::addLayer(LayerBase *layer)
+{
+    qDebug() << layer->id();
+    connect(layer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
+    mLayers[layer->id()] = layer;
+    MarbleWidget::addLayer(layer);
 }
 
 
@@ -119,7 +116,7 @@ void MapView::saveProperties()
 
     // TODO: crosshairs etc?
     Settings::setMapTheme(mapThemeId());
-    Settings::setMapOverlays(overlays(true));
+    Settings::setMapOverlays(allOverlays(true));
 }
 
 
@@ -190,7 +187,7 @@ void MapView::slotAddRoutepoint()
 }
 
 
-QStringList MapView::overlays(bool visibleOnly) const
+QStringList MapView::allOverlays(bool visibleOnly) const
 {
     QStringList result;
     QList<AbstractFloatItem *> items = floatItems();
@@ -201,6 +198,24 @@ QStringList MapView::overlays(bool visibleOnly) const
         if (item==NULL) continue;
 
         if (!visibleOnly || item->visible()) result.append(item->nameId());
+    }
+
+    qDebug() << "visibleOnly" << visibleOnly << "->" << result;
+    return (result);
+}
+
+
+QStringList MapView::allLayers(bool visibleOnly) const
+{
+    QStringList result;
+
+    QStringList itemIds = mLayers.keys();
+    foreach (const QString &itemId, itemIds)
+    {
+        const LayerBase *layer = mLayers.value(itemId);
+        if (layer==NULL) continue;
+
+        if (!visibleOnly || layer->isVisible()) result.append(itemId);
     }
 
     qDebug() << "visibleOnly" << visibleOnly << "->" << result;
@@ -245,6 +260,34 @@ void MapView::slotShowOverlay()
     bool nowVisible = !item->visible();
     item->setVisible(nowVisible);
     a->setChecked(nowVisible);
+    update();
+}
+
+
+QAction *MapView::actionForLayer(const QString &id) const
+{
+    const LayerBase *layer = mLayers.value(id);
+    if (layer==NULL) return (NULL);
+
+    QAction *a = new KToggleAction(layer->name(), mainWindow());
+    a->setData(id);					// record ID for action
+    a->setChecked(layer->isVisible());			// set initial check state
+    return (a);
+}
+
+
+void MapView::slotShowLayer()
+{
+    QAction *a = static_cast<QAction*>(sender());	// action that was triggered
+    if (a==NULL) return;
+
+    LayerBase *layer = mLayers.value(a->data().toString());
+    if (layer==NULL) return;
+
+    bool nowVisible = !layer->isVisible();
+    layer->setVisible(nowVisible);
+    a->setChecked(nowVisible);
+    update();
 }
 
 
@@ -293,9 +336,10 @@ QColor MapView::resolvePointColour(const TrackDataItem *tdi)
 void MapView::setMovePointsMode(bool on)
 {
     qDebug() << on;
-    mTracksLayer->setMovePointsMode(on);
-    mWaypointsLayer->setMovePointsMode(on);
-    mRoutesLayer->setMovePointsMode(on);
+    foreach (LayerBase *layer, mLayers)
+    {
+        layer->setMovePointsMode(on);
+    }
 }
 
 
@@ -319,8 +363,7 @@ bool MapView::eventFilter(QObject *obj, QEvent *ev)
 }
 
 
-void MapView::setStopLayerData(const QList<const TrackDataWaypoint *> *data)
+void MapView::setStopLayerData(const QList<const TrackDataWaypoint *> *stops)
 {
-    mStopsLayer->setStopsData(data);
-    update();
+    mStopsLayer->setStopsData(stops);
 }

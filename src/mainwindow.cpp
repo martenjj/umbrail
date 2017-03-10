@@ -371,16 +371,30 @@ void MainWindow::setupActions()
     a->setIcon(QIcon::fromTheme("view-pim-mail"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
 
+    MapView *mapView = mapController()->view();
+
     KActionMenu *itemsMenu = new KActionMenu(this);
-    QStringList notUseful = QString(notUsefulOverlays).split(',');
-    QStringList items = mapController()->view()->overlays(false);
-    for (QStringList::const_iterator it = items.constBegin();
-         it!=items.constEnd(); ++it)
+    QStringList layerIds = mapView->allLayers(false);
+    foreach (const QString &id, layerIds)
     {
-        QString itemId = (*it);
+        a = mapView->actionForLayer(id);
+        if (a==NULL) continue;
+
+        connect(a, SIGNAL(triggered()), mapView, SLOT(slotShowLayer()));
+        itemsMenu->addAction(a);
+    }
+    a = ac->addAction("map_show_layers", itemsMenu);
+    a->setText(i18n("Show Layers"));
+    a->setIcon(QIcon::fromTheme("layer-visible-on"));
+
+    itemsMenu = new KActionMenu(this);
+    QStringList notUseful = QString(notUsefulOverlays).split(',');
+    QStringList itemIds = mapView->allOverlays(false);
+    foreach (const QString &itemId, itemIds)
+    {
         if (notUseful.contains(itemId)) continue;
 
-        a = mapController()->view()->actionForOverlay(itemId);
+        a = mapView->actionForOverlay(itemId);
         if (a==NULL) continue;
 
         connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotShowOverlay()));
@@ -388,6 +402,7 @@ void MainWindow::setupActions()
     }
     a = ac->addAction("map_show_overlays", itemsMenu);
     a->setText(i18n("Show Overlays"));
+    a->setIcon(QIcon::fromTheme("flag-black"));
 
     mMapDragAction = new KToggleAction(QIcon::fromTheme("transform-move"), i18n("Move Points"), this);
     ac->setDefaultShortcut(mMapDragAction, Qt::CTRL+Qt::Key_M);
