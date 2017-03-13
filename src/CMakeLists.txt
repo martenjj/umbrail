@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		22-Feb-17					#
+#  Edit:		12-Mar-17					#
 #########################################################################
 
 project(navtracks)
@@ -63,6 +63,9 @@ set(navtracks_SRCS
   createwaypointdialogue.cpp
   createroutepointdialogue.cpp
   dataindexer.cpp
+  elevationdownloader.cpp
+  elevationmanager.cpp
+  elevationtile.cpp
   errorreporter.cpp
   exporterbase.cpp
   filescontroller.cpp

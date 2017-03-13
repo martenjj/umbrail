@@ -25,6 +25,8 @@
 #include "waypointslayer.h"
 #include "routeslayer.h"
 #include "stopslayer.h"
+#include "elevationmanager.h"
+#include "elevationtile.h"
 
 
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
@@ -138,7 +140,7 @@ void MapView::slotFindAddress()
     if (mRunnerManager==NULL)
     {
         mRunnerManager = new ReverseGeocodingRunnerManager(model(), this);
-        connect(mRunnerManager, SIGNAL(reverseGeocodingFinished(GeoDataCoordinates, GeoDataPlacemark)),
+        connect(mRunnerManager, SIGNAL(reverseGeocodingFinished(GeoDataCoordinates,GeoDataPlacemark)),
                 SLOT(slotShowAddressInformation(GeoDataCoordinates,GeoDataPlacemark)));
     }
 
@@ -151,9 +153,24 @@ void MapView::slotFindAddress()
 void MapView::slotShowAddressInformation(const GeoDataCoordinates &coords,
                                          const GeoDataPlacemark &placemark)
 {
-    QString text = placemark.address();
-    text.replace(", ", "\n");
-    KMessageBox::information(this, text, i18n("Address"));
+
+    const double lat = coords.latitude(GeoDataCoordinates::Degree);
+    const double lon = coords.longitude(GeoDataCoordinates::Degree);
+
+    QString addr = placemark.address();
+    addr.replace(", ", "\n");
+
+    // TODO: wait until elevation available
+    // use a custom widget with QGridLayout
+    // display immediately, wait for signals, update when address/ele available
+    // change main window action to "Position Information..."
+
+    QString text = xi18nc("@info", "Position: <emphasis strong=\"1\">%1</emphasis><nl/>Elevation: <emphasis strong=\"1\">%2</emphasis><nl/><nl/>Address: <emphasis strong=\"1\">%3</emphasis><nl/>",
+                          TrackData::formattedLatLong(lat, lon),
+                          ElevationManager::self()->tile(lat, lon)->elevation(lat, lon),
+                          addr);
+    text.replace('\n', "<br/>&nbsp;&nbsp;");
+    KMessageBox::information(this, text, i18n("Position Information"));
 }
 
 
