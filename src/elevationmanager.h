@@ -29,12 +29,15 @@
 #define ELEVATIONMANAGER_H
 
 
-#include <qmap.h>
 #include <qobject.h>
+#include <qmap.h>
+#include <qqueue.h>
 
 #include "elevationtile.h"
 
 
+class QTimer;
+class KJob;
 class ElevationTile;
 
 
@@ -45,14 +48,29 @@ class ElevationManager : public QObject
 public:
     static ElevationManager *self();
 
-    ElevationTile *tile(double lat, double lon);
+    const ElevationTile *requestTile(double lat, double lon);
+
+signals:
+    void tileReady(const ElevationTile *tile);
+    void tileReadyInternal(ElevationTile *tile);
 
 private:
     explicit ElevationManager(QObject *pnt = NULL);
     virtual ~ElevationManager();
 
+    void startDownload(ElevationTile *tile);
+    QString cacheFile(const ElevationTile *tile);
+
+private slots:
+    void slotNextFromQueue();
+    void slotDownloadResult(KJob *job);
+    void slotTileReady(ElevationTile *tile);
+
 private:
     QMap<ElevationTile::TileId,ElevationTile *> mTiles;
+    QQueue<ElevationTile *> mDownloadQueue;
+    int mRunningJobs;
+    QTimer *mQueueTimer;
 };
 
 
