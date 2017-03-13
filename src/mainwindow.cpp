@@ -367,7 +367,7 @@ void MainWindow::setupActions()
     connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSelectTheme()));
 
     a = ac->addAction("map_find_address");
-    a->setText(i18n("Find Address..."));
+    a->setText(i18n("Position Information..."));
     a->setIcon(QIcon::fromTheme("view-pim-mail"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
 

@@ -5,7 +5,6 @@
  
 #include <qmap.h>
 #include <marble/MarbleWidget.h>
-#include <marble/ReverseGeocodingRunnerManager.h>
 #include "mainwindowinterface.h"
 
 using namespace Marble;
@@ -61,14 +60,9 @@ signals:
     void createRoutepoint(qreal lat, qreal lon);
 
 private:
-    bool mouseCoordinates(GeoDataCoordinates *coords) const;
     void addLayer(LayerBase *layer);
 
-private slots:
-    void slotShowAddressInformation(const GeoDataCoordinates &coords, const GeoDataPlacemark &placemark);
-
 private:
-    ReverseGeocodingRunnerManager *mRunnerManager;
     int mPopupX;
     int mPopupY;
 
