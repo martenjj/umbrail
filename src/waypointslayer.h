@@ -14,7 +14,7 @@ public:
     explicit WaypointsLayer(QWidget *pnt = NULL);
     virtual ~WaypointsLayer();
 
-    qreal zValue() const			{ return (2.0); }
+    qreal zValue() const override		{ return (4.0); }
 
 protected:
     virtual bool isApplicableItem(const TrackDataItem *item) const;

@@ -14,7 +14,7 @@ public:
     explicit TracksLayer(QWidget *pnt = NULL);
     virtual ~TracksLayer();
 
-    qreal zValue() const			{ return (1.0); }
+    qreal zValue() const override		{ return (2.0); }
 
 protected:
     virtual bool isApplicableItem(const TrackDataItem *item) const;

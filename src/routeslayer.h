@@ -14,7 +14,7 @@ public:
     explicit RoutesLayer(QWidget *pnt = NULL);
     virtual ~RoutesLayer();
 
-    qreal zValue() const			{ return (1.0); }
+    qreal zValue() const override		{ return (3.0); }
 
 protected:
     virtual bool isApplicableItem(const TrackDataItem *item) const;
