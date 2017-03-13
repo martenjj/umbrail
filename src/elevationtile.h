@@ -57,6 +57,8 @@ public:
 
     ElevationTile::State state() const			{ return (mState); }
     ElevationTile::TileId id() const			{ return (mTileId); }
+    bool isValid() const				{ return (mData!=NULL); }
+    bool isValidFor(double lat, double lon) const;
 
     QString cacheFile() const;
     QUrl sourceUrl() const;

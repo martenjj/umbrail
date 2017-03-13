@@ -59,7 +59,7 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
 
         connect(ElevationManager::self(), &ElevationManager::tileReady,
                 this, &PositionInfoDialogue::slotShowElevation, Qt::QueuedConnection);
-        mRequestedTile = ElevationManager::self()->requestTile(mLatitude, mLongitude);
+        ElevationManager::self()->requestTile(mLatitude, mLongitude);
 
         // Address
         l = new QLabel(i18nc("@title:row", "Address:"), this);
@@ -99,6 +99,6 @@ void PositionInfoDialogue::slotShowAddressInformation(const GeoDataCoordinates &
 void PositionInfoDialogue::slotShowElevation(const ElevationTile *tile)
 {
     qDebug();
-    if (tile!=mRequestedTile) return;
+    if (!tile->isValidFor(mLatitude, mLongitude)) return;
     mElevationLabel->setText(QString::number(tile->elevation(mLatitude, mLongitude)));
 }

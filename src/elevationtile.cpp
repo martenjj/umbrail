@@ -86,6 +86,22 @@ void ElevationTile::setData(ElevationTile::TileData *data)
 }
 
 
+bool ElevationTile::isValidFor(double lat, double lon) const
+{
+    if (!isValid()) return (false);
+
+    const double latOff = lat-double(mLatitudeBase);	// offset within this tile
+    const double lonOff = lon-double(mLongitudeBase);
+    return (latOff<1.0 && lonOff<1.0);			// check that both are within bounds
+}
+
+
+
+
+
+
+
+
 // format-specific from here on
 
 
@@ -98,19 +114,13 @@ int ElevationTile::elevation(double lat, double lon) const
     if (mState!=ElevationTile::Loaded) return (0);
     Q_ASSERT(mData!=NULL);
 
-    double latOff = lat-double(mLatitudeBase);
-    double lonOff = lon-double(mLongitudeBase);
+    const double latOff = lat-double(mLatitudeBase);	// offset within this tile
+    const double lonOff = lon-double(mLongitudeBase);
 
-    // check that both are within bounds
-    if (latOff>1.0)
+    if (latOff>=1.0 || lonOff>=1.0)			// check that both are within bounds
     {
-        qWarning() << "latitude out of range, asked for" << lat << "have base" << mLatitudeBase;
-        return (0);
-    }
-
-    if (lonOff>1.0)
-    {
-        qWarning() << "longitude out of range, asked for" << lon << "have base" << mLongitudeBase;
+        qWarning() << "lat/lon out of range, asked for" << lat << lon
+                   << "base" << mLatitudeBase << mLongitudeBase;
         return (0);
     }
 

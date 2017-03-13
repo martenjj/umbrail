@@ -5,6 +5,7 @@
 
 #include <dialogbase.h>
 #include <marble/GeoDataPlacemark.h>
+
 using Marble::GeoDataCoordinates;
 using Marble::GeoDataPlacemark;
 
@@ -31,7 +32,6 @@ private:
 
     qreal mLatitude;
     qreal mLongitude;
-    const ElevationTile *mRequestedTile;
 };
 
 #endif							// POSITIONINFODIALOGUE_H
