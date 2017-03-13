@@ -14,6 +14,7 @@
 #include "elevationmanager.h"
 #include "elevationtile.h"
 #include "trackdata.h"
+#include "variableunitdisplay.h"
 
 #include <marble/ReverseGeocodingRunnerManager.h>
 
@@ -43,19 +44,23 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
     mLongitude = 0.0;
     const bool valid = view->geoCoordinates(posX, posY, mLongitude, mLatitude, GeoDataCoordinates::Degree);
 
-    l = new QLabel(i18n("<html><font %1>%2</font></html>",
-                        (valid ? "" : "color=\"red\""),
-                        TrackData::formattedLatLong(mLatitude, mLongitude)), this);
-    gl->addWidget(l, 0, 2, Qt::AlignTop);
+    QLabel *positionDisplay = new QLabel(i18n("<html><font %1>%2</font></html>",
+                                              (valid ? "" : "color=\"red\""),
+                                              TrackData::formattedLatLong(mLatitude, mLongitude)), this);
+    positionDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    gl->addWidget(positionDisplay, 0, 2, Qt::AlignTop);
+    l->setBuddy(positionDisplay);
 
     if (valid)
     {
         // Elevation
         l = new QLabel(i18nc("@title:row", "Elevation:"), this);
-        gl->addWidget(l, 1, 0, Qt::AlignTop);
+        gl->addWidget(l, 1, 0, Qt::AlignVCenter);
 
-        mElevationLabel = new QLabel(i18n("(Awaiting elevation)"), this);
-        gl->addWidget(mElevationLabel, 1, 2, Qt::AlignTop);
+        mElevationDisplay = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
+        mElevationDisplay->setEnabled(false);
+        gl->addWidget(mElevationDisplay, 1, 2, Qt::AlignVCenter);
+        l->setBuddy(mElevationDisplay);
 
         connect(ElevationManager::self(), &ElevationManager::tileReady,
                 this, &PositionInfoDialogue::slotShowElevation, Qt::QueuedConnection);
@@ -63,10 +68,13 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
 
         // Address
         l = new QLabel(i18nc("@title:row", "Address:"), this);
-        gl->addWidget(l, 2, 0, Qt::AlignTop);
+        gl->addWidget(l, 3, 0, Qt::AlignTop);
 
         mAddressLabel = new QLabel(i18n("(Awaiting address)"), this);
-        gl->addWidget(mAddressLabel, 2, 2, Qt::AlignTop);
+        mAddressLabel->setEnabled(false);
+        mAddressLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+        gl->addWidget(mAddressLabel, 3, 2, Qt::AlignTop);
+        l->setBuddy(mAddressLabel);
 
         // from MarbleWidgetPopupMenu::startReverseGeocoding()
         auto *runnerManager = new ReverseGeocodingRunnerManager(view->model(), this);
@@ -79,7 +87,8 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
         runnerManager->reverseGeocoding(coords);
     }
 
-    gl->setColumnMinimumWidth(2, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(1, DialogBase::horizontalSpacing());
+    gl->setRowMinimumHeight(2, DialogBase::verticalSpacing());
     gl->setColumnStretch(2, 1);
     gl->setRowStretch(4, 1);
 }
@@ -93,6 +102,7 @@ void PositionInfoDialogue::slotShowAddressInformation(const GeoDataCoordinates &
     QString addr = placemark.address();
     addr.replace(", ", "\n");
     mAddressLabel->setText(addr);
+    mAddressLabel->setEnabled(true);
 }
 
 
@@ -100,5 +110,6 @@ void PositionInfoDialogue::slotShowElevation(const ElevationTile *tile)
 {
     qDebug();
     if (!tile->isValidFor(mLatitude, mLongitude)) return;
-    mElevationLabel->setText(QString::number(tile->elevation(mLatitude, mLongitude)));
+    mElevationDisplay->setValue(tile->elevation(mLatitude, mLongitude));
+    mElevationDisplay->setEnabled(true);
 }

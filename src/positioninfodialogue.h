@@ -12,6 +12,7 @@ using Marble::GeoDataPlacemark;
 
 class QLabel;
 class ElevationTile;
+class VariableUnitDisplay;
 
 
 class PositionInfoDialogue : public DialogBase
@@ -28,7 +29,7 @@ private slots:
 
 private:
     QLabel *mAddressLabel;
-    QLabel *mElevationLabel;
+    VariableUnitDisplay *mElevationDisplay;
 
     qreal mLatitude;
     qreal mLongitude;
