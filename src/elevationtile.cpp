@@ -72,7 +72,7 @@ void ElevationTile::setState(ElevationTile::State newState)
 }
 
 
-void ElevationTile::setData(ElevationTile::TileData *data)
+void ElevationTile::setData(int ncols, int nrows, ElevationTile::TileData *data)
 {
     if (mData!=NULL)
     {
@@ -80,8 +80,10 @@ void ElevationTile::setData(ElevationTile::TileData *data)
         delete mData;
     }
 
-    qDebug() << "set data size" << data->size();
+    qDebug() << "size" << data->size();
     mData = data;
+    mNCols = ncols;
+    mNRows = nrows;
     mState = ElevationTile::Loaded;
 }
 
@@ -141,9 +143,9 @@ int ElevationTile::elevation(double lat, double lon) const
     }
 
     // get tile elevation at that offset
-    const int row = 1200-qRound(latOff*1200);
-    const int col = qRound(lonOff*1200);
-    return mData->at(row*1200+col);
+    const int row = qRound((1.0-latOff)*mNRows);	// base is at bottom left
+    const int col = qRound(lonOff*mNCols);
+    return mData->at(row*mNCols+col);
 }
 
 
@@ -238,6 +240,7 @@ bool ElevationTile::loadInternal(QFile &f)
                 break;
             }
 
+            qDebug() << "data size cols" << ncols << "rows" << nrows;
             v = new QVector<short>(ncols*nrows);	// allocate data storage
             row = 0;					// set first row number
         }
@@ -262,8 +265,8 @@ bool ElevationTile::loadInternal(QFile &f)
     }
 
     const bool ok = (v!=NULL);				// check completed state
-    qDebug() << "Read" << lineno << "lines, status" << ok;
+    qDebug() << "read" << lineno << "lines, status" << ok;
 
-    if (ok) setData(v);					// save tile data
+    if (ok) setData(ncols, nrows, v);			// save tile data
     return (ok);
 }

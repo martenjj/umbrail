@@ -75,7 +75,7 @@ protected:
     typedef QVector<short> TileData;			// data array
 
 protected:
-    void setData(ElevationTile::TileData *data);
+    void setData(int ncols, int nrows, ElevationTile::TileData *data);
     bool loadInternal(QFile &f);
 
 private:
@@ -85,6 +85,8 @@ private:
     ElevationTile::TileId mTileId;
     ElevationTile::State mState;
     ElevationTile::TileData *mData;
+    int mNCols;
+    int mNRows;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ElevationTile::State)
