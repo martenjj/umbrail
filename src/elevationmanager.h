@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-Mar-17						//
+//  Edit:	14-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,6 +32,7 @@
 #include <qobject.h>
 #include <qmap.h>
 #include <qqueue.h>
+#include <qthread.h>
 
 #include "elevationtile.h"
 
@@ -60,11 +61,13 @@ private:
 
     void startDownload(ElevationTile *tile);
     QString cacheFile(const ElevationTile *tile);
+    void loadTile(ElevationTile *tile, const QString &file);
 
 private slots:
     void slotNextFromQueue();
     void slotDownloadResult(KJob *job);
     void slotTileReady(ElevationTile *tile);
+    void slotLoaderThreadFinished();
 
 private:
     QMap<ElevationTile::TileId,ElevationTile *> mTiles;
@@ -73,5 +76,23 @@ private:
     QTimer *mQueueTimer;
 };
 
+
+class LoaderThread : public QThread
+{
+    Q_OBJECT
+
+public:
+    LoaderThread(ElevationTile *tileToLoad, const QString &cacheFile, QObject *pnt = NULL);
+    virtual ~LoaderThread();
+
+    ElevationTile *tile() const				{ return (mTile); }
+
+protected:
+    virtual void run() override;
+
+private:
+    ElevationTile *mTile;
+    QString mFile;
+};
 
 #endif							// ELEVATIONMANAGER_H

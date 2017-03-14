@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-Mar-17						//
+//  Edit:	14-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -152,9 +152,7 @@ default:						// other state, should not happen
     qDebug() << "cache file" << cache;
     if (QFile::exists(cache))				// in cache already?
     {
-    // TODO: this is slow, do in a thread
-        const bool ok = tile->load(cache);		// load cache file into tile
-        if (ok) emit tileReadyInternal(tile);
+        loadTile(tile, cache);				// do in loader thread
         return;
     }
 
@@ -201,8 +199,7 @@ void ElevationManager::slotDownloadResult(KJob *job)
     if (!job->error())					// check download success
     {
         QString cache = copyJob->destUrl().toLocalFile();
-        const bool ok = tile->load(cache);		// load cache file into tile
-        if (ok) emit tileReadyInternal(tile);		// tile now ready to use
+        loadTile(tile, cache);				// do in loader thread
     }
     else						// error downloading
     {
@@ -261,4 +258,48 @@ void ElevationManager::slotNextFromQueue()
 void ElevationManager::slotTileReady(ElevationTile *tile)
 {
     emit tileReady(tile);
+}
+
+
+void ElevationManager::loadTile(ElevationTile *tile, const QString &file)
+{
+    LoaderThread *thr = new LoaderThread(tile, file, this);
+    connect(thr, &QThread::finished, this, &ElevationManager::slotLoaderThreadFinished);
+    thr->start();
+}
+
+
+void ElevationManager::slotLoaderThreadFinished()
+{
+    qDebug();
+
+    LoaderThread *thr = qobject_cast<LoaderThread *>(sender());
+    Q_ASSERT(thr!=NULL);
+    ElevationTile *tile = thr->tile();
+    Q_ASSERT(tile!=NULL);
+
+    if (tile->state()==ElevationTile::Loaded) emit tileReadyInternal(tile);
+    thr->deleteLater();
+}
+
+
+LoaderThread::LoaderThread(ElevationTile *tileToLoad, const QString &cacheFile, QObject *pnt)
+    : QThread(pnt)
+{
+    qDebug() << "for" << tileToLoad->id();
+    mTile = tileToLoad;
+    mFile = cacheFile;
+}
+
+
+LoaderThread::~LoaderThread()
+{
+    qDebug() << mTile->id();
+}
+
+
+void LoaderThread::run()
+{
+    qDebug() << mTile->id();
+    mTile->load(mFile);					// load cache file into tile
 }

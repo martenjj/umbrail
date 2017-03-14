@@ -104,7 +104,7 @@ bool ElevationTile::load(const QString &file)
     QFile f(file);
     if (f.open(QIODevice::ReadOnly))			// open geo data file
     {
-        QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+        QGuiApplication::setOverrideCursor(Qt::BusyCursor);
         ok = loadInternal(f);				// check completed state
         f.close();					// finished with data file
         QGuiApplication::restoreOverrideCursor();
