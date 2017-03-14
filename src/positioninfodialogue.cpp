@@ -51,7 +51,7 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
     gl->addWidget(positionDisplay, 0, 2, Qt::AlignTop);
     l->setBuddy(positionDisplay);
 
-    if (valid)
+    if (valid)						// have a valid Earth position
     {
         // Elevation
         l = new QLabel(i18nc("@title:row", "Elevation:"), this);
@@ -78,7 +78,7 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
 
         // from MarbleWidgetPopupMenu::startReverseGeocoding()
         auto *runnerManager = new ReverseGeocodingRunnerManager(view->model(), this);
-        // The most verbose connect cast ever...
+        // The most verbose connect cast so far...
         connect(runnerManager, static_cast<void (ReverseGeocodingRunnerManager::*)(const GeoDataCoordinates &, const GeoDataPlacemark &)>
                                           (&ReverseGeocodingRunnerManager::reverseGeocodingFinished),
                 this, &PositionInfoDialogue::slotShowAddressInformation);

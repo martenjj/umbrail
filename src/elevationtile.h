@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-Mar-17						//
+//  Edit:	14-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -34,6 +34,7 @@
 #include <qvector.h>
 
 
+class QFile;
 class QUrl;
 
 
@@ -75,6 +76,7 @@ protected:
 
 protected:
     void setData(ElevationTile::TileData *data);
+    bool loadInternal(QFile &f);
 
 private:
     int mLatitudeBase;

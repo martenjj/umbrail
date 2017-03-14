@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-Mar-17						//
+//  Edit:	14-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -96,8 +96,24 @@ bool ElevationTile::isValidFor(double lat, double lon) const
 }
 
 
+bool ElevationTile::load(const QString &file)
+{
+    bool ok = false;
 
+    qDebug() << "from" << file;
+    QFile f(file);
+    if (f.open(QIODevice::ReadOnly))			// open geo data file
+    {
+        QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+        ok = loadInternal(f);				// check completed state
+        f.close();					// finished with data file
+        QGuiApplication::restoreOverrideCursor();
+    }
+    else qWarning() << "error opening file!";
+    if (!ok) setState(ElevationTile::Error);		// set error state
 
+    return (ok);
+}
 
 
 
@@ -162,21 +178,8 @@ QUrl ElevationTile::sourceUrl() const
 }
 
 
-bool ElevationTile::load(const QString &file)
+bool ElevationTile::loadInternal(QFile &f)
 {
-    // load tile data from file
-
-    qDebug() << "from" << file;
-    QFile f(file);
-    if (!f.open(QIODevice::ReadOnly))			// open geo data file
-    {
-        qWarning() << "error opening file!";
-        setState(ElevationTile::Error);
-        return (false);
-    }
-
-    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
-
     // AAgrid file header format:
     //
     //   ncols        1200
@@ -191,7 +194,6 @@ bool ElevationTile::load(const QString &file)
     int nrows = -1;					// row count from header
     int ncols = -1;					// column count from header
     ElevationTile::TileData *v = NULL;			// allocated file data
-    bool firstData = true;				// awaiting first data line
 
     while (true)
     {
@@ -227,7 +229,7 @@ bool ElevationTile::load(const QString &file)
             continue;
         }
 
-        if (firstData)
+        if (v==NULL)
         {
             // Assume that now we are after the header, at the first data line.
             if (ncols<=0 || nrows<=0)
@@ -237,8 +239,7 @@ bool ElevationTile::load(const QString &file)
             }
 
             v = new QVector<short>(ncols*nrows);	// allocate data storage
-            firstData = false;
-            row = 0;
+            row = 0;					// set first row number
         }
 
         Q_ASSERT(v!=NULL);				// must have array by now
@@ -255,21 +256,14 @@ bool ElevationTile::load(const QString &file)
             cols = qMin(cols, ncols);			// don't store too many
         }
 
-        for (int col = 0; col<cols; ++col)
-        {
-            short e = fields[col].toShort();
-            (*v)[row*ncols+col] = e;
-        }
-
+        short *p = &(v->data()[row*ncols]);		// store row data
+        for (int col = 0; col<cols; ++col) *p++ = fields[col].toShort();
         ++row;						// count up this row
     }
 
-    f.close();						// finished with data file
     const bool ok = (v!=NULL);				// check completed state
     qDebug() << "Read" << lineno << "lines, status" << ok;
 
     if (ok) setData(v);					// save tile data
-    else setState(ElevationTile::Error);
-    QGuiApplication::restoreOverrideCursor();
     return (ok);
 }
