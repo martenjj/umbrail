@@ -265,7 +265,7 @@ void ElevationManager::loadTile(ElevationTile *tile, const QString &file)
 {
     LoaderThread *thr = new LoaderThread(tile, file, this);
     connect(thr, &QThread::finished, this, &ElevationManager::slotLoaderThreadFinished);
-    thr->start();
+    thr->start(QThread::LowPriority);
 }
 
 
@@ -301,5 +301,6 @@ LoaderThread::~LoaderThread()
 void LoaderThread::run()
 {
     qDebug() << mTile->id();
+    QThread::msleep(100);
     mTile->load(mFile);					// load cache file into tile
 }
