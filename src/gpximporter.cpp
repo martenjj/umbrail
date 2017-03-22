@@ -13,7 +13,8 @@
 #include "errorreporter.h"
 
 
-#define WAYPOINT_FOLDER_NAME	"Waypoints"
+#define WAYPOINTS_FOLDER_NAME	"Waypoints"
+#define NOTES_FOLDER_NAME	"Notes"
 
 #undef DEBUG_IMPORT
 #undef DEBUG_DETAILED
@@ -52,7 +53,6 @@ TrackDataFile *GpxImporter::load(const QUrl &file)
     mCurrentPoint = NULL;
     mCurrentWaypoint = NULL;
     mCurrentRoutepoint = NULL;
-    mWaypointFolder = NULL;
 
     mUndefinedNamespaces.clear();
 
@@ -127,7 +127,7 @@ TrackDataItem *GpxImporter::currentItem() const
 }
 
 
-TrackDataFolder *GpxImporter::createFolder(const QString &path)
+TrackDataFolder *GpxImporter::getFolder(const QString &path)
 {
 #ifdef DEBUG_DETAILED
     qDebug() << path;
@@ -144,7 +144,7 @@ TrackDataFolder *GpxImporter::createFolder(const QString &path)
         foundFolder = cur->findChildFolder(name);
         if (foundFolder==NULL)				// nothing existing found
         {
-            qDebug() << "creating folder" << name << "under" << cur->name();
+            qDebug() << "creating" << name << "under" << cur->name();
             foundFolder = new TrackDataFolder(name);
             cur->addChildItem(foundFolder);
         }
@@ -158,26 +158,17 @@ TrackDataFolder *GpxImporter::createFolder(const QString &path)
 
 TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 {
-    // Strategy for locating the folder:
-    //
-    //  - If the waypoint is specified and has a folder defined, use that
-    //
-    //  - If a top level folder named "Waypoints" exists, use that
-    //
-    //  - Otherwise, create a new folder "Waypoints" and use that
+    //  If the waypoint is specified and has a folder defined, then that
+    // folder is used.  Otherwise, an appropriately named top level folder
+    // is used, or created if necessary.
 
     if (tdw!=NULL)					// a waypoint is specified
     {
         const QString path = tdw->metadata("folder");	// its folder, if it has one
-        if (!path.isEmpty()) return (createFolder(path));
+        if (!path.isEmpty()) return (getFolder(path));
     }
-
-    if (mWaypointFolder==NULL)				// not allocated/found yet
-    {							// find or create now
-        mWaypointFolder = createFolder(WAYPOINT_FOLDER_NAME);
-    }
-
-    return (mWaypointFolder);
+							// find or create folder
+    return (getFolder(tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME));
 }
 
 
@@ -680,7 +671,7 @@ bool GpxImporter::endDocument()
 
     if (currentItem()!=NULL)				// check terminated
     {
-        return (error(makeXmlException(QString("TRK, TRKSEG, TRKPT or WPT not terminated"))));
+        return (error(makeXmlException(QString("Point or container not terminated"))));
     }
 
     if (mWithinMetadata || mWithinExtensions)		// check terminated
