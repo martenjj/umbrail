@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	14-Mar-17						//
+//  Edit:	22-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -49,7 +49,7 @@ class ElevationManager : public QObject
 public:
     static ElevationManager *self();
 
-    const ElevationTile *requestTile(double lat, double lon);
+    const ElevationTile *requestTile(double lat, double lon, bool wantImmediateSignal = true);
 
 signals:
     void tileReady(const ElevationTile *tile);

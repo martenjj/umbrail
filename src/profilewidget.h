@@ -21,6 +21,7 @@ class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
 class KConfigGroup;
+class ElevationTile;
 
 
 class ProfileWidget : public DialogBase, public DialogStateSaver, public MainWindowInterface
@@ -36,6 +37,7 @@ public:
 
 private slots:
     void slotUpdatePlot();
+    void slotElevationTileReady(const ElevationTile *tile);
 
 private:
     void getPlotData(const TrackDataItem *item);

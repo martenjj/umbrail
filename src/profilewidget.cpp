@@ -25,6 +25,8 @@
 #include "filesmodel.h"
 #include "trackdata.h"
 #include "variableunitcombo.h"
+#include "elevationmanager.h"
+#include "elevationtile.h"
 
 
 ProfileWidget::ProfileWidget(QWidget *pnt)
@@ -165,6 +167,12 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
         mSpeedCheck->setChecked(true);
     }
 
+    connect(ElevationManager::self(), &ElevationManager::tileReady, this,
+
+            [this](const ElevationTile *tile){ mUpdateTimer->start(); });
+
+//            &ProfileWidget::slotElevationTileReady);
+
     mUpdateTimer->start();				// do the first plot update
 }
 
@@ -274,7 +282,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
             if (mBaseTime==0)				// this is the first point
             {
                 mBaseTime = tm;				// use this as base time
-                qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
+                if (mTimeZone!=NULL) qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
             }
 
             if (mTimeUnit->factor()==VariableUnitCombo::TimeRelative)
@@ -285,8 +293,19 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
         }
 
         // Elevation, data always in metres
-        const double ele = tdp->elevation()*mElevationUnit->factor();
-        mElevData.append(ele);
+        double ele = 0.0;
+        if (mElevationSource==ElevationSourceGPS)	// GPS elevation
+        {
+            ele = tdp->elevation();
+        }
+        else						// DEM elevation
+        {
+            const double lat = tdp->latitude();
+            const double lon = tdp->longitude();
+            const ElevationTile *tile = ElevationManager::self()->requestTile(lat, lon, false);
+            if (tile->state()==ElevationTile::Loaded) ele = tile->elevation(lat, lon);
+        }
+        mElevData.append(ele*mElevationUnit->factor());
 
         // Speed, either from GPS or calculated from track
         double spd;
@@ -414,4 +433,10 @@ void ProfileWidget::slotUpdatePlot()
     }
 
     mPlot->replot();
+}
+
+
+void ProfileWidget::slotElevationTileReady(const ElevationTile *tile)
+{
+    mUpdateTimer->start();
 }

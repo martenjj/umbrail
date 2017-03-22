@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	14-Mar-17						//
+//  Edit:	22-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -143,8 +143,8 @@ int ElevationTile::elevation(double lat, double lon) const
     }
 
     // get tile elevation at that offset
-    const int row = qRound((1.0-latOff)*mNRows);	// base is at bottom left
-    const int col = qRound(lonOff*mNCols);
+    const int row = static_cast<int>((1.0-latOff)*mNRows);	// base is at bottom left
+    const int col = static_cast<int>(lonOff*mNCols);
     return mData->at(row*mNCols+col);
 }
 

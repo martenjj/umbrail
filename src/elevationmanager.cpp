@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	14-Mar-17						//
+//  Edit:	22-Mar-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -39,6 +39,9 @@
 #include <kio/filecopyjob.h>
 
 #include "elevationtile.h"
+
+
+#undef DEBUG_REQUESTS
 
 
 static const int MAX_DOWNLOADS = 2;			// limit on running downloads
@@ -100,23 +103,24 @@ ElevationManager::~ElevationManager()
 }
 
 
-const ElevationTile *ElevationManager::requestTile(double lat, double lon)
+const ElevationTile *ElevationManager::requestTile(double lat, double lon, bool wantImmediateSignal)
 {
-    qDebug() << "for lat" << lat << "lon" << lon;
-
     ElevationTile *tile = NULL;
 
     ElevationTile::TileId id = ElevationTile::makeTileId(lat, lon);
     if (mTiles.contains(id))				// do we have tile alredy?
     {
         tile = mTiles.value(id);			// get from our tile map
-        qDebug() << "  have tile" << tile->id();
-        emit tileReadyInternal(tile);
+#ifdef DEBUG_REQUESTS
+        qDebug() << "for lat" << lat << "lon" << lon << "have tile" << tile->id();
+#endif
+        //if (wantImmediateSignal) emit tileReadyInternal(tile);
+        if (tile->state()==ElevationTile::Loaded && wantImmediateSignal) emit tileReadyInternal(tile);
     }
     else						// need a new tile
     {
         tile = new ElevationTile(id);			// create one for that location
-        qDebug() << "  new tile" << tile->id();
+        qDebug() << "for lat" << lat << "lon" << lon << "new tile" << tile->id();
         mTiles[id] = tile;				// save in our tile map
         startDownload(tile);				// start to fetch tile
     }
@@ -218,16 +222,16 @@ void ElevationManager::slotDownloadResult(KJob *job)
 
 void ElevationManager::slotNextFromQueue()
 {
+    qDebug() << "running" << mRunningJobs << "waiting" << mDownloadQueue.count();
+
     if (mDownloadQueue.isEmpty())			// any more downloads waiting?
     {							// queue empty, nothing to do
-        qDebug() << "queue empty, idle";
         mQueueTimer->stop();
         return;
     }
 
     if (mRunningJobs>=MAX_DOWNLOADS)			// enough running already?
     {							// try again next timer tick
-        qDebug() << "too many running, wait";
         return;
     }
 
