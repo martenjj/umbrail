@@ -50,7 +50,7 @@ private:
     inline bool parsing() const;
     QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString::null);
     TrackDataItem *currentItem() const;
-    TrackDataFolder *createFolder(const QString &path);
+    TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);
 
     bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
@@ -63,7 +63,6 @@ private:
     TrackDataTrackpoint *mCurrentPoint;
     TrackDataWaypoint *mCurrentWaypoint;
     TrackDataRoutepoint *mCurrentRoutepoint;
-    TrackDataFolder *mWaypointFolder;
 
     bool mWithinMetadata;
     bool mWithinExtensions;
