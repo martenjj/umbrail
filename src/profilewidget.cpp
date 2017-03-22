@@ -6,6 +6,7 @@
 #include <qgridlayout.h>
 #include <qvector.h>
 #include <qcheckbox.h>
+#include <qcombobox.h>
 #include <qradiobutton.h>
 #include <qbuttongroup.h>
 #include <qlabel.h>
@@ -60,7 +61,6 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(l, 2, 0, Qt::AlignRight);
 
     ++col;						// New column: elevation/speed checks
-
     mElevationCheck = new QCheckBox(i18n("Elevation"), this);
     connect(mElevationCheck, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mElevationCheck, 2, col);
@@ -70,7 +70,6 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(mSpeedCheck, 3, col);
 
     ++col;						// New column: elevation/speed units
-
     mElevationUnit = new VariableUnitCombo(VariableUnitCombo::Elevation);
     connect(mElevationUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mElevationUnit, 2, col);
@@ -79,25 +78,28 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     connect(mSpeedUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mSpeedUnit, 3, col);
 
-    ++col;						// New column: spacer
-    gl->setColumnMinimumWidth(col, DialogBase::horizontalSpacing());
+    ++col;						// New column: source labels
 
-    ++col;						// New column: speed source label
-    l = new QLabel(i18n("Speed source:"), this);
-    gl->addWidget(l, 2, col, Qt::AlignRight);
+    ++col;						// New column: source combos
+    mElevationSourceCombo = new QComboBox(this);
+    mElevationSourceCombo->addItem(i18n("GPS"), ElevationSourceGPS);
+    mElevationSourceCombo->addItem(i18n("DEM"), ElevationSourceDEM);
+    connect(mElevationSourceCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+    l = new QLabel(i18n("source"), this);
+    l->setBuddy(mElevationSourceCombo);
+    gl->addWidget(l, 2, col-1);
+    gl->addWidget(mElevationSourceCombo, 2, col);
 
-    ++col;						// New column: speed source radio
-    QButtonGroup *bg = new QButtonGroup(this);
-
-    mSpeedGpsRadio = new QRadioButton(i18n("GPS"), this);
-    connect(mSpeedGpsRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
-    bg->addButton(mSpeedGpsRadio);
-    gl->addWidget(mSpeedGpsRadio, 2, col);
-
-    mSpeedTrackRadio = new QRadioButton(i18n("Track"), this);
-    connect(mSpeedTrackRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
-    bg->addButton(mSpeedTrackRadio);
-    gl->addWidget(mSpeedTrackRadio, 3, col);
+    mSpeedSourceCombo = new QComboBox(this);
+    mSpeedSourceCombo->addItem(i18n("GPS"), SpeedSourceGPS);
+    mSpeedSourceCombo->addItem(i18n("Track"), SpeedSourceTrack);
+    connect(mSpeedSourceCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+    l = new QLabel(i18n("source"), this);
+    l->setBuddy(mSpeedSourceCombo);
+    gl->addWidget(l, 3, col-1);
+    gl->addWidget(mSpeedSourceCombo, 3, col);
 
     ++col;						// New column: spacer
     gl->setColumnMinimumWidth(col, DialogBase::horizontalSpacing());
@@ -107,7 +109,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(l, 2, col, Qt::AlignRight);
 
     ++col;						// New column: reference radio
-    bg = new QButtonGroup(this);
+    QButtonGroup *bg = new QButtonGroup(this);
 
     mReferenceTimeRadio = new QRadioButton(i18n("Time"), this);
     connect(mReferenceTimeRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
@@ -179,8 +181,14 @@ void ProfileWidget::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
     mSpeedCheck->setChecked(grp.readEntry("ShowSpeed", true));
     mElevationUnit->setCurrentIndex(grp.readEntry("UnitElevation", 0));
     mSpeedUnit->setCurrentIndex(grp.readEntry("UnitSpeed", 0));
-    mSpeedGpsRadio->setChecked(grp.readEntry("SpeedGps", false));
-    mSpeedTrackRadio->setChecked(grp.readEntry("SpeedTrack", true));
+
+    int val = grp.readEntry("ElevationSource", static_cast<int>(ElevationSourceGPS));
+    int idx = mElevationSourceCombo->findData(val);
+    if (idx!=-1) mElevationSourceCombo->setCurrentIndex(idx);
+    val = grp.readEntry("SpeedSource", static_cast<int>(SpeedSourceGPS));
+    idx = mSpeedSourceCombo->findData(val);
+    if (idx!=-1) mSpeedSourceCombo->setCurrentIndex(idx);
+
     mReferenceTimeRadio->setChecked(grp.readEntry("ReferenceTime", true));
     mReferenceDistRadio->setChecked(grp.readEntry("ReferenceDist", false));
     mTimeUnit->setCurrentIndex(grp.readEntry("UnitTime", 0));
@@ -198,8 +206,8 @@ void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
     grp.writeEntry("ShowSpeed", mSpeedCheck->isChecked());
     grp.writeEntry("UnitElevation", mElevationUnit->currentIndex());
     grp.writeEntry("UnitSpeed", mSpeedUnit->currentIndex());
-    grp.writeEntry("SpeedGps", mSpeedGpsRadio->isChecked());
-    grp.writeEntry("SpeedTrack", mSpeedTrackRadio->isChecked());
+    grp.writeEntry("ElevationSource", mElevationSourceCombo->currentData().toInt());
+    grp.writeEntry("SpeedSource", mSpeedSourceCombo->currentData().toInt());
     grp.writeEntry("ReferenceTime", mReferenceTimeRadio->isChecked());
     grp.writeEntry("ReferenceDist", mReferenceDistRadio->isChecked());
     grp.writeEntry("UnitTime", mTimeUnit->currentIndex());
@@ -282,7 +290,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
 
         // Speed, either from GPS or calculated from track
         double spd;
-        if (mUseGpsSpeed)				// GPS speed
+        if (mSpeedSource==SpeedSourceGPS)		// GPS speed
         {
             const QString speedMeta = tdp->metadata("speed");
             if (speedMeta.isEmpty()) spd = 0;
@@ -309,14 +317,15 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
 void ProfileWidget::slotUpdatePlot()
 {
     const bool speedEnabled = mSpeedCheck->isChecked();
-    mSpeedGpsRadio->setEnabled(speedEnabled);
-    mSpeedTrackRadio->setEnabled(speedEnabled);
+    mSpeedSourceCombo->setEnabled(speedEnabled);
     mSpeedUnit->setEnabled(speedEnabled);
 
     const bool elevationEnabled = mElevationCheck->isChecked();
+    mElevationSourceCombo->setEnabled(elevationEnabled);
     mElevationUnit->setEnabled(elevationEnabled);
 
-    mUseGpsSpeed = mSpeedGpsRadio->isChecked();
+    mElevationSource = static_cast<ElevationSource>(mElevationSourceCombo->currentData().toInt());
+    mSpeedSource = static_cast<SpeedSource>(mSpeedSourceCombo->currentData().toInt());
     mUseTravelDistance = mReferenceDistRadio->isChecked();
 
     mTimeUnit->setEnabled(!mUseTravelDistance);
@@ -374,12 +383,20 @@ void ProfileWidget::slotUpdatePlot()
         mPlot->xAxis->setNumberFormat("g");
     }
     mPlot->xAxis->rescale();
-							// elevation axis
-    mPlot->yAxis->setLabel(i18n("Elevation (%1)", mElevationUnit->currentText()));
+
+    if (mElevationSource==ElevationSourceGPS)		// elevation axis
+    {
+        mPlot->yAxis->setLabel(i18n("Elevation (GPS %1)", mElevationUnit->currentText()));
+    }
+    else
+    {
+        mPlot->yAxis->setLabel(i18n("Elevation (DEM %1)", mElevationUnit->currentText()));
+    }
+
     mPlot->yAxis->setLabelColor(Qt::red);
     mPlot->yAxis->setVisible(true);
 
-    if (mUseGpsSpeed)					// speed axis
+    if (mSpeedSource==SpeedSourceGPS)			// speed axis
     {
         mPlot->yAxis2->setLabel(i18n("Speed (GPS %1)", mSpeedUnit->currentText()));
     }
