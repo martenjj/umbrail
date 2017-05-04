@@ -21,6 +21,9 @@ public:
     void setThemeId(const QString &id);
     QString themeId() const;
 
+signals:
+    void themeSelected(const QString &themeId);
+
 private:
     void createDisplay();
 

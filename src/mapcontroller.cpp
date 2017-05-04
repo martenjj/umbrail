@@ -193,7 +193,7 @@ void MapController::slotSaveImage()
 }
 
 
-void MapController::slotShowPosition( const QString &pos)
+void MapController::slotShowPosition(const QString &pos)
 {
 // TODO: better display format
 //    qDebug() << pos;
@@ -219,19 +219,26 @@ void MapController::slotSelectTheme()
         mThemeManager = new MapThemeManager(this);
     }
 
-    MapThemeDialogue d(mThemeManager->mapThemeModel(), mainWindow());
-    d.setThemeId(view()->mapThemeId());
-    if (!d.exec()) return;
+    MapThemeDialogue *d = new MapThemeDialogue(mThemeManager->mapThemeModel(), mainWindow());
+    d->setThemeId(view()->mapThemeId());
+    d->setWindowModality(Qt::WindowModal);
 
-    QString newTheme = d.themeId();
-    qDebug() << "new theme" << newTheme;
+    connect(d, &MapThemeDialogue::themeSelected, this, &MapController::slotMapThemeSelected);
+    d->setAttribute(Qt::WA_DeleteOnClose);
+    d->show();
+}
+
+
+void MapController::slotMapThemeSelected(const QString &themeId)
+{
+    qDebug() << "theme" << themeId;
 
     QStringList currentOverlays = view()->overlays(true);
     view()->showOverlays(QStringList());		// save/restore overlays state
-    view()->setMapThemeId(newTheme);
+    view()->setMapThemeId(themeId);
     view()->showOverlays(currentOverlays);
 
-    emit statusMessage(i18n("Map theme '%1'", newTheme));
+    emit statusMessage(i18n("Map theme '%1'", themeId));
 }
 
 

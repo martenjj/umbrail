@@ -56,6 +56,9 @@ signals:
 
     void mapZoomChanged(bool canZoomIn, bool canZoomOut);
 
+private slots:
+    void slotMapThemeSelected(const QString &themeId);
+
 private:
     MapView *mView;
     MapThemeManager *mThemeManager;
