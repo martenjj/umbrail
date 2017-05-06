@@ -673,7 +673,7 @@ double TrackDataAbstractPoint::bearingTo(const TrackDataAbstractPoint *other) co
 
     double dphi = log(tan(M_PI/4+lat2/2)/tan(M_PI/4+lat1/2));
     double dlon = lon2-lon1;
-    if (abs(dlon)>M_PI) dlon = dlon>0 ? -(2*M_PI-dlon) : (2*M_PI+dlon);
+    if (fabs(dlon)>M_PI) dlon = dlon>0 ? -(2*M_PI-dlon) : (2*M_PI+dlon);
     return (atan2(dlon, dphi)/DEGREES_TO_RADIANS);
 }
 

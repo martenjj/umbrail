@@ -6,6 +6,7 @@
 #include <qlistwidget.h>
 #include <qstandarditemmodel.h>
 #include <qdebug.h>
+#include <qpushbutton.h>
 
 #include <klocalizedstring.h>
 
@@ -19,9 +20,13 @@ MapThemeDialogue::MapThemeDialogue(QStandardItemModel *model, QWidget *pnt)
     setObjectName("MapThemeDialogue");
 
     setModal(true);
-    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-    setButtonText(QDialogButtonBox::Ok, i18n("Select"));
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Apply|QDialogButtonBox::Close);
     setWindowTitle(i18n("Select Map Theme"));
+
+    connect(buttonBox()->button(QDialogButtonBox::Ok),  &QPushButton::clicked,
+            this, [this]() { emit themeSelected(themeId()); });
+    connect(buttonBox()->button(QDialogButtonBox::Apply), &QPushButton::clicked,
+            this, [this]() { emit themeSelected(themeId()); });
 
     QWidget *vb = new QWidget(this);
     QVBoxLayout *vlay = new QVBoxLayout(vb);
