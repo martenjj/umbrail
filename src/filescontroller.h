@@ -6,6 +6,8 @@
 #include <qobject.h>
 #include "mainwindowinterface.h"
 
+#include <math.h>					// need this for 'NAN'
+
 
 class QDateTime;
 class QUrl;

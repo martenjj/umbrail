@@ -3,13 +3,15 @@
 #define TRACKDATA_H
 
 #include <math.h>
-#define ISNAN(x)	std::isnan(x)			// to cover variations
 
 #include <qstring.h>
 #include <qlist.h>
 #include <qdatetime.h>
 #include <qvector.h>
 #include <qurl.h>
+
+using namespace std;					// std::isnan -> isnan
+#define ISNAN(x)	isnan(x)			// to cover variations
 
 class QWidget;
 class QTimeZone;
