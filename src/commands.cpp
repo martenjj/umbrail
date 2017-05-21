@@ -52,12 +52,8 @@ public:
     ItemContainer();
     virtual ~ItemContainer();
 
+    TrackData::Type type() const		{ return (TrackData::None); }
     virtual QString iconName() const		{ return (QString::null); }
-
-    virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
-    virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
-    virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
-    virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const { return (NULL); }
 
 private:
     static int containerCounter;

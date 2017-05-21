@@ -44,21 +44,10 @@ FilesModel::~FilesModel()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
+/* static */ TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx)
 {
     return (static_cast<TrackDataItem *>(idx.internalPointer()));
 }
-
 
 
 QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
@@ -69,7 +58,6 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
     // static_cast will not work here due to const'ness
     return (row==-1 ? QModelIndex() : createIndex(row, 0, (void *) tdi));
 }
-
 
 
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
@@ -90,7 +78,6 @@ QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 
     return (createIndex(row, col, tdi->childAt(row)));
 }
-
 
 
 QModelIndex FilesModel::parent(const QModelIndex &idx) const

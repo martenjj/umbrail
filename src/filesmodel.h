@@ -40,7 +40,7 @@ public:
     void endLayoutChange();
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
-    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
+    static TrackDataItem *itemForIndex(const QModelIndex &idx);
 
 signals:
     void clickedItem(const QModelIndex &index, unsigned int flags);
