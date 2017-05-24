@@ -172,6 +172,8 @@ class TrackDataItem
 public:
     virtual ~TrackDataItem();
 
+    virtual TrackData::Type type() const = 0;
+
     QString name() const				{ return (mName); }
     void setName(const QString &newName)		{ mName = newName; }
 
@@ -244,6 +246,8 @@ public:
     TrackDataFile(const QString &nm);
     virtual ~TrackDataFile()				{}
 
+    TrackData::Type type() const			{ return (TrackData::File); }
+
     QUrl fileName() const				{ return (mFileName); }
     void setFileName(const QUrl &file)			{ mFileName = file; }
 
@@ -271,6 +275,8 @@ public:
     TrackDataTrack(const QString &nm);
     virtual ~TrackDataTrack()				{}
 
+    TrackData::Type type() const			{ return (TrackData::Track); }
+
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
@@ -291,6 +297,8 @@ class TrackDataSegment : public TrackDataItem, public TrackPropertiesInterface
 public:
     TrackDataSegment(const QString &nm);
     virtual ~TrackDataSegment()				{}
+
+    TrackData::Type type() const			{ return (TrackData::Segment); }
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
@@ -314,6 +322,8 @@ class TrackDataFolder : public TrackDataItem, public TrackPropertiesInterface
 public:
     TrackDataFolder(const QString &nm);
     virtual ~TrackDataFolder()				{}
+
+    TrackData::Type type() const			{ return (TrackData::Folder); }
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
@@ -379,6 +389,8 @@ public:
     TrackDataTrackpoint(const QString &nm);
     virtual ~TrackDataTrackpoint()			{}
 
+    TrackData::Type type() const			{ return (TrackData::Point); }
+
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
@@ -399,6 +411,8 @@ class TrackDataWaypoint : public TrackDataAbstractPoint, public TrackPropertiesI
 public:
     TrackDataWaypoint(const QString &nm);
     virtual ~TrackDataWaypoint()			{}
+
+    TrackData::Type type() const			{ return (TrackData::Waypoint); }
 
     virtual QIcon icon() const;
 
@@ -426,6 +440,8 @@ public:
     TrackDataRoute(const QString &nm);
     virtual ~TrackDataRoute()				{}
 
+    TrackData::Type type() const			{ return (TrackData::Route); }
+
     QString iconName() const				{ return ("chart_route"); }
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const;
@@ -445,6 +461,8 @@ class TrackDataRoutepoint : public TrackDataAbstractPoint, public TrackPropertie
 public:
     TrackDataRoutepoint(const QString &nm);
     virtual ~TrackDataRoutepoint()			{}
+
+    TrackData::Type type() const			{ return (TrackData::Routepoint); }
 
     QString iconName() const				{ return ("flag"); }
 

@@ -115,8 +115,10 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     //
     // The selection is considered to be "mixed" if the selected items are
     // of more than one type, or items of the same type but spanning boundaries.
-    // In practice, the test for this is that not all selected items/ranges
-    // have the same model parent.
+    // The test for the latter is that not all selected items/ranges
+    // have the same model parent;  however, it is still necessary to check the
+    // item type because some containers can hold items of mixed type (e.g.
+    // a file can contain either tracks or folders).
 
     QModelIndexList selIndexes = selectionModel()->selectedIndexes();
     mSelectedCount = selIndexes.count();		// get a flattened list
@@ -128,33 +130,20 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     }
     else
     {
-        bool isMixed = false;
+        mSelectedItem = FilesModel::itemForIndex(selIndexes.first());
+        Q_ASSERT(mSelectedItem!=NULL);
+        mSelectedType = mSelectedItem->type();
+
         QModelIndex firstParent = selIndexes.first().parent();
         for (int i = 1; i<mSelectedCount; ++i)
         {
-            if (selIndexes[i].parent()!=firstParent)
+            const TrackDataItem *item = FilesModel::itemForIndex(selIndexes[i]);
+            Q_ASSERT(item!=NULL);
+            if (selIndexes[i].parent()!=firstParent || item->type()!=mSelectedType)
             {
-                isMixed = true;
+                mSelectedType = TrackData::Mixed;
                 break;
             }
-        }
-
-        if (isMixed) mSelectedType = TrackData::Mixed;
-        else
-        {
-            mSelectedItem = static_cast<const TrackDataItem *>(selIndexes.first().internalPointer());
-            Q_ASSERT(mSelectedItem!=NULL);
-
-            // TODO: mSelectedItem->itemType() a virtual of TrackDataItem
-            if (dynamic_cast<const TrackDataTrackpoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Point;
-            else if (dynamic_cast<const TrackDataSegment *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Segment;
-            else if (dynamic_cast<const TrackDataTrack *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Track;
-            else if (dynamic_cast<const TrackDataRoute *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Route;
-            else if (dynamic_cast<const TrackDataFile *>(mSelectedItem)!=NULL) mSelectedType = TrackData::File;
-            else if (dynamic_cast<const TrackDataFolder *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Folder;
-            else if (dynamic_cast<const TrackDataWaypoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Waypoint;
-            else if (dynamic_cast<const TrackDataRoutepoint *>(mSelectedItem)!=NULL) mSelectedType = TrackData::Routepoint;
-            else mSelectedType = TrackData::None;
         }
     }
 
