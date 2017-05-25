@@ -353,8 +353,8 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
     if (exportTo.isLocalFile() && QFile::exists(exportTo.path()))
     {							// to a local file?
         QUrl backupFile = exportTo;			// make path for backup file
+        backupFile.setPath(backupFile.path()+".orig");
 
-        backupFile = exportTo.adjusted(QUrl::RemoveFilename).resolved(QUrl::fromLocalFile(exportTo.fileName()+".orig"));
 // TODO: use KIO
 // ask whether to backup if a remote file (if cannot test for exists)
         if (!QFile::exists(backupFile.path()))		// no backup already?
