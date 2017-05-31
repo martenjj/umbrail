@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	02-Oct-16						//
+//  Edit:	31-May-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -106,6 +106,7 @@ int main(int argc,char *argv[])
     if (w==NULL)					// no project or file loaded
     {
         w = new MainWindow(NULL);
+        w->filesController()->initNew();
         w->show();
     }
 
