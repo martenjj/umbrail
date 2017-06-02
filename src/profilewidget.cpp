@@ -362,16 +362,29 @@ void ProfileWidget::slotUpdatePlot()
     if (mReferenceTimeRadio->isChecked())		// reference axis
     {
         mPlot->xAxis->setLabel(i18n("Time (%1)", mTimeUnit->currentText()));
-        mPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
-        mPlot->xAxis->setDateTimeFormat("hh:mm");
-        // See the comment in getPlotData() above
-        mPlot->xAxis->setDateTimeSpec(Qt::UTC);
+
+        if (mTimeTicker.isNull())			// needs to be created now
+        {
+            qDebug() << "creating time ticker";
+            QCPAxisTickerDateTime *ticker = new QCPAxisTickerDateTime();
+            ticker->setDateTimeFormat("hh:mm");
+            // See the comment in getPlotData() above
+            ticker->setDateTimeSpec(Qt::UTC);
+            mTimeTicker.reset(ticker);
+        }
+        mPlot->xAxis->setTicker(mTimeTicker);
     }
     else
     {
         mPlot->xAxis->setLabel(i18n("Travel (%1)", mDistanceUnit->currentText()));
-        mPlot->xAxis->setTickLabelType(QCPAxis::ltNumber);
-        mPlot->xAxis->setNumberFormat("g");
+
+        if (mNumberTicker.isNull())			// needs to be created now
+        {
+            qDebug() << "creating number ticker";
+            QCPAxisTicker *ticker = new QCPAxisTicker();
+            mNumberTicker.reset(ticker);
+        }
+        mPlot->xAxis->setTicker(mNumberTicker);
     }
     mPlot->xAxis->rescale();
 							// elevation axis

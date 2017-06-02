@@ -19,6 +19,7 @@ class TrackDataItem;
 class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
+class QCPAxisTicker;
 class KConfigGroup;
 
 
@@ -67,6 +68,9 @@ private:
 
     time_t mBaseTime;
     QTimeZone *mTimeZone;
+
+    QSharedPointer<QCPAxisTicker> mNumberTicker;
+    QSharedPointer<QCPAxisTicker> mTimeTicker;
 };
 
 #endif							// PROFILEWIDGET_H
