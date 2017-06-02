@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	02-Jun-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -47,7 +47,7 @@ public:
     virtual ~PhotoViewer();
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *ev);
+    virtual void keyPressEvent(QKeyEvent *ev) override;
 
 private:
     void fixupMenuBar(QMenuBar *bar);

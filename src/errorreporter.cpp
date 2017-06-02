@@ -30,7 +30,7 @@ public:
     ErrorRecordFile(const QUrl &file);
     virtual ~ErrorRecordFile()				{}
 
-    QString format() const;
+    QString format() const override;
 
 private:
     QUrl mFile;
@@ -43,7 +43,7 @@ public:
     ErrorRecordMessage(ErrorReporter::Severity severity, const QString &message, int line = -1);
     virtual ~ErrorRecordMessage()			{}
 
-    QString format() const;
+    QString format() const override;
 
 private:
     QString mMessage;

@@ -30,8 +30,8 @@ public:
     explicit ProfileWidget(QWidget *pnt = nullptr);
     virtual ~ProfileWidget();
 
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
 private slots:
     void slotUpdatePlot();

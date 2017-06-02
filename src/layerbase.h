@@ -58,12 +58,12 @@ public:
     explicit LayerBase(QWidget *pnt = NULL);
     virtual ~LayerBase();
 
-    QStringList renderPosition() const;
-    virtual qreal zValue() const = 0;
+    QStringList renderPosition() const override;
+    virtual qreal zValue() const override = 0;
     bool render(GeoPainter *painter, ViewportParams *viewport,
-                const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL);
+                const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL) override;
 
-    bool eventFilter(QObject *obj, QEvent *ev);
+    bool eventFilter(QObject *obj, QEvent *ev) override;
 
     void setMovePointsMode(bool on);
 

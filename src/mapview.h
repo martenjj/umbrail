@@ -40,7 +40,7 @@ public:
     static QColor resolveLineColour(const TrackDataItem *tdi);
     static QColor resolvePointColour(const TrackDataItem *tdi);
 
-    void setStopLayerData(const QList<const TrackDataWaypoint *> *data);
+    void setStopLayerData(const QList<const TrackDataWaypoint *> *stops);
 
 public slots:               
     void slotRmbRequest(int mx, int my);
@@ -50,7 +50,7 @@ public slots:
     void slotAddRoutepoint();
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *ev);
+    bool eventFilter(QObject *obj, QEvent *ev) override;
 
 signals:
     void draggedPoints(qreal latOff, qreal lonOff);

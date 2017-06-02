@@ -15,7 +15,7 @@ public:
     GpxExporter();
     virtual ~GpxExporter();
 
-    bool save(const QUrl &file, const TrackDataFile *item);
+    bool save(const QUrl &file, const TrackDataFile *item) override;
 
     static QString filter();
 

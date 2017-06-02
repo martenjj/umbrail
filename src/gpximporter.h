@@ -29,21 +29,21 @@ public:
     static QString filter();
 
     // ImporterBase
-    TrackDataFile *load(const QUrl &file);
-    bool needsResave() const;
+    TrackDataFile *load(const QUrl &file) override;
+    bool needsResave() const override;
 
     // QXmlContentHandler
-    void setDocumentLocator(QXmlLocator *locator);
-    bool startDocument();
-    bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts);
-    bool characters(const QString &ch);
-    bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName);
-    bool endDocument();
+    void setDocumentLocator(QXmlLocator *locator) override;
+    bool startDocument() override;
+    bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) override;
+    bool characters(const QString &ch) override;
+    bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) override;
+    bool endDocument() override;
 
     // QXmlErrorHandler
-    bool error(const QXmlParseException &ex);
-    bool fatalError(const QXmlParseException &ex);
-    bool warning(const QXmlParseException &ex);
+    bool error(const QXmlParseException &ex) override;
+    bool fatalError(const QXmlParseException &ex) override;
+    bool warning(const QXmlParseException &ex) override;
 
 private:
     QByteArray indent() const;

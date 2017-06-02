@@ -19,10 +19,10 @@ public:
     virtual ~StopsLayer();
 
     qreal zValue() const override		{ return (5.0); }
-    QStringList renderPosition() const;
+    QStringList renderPosition() const override;
 
     bool render(GeoPainter *painter, ViewportParams *viewport,
-                const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL);
+                const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL) override;
 
     void setStopsData(const QList<const TrackDataWaypoint *> *data);
 

@@ -37,8 +37,8 @@ public slots:
     void slotClickedItem(const QModelIndex &index, unsigned int flags);
 
 protected:
-    void selectionChanged(const QItemSelection &sel, const QItemSelection &desel);
-    virtual void contextMenuEvent(QContextMenuEvent *ev);
+    void selectionChanged(const QItemSelection &sel, const QItemSelection &desel) override;
+    void contextMenuEvent(QContextMenuEvent *ev) override;
 
 signals:
     void updateActionState();

@@ -35,7 +35,7 @@ public:
     TrackData::WaypointStatus newWaypointStatus() const;
 
     virtual QString typeText(int count) const = 0;
-    virtual bool isDataValid() const;
+    virtual bool isDataValid() const override;
 
     bool newPointPosition(double *newLat, double *newLon);
 
@@ -79,9 +79,8 @@ public:
     TrackFileGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFileGeneralPage()				{}
 
-    virtual bool isDataValid() const;
-
-    QString typeText(int count) const;
+    bool isDataValid() const override;
+    QString typeText(int count) const override;
 
 private:
     QLineEdit *mUrlRequester;
@@ -97,7 +96,7 @@ public:
     TrackTrackGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 };
 
 
@@ -110,7 +109,7 @@ public:
     TrackSegmentGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackSegmentGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 };
 
 
@@ -123,7 +122,7 @@ public:
     TrackTrackpointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackpointGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 
 
 private:
@@ -138,7 +137,7 @@ public:
     TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackRoutepointGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 
 private:
 };
@@ -152,7 +151,7 @@ public:
     TrackFolderGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFolderGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 
 private:
 };
@@ -166,7 +165,7 @@ public:
     TrackWaypointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 
 protected slots:
     void slotPlayAudioNote();
@@ -186,7 +185,7 @@ public:
     TrackRouteGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackRouteGeneralPage()				{}
 
-    QString typeText(int count) const;
+    QString typeText(int count) const override;
 };
 
 

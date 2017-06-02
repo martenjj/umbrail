@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	16-May-16						//
+//  Edit:	02-Jun-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -50,7 +50,7 @@ public:
     void setSaveId(const QString &id);
 
 protected:
-    void showEvent(QShowEvent *ev);
+    void showEvent(QShowEvent *ev) override;
 
 protected slots:
     void slotUpdateDisplay();

@@ -21,8 +21,8 @@ public:
     void setTimeZone(const QByteArray &zone);
     QString timeZone() const;
 
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
 protected slots:
     void slotUseUTC();

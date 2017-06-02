@@ -19,10 +19,10 @@ public:
     TrackFilterModel(QObject *pnt = NULL);
     virtual ~TrackFilterModel()				{}
 
-    virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const;
-    virtual Qt::ItemFlags flags(const QModelIndex &idx) const;
+    virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const override;
+    virtual Qt::ItemFlags flags(const QModelIndex &idx) const override;
 
-    virtual QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const;
+    virtual QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override;
     void setSource(const QList<TrackDataItem *> *items);
     void setMode(TrackData::Type mode);
 
