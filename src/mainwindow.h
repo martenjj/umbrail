@@ -49,13 +49,13 @@ public slots:
     void slotSetModified(bool mod = true);
 
 protected:
-    virtual void saveProperties(KConfigGroup &grp);
-    virtual void readProperties(const KConfigGroup &grp);
-    virtual bool queryClose();
+    void saveProperties(KConfigGroup &grp) override;
+    void readProperties(const KConfigGroup &grp) override;
+    bool queryClose() override;
 
-    virtual void closeEvent(QCloseEvent *ev);
-    virtual void dragEnterEvent(QDragEnterEvent *ev);
-    virtual void dropEvent(QDropEvent *ev);
+    void closeEvent(QCloseEvent *ev) override;
+    void dragEnterEvent(QDragEnterEvent *ev) override;
+    void dropEvent(QDropEvent *ev) override;
 
 protected slots:
     void slotNewProject();

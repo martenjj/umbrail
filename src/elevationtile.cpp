@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	22-Mar-17						//
+//  Edit:	02-Jun-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,6 +32,7 @@
 #include <qpair.h>
 #include <qdebug.h>
 #include <qurl.h>
+#include <qurlquery.h>
 #include <qfile.h>
 #include <qguiapplication.h>
 #include <qcursor.h>

@@ -20,12 +20,12 @@ public:
     FilesModel(QObject *pnt = NULL);
     virtual ~FilesModel();
 
-    virtual QModelIndex index(int row, int col, const QModelIndex &parent = QModelIndex()) const;
-    virtual QModelIndex parent(const QModelIndex &idx) const;
-    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    virtual QVariant data(const QModelIndex &idx, int role) const;
-    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    virtual QModelIndex index(int row, int col, const QModelIndex &parent = QModelIndex()) const override;
+    virtual QModelIndex parent(const QModelIndex &idx) const override;
+    virtual int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    virtual QVariant data(const QModelIndex &idx, int role) const override;
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
     TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
     bool isEmpty() const				{ return (mRootFileItem==NULL); }

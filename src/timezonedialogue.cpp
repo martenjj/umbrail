@@ -123,6 +123,6 @@ void TimeZoneDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 void TimeZoneDialogue::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
     QString colStates = grp.readEntry("State");
-    if (!colStates.isEmpty()) mTimeZoneWidget->header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
+    if (!colStates.isEmpty()) mTimeZoneWidget->header()->restoreState(QByteArray::fromHex(colStates.toLocal8Bit()));
     DialogStateSaver::restoreConfig(dialog, grp);
 }

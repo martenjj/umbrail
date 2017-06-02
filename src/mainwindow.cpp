@@ -506,7 +506,7 @@ void MainWindow::readProperties(const KConfigGroup &grp)
     filesController()->readProperties();
 
     QString splitterState = Settings::mainWindowSplitterState();
-    if (!splitterState.isEmpty()) mSplitter->restoreState(QByteArray::fromBase64(splitterState.toAscii()));
+    if (!splitterState.isEmpty()) mSplitter->restoreState(QByteArray::fromBase64(splitterState.toLocal8Bit()));
 }
 
 

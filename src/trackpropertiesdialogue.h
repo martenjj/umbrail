@@ -37,8 +37,8 @@ public:
     bool newPointPosition(double *newLat, double *newLon) const;
     TrackData::WaypointStatus newWaypointStatus() const;
 
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
     static void setNextPageIndex(int page);
 

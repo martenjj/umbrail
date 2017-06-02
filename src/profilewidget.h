@@ -20,6 +20,7 @@ class TrackDataItem;
 class TrackDataTrackpoint;
 class VariableUnitCombo;
 class QCustomPlot;
+class QCPAxisTicker;
 class KConfigGroup;
 class ElevationTile;
 
@@ -32,8 +33,8 @@ public:
     explicit ProfileWidget(QWidget *pnt = nullptr);
     virtual ~ProfileWidget();
 
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp);
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
 private slots:
     void slotUpdatePlot();
@@ -84,6 +85,9 @@ private:
 
     time_t mBaseTime;
     QTimeZone *mTimeZone;
+
+    QSharedPointer<QCPAxisTicker> mNumberTicker;
+    QSharedPointer<QCPAxisTicker> mTimeTicker;
 };
 
 #endif							// PROFILEWIDGET_H

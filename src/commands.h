@@ -19,8 +19,8 @@ class CommandBase : public QUndoCommand
 {
 public:
     virtual ~CommandBase()				{}
-    virtual void undo() = 0;
-    virtual void redo() = 0;
+    virtual void undo() override = 0;
+    virtual void redo() override = 0;
 
     static QString senderText(const QObject *sdr);
     void setSenderText(const QObject *sdr);
@@ -66,8 +66,8 @@ public:
 
     void setData(TrackDataFile *tdf)			{ mImportData = tdf; }
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     TrackDataFile *mImportData;
@@ -109,8 +109,8 @@ public:
 
     void setData(const QString &name)			{ mNewName = name; }
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     QString mNewName;
@@ -129,8 +129,8 @@ public:
 
     void setData(const Style &style)			{ mNewStyle = style; }
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     Style mNewStyle;
@@ -150,8 +150,8 @@ public:
     void setData(const QString &key,
                  const QString &value)			{ mKey = key; mNewValue = value; }
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     QString mKey;
@@ -171,8 +171,8 @@ public:
 
     void setData(TrackDataSegment *pnt, int idx);
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     TrackDataSegment *mParentSegment;
@@ -190,8 +190,8 @@ public:
 
     void setData(TrackDataSegment *master, const QList<TrackDataItem *> &others);
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     TrackDataSegment *mMasterSegment;
@@ -210,8 +210,8 @@ public:
     AddContainerCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~AddContainerCommand();
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
     void setData(TrackData::Type type, TrackDataItem *pnt = NULL);
     void setName(const QString &name)			{ mAddName = name; }
@@ -231,8 +231,8 @@ public:
     AddPointCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~AddPointCommand();
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
     void setData(TrackDataItem *item);
 
@@ -251,8 +251,8 @@ public:
 
     void setData(const QList<TrackDataItem *> &items, TrackDataItem *dest);
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     QList<TrackDataItem *> mItems;
@@ -271,8 +271,8 @@ public:
 
     void setData(const QList<TrackDataItem *> &items);
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     QList<TrackDataItem *> mItems;
@@ -294,8 +294,8 @@ public:
     void setDataItems(const QList<TrackDataItem *> &items);
     void setData(qreal latOff, qreal lonOff)		{ mLatOff = latOff; mLonOff = lonOff; }
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     QList<TrackDataItem *> mItems;
@@ -314,8 +314,8 @@ public:
     void setData(const QString &name, qreal lat, qreal lon,
                  TrackDataFolder *folder, const TrackDataAbstractPoint *sourcePoint = NULL);
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 protected:
     TrackDataFolder *mWaypointFolder;
@@ -339,8 +339,8 @@ public:
     void setData(const QString &name, qreal lat, qreal lon,
                  TrackDataRoute *route, const TrackDataAbstractPoint *sourcePoint = NULL);
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 protected:
     TrackDataRoute *mRoutepointRoute;
@@ -365,8 +365,8 @@ public:
     void setLink(const QUrl &link)			{ mLinkUrl = link; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
 
-    void redo();
-    void undo();
+    void redo() override;
+    void undo() override;
 
 private:
     QUrl mLinkUrl;

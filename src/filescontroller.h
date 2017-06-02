@@ -28,7 +28,7 @@ class DialogueConstraintFilter : public QObject
 public:
     DialogueConstraintFilter(QObject *pnt) : QObject(pnt)	{}
     virtual ~DialogueConstraintFilter()				{}
-    bool eventFilter(QObject *obj, QEvent *ev);
+    bool eventFilter(QObject *obj, QEvent *ev) override;
 };
 
 
