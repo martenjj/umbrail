@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		31-May-17					#
+#  Edit:		17-Nov-17					#
 #########################################################################
 
 project(navtracks)
@@ -23,7 +23,7 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 #########################################################################
 
 find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO)
+find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO Crash)
 
 find_package(Marble REQUIRED NO_POLICY_SCOPE)
 find_package(Phonon4Qt5 NO_POLICY_SCOPE)
@@ -154,6 +154,7 @@ target_link_libraries(navtracks
   KF5::IconThemes
   KF5::ItemViews
   KF5::Parts
+  KF5::Crash
   ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
