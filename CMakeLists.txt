@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		12-May-16					#
+#  Edit:		18-Nov-17					#
 #########################################################################
 #									#
 #									#
@@ -33,8 +33,6 @@ include(KDEFrameworkCompilerSettings)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${KDE_INSTALL_FULL_DATAROOTDIR}/marble/cmake)
 
-set(QCUSTOMPLOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-
 #########################################################################
 #									#
 #  VCS version tracking							#
@@ -54,6 +52,9 @@ add_custom_target(vcsversion
 #									#
 #########################################################################
 
+set(QCUSTOMPLOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
+
+add_subdirectory(qcustomplot)
 add_subdirectory(src)
 add_subdirectory(desktop)
 add_subdirectory(pics)

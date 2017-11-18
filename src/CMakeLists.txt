@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		17-Nov-17					#
+#  Edit:		18-Nov-17					#
 #########################################################################
 
 project(navtracks)
@@ -116,7 +116,6 @@ set(navtracks_SRCS
   variableunitcombo.cpp
   waypointimageprovider.cpp
   waypointslayer.cpp
-  ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
 
 if (Phonon4Qt5_FOUND)
@@ -155,6 +154,7 @@ target_link_libraries(navtracks
   KF5::ItemViews
   KF5::Parts
   KF5::Crash
+  qcustomplot
   ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
