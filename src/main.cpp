@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	31-May-17						//
+//  Edit:	17-Nov-17						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -40,6 +40,7 @@
 
 #include <kaboutdata.h>
 #include <klocalizedstring.h>
+#include <kcrash.h>
 
 #include "mainwindow.h"
 #include "filescontroller.h"
@@ -74,6 +75,7 @@ int main(int argc,char *argv[])
 
     QApplication app(argc, argv);
     KAboutData::setApplicationData(aboutData);
+    KCrash::setDrKonqiEnabled(true);
 
     QCommandLineParser parser;
     parser.setApplicationDescription(aboutData.shortDescription());
