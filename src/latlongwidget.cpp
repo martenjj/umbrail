@@ -12,6 +12,7 @@
 #include <qapplication.h>
 #include <qregexp.h>
 #include <qdebug.h>
+#include <qstyle.h>
 
 #include <QIntValidator>
 #include <QDoubleValidator>
@@ -26,8 +27,299 @@
 
 #include "trackdata.h"
 
+//  ---------------------------------------------------------------------------
+
+AbstractCoordinateHandler::AbstractCoordinateHandler(QObject *pnt)
+    : QObject(pnt)
+{
+    qDebug();
+}
+
+
+void AbstractCoordinateHandler::setLatLong(double lat, double lon)
+{
+    QSignalBlocker blocker(this);
+
+    qDebug() << lat << lon;
+
+    mLatitude = lat;
+    mLongitude = lon;
+    updateGUI(lat, lon);
+}
+
+
+void AbstractCoordinateHandler::updateValues(double lat, double lon)
+{
+    qDebug() << lat << lon;
+
+    mLatitude = lat;
+    mLongitude = lon;
+    emit valueChanged();
+}
+
+//  ---------------------------------------------------------------------------
 
 #define PRECISION		6			// how many decimal places
+
+DecimalCoordinateHandler::DecimalCoordinateHandler(QObject *pnt)
+    : AbstractCoordinateHandler(pnt)
+{
+    qDebug();
+    setObjectName("DecimalCoordinateHandler");
+}
+
+
+QWidget *DecimalCoordinateHandler::createWidget(QWidget *pnt)
+{
+    QWidget *w = new QWidget;
+    QFormLayout *fl = new QFormLayout(w);
+
+    mLatitudeEdit = new QLineEdit(w);
+    connect(mLatitudeEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged(const QString &)));
+    QDoubleValidator *dv = new QDoubleValidator(mLatitudeEdit);
+    dv->setRange(-90, 90, PRECISION);
+    mLatitudeEdit->setValidator(dv);
+    fl->addRow(i18n("Latitude:"), mLatitudeEdit);
+
+    mLongitudeEdit = new QLineEdit(w);
+    connect(mLongitudeEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged(const QString &)));
+    dv = new QDoubleValidator(mLongitudeEdit);
+    dv->setRange(-180, 180, PRECISION);
+    mLongitudeEdit->setValidator(dv);
+    fl->addRow(i18n("Longitude:"), mLongitudeEdit);
+
+    return (w);
+}
+
+
+void DecimalCoordinateHandler::updateGUI(double lat, double lon)
+{
+    qDebug() << lat << lon;
+
+    if (!ISNAN(lat)) mLatitudeEdit->setText(QString::number(lat, 'f', PRECISION));
+    else mLatitudeEdit->clear();
+
+    if (!ISNAN(lon)) mLongitudeEdit->setText(QString::number(lon, 'f', PRECISION));
+    else mLongitudeEdit->clear();
+}
+
+
+bool DecimalCoordinateHandler::hasAcceptableInput() const
+{
+    return (mLatitudeEdit->hasAcceptableInput() && mLongitudeEdit->hasAcceptableInput());
+}
+
+
+void DecimalCoordinateHandler::slotTextChanged(const QString &text)
+{
+    qDebug();
+    updateValues(mLatitudeEdit->text().toDouble(),
+                 mLongitudeEdit->text().toDouble());
+}
+
+
+QString DecimalCoordinateHandler::tabName() const
+{
+    return (i18nc("@title:tab", "Decimal"));
+}
+
+//  ---------------------------------------------------------------------------
+
+void DMSCoordinateHandler::setDMS(double d,
+                                  QLineEdit *deg, QLineEdit *min,
+                                  QLineEdit *sec, QComboBox *sign)
+{
+    sign->setCurrentIndex(d<0.0 ? 1 : 0);
+    d = fabs(d);
+
+    int dig = static_cast<int>(d);
+    deg->setText(QString::number(dig));
+    d = (d-dig)*60.0;
+    dig = static_cast<int>(d);
+    min->setText(QString::number(dig));
+    d = (d-dig)*60.0;
+    sec->setText(QString::number(d, 'f', 1));
+}
+
+
+double DMSCoordinateHandler::getDMS(QLineEdit *deg, QLineEdit *min,
+                                    QLineEdit *sec, QComboBox *sign) const
+{
+    double d = sec->text().toDouble();
+    d /= 60.0;
+    d += min->text().toDouble();
+    d /= 60.0;
+    d += deg->text().toDouble();
+    if (sign->currentIndex()==1) d = -d;
+
+    return (d);
+}
+
+
+DMSCoordinateHandler::DMSCoordinateHandler(QObject *pnt)
+    : AbstractCoordinateHandler(pnt)
+{
+    qDebug();
+    setObjectName("DMSCoordinateHandler");
+}
+
+
+QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
+{
+    QWidget *w = new QWidget;
+    QGridLayout *gl = new QGridLayout(w);
+
+    Qt::AlignmentFlag labelAlign = static_cast<Qt::AlignmentFlag>(w->style()->styleHint(QStyle::SH_FormLayoutLabelAlignment));
+
+    // columns: 0     1     2   3 4     5   6 7     8   9 10    11    12
+    //          label space deg 0 space min ' space sec " space combo stretch
+
+    // row 0: latitude
+    QLabel *l = new QLabel(i18n("Latitude:"), w);
+    gl->addWidget(l, 0, 0, labelAlign);
+
+    mLatitudeDeg = new QLineEdit(w);
+    connect(mLatitudeDeg, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    QIntValidator *iv = new QIntValidator(mLatitudeDeg);
+    iv->setRange(0, 90);
+    mLatitudeDeg->setValidator(iv);
+    gl->addWidget(mLatitudeDeg, 0, 2, Qt::AlignRight);
+    l->setBuddy(mLatitudeDeg);
+
+    l = new QLabel(QString(0xB0), w);
+    gl->addWidget(l, 0, 3, Qt::AlignLeft);
+
+    mLatitudeMin = new QLineEdit(w);
+    connect(mLatitudeMin, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    iv = new QIntValidator(mLatitudeMin);
+    iv->setRange(0, 59);
+    mLatitudeMin->setValidator(iv);
+    gl->addWidget(mLatitudeMin, 0, 5, Qt::AlignRight);
+
+    l = new QLabel(QString('\''), w);
+    gl->addWidget(l, 0, 6, Qt::AlignLeft);
+
+    mLatitudeSec = new QLineEdit(w);
+    connect(mLatitudeSec, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    QDoubleValidator *dv = new QDoubleValidator(mLatitudeSec);
+    dv->setRange(0, 59.99, 2);
+    mLatitudeSec->setValidator(dv);
+    gl->addWidget(mLatitudeSec, 0, 8, Qt::AlignRight);
+
+    l = new QLabel(QString('\"'), w);
+    gl->addWidget(l, 0, 9, Qt::AlignLeft);
+
+    mLatitudeCombo = new QComboBox(w);
+    connect(mLatitudeCombo, SIGNAL(activated(int)), SLOT(slotTextChanged()));
+    mLatitudeCombo->addItem(i18n("North"));
+    mLatitudeCombo->addItem(i18n("South"));
+    gl->addWidget(mLatitudeCombo, 0, 11);
+
+    // row 1: longitude
+    l = new QLabel(i18n("Longitude:"), w);
+    gl->addWidget(l, 1, 0, labelAlign);
+
+    mLongitudeDeg = new QLineEdit(w);
+    connect(mLongitudeDeg, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    iv = new QIntValidator(mLongitudeDeg);
+    iv->setRange(0, 180);
+    mLongitudeDeg->setValidator(iv);
+    gl->addWidget(mLongitudeDeg, 1, 2, Qt::AlignRight);
+    l->setBuddy(mLongitudeDeg);
+
+    l = new QLabel(QString(0xB0), w);
+    gl->addWidget(l, 1, 3, Qt::AlignLeft);
+
+    mLongitudeMin = new QLineEdit(w);
+    connect(mLongitudeMin, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    iv = new QIntValidator(mLongitudeMin);
+    iv->setRange(0, 59);
+    mLongitudeMin->setValidator(iv);
+    gl->addWidget(mLongitudeMin, 1, 5, Qt::AlignRight);
+
+    l = new QLabel(QString('\''), w);
+    gl->addWidget(l, 1, 6, Qt::AlignLeft);
+
+    mLongitudeSec = new QLineEdit(w);
+    connect(mLongitudeSec, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    dv = new QDoubleValidator(mLongitudeSec);
+    dv->setRange(0, 59.99, 2);
+    mLongitudeSec->setValidator(dv);
+    gl->addWidget(mLongitudeSec, 1, 8, Qt::AlignRight);
+
+    l = new QLabel(QString('\"'), w);
+    gl->addWidget(l, 1, 9, Qt::AlignLeft);
+
+    mLongitudeCombo = new QComboBox(w);
+    connect(mLongitudeCombo, SIGNAL(activated(int)), SLOT(slotTextChanged()));
+    mLongitudeCombo->addItem(i18n("East"));
+    mLongitudeCombo->addItem(i18n("West"));
+    gl->addWidget(mLongitudeCombo, 1, 11);
+
+    // layout adjustment
+    gl->setColumnMinimumWidth(1, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(4, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(7, DialogBase::horizontalSpacing());
+    gl->setColumnMinimumWidth(10, DialogBase::horizontalSpacing());
+    gl->setColumnStretch(12, 1);
+
+    return (w);
+}
+
+
+void DMSCoordinateHandler::updateGUI(double lat, double lon)
+{
+    qDebug() << lat << lon;
+
+    if (!ISNAN(lat))
+    {
+        setDMS(lat, mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo);
+    }
+    else
+    {
+        mLatitudeDeg->clear();
+        mLatitudeMin->clear();
+        mLatitudeSec->clear();
+    }
+
+    if (!ISNAN(lon))
+    {
+        setDMS(lon, mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo);
+    }
+    else
+    {
+        mLongitudeDeg->clear();
+        mLongitudeMin->clear();
+        mLongitudeSec->clear();
+    }
+}
+
+
+bool DMSCoordinateHandler::hasAcceptableInput() const
+{
+    return (mLatitudeDeg->hasAcceptableInput() &&
+            mLatitudeMin->hasAcceptableInput() &&
+            mLatitudeSec->hasAcceptableInput() &&
+            mLongitudeDeg->hasAcceptableInput() &&
+            mLongitudeMin->hasAcceptableInput() &&
+            mLongitudeSec->hasAcceptableInput());
+}
+
+
+void DMSCoordinateHandler::slotTextChanged()
+{
+    qDebug();
+    updateValues(getDMS(mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo),
+                 getDMS(mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo));
+}
+
+
+QString DMSCoordinateHandler::tabName() const
+{
+    return (i18nc("@title:tab", "DMS"));
+}
+
+//  ---------------------------------------------------------------------------
 
 //  The reference document for the Swiss coordinate system is "Formulas
 //  and constants for the calculation of the Swiss conformal cylindrical
@@ -48,7 +340,6 @@
 //  http://blog.encomiabile.it/2014/10/13/convert-swiss-national-grid-coordinates-ch1903-to-wgs1984/
 //  http://www.giangrandi.ch/soft/swissgrid/swissgrid.shtml
 
-
 // from SwissTopo section 5
 #define MIN_SWISS_EASTING	400000
 #define MAX_SWISS_EASTING	900000
@@ -58,255 +349,12 @@
 #undef DEBUG_SWISS
 
 
-
-LatLongWidget::LatLongWidget(QWidget *pnt)
-    : QFrame(pnt)
-{
-    setObjectName("LatLongWidget");
-
-    // Tab container
-    mTabs = new QTabWidget(this);
-    QHBoxLayout *hb = new QHBoxLayout(this);
-    hb->setMargin(0);
-    hb->addWidget(mTabs);
-
-    // Tab for "Decimal" format
-    QWidget *w = new QWidget(this);
-    QFormLayout *fl = new QFormLayout(w);
-
-    mLatitudeEdit = new QLineEdit(this);
-    connect(mLatitudeEdit, SIGNAL(textEdited(const QString &)), SLOT(slotDecimalTextChanged()));
-    QDoubleValidator *dv = new QDoubleValidator(mLatitudeEdit);
-    dv->setRange(-90, 90, PRECISION);
-    mLatitudeEdit->setValidator(dv);
-    fl->addRow(i18n("Latitude:"), mLatitudeEdit);
-
-    mLongitudeEdit = new QLineEdit(this);
-    connect(mLongitudeEdit, SIGNAL(textEdited(const QString &)), SLOT(slotDecimalTextChanged()));
-    dv = new QDoubleValidator(mLongitudeEdit);
-    dv->setRange(-180, 180, PRECISION);
-    mLongitudeEdit->setValidator(dv);
-    fl->addRow(i18n("Longitude:"), mLongitudeEdit);
-
-    mTabs->addTab(w, i18n("Decimal"));
-
-    // Tab for "DMS" format
-    w = new QWidget(this);
-    QGridLayout *gl = new QGridLayout(w);
-
-    // columns: 0     1     2   3 4     5   6 7     8   9 10    11    12
-    //          label space deg 0 space min ' space sec " space combo stretch
-
-    // row 0: latitude
-    QLabel *l = new QLabel(i18n("Latitude:"), w);
-    gl->addWidget(l, 0, 0, fl->labelAlignment());
-
-    mLatitudeDeg = new QLineEdit(w);
-    connect(mLatitudeDeg, SIGNAL(textEdited(const QString &)), SLOT(slotDmsTextChanged()));
-    QIntValidator *iv = new QIntValidator(mLatitudeDeg);
-    iv->setRange(0, 90);
-    mLatitudeDeg->setValidator(iv);
-    gl->addWidget(mLatitudeDeg, 0, 2, Qt::AlignRight);
-    l->setBuddy(mLatitudeDeg);
-
-    l = new QLabel(QString(0xB0), w);
-    gl->addWidget(l, 0, 3, Qt::AlignLeft);
-
-    mLatitudeMin = new QLineEdit(w);
-    connect(mLatitudeMin, SIGNAL(textEdited(const QString &)), SLOT(slotDmsTextChanged()));
-    iv = new QIntValidator(mLatitudeMin);
-    iv->setRange(0, 59);
-    mLatitudeMin->setValidator(iv);
-    gl->addWidget(mLatitudeMin, 0, 5, Qt::AlignRight);
-
-    l = new QLabel(QString('\''), w);
-    gl->addWidget(l, 0, 6, Qt::AlignLeft);
-
-    mLatitudeSec = new QLineEdit(w);
-    connect(mLatitudeSec, SIGNAL(textEdited(const QString &)), SLOT(slotDmsTextChanged()));
-    dv = new QDoubleValidator(mLatitudeSec);
-    dv->setRange(0, 59.99, 2);
-    mLatitudeSec->setValidator(dv);
-    gl->addWidget(mLatitudeSec, 0, 8, Qt::AlignRight);
-
-    l = new QLabel(QString('\"'), w);
-    gl->addWidget(l, 0, 9, Qt::AlignLeft);
-
-    mLatitudeCombo = new QComboBox(w);
-    connect(mLatitudeCombo, SIGNAL(activated(int)), SLOT(slotDmsTextChanged()));
-    mLatitudeCombo->addItem(i18n("North"));
-    mLatitudeCombo->addItem(i18n("South"));
-    gl->addWidget(mLatitudeCombo, 0, 11);
-
-    // row 1: longitude
-    l = new QLabel(i18n("Longitude:"), w);
-    gl->addWidget(l, 1, 0, fl->labelAlignment());
-
-    mLongitudeDeg = new QLineEdit(w);
-    connect(mLongitudeDeg, SIGNAL(textEdited(const QString &)), SLOT(slotDmsTextChanged()));
-    iv = new QIntValidator(mLongitudeDeg);
-    iv->setRange(0, 180);
-    mLongitudeDeg->setValidator(iv);
-    gl->addWidget(mLongitudeDeg, 1, 2, Qt::AlignRight);
-    l->setBuddy(mLongitudeDeg);
-
-    l = new QLabel(QString(0xB0), w);
-    gl->addWidget(l, 1, 3, Qt::AlignLeft);
-
-    mLongitudeMin = new QLineEdit(w);
-    connect(mLongitudeMin, SIGNAL(textEdited(const QString &)), SLOT(slotDmsTextChanged()));
-    iv = new QIntValidator(mLongitudeMin);
-    iv->setRange(0, 59);
-    mLongitudeMin->setValidator(iv);
-    gl->addWidget(mLongitudeMin, 1, 5, Qt::AlignRight);
-
-    l = new QLabel(QString('\''), w);
-    gl->addWidget(l, 1, 6, Qt::AlignLeft);
-
-    mLongitudeSec = new QLineEdit(w);
-    connect(mLongitudeSec, SIGNAL(textEdited(const QString &)), SLOT(slotDmsTextChanged()));
-    dv = new QDoubleValidator(mLongitudeSec);
-    dv->setRange(0, 59.99, 2);
-    mLongitudeSec->setValidator(dv);
-    gl->addWidget(mLongitudeSec, 1, 8, Qt::AlignRight);
-
-    l = new QLabel(QString('\"'), w);
-    gl->addWidget(l, 1, 9, Qt::AlignLeft);
-
-    mLongitudeCombo = new QComboBox(w);
-    connect(mLongitudeCombo, SIGNAL(activated(int)), SLOT(slotDmsTextChanged()));
-    mLongitudeCombo->addItem(i18n("East"));
-    mLongitudeCombo->addItem(i18n("West"));
-    gl->addWidget(mLongitudeCombo, 1, 11);
-
-    // layout adjustment
-    gl->setColumnMinimumWidth(1, DialogBase::horizontalSpacing());
-    gl->setColumnMinimumWidth(4, DialogBase::horizontalSpacing());
-    gl->setColumnMinimumWidth(7, DialogBase::horizontalSpacing());
-    gl->setColumnMinimumWidth(10, DialogBase::horizontalSpacing());
-    gl->setColumnStretch(12, 1);
-
-    mTabs->addTab(w, i18n("DMS"));
-
-    // Tab for "Swiss" format
-    w = new QWidget(this);
-    fl = new QFormLayout(w);
-
-    mSwissNorthEdit = new QLineEdit(this);
-    connect(mSwissNorthEdit, SIGNAL(textEdited(const QString &)), SLOT(slotSwissTextChanged()));
-    iv = new QIntValidator(mSwissNorthEdit);
-    iv->setRange(MIN_SWISS_NORTHING, MAX_SWISS_NORTHING);
-    mSwissNorthEdit->setValidator(dv);
-    fl->addRow(i18n("Northing:"), mSwissNorthEdit);
-
-    mSwissEastEdit = new QLineEdit(this);
-    connect(mSwissEastEdit, SIGNAL(textEdited(const QString &)), SLOT(slotSwissTextChanged()));
-    iv = new QIntValidator(mSwissEastEdit);
-    iv->setRange(MIN_SWISS_EASTING, MAX_SWISS_EASTING);
-    mSwissEastEdit->setValidator(iv);
-    fl->addRow(i18n("Easting:"), mSwissEastEdit);
-
-    mTabs->addTab(w, i18n("Swiss"));
-
-    // "Paste" button
-    QAction *act = KStandardAction::paste(this);
-    QPushButton *pasteButton = new QPushButton(act->icon(), act->text(), this);
-    connect(pasteButton, SIGNAL(clicked()), SLOT(slotPasteCoordinates()));
-    hb->addWidget(pasteButton);
-
-    KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
-    int idx = grp.readEntry("Index", -1);
-    if (idx!=-1) mTabs->setCurrentIndex(idx);
-}
-
-
-LatLongWidget::~LatLongWidget()
-{
-    KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
-    grp.writeEntry("Index", mTabs->currentIndex());
-}
-
-
-void LatLongWidget::setDMS(double d,
-                           QLineEdit *deg, QLineEdit *min,
-                           QLineEdit *sec, QComboBox *sign)
-{
-    sign->setCurrentIndex(d<0.0 ? 1 : 0);
-    d = fabs(d);
-
-    int dig = static_cast<int>(d);
-    deg->setText(QString::number(dig));
-    d = (d-dig)*60.0;
-    dig = static_cast<int>(d);
-    min->setText(QString::number(dig));
-    d = (d-dig)*60.0;
-    sec->setText(QString::number(d, 'f', 1));
-}
-
-
-double LatLongWidget::getDMS(QLineEdit *deg, QLineEdit *min,
-                             QLineEdit *sec, QComboBox *sign) const
-{
-    double d = sec->text().toDouble();
-    d /= 60.0;
-    d += min->text().toDouble();
-    d /= 60.0;
-    d += deg->text().toDouble();
-    if (sign->currentIndex()==1) d = -d;
-
-    return (d);
-}
-
-
-void LatLongWidget::setLatLong(double lat, double lon)
-{
-    mLatitude = lat;
-    mLongitude = lon;
-
-    if (!ISNAN(mLatitude))
-    {
-        mLatitudeEdit->setText(QString::number(mLatitude, 'f', PRECISION));
-        setDMS(mLatitude, mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo);
-    }
-    else
-    {
-        mLatitudeEdit->clear();
-        mLatitudeDeg->clear();
-        mLatitudeMin->clear();
-        mLatitudeSec->clear();
-    }
-
-    if (!ISNAN(mLongitude))
-    {
-        mLongitudeEdit->setText(QString::number(mLongitude, 'f', PRECISION));
-        setDMS(mLongitude, mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo);
-    }
-    else
-    {
-        mLongitudeEdit->clear();
-        mLongitudeDeg->clear();
-        mLongitudeMin->clear();
-        mLongitudeSec->clear();
-    }
-
-    if (!ISNAN(mLatitude) && !ISNAN(mLongitude))
-    {
-        setSwiss(mLatitude, mLongitude, mSwissEastEdit, mSwissNorthEdit);
-    }
-    else
-    {
-        mSwissNorthEdit->clear();
-        mSwissEastEdit->clear();
-    }
-}
-
-
-void LatLongWidget::setSwiss(double lat, double lon,
-                             QLineEdit *east, QLineEdit *north)
+void SwissCoordinateHandler::setSwiss(double lat, double lon,
+                                      QLineEdit *east, QLineEdit *north)
 {
     // SwissTopo section 4.1
-    double phi = mLatitude*3600;			// degrees -> arcseconds
-    double lambda = mLongitude*3600;
+    double phi = lat*3600;			// degrees -> arcseconds
+    double lambda = lon*3600;
 #ifdef DEBUG_SWISS
     qDebug() << "Swiss: input phi" << phi << "lambda" << lambda;
 #endif
@@ -339,8 +387,8 @@ void LatLongWidget::setSwiss(double lat, double lon,
 }
 
 
-void LatLongWidget::getSwiss(QLineEdit *east, QLineEdit *north,
-                             double *latp, double *lonp) const
+void SwissCoordinateHandler::getSwiss(QLineEdit *east, QLineEdit *north,
+                                      double *latp, double *lonp) const
 {
     int yy = east->text().toInt();
     int xx = north->text().toInt();
@@ -376,6 +424,165 @@ void LatLongWidget::getSwiss(QLineEdit *east, QLineEdit *north,
 }
 
 
+SwissCoordinateHandler::SwissCoordinateHandler(QObject *pnt)
+    : AbstractCoordinateHandler(pnt)
+{
+    qDebug();
+    setObjectName("SwissCoordinateHandler");
+}
+
+
+QWidget *SwissCoordinateHandler::createWidget(QWidget *pnt)
+{
+    QWidget *w = new QWidget;
+    QFormLayout *fl = new QFormLayout(w);
+
+    mSwissNorthEdit = new QLineEdit(w);
+    connect(mSwissNorthEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    QIntValidator *iv = new QIntValidator(mSwissNorthEdit);
+    iv->setRange(MIN_SWISS_NORTHING, MAX_SWISS_NORTHING);
+    mSwissNorthEdit->setValidator(iv);
+    fl->addRow(i18n("Northing:"), mSwissNorthEdit);
+
+    mSwissEastEdit = new QLineEdit(w);
+    connect(mSwissEastEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    iv = new QIntValidator(mSwissEastEdit);
+    iv->setRange(MIN_SWISS_EASTING, MAX_SWISS_EASTING);
+    mSwissEastEdit->setValidator(iv);
+    fl->addRow(i18n("Easting:"), mSwissEastEdit);
+
+    return (w);
+}
+
+
+void SwissCoordinateHandler::updateGUI(double lat, double lon)
+{
+    qDebug() << lat << lon;
+
+    if (!ISNAN(lat) && !ISNAN(lon))
+    {
+        setSwiss(lat, lon, mSwissEastEdit, mSwissNorthEdit);
+    }
+    else
+    {
+        mSwissNorthEdit->clear();
+        mSwissEastEdit->clear();
+    }
+}
+
+
+bool SwissCoordinateHandler::hasAcceptableInput() const
+{
+    // We can't verify the Swiss entries here, as they may be
+    // out of range outside that country.  Relying on the other
+    // coordinate formats.
+    return (true);
+}
+
+
+void SwissCoordinateHandler::slotTextChanged()
+{
+    qDebug();
+
+    double lat;
+    double lon;
+    getSwiss(mSwissEastEdit, mSwissNorthEdit, &lat, &lon);
+    updateValues(lat, lon);
+}
+
+
+QString SwissCoordinateHandler::tabName() const
+{
+    return (i18nc("@title:tab", "Swiss"));
+}
+
+//  ---------------------------------------------------------------------------
+
+LatLongWidget::LatLongWidget(QWidget *pnt)
+    : QFrame(pnt)
+{
+    setObjectName("LatLongWidget");
+
+    // Tab container
+    mTabs = new QTabWidget(this);
+    QHBoxLayout *hb = new QHBoxLayout(this);
+    hb->setMargin(0);
+    hb->addWidget(mTabs);
+
+    // Tab for "Decimal" format
+    DecimalCoordinateHandler *handler1 = new DecimalCoordinateHandler(this);
+    QWidget *w = handler1->createWidget(this);
+    connect(handler1, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
+    mHandlers.append(handler1);
+    mTabs->addTab(w, handler1->tabName());
+
+    // Tab for "DMS" format
+    DMSCoordinateHandler *handler2 = new DMSCoordinateHandler(this);
+    w = handler2->createWidget(this);
+    connect(handler2, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
+    mHandlers.append(handler2);
+    mTabs->addTab(w, handler2->tabName());
+
+    // Tab for "Swiss" format
+    SwissCoordinateHandler *handler3 = new SwissCoordinateHandler(this);
+    w = handler3->createWidget(this);
+    connect(handler3, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
+    mHandlers.append(handler3);
+    mTabs->addTab(w, handler3->tabName());
+
+    // "Paste" button
+    QAction *act = KStandardAction::paste(this);
+    QPushButton *pasteButton = new QPushButton(act->icon(), act->text(), this);
+    connect(pasteButton, SIGNAL(clicked()), SLOT(slotPasteCoordinates()));
+    hb->addWidget(pasteButton);
+
+    KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
+    int idx = grp.readEntry("Index", -1);
+    if (idx!=-1) mTabs->setCurrentIndex(idx);
+}
+
+
+LatLongWidget::~LatLongWidget()
+{
+    KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
+    grp.writeEntry("Index", mTabs->currentIndex());
+}
+
+
+void LatLongWidget::setLatLong(double lat, double lon)
+{
+    mLatitude = lat;
+    mLongitude = lon;
+
+    foreach (AbstractCoordinateHandler *handler, mHandlers)
+    {
+        handler->setLatLong(lat, lon);
+    }
+}
+
+
+void LatLongWidget::slotValueChanged()
+{
+    AbstractCoordinateHandler *changedHandler = qobject_cast<AbstractCoordinateHandler *>(sender());
+    if (changedHandler==NULL || !mHandlers.contains(changedHandler))
+    {
+        qWarning() << "called by unknown handler" << changedHandler;
+        return;
+    }
+
+    mLatitude = changedHandler->getLatitude();
+    mLongitude = changedHandler->getLongitude();
+
+    foreach (AbstractCoordinateHandler *handler, mHandlers)
+    {
+        // apart from the one just changed
+        if (handler!=changedHandler) handler->setLatLong(mLatitude, mLongitude);
+    }
+
+    textChanged();
+}
+
+
 void LatLongWidget::textChanged()
 {
     const bool valid = hasAcceptableInput();
@@ -384,65 +591,14 @@ void LatLongWidget::textChanged()
 }
 
 
-void LatLongWidget::slotDecimalTextChanged()
-{
-    mLatitude = mLatitudeEdit->text().toDouble();
-    mLongitude = mLongitudeEdit->text().toDouble();
-
-    setDMS(mLatitude, mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo);
-    setDMS(mLongitude, mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo);
-
-    setSwiss(mLatitude, mLongitude, mSwissEastEdit, mSwissNorthEdit);
-
-    textChanged();
-}
-
-
-void LatLongWidget::slotDmsTextChanged()
-{
-    mLatitude = getDMS(mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo);
-    mLongitude = getDMS(mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo);
-
-    mLatitudeEdit->setText(QString::number(mLatitude, 'f', PRECISION));
-    mLongitudeEdit->setText(QString::number(mLongitude, 'f', PRECISION));
-
-    setSwiss(mLatitude, mLongitude, mSwissEastEdit, mSwissNorthEdit);
-
-    textChanged();
-}
-
-
-void LatLongWidget::slotSwissTextChanged()
-{
-    getSwiss(mSwissEastEdit, mSwissNorthEdit, &mLatitude, &mLongitude);
-
-    mLatitudeEdit->setText(QString::number(mLatitude, 'f', PRECISION));
-    mLongitudeEdit->setText(QString::number(mLongitude, 'f', PRECISION));
-    setDMS(mLatitude, mLatitudeDeg, mLatitudeMin, mLatitudeSec, mLatitudeCombo);
-    setDMS(mLongitude, mLongitudeDeg, mLongitudeMin, mLongitudeSec, mLongitudeCombo);
-
-    textChanged();
-}
-
-
 bool LatLongWidget::hasAcceptableInput() const
 {
     bool ok = true;					// assume so to start
 
-    if (!mLatitudeEdit->hasAcceptableInput()) ok = false;
-    if (!mLongitudeEdit->hasAcceptableInput()) ok = false;
-
-    if (!mLatitudeDeg->hasAcceptableInput()) ok = false;
-    if (!mLatitudeMin->hasAcceptableInput()) ok = false;
-    if (!mLatitudeSec->hasAcceptableInput()) ok = false;
-
-    if (!mLongitudeDeg->hasAcceptableInput()) ok = false;
-    if (!mLongitudeMin->hasAcceptableInput()) ok = false;
-    if (!mLongitudeSec->hasAcceptableInput()) ok = false;
-
-    // We don't verify the Swiss entries here, as they may be
-    // out of range outside that country.  Relying on the above.
-
+    foreach (AbstractCoordinateHandler *handler, mHandlers)
+    {
+        if (!handler->hasAcceptableInput()) ok = false;
+    }
     return (ok);
 }
 
