@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		31-May-17					#
+#  Edit:		18-Nov-17					#
 #########################################################################
 
 project(navtracks)
@@ -154,6 +154,10 @@ target_link_libraries(navtracks
   KF5::IconThemes
   KF5::ItemViews
   KF5::Parts
+  abstractcoordinate
+  decimalcoordinate
+  dmscoordinate
+  swisscoordinate
   ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
@@ -165,8 +169,17 @@ endif (KF5KExiv2_FOUND)
 
 add_dependencies(navtracks vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/plugins)
 include_directories(${QCUSTOMPLOT_DIR})
 include_directories(${HDRDIALOGUTIL_DIR})
+
+#########################################################################
+#									#
+#  Subdirectories							#
+#									#
+#########################################################################
+
+add_subdirectory(plugins)
 
 #########################################################################
 #									#
