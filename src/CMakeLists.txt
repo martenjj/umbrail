@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		18-Nov-17					#
+#  Edit:		19-Nov-17					#
 #########################################################################
 
 project(navtracks)
@@ -89,6 +89,7 @@ set(navtracks_SRCS
   metadatamodel.cpp
   moveitemdialogue.cpp
   photoviewer.cpp
+  pluginmanager.cpp
   profilewidget.cpp
   project.cpp
   routeslayer.cpp
@@ -155,9 +156,6 @@ target_link_libraries(navtracks
   KF5::Parts
   KF5::Crash
   abstractcoordinate
-  decimalcoordinate
-  dmscoordinate
-  swisscoordinate
   qcustomplot
   ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})

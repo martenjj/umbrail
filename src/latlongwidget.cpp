@@ -19,10 +19,8 @@
 
 #include <dialogbase.h>
 
-
-#include <plugins/decimalcoordinate.h>
-#include <plugins/dmscoordinate.h>
-#include <plugins/swisscoordinate.h>
+#include "pluginmanager.h"
+#include "abstractcoordinatehandler.h"
 
 
 LatLongWidget::LatLongWidget(QWidget *pnt)
@@ -36,26 +34,24 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
     hb->setMargin(0);
     hb->addWidget(mTabs);
 
-    // Tab for "Decimal" format
-    DecimalCoordinateHandler *handler1 = new DecimalCoordinateHandler(this);
-    QWidget *w = handler1->createWidget(this);
-    connect(handler1, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
-    mHandlers.append(handler1);
-    mTabs->addTab(w, handler1->tabName());
+    // Coordinate system tabs
+    const QList<QObject *> plugins = PluginManager::self()->loadPlugins(PluginManager::CoordinatePlugin);
+    qDebug() << "have" << plugins.count() << "coordinate plugins";
+    foreach (QObject *obj, plugins)
+    {
+        AbstractCoordinateHandler *handler = qobject_cast<AbstractCoordinateHandler *>(obj);
+        if (handler==nullptr)				// should never happen
+        {
+            qWarning() << "Null plugin!";
+            continue;
+        }
 
-    // Tab for "DMS" format
-    DMSCoordinateHandler *handler2 = new DMSCoordinateHandler(this);
-    w = handler2->createWidget(this);
-    connect(handler2, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
-    mHandlers.append(handler2);
-    mTabs->addTab(w, handler2->tabName());
-
-    // Tab for "Swiss" format
-    SwissCoordinateHandler *handler3 = new SwissCoordinateHandler(this);
-    w = handler3->createWidget(this);
-    connect(handler3, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
-    mHandlers.append(handler3);
-    mTabs->addTab(w, handler3->tabName());
+        handler->setParent(this);			// destroy when we're finished
+        QWidget *w = handler->createWidget(this);
+        connect(handler, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
+        mHandlers.append(handler);
+        mTabs->addTab(w, handler->tabName());
+    }
 
     // "Paste" button
     QAction *act = KStandardAction::paste(this);

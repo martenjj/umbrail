@@ -5,6 +5,7 @@
 
 
 #include <qobject.h>
+#include "coordinatehandlerinterface.h"
 
 
 #ifndef PLUGIN_EXPORT
@@ -12,19 +13,16 @@
 #endif
 
 
-class PLUGIN_EXPORT AbstractCoordinateHandler : public QObject
+class PLUGIN_EXPORT AbstractCoordinateHandler : public QObject, public CoordinateHandlerInterface
 {
     Q_OBJECT
+    Q_INTERFACES(CoordinateHandlerInterface);
 
 public:
-    virtual QWidget *createWidget(QWidget *pnt = nullptr) = 0;
-
     virtual double getLatitude() const			{ return (mLatitude); }
     virtual double getLongitude() const			{ return (mLongitude); }
 
     virtual void setLatLong(double lat, double lon);
-    virtual bool hasAcceptableInput() const = 0;
-    virtual QString tabName() const = 0;
 
 signals:
     void valueChanged();
@@ -33,7 +31,6 @@ protected:
     AbstractCoordinateHandler(QObject *pnt = nullptr);
     virtual ~AbstractCoordinateHandler() = default;
 
-    virtual void updateGUI(double lat, double lon) = 0;
     void updateValues(double lat, double lon);
 
 private:
