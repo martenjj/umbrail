@@ -13,8 +13,8 @@ class QLineEdit;
 class DecimalCoordinateHandler : public AbstractCoordinateHandler
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.kde.navtracks.CoordinateHandlerInterface")
-    Q_INTERFACES(CoordinateHandlerInterface)
+    Q_PLUGIN_METADATA(IID "org.kde.navtracks.AbstractCoordinateHandler")
+    Q_INTERFACES(AbstractCoordinateHandler)
 
 public:
     PLUGIN_EXPORT DecimalCoordinateHandler(QObject *pnt = nullptr);
