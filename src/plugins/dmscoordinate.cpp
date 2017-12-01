@@ -154,6 +154,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->setColumnMinimumWidth(7, DialogBase::horizontalSpacing());
     gl->setColumnMinimumWidth(10, DialogBase::horizontalSpacing());
     gl->setColumnStretch(12, 1);
+    gl->setRowStretch(2, 1);
 
     return (w);
 }
