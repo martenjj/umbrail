@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		18-Nov-17					#
+#  Edit:		01-Dec-17					#
 #########################################################################
 
 project(navtracks)
@@ -61,3 +61,13 @@ target_link_libraries(swisscoordinate
   KF5::I18n
 )
 install(TARGETS swisscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+
+add_library(osgbcoordinate MODULE osgbcoordinate.cpp)
+target_link_libraries(osgbcoordinate
+  abstractcoordinate
+  Qt5::Gui
+  Qt5::Widgets
+  KF5::I18n
+  ${DIALOGUTIL_LIBRARIES}
+)
+install(TARGETS osgbcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
