@@ -16,11 +16,7 @@
 
 #include <dialogbase.h>
 
-//#include "trackdata.h"
-
-
-// TODO: move to trackdata.h
-static const double DEGREES_TO_RADIANS = (2*M_PI)/360;	// multiplier
+#include "trackdata.h"
 
 
 //  The reference document for the OSGB coordinate system is
@@ -94,8 +90,8 @@ struct Transform					// Helmert transform matrix
 
 static Vector3D toCartesian(double lat, double lon)
 {
-    const double phi = lat*DEGREES_TO_RADIANS;
-    const double lambda = lon*DEGREES_TO_RADIANS;
+    const double phi = DEGREES_TO_RADIANS(lat);
+    const double lambda = DEGREES_TO_RADIANS(lon);
 
     // from MM LatLon.ellipsoid for WGS84
     const double a = 6378137;
@@ -150,9 +146,9 @@ static Vector3D applyTransform(const Vector3D &point, const Transform &t)
     const double ty = t.t[1];				// y-shift
     const double tz = t.t[2];				// z-shift
     const double s1 = t.t[3]/1e6 + 1;			// scale: normalise parts-per-million to (s+1)
-    const double rx = (t.t[4]/3600)*DEGREES_TO_RADIANS;	// x-rotation: normalise arcseconds to radians
-    const double ry = (t.t[5]/3600)*DEGREES_TO_RADIANS;	// y-rotation: normalise arcseconds to radians
-    const double rz = (t.t[6]/3600)*DEGREES_TO_RADIANS;	// z-rotation: normalise arcseconds to radians
+    const double rx = DEGREES_TO_RADIANS(t.t[4]/3600);	// x-rotation: normalise arcseconds to radians
+    const double ry = DEGREES_TO_RADIANS(t.t[5]/3600);	// y-rotation: normalise arcseconds to radians
+    const double rz = DEGREES_TO_RADIANS(t.t[6]/3600);	// z-rotation: normalise arcseconds to radians
 
     // apply transform
     Vector3D result;
@@ -198,8 +194,8 @@ static LatLon toLatLonE(const Vector3D &point)
     const double lambda = atan2(y, x);
 
     LatLon result;
-    result.lat = phi/DEGREES_TO_RADIANS;
-    result.lon = lambda/DEGREES_TO_RADIANS;
+    result.lat = RADIANS_TO_DEGREES(phi);
+    result.lon = RADIANS_TO_DEGREES(lambda);
     return (result);
 }
 
@@ -233,16 +229,16 @@ static OSGBRef latLonToOSGrid(double lat, double lon)
 
     // continuing MM OsGridRef.latLonToOsGrid()
 
-    const double phi = newLatLon.lat*DEGREES_TO_RADIANS;
-    const double lambda = newLatLon.lon*DEGREES_TO_RADIANS;
+    const double phi = DEGREES_TO_RADIANS(newLatLon.lat);
+    const double lambda = DEGREES_TO_RADIANS(newLatLon.lon);
 
     // from MM LatLon.ellipsoid for OSGB36 (Airy1830)
     const double a = 6377563.396;			// major semi-axis
     const double b = 6356256.909;			// minor semi-axis
     const double F0 = 0.9996012717;			// NatGrid scale factor on central meridian
 
-    const double phi0 = 49*DEGREES_TO_RADIANS;		// NatGrid true origin is 49°N 2°W
-    const double lambda0 = -2*DEGREES_TO_RADIANS;
+    const double phi0 = DEGREES_TO_RADIANS(49);		// NatGrid true origin is 49°N 2°W
+    const double lambda0 = DEGREES_TO_RADIANS(-2);
 
     const double N0 = -100000;				// northing & easting of true origin, metres
     const double E0 = 400000;
@@ -312,8 +308,8 @@ static LatLon getOSGBFromEN(const OSGBRef &ref)
     const double a = 6377563.396;			// Airy 1830 major & minor semi-axes
     const double b = 6356256.909;
     const double F0 = 0.9996012717;			// NatGrid scale factor on central meridian
-    const double phi0 = 49*DEGREES_TO_RADIANS;		// NatGrid true origin is 49°N 2°W
-    const double lambda0 = -2*DEGREES_TO_RADIANS;
+    const double phi0 = DEGREES_TO_RADIANS(49);		// NatGrid true origin is 49°N 2°W
+    const double lambda0 = DEGREES_TO_RADIANS(-2);
     const double N0 = -100000;				// northing & easting of true origin, metres
     const double E0 = 400000;
     const double e2 = 1 - (b*b)/(a*a);			 // eccentricity squared
@@ -380,7 +376,7 @@ static LatLon getOSGBFromEN(const OSGBRef &ref)
     // from MM LatLon.prototype.convertDatum()
 
     // First convert polar to cartesian,
-    Vector3D oldCartesian = toCartesian(phi/DEGREES_TO_RADIANS, lambda/DEGREES_TO_RADIANS);
+    Vector3D oldCartesian = toCartesian(RADIANS_TO_DEGREES(phi), RADIANS_TO_DEGREES(lambda));
     // then get transform to OSGB36,
     Transform transform = getOSGB36Transform();
     // invert the transformation,

@@ -11,7 +11,11 @@
 #include <qurl.h>
 
 using namespace std;					// std::isnan -> isnan
-#define ISNAN(x)	isnan(x)			// to cover variations
+#define ISNAN(x)		isnan(x)		// to cover variations
+
+#define DEGREES_TO_RADIANS(x)	(((x)*2*M_PI)/360)	// angle conversion
+#define RADIANS_TO_DEGREES(x)	(((x)*360)/(2*M_PI))
+
 
 class QWidget;
 class QTimeZone;
