@@ -785,6 +785,18 @@ void FilesController::slotTrackProperties()
         cmd5->setData("desc", newDesc);
     }
 
+    QString newBearingLine = d.newBearingLine();
+    if (newBearingLine!="-")					// new bearing is applicable
+    {
+        qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingLine;
+        if (newBearingLine!=item->metadata("bearingline"))
+        {
+            ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
+            cmd8->setDataItem(item);
+            cmd8->setData("bearingline", newBearingLine);
+        }
+    }
+
     double newLat;
     double newLon;
     if (d.newPointPosition(&newLat, &newLon))

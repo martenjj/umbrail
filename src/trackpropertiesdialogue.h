@@ -36,6 +36,7 @@ public:
     QString newTimeZone() const;
     bool newPointPosition(double *newLat, double *newLon) const;
     TrackData::WaypointStatus newWaypointStatus() const;
+    QString newBearingLine() const;
 
     void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
     void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;

@@ -143,6 +143,12 @@ QString TrackPropertiesDialogue::newTimeZone() const
 }
 
 
+QString TrackPropertiesDialogue::newBearingLine() const
+{
+    return (mGeneralPage->newBearingLine());
+}
+
+
 TrackData::WaypointStatus TrackPropertiesDialogue::newWaypointStatus() const
 {
     return (mGeneralPage->newWaypointStatus());

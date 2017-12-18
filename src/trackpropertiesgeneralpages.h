@@ -9,6 +9,7 @@ class QLabel;
 class QDateTime;
 class QFormLayout;
 class QComboBox;
+class QSpinBox;
 class QLineEdit;
 class KTextEdit;
 class ItemTypeCombo;
@@ -33,6 +34,7 @@ public:
     QString newTrackType() const;
     QString newTimeZone() const;
     TrackData::WaypointStatus newWaypointStatus() const;
+    QString newBearingLine() const;
 
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const override;
@@ -61,6 +63,7 @@ protected:
     KTextEdit *mDescEdit;
     TimeZoneSelector *mTimeZoneSel;
     QComboBox *mStatusCombo;
+    QSpinBox *mBearingEntry;
 
     const TrackDataAbstractPoint *mPositionPoint;
     bool mPositionChanged;
