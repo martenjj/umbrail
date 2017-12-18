@@ -24,7 +24,7 @@ DecimalCoordinateHandler::DecimalCoordinateHandler(QObject *pnt)
 
 QWidget *DecimalCoordinateHandler::createWidget(QWidget *pnt)
 {
-    QWidget *w = new QWidget;
+    QWidget *w = new QWidget(pnt);
     QFormLayout *fl = new QFormLayout(w);
 
     mLatitudeEdit = new QLineEdit(w);

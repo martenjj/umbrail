@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		01-Dec-17					#
+#  Edit:		08-Dec-17					#
 #########################################################################
 
 project(navtracks)
@@ -24,7 +24,7 @@ add_definitions("-DPLUGIN_EXPORT='__attribute__ ((visibility (\"default\")))'")
 
 add_library(abstractcoordinate SHARED abstractcoordinatehandler.cpp)
 set_target_properties(abstractcoordinate PROPERTIES SOVERSION "1.0.0")
-target_link_libraries(abstractcoordinate Qt5::Core)
+target_link_libraries(abstractcoordinate Qt5::Core Qt5::Widgets)
 
 install(TARGETS abstractcoordinate ${INSTALL_TARGETS_DEFAULT_ARGS})
 

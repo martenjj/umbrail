@@ -58,7 +58,7 @@ DMSCoordinateHandler::DMSCoordinateHandler(QObject *pnt)
 
 QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
 {
-    QWidget *w = new QWidget;
+    QWidget *w = new QWidget(pnt);
     QGridLayout *gl = new QGridLayout(w);
 
     Qt::AlignmentFlag labelAlign = static_cast<Qt::AlignmentFlag>(w->style()->styleHint(QStyle::SH_FormLayoutLabelAlignment));
@@ -154,7 +154,6 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->setColumnMinimumWidth(7, DialogBase::horizontalSpacing());
     gl->setColumnMinimumWidth(10, DialogBase::horizontalSpacing());
     gl->setColumnStretch(12, 1);
-    gl->setRowStretch(2, 1);
 
     return (w);
 }

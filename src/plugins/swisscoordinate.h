@@ -33,6 +33,7 @@ private slots:
 private:
     void setSwiss(double lat, double lon, QLineEdit *east, QLineEdit *north);
     void getSwiss(QLineEdit *east, QLineEdit *north, double *latp, double *lonp) const;
+    void checkError() override;
 
 private:
     QLineEdit *mSwissNorthEdit;

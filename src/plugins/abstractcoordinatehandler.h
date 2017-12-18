@@ -29,19 +29,21 @@ public:
     virtual bool hasAcceptableInput() const = 0;
     virtual QString tabName() const = 0;
 
-    virtual double getLatitude() const			{ return (mLatitude); }
-    virtual double getLongitude() const			{ return (mLongitude); }
-
-    virtual void setLatLong(double lat, double lon);
+    void setLatLong(double lat, double lon);
+    double getLatitude() const				{ return (mLatitude); }
+    double getLongitude() const				{ return (mLongitude); }
 
 signals:
     void valueChanged();
+    void statusMessage(const QString &msg);
 
 protected:
     AbstractCoordinateHandler(QObject *pnt = nullptr);
 
     virtual void updateGUI(double lat, double lon) = 0;
     void updateValues(double lat, double lon);
+    virtual void checkError();
+    void setError(const QString &msg);
 
 private:
     double mLatitude;

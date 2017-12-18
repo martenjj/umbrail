@@ -16,6 +16,7 @@
 #include <ksharedconfig.h>
 #include <kstandardaction.h>
 #include <kmessagebox.h>
+#include <kcolorscheme.h>
 
 #include <dialogbase.h>
 
@@ -34,6 +35,8 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
     hb->setMargin(0);
     hb->addWidget(mTabs);
 
+    KColorScheme sch(QPalette::Normal);
+
     // Coordinate system tabs
     const QList<QObject *> plugins = PluginManager::self()->loadPlugins(PluginManager::CoordinatePlugin);
     qDebug() << "have" << plugins.count() << "coordinate plugins";
@@ -47,8 +50,23 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
         }
 
         handler->setParent(this);			// destroy when we're finished
-        QWidget *w = handler->createWidget(this);
-        connect(handler, SIGNAL(valueChanged()), SLOT(slotValueChanged()));
+
+        QWidget *w = new QWidget(this);			// top level widget for tab
+        QVBoxLayout *vbl = new QVBoxLayout(w);		// layout for that
+
+        QWidget *hw = handler->createWidget(w);		// get handler to create widget
+        vbl->addWidget(hw);				// at top of tab widget
+        vbl->addStretch(1);				// stretch in middle
+
+        QLabel *lab = new QLabel(i18n("(Message)"), w);	// message label at bottom
+        QPalette pal = lab->palette();
+        pal.setColor(QPalette::WindowText, sch.foreground(KColorScheme::NegativeText).color());
+        lab->setPalette(pal);				// set error message colour
+        vbl->addWidget(lab);
+
+        connect(handler, SIGNAL(valueChanged()), this, SLOT(slotValueChanged()));
+        connect(handler, SIGNAL(statusMessage(const QString &)), lab, SLOT(setText(const QString &)));
+
         mHandlers.append(handler);
         mTabs->addTab(w, handler->tabName());
     }
@@ -74,6 +92,8 @@ LatLongWidget::~LatLongWidget()
 
 void LatLongWidget::setLatLong(double lat, double lon)
 {
+    qDebug() << lat << lon;
+
     mLatitude = lat;
     mLongitude = lon;
 

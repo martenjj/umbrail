@@ -552,7 +552,7 @@ OSGBCoordinateHandler::OSGBCoordinateHandler(QObject *pnt)
 
 QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
 {
-    QWidget *w = new QWidget;
+    QWidget *w = new QWidget(pnt);
     QGridLayout *gl = new QGridLayout(w);
 
     Qt::AlignmentFlag labelAlign = static_cast<Qt::AlignmentFlag>(w->style()->styleHint(QStyle::SH_FormLayoutLabelAlignment));
@@ -613,8 +613,6 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
     // layout adjustment
     gl->setColumnMinimumWidth(1, DialogBase::horizontalSpacing());
     gl->setColumnStretch(3, 1);
-    // TODO: do row stretch in container widget (with error indicator)
-    gl->setRowStretch(3, 1);
 
     return (w);
 }
@@ -633,6 +631,21 @@ void OSGBCoordinateHandler::updateGUI(double lat, double lon)
         mReferenceEdit->clear();
         mNorthEdit->clear();
         mEastEdit->clear();
+    }
+}
+
+
+void OSGBCoordinateHandler::checkError()
+{
+    AbstractCoordinateHandler::checkError();
+
+    const int e = mEastEdit->text().toInt();
+    const int n = mNorthEdit->text().toInt();
+
+    if (e<MIN_OSGB_EASTING || e>MAX_OSGB_EASTING ||
+        n<MIN_OSGB_NORTHING || n>MAX_OSGB_NORTHING)
+    {
+        setError(i18n("Coordinates out of National Grid range"));
     }
 }
 
@@ -667,6 +680,7 @@ void OSGBCoordinateHandler::slotReferenceChanged()
     setOSGBToEN(gridRef);
     LatLon newLatLon = getOSGBFromEN(gridRef);
     updateValues(newLatLon.lat, newLatLon.lon);
+    checkError();
 }
 
 
@@ -682,6 +696,7 @@ void OSGBCoordinateHandler::slotCoordinateChanged()
     setOSGBToRef(gridRef);
     LatLon newLatLon = getOSGBFromEN(gridRef);
     updateValues(newLatLon.lat, newLatLon.lon);
+    checkError();
 }
 
 

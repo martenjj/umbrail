@@ -126,7 +126,7 @@ SwissCoordinateHandler::SwissCoordinateHandler(QObject *pnt)
 
 QWidget *SwissCoordinateHandler::createWidget(QWidget *pnt)
 {
-    QWidget *w = new QWidget;
+    QWidget *w = new QWidget(pnt);
     QFormLayout *fl = new QFormLayout(w);
 
     mSwissNorthEdit = new QLineEdit(w);
@@ -163,6 +163,21 @@ void SwissCoordinateHandler::updateGUI(double lat, double lon)
 }
 
 
+void SwissCoordinateHandler::checkError()
+{
+    AbstractCoordinateHandler::checkError();
+
+    int yy = mSwissEastEdit->text().toInt();
+    int xx = mSwissNorthEdit->text().toInt();
+
+    if (yy<MIN_SWISS_EASTING || yy>MAX_SWISS_EASTING ||
+        xx<MIN_SWISS_NORTHING || xx>MAX_SWISS_NORTHING)
+    {
+        setError(i18n("Coordinates out of range for Switzerland"));
+    }
+}
+
+
 bool SwissCoordinateHandler::hasAcceptableInput() const
 {
     // We can't verify the Swiss entries here, as they may be
@@ -174,12 +189,11 @@ bool SwissCoordinateHandler::hasAcceptableInput() const
 
 void SwissCoordinateHandler::slotTextChanged()
 {
-    qDebug();
-
     double lat;
     double lon;
     getSwiss(mSwissEastEdit, mSwissNorthEdit, &lat, &lon);
     updateValues(lat, lon);
+    checkError();
 }
 
 

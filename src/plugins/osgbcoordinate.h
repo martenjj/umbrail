@@ -38,6 +38,7 @@ private:
     void setOSGB(double lat, double lon) const;
     void setOSGBToEN(const OSGBRef &ref) const;
     void setOSGBToRef(const OSGBRef &ref) const;
+    void checkError() override;
 
 private:
     QComboBox *mLetterCombo;
