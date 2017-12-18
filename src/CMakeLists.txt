@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		18-Nov-17					#
+#  Edit:		19-Nov-17					#
 #########################################################################
 
 project(navtracks)
@@ -89,6 +89,7 @@ set(navtracks_SRCS
   metadatamodel.cpp
   moveitemdialogue.cpp
   photoviewer.cpp
+  pluginmanager.cpp
   profilewidget.cpp
   project.cpp
   routeslayer.cpp
@@ -154,6 +155,7 @@ target_link_libraries(navtracks
   KF5::ItemViews
   KF5::Parts
   KF5::Crash
+  abstractcoordinate
   qcustomplot
   ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})
@@ -166,8 +168,17 @@ endif (KF5KExiv2_FOUND)
 
 add_dependencies(navtracks vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/plugins)
 include_directories(${QCUSTOMPLOT_DIR})
 include_directories(${HDRDIALOGUTIL_DIR})
+
+#########################################################################
+#									#
+#  Subdirectories							#
+#									#
+#########################################################################
+
+add_subdirectory(plugins)
 
 #########################################################################
 #									#
