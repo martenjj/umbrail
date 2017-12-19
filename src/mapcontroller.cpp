@@ -171,7 +171,7 @@ void MapController::slotSaveImage()
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
 
-    QStringList currentOverlays = view()->overlays(true);
+    QStringList currentOverlays = view()->allOverlays(true);
     view()->showOverlays(QStringList());
 
     emit statusMessage(i18n("Saving map image..."));
@@ -233,7 +233,7 @@ void MapController::slotMapThemeSelected(const QString &themeId)
 {
     qDebug() << "theme" << themeId;
 
-    QStringList currentOverlays = view()->overlays(true);
+    QStringList currentOverlays = view()->allOverlays(true);
     view()->showOverlays(QStringList());		// save/restore overlays state
     view()->setMapThemeId(themeId);
     view()->showOverlays(currentOverlays);

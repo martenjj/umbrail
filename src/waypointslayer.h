@@ -15,6 +15,8 @@ public:
     virtual ~WaypointsLayer();
 
     qreal zValue() const override		{ return (4.0); }
+    QString id() const override			{ return ("waypoints"); }
+    QString name() const override		{ return (i18n("Waypoints")); }
 
 protected:
     bool isApplicableItem(const TrackDataItem *item) const override;

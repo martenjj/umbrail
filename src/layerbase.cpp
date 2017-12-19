@@ -57,6 +57,7 @@ LayerBase::LayerBase(QWidget *pnt)
 {
     qDebug();
 
+    mVisible = true;
     mClickedPoint = NULL;
     mDraggingPoints = NULL;
     mClickTimer = new QElapsedTimer;
@@ -111,6 +112,8 @@ GeoDataCoordinates LayerBase::applyOffset(const GeoDataCoordinates &coords) cons
 bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
                        const QString &renderPos, GeoSceneLayer *layer)
 {
+    if (!isVisible()) return (true);			// no painting if not visible
+
     const FilesModel *filesModel = filesController()->model();
     if (filesModel==NULL) return (false);		// no data to use!
 
@@ -332,6 +335,8 @@ void LayerBase::setMovePointsMode(bool on)
 
 bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 {
+    if (!isVisible()) return (false);			// no interaction if not visible
+
     MapView *mapView = mapController()->view();
     FilesModel *filesModel = filesController()->model();
 

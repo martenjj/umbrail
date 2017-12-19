@@ -15,6 +15,8 @@ public:
     virtual ~TracksLayer();
 
     qreal zValue() const override		{ return (2.0); }
+    QString id() const override			{ return ("tracks"); }
+    QString name() const override		{ return (i18n("Tracks")); }
 
 protected:
     bool isApplicableItem(const TrackDataItem *item) const override;

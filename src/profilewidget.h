@@ -13,6 +13,7 @@
 
 class QTimer;
 class QCheckBox;
+class QComboBox;
 class QRadioButton;
 class QTimeZone;
 class TrackDataItem;
@@ -21,6 +22,7 @@ class VariableUnitCombo;
 class QCustomPlot;
 class QCPAxisTicker;
 class KConfigGroup;
+class ElevationTile;
 
 
 class ProfileWidget : public DialogBase, public DialogStateSaver, public MainWindowInterface
@@ -36,6 +38,7 @@ public:
 
 private slots:
     void slotUpdatePlot();
+    void slotElevationTileReady(const ElevationTile *tile);
 
 private:
     void getPlotData(const TrackDataItem *item);
@@ -43,8 +46,8 @@ private:
 private:
     QCheckBox *mElevationCheck;
     QCheckBox *mSpeedCheck;
-    QRadioButton *mSpeedGpsRadio;
-    QRadioButton *mSpeedTrackRadio;
+    QComboBox *mElevationSourceCombo;
+    QComboBox *mSpeedSourceCombo;
     QRadioButton *mReferenceTimeRadio;
     QRadioButton *mReferenceDistRadio;
     QRadioButton *mScaleAutoRadio;
@@ -61,7 +64,21 @@ private:
     QCustomPlot *mPlot;
     QTimer *mUpdateTimer;
 
-    bool mUseGpsSpeed;
+    enum ElevationSource
+    {
+        ElevationSourceGPS = 0,
+        ElevationSourceDEM = 1
+    };
+
+    enum SpeedSource
+    {
+        SpeedSourceGPS = 0,
+        SpeedSourceTrack = 1
+    };
+
+    ProfileWidget::ElevationSource mElevationSource;
+    ProfileWidget::SpeedSource mSpeedSource;
+
     bool mUseTravelDistance;
     double mCumulativeTravel;
     const TrackDataTrackpoint *mPrevPoint;
