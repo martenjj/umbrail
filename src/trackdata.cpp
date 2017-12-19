@@ -32,8 +32,6 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-static const double DEGREES_TO_RADIANS = (2*M_PI)/360;	// multiplier
-
 const TimeRange TimeRange::null = TimeRange();
 const BoundingArea BoundingArea::null = BoundingArea();
 
@@ -637,10 +635,10 @@ double TrackDataAbstractPoint::distanceTo(double lat, double lon, bool accurate)
 {
     // See http://www.movable-type.co.uk/scripts/latlong.html
 
-    const double lat1 = latitude()*DEGREES_TO_RADIANS;
-    const double lon1 = longitude()*DEGREES_TO_RADIANS;
-    const double lat2 = lat*DEGREES_TO_RADIANS;
-    const double lon2 = lon*DEGREES_TO_RADIANS;
+    const double lat1 = DEGREES_TO_RADIANS(latitude());
+    const double lon1 = DEGREES_TO_RADIANS(longitude());
+    const double lat2 = DEGREES_TO_RADIANS(lat);
+    const double lon2 = DEGREES_TO_RADIANS(lon);
 
     if (accurate)
     {
@@ -666,15 +664,15 @@ double TrackDataAbstractPoint::bearingTo(const TrackDataAbstractPoint *other) co
 {
     // Rhumb line distance/bearing as per reference above
 
-    double lat1 = latitude()*DEGREES_TO_RADIANS;
-    double lon1 = longitude()*DEGREES_TO_RADIANS;
-    double lat2 = other->latitude()*DEGREES_TO_RADIANS;
-    double lon2 = other->longitude()*DEGREES_TO_RADIANS;
+    double lat1 = DEGREES_TO_RADIANS(latitude());
+    double lon1 = DEGREES_TO_RADIANS(longitude());
+    double lat2 = DEGREES_TO_RADIANS(other->latitude());
+    double lon2 = DEGREES_TO_RADIANS(other->longitude());
 
     double dphi = log(tan(M_PI/4+lat2/2)/tan(M_PI/4+lat1/2));
     double dlon = lon2-lon1;
     if (fabs(dlon)>M_PI) dlon = dlon>0 ? -(2*M_PI-dlon) : (2*M_PI+dlon);
-    return (atan2(dlon, dphi)/DEGREES_TO_RADIANS);
+    return (RADIANS_TO_DEGREES(atan2(dlon, dphi)));
 }
 
 

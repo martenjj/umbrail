@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Jun-17					#
+#  Edit:		19-Dec-17					#
 #########################################################################
 
 project(navtracks)
@@ -23,7 +23,7 @@ option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
 #########################################################################
 
 find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO)
+find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO Crash)
 
 find_package(Marble REQUIRED NO_POLICY_SCOPE)
 find_package(Phonon4Qt5 NO_POLICY_SCOPE)
@@ -91,6 +91,7 @@ set(navtracks_SRCS
   metadatamodel.cpp
   moveitemdialogue.cpp
   photoviewer.cpp
+  pluginmanager.cpp
   positioninfodialogue.cpp
   profilewidget.cpp
   project.cpp
@@ -119,7 +120,6 @@ set(navtracks_SRCS
   variableunitcombo.cpp
   waypointimageprovider.cpp
   waypointslayer.cpp
-  ${QCUSTOMPLOT_DIR}/qcustomplot.cpp
 )
 
 if (Phonon4Qt5_FOUND)
@@ -157,6 +157,9 @@ target_link_libraries(navtracks
   KF5::IconThemes
   KF5::ItemViews
   KF5::Parts
+  KF5::Crash
+  abstractcoordinate
+  qcustomplot
   ${DIALOGUTIL_LIBRARIES}
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
@@ -168,8 +171,17 @@ endif (KF5KExiv2_FOUND)
 
 add_dependencies(navtracks vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/plugins)
 include_directories(${QCUSTOMPLOT_DIR})
 include_directories(${HDRDIALOGUTIL_DIR})
+
+#########################################################################
+#									#
+#  Subdirectories							#
+#									#
+#########################################################################
+
+add_subdirectory(plugins)
 
 #########################################################################
 #									#

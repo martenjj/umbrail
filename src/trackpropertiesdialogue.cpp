@@ -30,7 +30,6 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     setModal(true);
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-    setButtonSeparatorShown(false);
 
     Q_ASSERT(!items->isEmpty());
     const TrackDataItem *item = items->first();
