@@ -506,6 +506,7 @@ default:    break;
         mBearingEntry->setValue(!brgVal.isEmpty() ? brgVal.toInt() : -1);
         mBearingEntry->setSpecialValueText(i18n("(None)"));
         mBearingEntry->setSuffix(i18nc("suffix for degrees", " deg"));
+        mBearingEntry->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
         connect(mBearingEntry, SIGNAL(valueChanged(int)), SLOT(slotDataChanged()));
 
         mFormLayout->addRow(i18nc("@label:spinbox", "Bearing line:"), mBearingEntry);
