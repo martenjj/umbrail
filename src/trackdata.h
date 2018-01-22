@@ -34,7 +34,7 @@ class TrackPropertiesPage;
 class TrackPropertiesInterface
 {
 public:
-    virtual ~TrackPropertiesInterface()			{}
+    virtual ~TrackPropertiesInterface() = default;
     virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
     virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
     virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
@@ -53,8 +53,6 @@ public:
     TimeRange()						{}
     TimeRange(const QDateTime &sp, const QDateTime &fp)
         : mStart(sp), mFinish(fp)			{}
-
-    ~TimeRange()					{}
 
     QDateTime start() const				{ return (mStart); }
     QDateTime finish() const				{ return (mFinish); }
@@ -85,7 +83,6 @@ public:
     BoundingArea(double lat, double lon)
         : mLatNorth(lat), mLatSouth(lat),
           mLonWest(lon), mLonEast(lon)			{}
-    ~BoundingArea()					{}
 
     double north() const				{ return (mLatNorth); }
     double south() const				{ return (mLatSouth); }
@@ -179,7 +176,8 @@ public:
     virtual TrackData::Type type() const = 0;
 
     QString name() const				{ return (mName); }
-    void setName(const QString &newName)		{ mName = newName; }
+    void setName(const QString &newName, bool explicitName = false);
+    bool hasExplicitName() const			{ return (mExplicitName); }
 
     virtual QIcon icon() const;
 
@@ -220,7 +218,7 @@ public:
     QString timeZone() const;
 
 protected:
-    TrackDataItem(const QString &nm, const char *format = NULL, int *counter = NULL);
+    TrackDataItem(const char *format = NULL, int *counter = NULL);
 
     virtual QString iconName() const = 0;
 
@@ -231,6 +229,7 @@ private:
     void init();
 
     QString mName;
+    bool mExplicitName;
     QList<TrackDataItem *> *mChildren;
     QVector<QString> *mMetadata;
     TrackDataItem *mParent;
@@ -247,8 +246,8 @@ private:
 class TrackDataFile : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
-    TrackDataFile(const QString &nm);
-    virtual ~TrackDataFile()				{}
+    explicit TrackDataFile();
+    virtual ~TrackDataFile() = default;
 
     TrackData::Type type() const override		{ return (TrackData::File); }
 
@@ -276,8 +275,8 @@ private:
 class TrackDataTrack : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
-    TrackDataTrack(const QString &nm);
-    virtual ~TrackDataTrack()				{}
+    explicit TrackDataTrack();
+    virtual ~TrackDataTrack() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Track); }
 
@@ -299,8 +298,8 @@ protected:
 class TrackDataSegment : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
-    TrackDataSegment(const QString &nm);
-    virtual ~TrackDataSegment()				{}
+    explicit TrackDataSegment();
+    virtual ~TrackDataSegment() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Segment); }
 
@@ -324,8 +323,8 @@ protected:
 class TrackDataFolder : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
-    TrackDataFolder(const QString &nm);
-    virtual ~TrackDataFolder()				{}
+    explicit TrackDataFolder();
+    virtual ~TrackDataFolder() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Folder); }
 
@@ -349,8 +348,8 @@ protected:
 class TrackDataAbstractPoint : public TrackDataItem
 {
 public:
-    TrackDataAbstractPoint(const QString &nm, const char *format, int *counter);
-    virtual ~TrackDataAbstractPoint()			{}
+    TrackDataAbstractPoint(const char *format, int *counter);
+    virtual ~TrackDataAbstractPoint() = default;
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
     void setElevation(double ele)			{ mElevation = ele; }
@@ -390,8 +389,8 @@ private:
 class TrackDataTrackpoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
 {
 public:
-    TrackDataTrackpoint(const QString &nm);
-    virtual ~TrackDataTrackpoint()			{}
+    explicit TrackDataTrackpoint();
+    virtual ~TrackDataTrackpoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Point); }
 
@@ -413,8 +412,8 @@ protected:
 class TrackDataWaypoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
 {
 public:
-    TrackDataWaypoint(const QString &nm);
-    virtual ~TrackDataWaypoint()			{}
+    explicit TrackDataWaypoint();
+    virtual ~TrackDataWaypoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Waypoint); }
 
@@ -441,8 +440,8 @@ protected:
 class TrackDataRoute : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
-    TrackDataRoute(const QString &nm);
-    virtual ~TrackDataRoute()				{}
+    explicit TrackDataRoute();
+    virtual ~TrackDataRoute() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Route); }
 
@@ -463,8 +462,8 @@ public:
 class TrackDataRoutepoint : public TrackDataAbstractPoint, public TrackPropertiesInterface
 {
 public:
-    TrackDataRoutepoint(const QString &nm);
-    virtual ~TrackDataRoutepoint()			{}
+    explicit TrackDataRoutepoint();
+    virtual ~TrackDataRoutepoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Routepoint); }
 

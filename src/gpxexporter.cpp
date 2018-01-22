@@ -185,7 +185,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         str.writeCharacters("\n\n  ");
         str.writeStartElement("trk");
         // <name> xsd:string </name>
-        str.writeTextElement("name", tdt->name());
+        if (item->hasExplicitName()) str.writeTextElement("name", tdt->name());
         // <desc> xsd:string </desc>
         // <type> xsd:string </type>
         writeMetadata(tdt, str, false);
@@ -196,7 +196,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         str.writeCharacters("\n\n  ");
         str.writeStartElement("rte");
         // <name> xsd:string </name>
-        str.writeTextElement("name", tdr->name());
+        if (item->hasExplicitName()) str.writeTextElement("name", tdr->name());
         // <desc> xsd:string </desc>
         // <type> xsd:string </type>
         writeMetadata(tdr, str, false);
@@ -242,7 +242,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
         if (dt.isValid()) str.writeTextElement("time", dt.toString(Qt::ISODate));
 
         // <name> xsd:string </name>
-        str.writeTextElement("name", p->name());
+        if (item->hasExplicitName()) str.writeTextElement("name", p->name());
         // <cmt> xsd:string </cmt>
         // <desc> xsd:string </desc>
         // <sym> xsd:string </sym>
@@ -278,7 +278,7 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     {
         // <name> xsd:string </name>
         startExtensions(str);
-        str.writeTextElement("name", tds->name());
+        if (item->hasExplicitName()) str.writeTextElement("name", tds->name());
         writeMetadata(tds, str, true);
         writeStyle(tds, str);
     }

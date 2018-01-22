@@ -300,11 +300,10 @@ TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDat
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataItem::TrackDataItem(const QString &nm, const char *format, int *counter)
+TrackDataItem::TrackDataItem(const char *format, int *counter)
 {
-    mName = nm;
-    if (nm.isEmpty() && format!=NULL) mName.sprintf(format, ++(*counter));
     init();
+    if (format!=nullptr) mName.sprintf(format, ++(*counter));
 }
 
 
@@ -315,6 +314,7 @@ void TrackDataItem::init()
     mStyle = NULL;					// no style set yet
     mMetadata = NULL;					// no metadata yet
     mSelectionId = 1;					// nothing selected yet
+    mExplicitName = false;
 }
 
 
@@ -324,6 +324,13 @@ TrackDataItem::~TrackDataItem()
     delete mChildren;
     delete mStyle;
     delete mMetadata;
+}
+
+
+void TrackDataItem::setName(const QString &newName, bool explicitName)
+{
+    mName = newName;
+    mExplicitName = explicitName;
 }
 
 
@@ -517,8 +524,8 @@ QIcon TrackDataItem::icon() const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataFile::TrackDataFile(const QString &nm)
-    : TrackDataItem(nm, "file_%02d", &counterFile)
+TrackDataFile::TrackDataFile()
+    : TrackDataItem("file_%02d", &counterFile)
 {
 #ifdef MEMORY_TRACKING
     ++allocFile;
@@ -544,8 +551,8 @@ QString TrackDataFile::iconName() const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataTrack::TrackDataTrack(const QString &nm)
-    : TrackDataItem(nm, "track_%02d", &counterTrack)
+TrackDataTrack::TrackDataTrack()
+    : TrackDataItem("track_%02d", &counterTrack)
 {
 #ifdef MEMORY_TRACKING
     ++allocTrack;
@@ -558,8 +565,8 @@ TrackDataTrack::TrackDataTrack(const QString &nm)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataSegment::TrackDataSegment(const QString &nm)
-    : TrackDataItem(nm, "segment_%02d", &counterSegment)
+TrackDataSegment::TrackDataSegment()
+    : TrackDataItem("segment_%02d", &counterSegment)
 {
 #ifdef MEMORY_TRACKING
     ++allocSegment;
@@ -588,8 +595,8 @@ TimeRange TrackDataSegment::timeSpan() const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataAbstractPoint::TrackDataAbstractPoint(const QString &nm, const char *format, int *counter)
-    : TrackDataItem(nm, format, counter)
+TrackDataAbstractPoint::TrackDataAbstractPoint(const char *format, int *counter)
+    : TrackDataItem(format, counter)
 {
     mLatitude = mLongitude = NAN;
     mElevation = NAN;
@@ -703,8 +710,8 @@ void TrackDataAbstractPoint::copyData(const TrackDataAbstractPoint *other)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataFolder::TrackDataFolder(const QString &nm)
-    : TrackDataItem(nm, "folder_%02d", &counterFolder)
+TrackDataFolder::TrackDataFolder()
+    : TrackDataItem("folder_%02d", &counterFolder)
 {
 #ifdef MEMORY_TRACKING
     ++allocFolder;
@@ -732,8 +739,8 @@ QString TrackDataFolder::path() const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataTrackpoint::TrackDataTrackpoint(const QString &nm)
-    : TrackDataAbstractPoint(nm, "point_%04d", &counterTrackpoint)
+TrackDataTrackpoint::TrackDataTrackpoint()
+    : TrackDataAbstractPoint("point_%04d", &counterTrackpoint)
 {
 #ifdef MEMORY_TRACKING
     ++allocTrackpoint;
@@ -746,8 +753,8 @@ TrackDataTrackpoint::TrackDataTrackpoint(const QString &nm)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataWaypoint::TrackDataWaypoint(const QString &nm)
-    : TrackDataAbstractPoint(nm, "wpt_%03d", &counterWaypoint)
+TrackDataWaypoint::TrackDataWaypoint()
+    : TrackDataAbstractPoint("wpt_%03d", &counterWaypoint)
 {
 #ifdef MEMORY_TRACKING
     ++allocWaypoint;
@@ -816,8 +823,8 @@ QIcon TrackDataWaypoint::icon() const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataRoute::TrackDataRoute(const QString &nm)
-    : TrackDataItem(nm, "route_%02d", &counterRoute)
+TrackDataRoute::TrackDataRoute()
+    : TrackDataItem("route_%02d", &counterRoute)
 {
 #ifdef MEMORY_TRACKING
     ++allocRoute;
@@ -830,8 +837,8 @@ TrackDataRoute::TrackDataRoute(const QString &nm)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataRoutepoint::TrackDataRoutepoint(const QString &nm)
-    : TrackDataAbstractPoint(nm, "rpt_%04d", &counterRoutepoint)
+TrackDataRoutepoint::TrackDataRoutepoint()
+    : TrackDataAbstractPoint("rpt_%04d", &counterRoutepoint)
 {
 #ifdef MEMORY_TRACKING
     ++allocRoutepoint;

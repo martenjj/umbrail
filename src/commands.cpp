@@ -49,7 +49,7 @@
 class ItemContainer : public TrackDataItem
 {
 public:
-    ItemContainer();
+    explicit ItemContainer();
     virtual ~ItemContainer();
 
     TrackData::Type type() const override	{ return (TrackData::None); }
@@ -64,7 +64,7 @@ int ItemContainer::containerCounter = 0;
 
 
 ItemContainer::ItemContainer()
-    : TrackDataItem(QString::null, "container_%04d", &containerCounter)
+    : TrackDataItem("container_%04d", &containerCounter)
 {
 #ifdef DEBUG_ITEMS
     qDebug() << "created" << name();
@@ -379,13 +379,15 @@ void SplitSegmentCommand::redo()
     {
         mNewSegmentContainer = new ItemContainer;
 
-        TrackDataSegment *copySegment = new TrackDataSegment(makeSplitName(mParentSegment->name()));
+        TrackDataSegment *copySegment = new TrackDataSegment;
+        copySegment->setName(makeSplitName(mParentSegment->name()), false);
         copySegment->copyMetadata(mParentSegment);
         mNewSegmentContainer->addChildItem(copySegment);
         // TODO: copy style
 
         // TODO: can eliminate copyData with a copy constructor? or a clone()?
-        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint(makeSplitName(splitPoint->name()));
+        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
+        copyPoint->setName(makeSplitName(splitPoint->name()), false);
         copyPoint->copyData(splitPoint);
         copyPoint->copyMetadata(splitPoint);
         // TODO: copy style
@@ -648,20 +650,16 @@ void AddContainerCommand::redo()
         mNewItemContainer = new ItemContainer;
 
         TrackDataItem *addedItem = NULL;
-        if (mType==TrackData::Track)
-        {
-            addedItem = new TrackDataTrack(mAddName);
-        }
-        else if (mType==TrackData::Route)
-        {
-            addedItem = new TrackDataRoute(mAddName);
-        }
+        if (mType==TrackData::Track) addedItem = new TrackDataTrack;
+        else if (mType==TrackData::Route) addedItem = new TrackDataRoute;
         else if (mType==TrackData::Folder)
         {
-            lastCreatedFolder = new TrackDataFolder(mAddName);
+            lastCreatedFolder = new TrackDataFolder;
             addedItem = lastCreatedFolder;
         }
+
         Q_ASSERT(addedItem!=NULL);
+        if (!mAddName.isEmpty()) addedItem->setName(mAddName);
         addedItem->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
 
         qDebug() << "created" << addedItem->name();
@@ -741,7 +739,7 @@ void AddPointCommand::redo()
     {
         mNewPointContainer = new ItemContainer;
 
-        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint(QString::null);
+        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
 
         const int idx = parent->childIndex(mAtPoint);
         Q_ASSERT(idx>0);				// not allowed at first point
@@ -1060,7 +1058,8 @@ void AddWaypointCommand::redo()
     {
         mNewWaypointContainer = new ItemContainer;
 
-        TrackDataWaypoint *newWaypoint = new TrackDataWaypoint(mWaypointName);
+        TrackDataWaypoint *newWaypoint = new TrackDataWaypoint;
+        newWaypoint->setName(mWaypointName);
         newWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=NULL)
         {
@@ -1149,16 +1148,10 @@ void AddRoutepointCommand::redo()
     {
         mNewRoutepointContainer = new ItemContainer;
 
-        TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint(mRoutepointName);
+        TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
+        newRoutepoint->setName(mRoutepointName);
         newRoutepoint->setLatLong(mLatitude, mLongitude);
-        if (mSourcePoint!=NULL)
-        {
-//             newRoutepoint->setElevation(mSourcePoint->elevation());
-//             newRoutepoint->setTime(mSourcePoint->time());
-            newRoutepoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
-//             const QString stopData = mSourcePoint->metadata("stop");
-//             if (!stopData.isEmpty()) newRoutepoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
-        }
+        if (mSourcePoint!=nullptr) newRoutepoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
 
         mNewRoutepointContainer->addChildItem(newRoutepoint);
     }

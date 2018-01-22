@@ -145,7 +145,8 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
         if (foundFolder==NULL)				// nothing existing found
         {
             qDebug() << "creating" << name << "under" << cur->name();
-            foundFolder = new TrackDataFolder(name);
+            foundFolder = new TrackDataFolder;
+            foundFolder->setName(name);
             cur->addChildItem(foundFolder);
         }
 
@@ -250,7 +251,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             return (error(makeXmlException("nested TRK elements", "trk")));
         }
 							// start new track
-        mCurrentTrack = new TrackDataTrack(QString::null);
+        mCurrentTrack = new TrackDataTrack;
     }
     else if (localName=="rte")				// start of a RTE element
     {
@@ -259,7 +260,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             return (error(makeXmlException("nested RTE elements", "rte")));
         }
 							// start new track
-        mCurrentRoute = new TrackDataRoute(QString::null);
+        mCurrentRoute = new TrackDataRoute;
     }
     else if (localName=="trkseg")			// start of a TRKSEG element
     {
@@ -273,7 +274,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             return (error(makeXmlException("TRKSEG start not within TRK", "trkseg")));
         }
 							// start new segment
-        mCurrentSegment = new TrackDataSegment(QString::null);
+        mCurrentSegment = new TrackDataSegment;
     }
     else if (localName=="trkpt")			// start of a TRKPT element
     {
@@ -291,10 +292,10 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 
             warning(makeXmlException("TRKPT start not within TRKSEG"));
 							// start new implied segment
-            mCurrentSegment = new TrackDataSegment(QString::null);
+            mCurrentSegment = new TrackDataSegment;
         }
 							// start new point
-        mCurrentPoint = new TrackDataTrackpoint(QString::null);
+        mCurrentPoint = new TrackDataTrackpoint;
 
         double lat = NAN;				// get coordinates
         double lon = NAN;
@@ -335,8 +336,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         {
             return (error(makeXmlException("nested WPT elements", "wpt")));
         }
-							// start new track
-        mCurrentWaypoint = new TrackDataWaypoint(QString::null);
+
+        mCurrentWaypoint = new TrackDataWaypoint;	// start new waypoint item
 
         double lat = NAN;				// get coordinates
         double lon = NAN;
@@ -363,8 +364,8 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         {
             return (error(makeXmlException("nested RTEPT elements", "rtept")));
         }
-							// start new track
-        mCurrentRoutepoint = new TrackDataRoutepoint(QString::null);
+
+        mCurrentRoutepoint = new TrackDataRoutepoint;	// start new route point item
 
         double lat = NAN;				// get coordinates
         double lon = NAN;
