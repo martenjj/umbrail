@@ -644,6 +644,9 @@ void MainWindow::slotSaveProject()
 
     if (save(projectFile))
     {
+        TrackDataFile *tdf = filesController()->model()->rootFileItem();
+        if (tdf!=nullptr) tdf->setFileName(projectFile);
+							// set file name in root item
         mUndoStack->setClean();				// undo history is now clean
         slotSetModified(false);				// ensure window title updated
     }

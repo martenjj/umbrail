@@ -253,7 +253,7 @@ public:
     TrackData::Type type() const override		{ return (TrackData::File); }
 
     QUrl fileName() const				{ return (mFileName); }
-    void setFileName(const QUrl &file)			{ mFileName = file; }
+    void setFileName(const QUrl &file);
 
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;

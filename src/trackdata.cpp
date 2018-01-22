@@ -526,6 +526,13 @@ TrackDataFile::TrackDataFile(const QString &nm)
 }
 
 
+void TrackDataFile::setFileName(const QUrl &file)
+{
+    mFileName = file;
+    setName(file.fileName());
+}
+
+
 QString TrackDataFile::iconName() const
 {
     return (KIO::iconNameForUrl(mFileName));

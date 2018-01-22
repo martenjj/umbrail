@@ -58,8 +58,8 @@ bool ImporterBase::prepareLoadFile(const QUrl &file)
         return (false);
     }
 
-    mDataRoot = new TrackDataFile(file.fileName());
-    mDataRoot->setFileName(file);
+    mDataRoot = new TrackDataFile(QString::null);	// no need to set name here,
+    mDataRoot->setFileName(file);			// this does from file's basename
     return (true);
 }
 
