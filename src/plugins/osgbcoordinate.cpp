@@ -561,6 +561,7 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
     QLabel *l = new QLabel(i18n("Reference:"), w);
     gl->addWidget(l, 0, 0, labelAlign);
 
+    // TODO: use a picker from image https://en.wikipedia.org/wiki/File:British_National_Grid.svg
     mLetterCombo = new QComboBox(w);
     const char *p = validSquares;
     while (*p!='\0')

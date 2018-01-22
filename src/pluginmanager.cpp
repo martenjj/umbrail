@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	19-Nov-17						//
+//  Edit:	22-Jan-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -80,6 +80,18 @@ QList<QObject *> PluginManager::loadPlugins(PluginManager::PluginType type)
     {							// if not, need to do that now
         qDebug() << "scanning for plugins";
 
+        QString filter;
+        switch (type)
+        {
+case PluginManager::CoordinatePlugin:
+            filter = "*coordinate.*";
+            break;
+
+default:    qWarning() << "Unknown plugin type" << type;
+            filter = "*unknown.*";
+            break;
+        }
+
         // Scan all of the library paths for plugins of the requested type
         const QStringList pluginPaths = QCoreApplication::libraryPaths();
         QStringList pluginLibs;
@@ -89,7 +101,7 @@ QList<QObject *> PluginManager::loadPlugins(PluginManager::PluginType type)
             qDebug() << "  searching" << dir.absolutePath();
             if (!dir.exists()) continue;
 
-            const QStringList files = dir.entryList((QStringList() << "*coordinate.*"),
+            const QStringList files = dir.entryList((QStringList() << filter),
                                                     QDir::Files|QDir::NoDotAndDotDot);
             foreach (const QString &file, files)
             {
