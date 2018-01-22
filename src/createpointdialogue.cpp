@@ -16,6 +16,38 @@
 #include "latlongwidget.h"
 
 
+// from https://stackoverflow.com/questions/39153835/how-to-loop-over-qabstractitemview-indexes
+static int findSelectableItems(const QModelIndex &index, const QAbstractItemModel *model, QModelIndex *theItem)
+{
+    int result = 0;
+
+    if (index.isValid())
+    {
+        const Qt::ItemFlags flags = model->flags(index);
+        if (flags & Qt::ItemIsSelectable)
+        {
+            ++result;
+            if (theItem!=nullptr && !theItem->isValid()) *theItem = index;
+        }
+    }
+
+    if (model->hasChildren(index))
+    {
+        auto rows = model->rowCount(index);
+        auto cols = model->columnCount(index);
+        for (int i = 0; i < rows; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
+            {
+                result += findSelectableItems(model->index(i, j, index), model, theItem);
+            }
+        }
+    }
+
+    return (result);
+}
+
+
 CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QWidget *pnt)
     : DialogBase(pnt)
 {
@@ -53,15 +85,29 @@ CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QW
  
     TrackFilterModel *trackModel = new TrackFilterModel(this);
     trackModel->setSourceModel(fc->model());
-    trackModel->setMode(routeMode ? TrackData::Route : TrackData::Folder);
+    trackModel->setMode(routeMode ? TrackData::Route : TrackData::Waypoint);
     mContainerList->setModel(trackModel);
     mContainerList->expandToDepth(9);
 
-    QList<TrackDataItem *> items = fc->view()->selectedItems();
-    if (items.count()==1)
+    // Try to preselect a destination for the new item.
+    // Firstly, if there is only a single valid destination,
+    // then use that.
+    QModelIndex theItem;
+    const int selectableItems = findSelectableItems(mContainerList->rootIndex(), trackModel, &theItem);
+    if (selectableItems==1 && theItem.isValid())
     {
-        const TrackDataItem *item = items.first();
-        mContainerList->setCurrentIndex(trackModel->mapFromSource(fc->model()->indexForItem(item)));
+        mContainerList->setCurrentIndex(theItem);
+    }
+    else
+    {
+        // If there is no valid destination or more than one, then if
+        // the tree's selected item is valid then preselect that.
+        QList<TrackDataItem *> items = fc->view()->selectedItems();
+        if (items.count()==1)
+        {
+            const TrackDataItem *item = items.first();
+            mContainerList->setCurrentIndex(trackModel->mapFromSource(fc->model()->indexForItem(item)));
+        }
     }
 
     connect(mContainerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
