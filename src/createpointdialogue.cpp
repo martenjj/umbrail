@@ -1,5 +1,5 @@
 
-#include "createwaypointdialogue.h"
+#include "createpointdialogue.h"
 
 #include <qformlayout.h>
 #include <qtreeview.h>
@@ -16,13 +16,14 @@
 #include "latlongwidget.h"
 
 
-CreateWaypointDialogue::CreateWaypointDialogue(FilesController *fc, QWidget *pnt)
+CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QWidget *pnt)
     : DialogBase(pnt)
 {
-    setObjectName("CreateWaypointDialogue");
+    setObjectName("CreatePointDialogue");
 
     setModal(true);
-    setWindowTitle(i18nc("@title:window", "Create Waypoint"));
+    setWindowTitle(routeMode ? i18nc("@title:window", "Create Route Point") :
+                               i18nc("@title:window", "Create Waypoint"));
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
     setButtonEnabled(QDialogButtonBox::Ok, false);
     setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Create"));
@@ -38,35 +39,35 @@ CreateWaypointDialogue::CreateWaypointDialogue(FilesController *fc, QWidget *pnt
     connect(mLatLongEdit, SIGNAL(positionValid(bool)), SLOT(slotSetButtonStates()));
     fl->addRow(i18nc("@title:row", "Position:"), mLatLongEdit);
 
-    mFolderList = new QTreeView(this);
-    mFolderList->setRootIsDecorated(true);
-    mFolderList->setSortingEnabled(true);
-    mFolderList->setAlternatingRowColors(true);
-    mFolderList->setSelectionBehavior(QAbstractItemView::SelectRows);
-    mFolderList->setSelectionMode(QAbstractItemView::SingleSelection);
-    mFolderList->setAllColumnsShowFocus(true);
-    mFolderList->setUniformRowHeights(true);
-    mFolderList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    mFolderList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    mFolderList->setHeaderHidden(true);
+    mContainerList = new QTreeView(this);
+    mContainerList->setRootIsDecorated(true);
+    mContainerList->setSortingEnabled(true);
+    mContainerList->setAlternatingRowColors(true);
+    mContainerList->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mContainerList->setSelectionMode(QAbstractItemView::SingleSelection);
+    mContainerList->setAllColumnsShowFocus(true);
+    mContainerList->setUniformRowHeights(true);
+    mContainerList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mContainerList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    mContainerList->setHeaderHidden(true);
  
     TrackFilterModel *trackModel = new TrackFilterModel(this);
     trackModel->setSourceModel(fc->model());
-    trackModel->setMode(TrackData::Folder);
-    mFolderList->setModel(trackModel);
-    mFolderList->expandToDepth(9);
+    trackModel->setMode(routeMode ? TrackData::Route : TrackData::Folder);
+    mContainerList->setModel(trackModel);
+    mContainerList->expandToDepth(9);
 
     QList<TrackDataItem *> items = fc->view()->selectedItems();
     if (items.count()==1)
     {
         const TrackDataItem *item = items.first();
-        mFolderList->setCurrentIndex(trackModel->mapFromSource(fc->model()->indexForItem(item)));
+        mContainerList->setCurrentIndex(trackModel->mapFromSource(fc->model()->indexForItem(item)));
     }
 
-    connect(mFolderList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
+    connect(mContainerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
             SLOT(slotSetButtonStates()));
 
-    fl->addRow(i18nc("@title:row", "Folder:"), mFolderList);
+    fl->addRow(routeMode ? i18nc("@title:row", "Route:") : i18nc("@title:row", "Folder:"), mContainerList);
 
     setMainWidget(w);
     slotSetButtonStates();
@@ -76,7 +77,7 @@ CreateWaypointDialogue::CreateWaypointDialogue(FilesController *fc, QWidget *pnt
 }
 
 
-void CreateWaypointDialogue::setSourcePoint(const TrackDataAbstractPoint *point)
+void CreatePointDialogue::setSourcePoint(const TrackDataAbstractPoint *point)
 {
     Q_ASSERT(point!=NULL);
     qDebug() << point->name();
@@ -85,7 +86,7 @@ void CreateWaypointDialogue::setSourcePoint(const TrackDataAbstractPoint *point)
 }
 
 
-void CreateWaypointDialogue::setSourceLatLong(double lat, double lon)
+void CreatePointDialogue::setSourceLatLong(double lat, double lon)
 {
     qDebug() << lat << lon;
     mLatLongEdit->setLatLong(lat, lon);
@@ -93,42 +94,42 @@ void CreateWaypointDialogue::setSourceLatLong(double lat, double lon)
 }
 
 
-void CreateWaypointDialogue::setDestinationFolder(const TrackDataFolder *folder)
+void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
 {
-    Q_ASSERT(folder!=NULL);
-    qDebug() << folder->name();
+    Q_ASSERT(item!=NULL);
+    qDebug() << item->name();
     // nothing to do, it will be selected automatically via the source model
 }
 
 
-QString CreateWaypointDialogue::waypointName() const
+QString CreatePointDialogue::pointName() const
 {
     return (mNameEdit->text());
 }
 
 
-void CreateWaypointDialogue::waypointPosition(qreal *latp, qreal *lonp)
+void CreatePointDialogue::pointPosition(qreal *latp, qreal *lonp)
 {
     *latp = mLatLongEdit->latitude();
     *lonp = mLatLongEdit->longitude();
 }
 
 
-TrackDataFolder *CreateWaypointDialogue::selectedFolder() const
+TrackDataItem *CreatePointDialogue::selectedContainer() const
 {
-    QModelIndexList selIndexes = mFolderList->selectionModel()->selectedIndexes();
+    QModelIndexList selIndexes = mContainerList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (NULL);
 
-    TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mFolderList->model());
+    TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mContainerList->model());
     FilesModel *filesModel = qobject_cast<FilesModel *>(trackModel->sourceModel());
     TrackDataItem *item = filesModel->itemForIndex(trackModel->mapToSource(selIndexes.first()));
-    return (dynamic_cast<TrackDataFolder *>(item));
+    return (item);
 }
 
 
-void CreateWaypointDialogue::slotSetButtonStates()
+void CreatePointDialogue::slotSetButtonStates()
 {
     setButtonEnabled(QDialogButtonBox::Ok, !mNameEdit->text().isEmpty() &&
                                            mLatLongEdit->hasAcceptableInput() &&
-                                           selectedFolder()!=NULL);
+                                           selectedContainer()!=NULL);
 }

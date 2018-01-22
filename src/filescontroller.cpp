@@ -36,8 +36,7 @@ using namespace KExiv2Iface;
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
-#include "createwaypointdialogue.h"
-#include "createroutepointdialogue.h"
+#include "createpointdialogue.h"
 #include "style.h"
 #include "errorreporter.h"
 #include "mapview.h"
@@ -1056,7 +1055,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     //
     //   3.	The user may enter the coordinates.
 
-    CreateWaypointDialogue d(this);
+    CreatePointDialogue d(this, false);			// waypoint mode
     QList<TrackDataItem *> items = view()->selectedItems();
     const TrackDataAbstractPoint *selPoint = NULL;
 
@@ -1067,14 +1066,14 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
         if (selPoint!=NULL) d.setSourcePoint(selPoint);
 							// the destination folder?
         const TrackDataFolder *selFolder = dynamic_cast<const TrackDataFolder *>(items.first());
-        if (selFolder!=NULL) d.setDestinationFolder(selFolder);
+        if (selFolder!=NULL) d.setDestinationContainer(selFolder);
     }
 
     if (!d.exec()) return;
 
-    d.waypointPosition(&lat, &lon);
-    const QString name = d.waypointName();
-    TrackDataFolder *destFolder = d.selectedFolder();
+    d.pointPosition(&lat, &lon);
+    const QString name = d.pointName();
+    TrackDataFolder *destFolder = dynamic_cast<TrackDataFolder *>(d.selectedContainer());
     Q_ASSERT(destFolder!=NULL);
 
     qDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
@@ -1092,7 +1091,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
 
 void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
 {
-    CreateRoutepointDialogue d(this);
+    CreatePointDialogue d(this, true);			// route point mode
     QList<TrackDataItem *> items = view()->selectedItems();
     const TrackDataAbstractPoint *selPoint = NULL;
 
@@ -1103,14 +1102,14 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
         if (selPoint!=NULL) d.setSourcePoint(selPoint);
 							// the destination route?
         const TrackDataRoute *selRoute = dynamic_cast<const TrackDataRoute *>(items.first());
-        if (selRoute!=NULL) d.setDestinationRoute(selRoute);
+        if (selRoute!=NULL) d.setDestinationContainer(selRoute);
     }
 
     if (!d.exec()) return;
 
-    d.routepointPosition(&lat, &lon);
-    const QString name = d.routepointName();
-    TrackDataRoute *destRoute = d.selectedRoute();
+    d.pointPosition(&lat, &lon);
+    const QString name = d.pointName();
+    TrackDataRoute *destRoute = dynamic_cast<TrackDataRoute *>(d.selectedContainer());
     Q_ASSERT(destRoute!=NULL);
 
     qDebug() << "create" << name << "in" << destRoute->name() << "at" << lat << lon;
