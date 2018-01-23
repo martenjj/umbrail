@@ -114,38 +114,11 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items
 
 
 
-TrackTrackpointStylePage::TrackTrackpointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemStylePage(items, pnt)
-{
-    qDebug();
-    setObjectName("TrackPointStylePage");
-}
-
-
-
-TrackFolderStylePage::TrackFolderStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemStylePage(items, pnt)
-{
-    qDebug();
-    setObjectName("TrackFolderStylePage");
-}
-
-
-
 TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
     qDebug();
     setObjectName("TrackWaypointStylePage");
-}
-
-
-
-TrackRoutepointStylePage::TrackRoutepointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemStylePage(items, pnt)
-{
-    qDebug();
-    setObjectName("TrackRoutepointStylePage");
 }
 
 
