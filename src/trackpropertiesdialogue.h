@@ -48,6 +48,7 @@ protected slots:
 
 private:
     QTabWidget *mTabWidget;
+    TrackData::Type mItemType;
 
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;

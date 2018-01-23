@@ -34,7 +34,8 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     Q_ASSERT(!items->isEmpty());
     const TrackDataItem *item = items->first();
     Q_ASSERT(item!=NULL);
-    QString zoneName = item->timeZone();
+    mItemType = item->type();
+    const QString zoneName = item->timeZone();
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -90,12 +91,14 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     page = propif->createPropertiesStylePage(items, this);
     mStylePage = qobject_cast<TrackItemStylePage *>(page);
-    Q_ASSERT(mStylePage!=NULL);
-    mStylePage->setTimeZone(zoneName);
-    connect(mStylePage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
-    connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
-            mStylePage, SLOT(setTimeZone(const QString &)));
-    mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
+    if (mStylePage!=nullptr)				// if "Style" applies to item type
+    {
+        connect(mStylePage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+        mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
+
+        const bool styleEnabled = (items->count()==1);	// if "Style" applies to selection
+        if (!styleEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
+    }
 
     page = propif->createPropertiesMetadataPage(items, this);
     mMetadataPage = qobject_cast<TrackItemMetadataPage *>(page);
@@ -103,25 +106,27 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     connect(mMetadataPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
     mTabWidget->addTab(page, i18nc("@title:tab", "Metadata"));
 
+    const bool metadataEnabled = (items->count()==1);	// whether "Metadata" is applicable here
+    if (!metadataEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
+
     setMinimumSize(320,380);
     setStateSaver(this);
 
-    // TODO: hasStyle() a virtual of TrackDataItem
-    bool styleEnabled = (items->count()==1);		// whether "Style" is applicable here
-    if (styleEnabled && dynamic_cast<const TrackDataTrackpoint *>(items->first())!=NULL) styleEnabled = false;
-    //if (styleEnabled && dynamic_cast<const TrackDataWaypoint *>(items->first())!=NULL) styleEnabled = false;
-    if (styleEnabled && dynamic_cast<const TrackDataRoutepoint *>(items->first())!=NULL) styleEnabled = false;
-    if (styleEnabled && dynamic_cast<const TrackDataFolder *>(items->first())!=NULL) styleEnabled = false;
-    mTabWidget->setTabEnabled(2, styleEnabled);
-
-    bool metadataEnabled = (items->count()==1);		// whether "Metadata" is applicable here
-    mTabWidget->setTabEnabled(3, metadataEnabled);
 }
 
 
 void TrackPropertiesDialogue::slotDataChanged()
 {
-    setButtonEnabled(QDialogButtonBox::Ok, mGeneralPage->isDataValid() && mDetailPage->isDataValid() && mStylePage->isDataValid());
+    bool ok = true;
+    const int num = mTabWidget->count();
+    for (int i = 0; i<num; ++i)
+    {
+        TrackPropertiesPage *page = qobject_cast<TrackPropertiesPage *>(mTabWidget->widget(i));
+        Q_ASSERT(page!=nullptr);
+        if (!page->isDataValid()) ok = false;
+    }
+
+    setButtonEnabled(QDialogButtonBox::Ok, ok);
 }
 
 
@@ -157,8 +162,13 @@ TrackData::WaypointStatus TrackPropertiesDialogue::newWaypointStatus() const
 
 Style TrackPropertiesDialogue::newStyle() const
 {
-    if (!mTabWidget->isTabEnabled(2)) return (Style::null);	// style not applicable
-    return (mStylePage->newStyle());				// style from page
+    if (mStylePage==nullptr) return (Style::null);	// not applicable to this type
+
+    const int idx = mTabWidget->indexOf(mStylePage);
+    Q_ASSERT(idx!=-1);					// not applicable to selection
+    if (!mTabWidget->isTabEnabled(idx)) return (Style::null);
+
+    return (mStylePage->newStyle());			// style from page
 }
 
 
@@ -182,7 +192,7 @@ QString TrackPropertiesDialogue::newTrackType() const
 
 void TrackPropertiesDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
-    grp.writeEntry("Index", mTabWidget->currentIndex());
+    grp.writeEntry(QString("Index%1").arg(mItemType), mTabWidget->currentIndex());
     DialogStateSaver::saveConfig(dialog, grp);
 }
 
@@ -191,7 +201,8 @@ void TrackPropertiesDialogue::restoreConfig(QDialog *dialog, const KConfigGroup 
 {
     int page = sNextPageIndex;				// page explicitly requested
     sNextPageIndex = -1;				// note as now used
-    if (page==-1) page = grp.readEntry("Index", 0);	// if none set, get from config
+    if (page==-1) page = grp.readEntry(QString("Index%1").arg(mItemType), 0);
+							// if none set, get from config
     mTabWidget->setCurrentIndex(page);
 
     DialogStateSaver::restoreConfig(dialog, grp);

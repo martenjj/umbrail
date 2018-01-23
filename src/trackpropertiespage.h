@@ -20,6 +20,16 @@ class TrackDataItem;
     }
 
 
+#define NULL_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
+    TrackPropertiesPage *								\
+        TrackData ## ITEMTYPE::createProperties ## PAGETYPE ## Page(			\
+            const QList<TrackDataItem *> *items,                         		\
+            QWidget *pnt) const                                         		\
+    {											\
+        return (nullptr);								\
+    }
+
+
 class TrackPropertiesPage : public QWidget
 {
     Q_OBJECT
