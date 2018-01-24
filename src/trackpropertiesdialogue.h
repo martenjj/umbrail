@@ -18,6 +18,7 @@ class Style;
 class TrackItemGeneralPage;
 class TrackItemDetailPage;
 class TrackItemStylePage;
+class TrackItemPlotPage;
 class TrackItemMetadataPage;
 
 
@@ -53,6 +54,7 @@ private:
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;
     TrackItemStylePage *mStylePage;
+    TrackItemPlotPage *mPlotPage;
     TrackItemMetadataPage *mMetadataPage;
 };
 

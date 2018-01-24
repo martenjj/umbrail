@@ -15,6 +15,7 @@
 #include "trackpropertiesgeneralpages.h"
 #include "trackpropertiesdetailpages.h"
 #include "trackpropertiesstylepages.h"
+#include "trackpropertiesplotpages.h"
 #include "trackpropertiesmetadatapages.h"
 #include "style.h"
 
@@ -100,6 +101,17 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
         if (!styleEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
     }
 
+    page = propif->createPropertiesPlotPage(items, this);
+    mPlotPage = qobject_cast<TrackItemPlotPage *>(page);
+    if (mPlotPage!=nullptr)				// if "Plot" applies to item type
+    {
+        connect(mPlotPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+        mTabWidget->addTab(page, i18nc("@title:tab", "Plot"));
+
+        const bool plotEnabled = (items->count()==1);	// if "Plot" applies to selection
+        if (!plotEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
+    }
+
     page = propif->createPropertiesMetadataPage(items, this);
     mMetadataPage = qobject_cast<TrackItemMetadataPage *>(page);
     Q_ASSERT(mMetadataPage!=NULL);
@@ -150,7 +162,8 @@ QString TrackPropertiesDialogue::newTimeZone() const
 
 QString TrackPropertiesDialogue::newBearingLine() const
 {
-    return (mGeneralPage->newBearingLine());
+    if (mPlotPage==nullptr) return (QString::null);	// not applicable to this type
+    return (mPlotPage->newBearingLine());
 }
 
 
@@ -181,10 +194,10 @@ bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon) c
 QString TrackPropertiesDialogue::newTrackType() const
 {
     TrackTrackGeneralPage *trackPage = qobject_cast<TrackTrackGeneralPage *>(mGeneralPage);
-    if (trackPage!=NULL) return (trackPage->newTrackType());	// style from page
+    if (trackPage!=NULL) return (trackPage->newTrackType());	// setting from page
 
     TrackSegmentGeneralPage *segPage = qobject_cast<TrackSegmentGeneralPage *>(mGeneralPage);
-    if (segPage!=NULL) return (segPage->newTrackType());	// style from page
+    if (segPage!=NULL) return (segPage->newTrackType());	// setting from page
 
     return ("-");					// not applicable, but
 }							// not the same as "blank"

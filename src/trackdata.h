@@ -31,6 +31,7 @@ class TrackPropertiesPage;
 //									//
 //////////////////////////////////////////////////////////////////////////
 
+// TODO: optional ones non-pure with default null implementation
 class TrackPropertiesInterface
 {
 public:
@@ -38,6 +39,7 @@ public:
     virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
     virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
     virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
+    virtual TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
     virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const = 0;
 };
 
@@ -257,6 +259,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 
 protected:
@@ -283,6 +286,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 
 protected:
@@ -306,6 +310,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 
     TimeRange timeSpan() const override;
@@ -331,6 +336,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 
     QString path() const;
@@ -397,6 +403,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 
 protected:
@@ -425,6 +432,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 
 protected:
@@ -450,6 +458,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 };
 
@@ -472,6 +481,7 @@ public:
     TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
+    TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
     TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt = NULL) const override;
 };
 

@@ -6,7 +6,6 @@
 #include <qlayout.h>
 #include <qdebug.h>
 #include <qlineedit.h>
-#include <qspinbox.h>
 
 #include <klocalizedstring.h>
 #include <kiconloader.h>
@@ -43,7 +42,6 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
     mStatusCombo = NULL;
     mDescEdit = NULL;
     mTimeZoneSel = NULL;
-    mBearingEntry = NULL;
 
     mPositionPoint = NULL;
     mPositionChanged = false;
@@ -96,18 +94,6 @@ TrackData::WaypointStatus TrackItemGeneralPage::newWaypointStatus() const
 							// not applicable
     int status = mStatusCombo->itemData(mStatusCombo->currentIndex()).toInt();
     return (static_cast<TrackData::WaypointStatus>(status));
-}
-
-
-
-QString TrackItemGeneralPage::newBearingLine() const
-{
-    if (mBearingEntry==NULL) return ("-");	// not for this data
-    if (!mBearingEntry->isEnabled()) return ("-");
-							// not applicable
-    if (mBearingEntry->value()==-1) return (QString::null);
-							// nothing entered
-    return (mBearingEntry->cleanText());		// the value entered
 }
 
 
@@ -496,21 +482,6 @@ default:    break;
     addPositionTimeFields(items);
     if (mWaypoint==NULL) addTimeSpanFields(items);
     addSeparatorField();
-
-    if (mWaypoint!=NULL)				// bearing line is applicable
-    {
-        mBearingEntry = new QSpinBox(this);
-        mBearingEntry->setMinimum(-1);
-        mBearingEntry->setMaximum(359);
-        const QString brgVal = mWaypoint->metadata("bearingline");
-        mBearingEntry->setValue(!brgVal.isEmpty() ? brgVal.toInt() : -1);
-        mBearingEntry->setSpecialValueText(i18n("(None)"));
-        mBearingEntry->setSuffix(i18nc("suffix for degrees", " deg"));
-        mBearingEntry->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-        connect(mBearingEntry, SIGNAL(valueChanged(int)), SLOT(slotDataChanged()));
-
-        mFormLayout->addRow(i18nc("@label:spinbox", "Bearing line:"), mBearingEntry);
-    }
 
     addStatusField(items);
     addDescField(items);
