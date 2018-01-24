@@ -26,6 +26,8 @@ class TrackDataItem;
             const QList<TrackDataItem *> *items,                         		\
             QWidget *pnt) const                                         		\
     {											\
+        Q_UNUSED(items);								\
+        Q_UNUSED(pnt);									\
         return (nullptr);								\
     }
 
