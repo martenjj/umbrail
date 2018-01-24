@@ -225,8 +225,8 @@ protected:
     virtual QString iconName() const = 0;
 
 private:
-    TrackDataItem(const TrackDataItem &other);
-    TrackDataItem &operator=(const TrackDataItem &other);
+    TrackDataItem(const TrackDataItem &other) = delete;
+    TrackDataItem &operator=(const TrackDataItem &other) = delete;
 
     void init();
 
