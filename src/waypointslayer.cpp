@@ -106,7 +106,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
 
         // First of all the bearing line, if there is one
         const QString brg = tdw->metadata("bearingline");
-        if (!brg.isEmpty())
+        if (!brg.isEmpty() && !brg.startsWith('!'))
         {
             GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brg.toDouble()),
                                                             BEARING_LINE_LENGTH);
