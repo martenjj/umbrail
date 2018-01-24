@@ -88,7 +88,7 @@ static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
 
 
 
-static bool shouldBeInExtensions(const TrackDataItem *item, const QString &name)
+static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 {
     if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=NULL)
     {							// point - these not in extensions
@@ -115,6 +115,19 @@ static bool shouldBeInExtensions(const TrackDataItem *item, const QString &name)
 
 
 
+static bool isNamespacedTag(const QString &name)
+{
+    return (name=="status" || name=="source" || name=="stop" || name=="bearingline");
+}
+
+
+
+static bool isInternalTag(const QString &name)
+{
+    return (name=="linecolour" || name=="pointcolour");
+}
+
+
 static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool wantExtensions)
 {
     for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
@@ -124,9 +137,11 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         //         << "=" << item->metadata(idx);
 
         QString name = DataIndexer::self()->name(idx);
-        if (shouldBeInExtensions(item, name) ^ wantExtensions) continue;
-        QString data =  item->metadata(idx);
-        if (data.isEmpty()) continue;
+        if (isInternalTag(name)) continue;		// internal to application only
+        if (isExtensionTag(name) ^ wantExtensions) continue;
+						        // not matching extension option
+        QString data = item->metadata(idx);
+        if (data.isEmpty()) continue;			// no data to output
 
         if (wantExtensions) startExtensions(str);
 
@@ -137,7 +152,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         }
         else
         {
-            if (name=="status" || name=="source" || name=="stop" || name=="bearingline") name = "navtracks:"+name;
+            if (isNamespacedTag(name)) name = "navtracks:"+name;
             str.writeTextElement(name, data);
         }
     }
