@@ -146,7 +146,7 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
         {
             qDebug() << "creating" << name << "under" << cur->name();
             foundFolder = new TrackDataFolder;
-            foundFolder->setName(name);
+            foundFolder->setName(name, true);
             cur->addChildItem(foundFolder);
         }
 
@@ -591,7 +591,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
         TrackDataItem *item = currentItem();		// find innermost current element
-        if (item!=NULL) item->setName(elementContents());	// assign its name
+        if (item!=NULL) item->setName(elementContents(), true);	// assign its name
         else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), elementContents());
         else warning(makeXmlException("NAME not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA"));
     }

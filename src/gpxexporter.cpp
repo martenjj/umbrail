@@ -138,7 +138,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
 
         QString name = DataIndexer::self()->name(idx);
         if (isInternalTag(name)) continue;		// internal to application only
-        if (isExtensionTag(name) ^ wantExtensions) continue;
+        if (isExtensionTag(item, name) ^ wantExtensions) continue;
 						        // not matching extension option
         QString data = item->metadata(idx);
         if (data.isEmpty()) continue;			// no data to output
