@@ -188,7 +188,7 @@ static LatLon toLatLonE(const Vector3D &point)
     const double cosbeta = sinbeta/tanbeta;
 
     // geodetic latitude (Bowring eqn 18: tanφ = z+ε²bsin³β / p−e²cos³β)
-    const double phi = isnan(cosbeta) ? 0 : atan2(z+eps2*b*sinbeta*sinbeta*sinbeta, p-e2*a*cosbeta*cosbeta*cosbeta);
+    const double phi = ISNAN(cosbeta) ? 0 : atan2(z+eps2*b*sinbeta*sinbeta*sinbeta, p-e2*a*cosbeta*cosbeta*cosbeta);
 
     // longitude
     const double lambda = atan2(y, x);
@@ -619,7 +619,7 @@ void OSGBCoordinateHandler::updateGUI(double lat, double lon)
 {
     qDebug() << lat << lon;
 
-    if (!isnan(lat) && !isnan(lon))
+    if (!ISNAN(lat) && !ISNAN(lon))
     {
         setOSGB(lat, lon);
     }
