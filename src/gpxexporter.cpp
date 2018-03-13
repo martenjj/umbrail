@@ -66,6 +66,13 @@ static void endExtensions(QXmlStreamWriter &str)
 }
 
 
+static QString colourValue(const QColor &col)
+{
+    QString result = col.name();
+    if (result.startsWith('#')) result.remove(0, 1);
+    return (result);
+}
+
 
 static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
 {
@@ -76,13 +83,13 @@ static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
     {
         // GPX: <topografix:color>c0c0c0</topografix:color>
         startExtensions(str);
-        str.writeTextElement("topografix:color", s->lineColour().name());
+        str.writeTextElement("topografix:color", colourValue(s->lineColour()));
     }
     else if (s->hasPointColour())			// for a waypoint
     {
         // OsmAnd: <color>#c0c0c0</color>
         startExtensions(str);
-        str.writeTextElement("color", '#'+s->pointColour().name());
+        str.writeTextElement("color", '#'+colourValue(s->pointColour()));
     }
 }
 
