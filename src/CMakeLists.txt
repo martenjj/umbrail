@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jan-18					#
+#  Edit:		14-Mar-18					#
 #########################################################################
 
 project(navtracks)
@@ -47,6 +47,7 @@ add_definitions("-DQT_NO_CAST_FROM_BYTEARRAY")
 add_definitions("-DQT_NO_URL_CAST_FROM_STRING")
 add_definitions("-DQT_NO_CAST_TO_ASCII")
 add_definitions("-DQT_NO_NARROWING_CONVERSIONS_IN_CONNECT")
+add_definitions("-DQT_DEPRECATED_WARNINGS")
 
 remove_definitions("-DQT_NO_CAST_FROM_ASCII")
 remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
