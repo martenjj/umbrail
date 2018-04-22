@@ -177,7 +177,7 @@ public:
     virtual TrackData::Type type() const = 0;
 
     QString name() const				{ return (mName); }
-    void setName(const QString &newName, bool explicitName = false);
+    void setName(const QString &newName, bool explicitName);
     bool hasExplicitName() const			{ return (mExplicitName); }
 
     virtual QIcon icon() const;

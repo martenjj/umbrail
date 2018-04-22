@@ -370,7 +370,7 @@ void StopDetectDialogue::slotDetectStops()
                 QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));
 
                 TrackDataWaypoint *tdw = new TrackDataWaypoint;
-                tdw->setName(i18n("Stop at %1 for %2", text1, text2));
+                tdw->setName(i18n("Stop at %1 for %2", text1, text2), true);
                 tdw->setLatLong(runLat, runLon);	// want explicit name here
                 tdw->setTime(dt1);
                 tdw->setMetadata(DataIndexer::self()->index("stop"), (text1+' '+text2));

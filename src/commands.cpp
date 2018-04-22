@@ -231,9 +231,10 @@ void ChangeItemNameCommand::redo()
     TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
     mSavedName = item->name();
-    qDebug() << "item" << mSavedName << "->" << mNewName;
+    mSavedExplicit = item->hasExplicitName();
+    qDebug() << "item" << mSavedName << "explicit?" << mSavedExplicit << "->" << mNewName;
 
-    item->setName(mNewName);
+    item->setName(mNewName, true);
     model()->changedItem(item);
     updateMap();
 }
@@ -244,9 +245,9 @@ void ChangeItemNameCommand::undo()
     Q_ASSERT(mDataItems.count()==1);
     TrackDataItem *item = mDataItems.first();
     Q_ASSERT(item!=NULL);
-    qDebug() << "item" << item->name() << "back to" << mSavedName;
+    qDebug() << "item" << item->name() << "back to" << mSavedName << "explicit?" << mSavedExplicit;
 
-    item->setName(mSavedName);
+    item->setName(mSavedName, mSavedExplicit);
     model()->changedItem(item);
     updateMap();
 }
@@ -659,7 +660,7 @@ void AddContainerCommand::redo()
         }
 
         Q_ASSERT(addedItem!=NULL);
-        if (!mAddName.isEmpty()) addedItem->setName(mAddName);
+        if (!mAddName.isEmpty()) addedItem->setName(mAddName, true);
         addedItem->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
 
         qDebug() << "created" << addedItem->name();
@@ -1059,7 +1060,7 @@ void AddWaypointCommand::redo()
         mNewWaypointContainer = new ItemContainer;
 
         TrackDataWaypoint *newWaypoint = new TrackDataWaypoint;
-        newWaypoint->setName(mWaypointName);
+        newWaypoint->setName(mWaypointName, true);
         newWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=NULL)
         {
@@ -1149,7 +1150,7 @@ void AddRoutepointCommand::redo()
         mNewRoutepointContainer = new ItemContainer;
 
         TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
-        newRoutepoint->setName(mRoutepointName);
+        newRoutepoint->setName(mRoutepointName, true);
         newRoutepoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=nullptr) newRoutepoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
 

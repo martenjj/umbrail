@@ -115,6 +115,7 @@ public:
 private:
     QString mNewName;
     QString mSavedName;
+    bool mSavedExplicit;
 };
 
 

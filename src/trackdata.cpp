@@ -536,7 +536,7 @@ TrackDataFile::TrackDataFile()
 void TrackDataFile::setFileName(const QUrl &file)
 {
     mFileName = file;
-    setName(file.fileName());
+    setName(file.fileName(), false);
 }
 
 
