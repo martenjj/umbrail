@@ -1056,6 +1056,14 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     //   3.	The user may enter the coordinates.
 
     CreatePointDialogue d(this, false);			// waypoint mode
+    if (!d.canCreate())
+    {
+        KMessageBox::sorry(mainWindow(),
+                           i18n("There are no folders where a waypoint can be created."),
+                           i18n("Cannot Create Waypoint"));
+        return;
+    }
+
     QList<TrackDataItem *> items = view()->selectedItems();
     const TrackDataAbstractPoint *selPoint = NULL;
 
@@ -1092,6 +1100,14 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
 void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
 {
     CreatePointDialogue d(this, true);			// route point mode
+    if (!d.canCreate())
+    {
+        KMessageBox::sorry(mainWindow(),
+                           i18n("There are no routes where a point can be created."),
+                           i18n("Cannot Create Routepoint"));
+        return;
+    }
+
     QList<TrackDataItem *> items = view()->selectedItems();
     const TrackDataAbstractPoint *selPoint = NULL;
 

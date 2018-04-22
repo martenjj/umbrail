@@ -90,17 +90,24 @@ CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QW
     mContainerList->expandToDepth(9);
 
     // Try to preselect a destination for the new item.
-    // Firstly, if there is only a single valid destination,
+    // Firstly, if there is only a single selectable destination,
     // then use that.
+    mCanCreate = true;					// assume so initially
     QModelIndex theItem;
     const int selectableItems = findSelectableItems(mContainerList->rootIndex(), trackModel, &theItem);
     if (selectableItems==1 && theItem.isValid())
     {
         mContainerList->setCurrentIndex(theItem);
     }
+    // If there are no selectable destinations, then nothing can
+    // be created.
+    else if (selectableItems==0)
+    {
+        mCanCreate = false;
+    }
     else
     {
-        // If there is no valid destination or more than one, then if
+        // If there is more than one selectable destination, then if
         // the tree's selected item is valid then preselect that.
         QList<TrackDataItem *> items = fc->view()->selectedItems();
         if (items.count()==1)

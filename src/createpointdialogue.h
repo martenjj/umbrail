@@ -30,6 +30,8 @@ public:
     QString pointName() const;
     void pointPosition(qreal *latp, qreal *lonp);
 
+    bool canCreate() const				{ return (mCanCreate); }
+
 private slots:
     void slotSetButtonStates();
 
@@ -37,6 +39,7 @@ private:
     QLineEdit *mNameEdit;
     LatLongWidget *mLatLongEdit;
     QTreeView *mContainerList;
+    bool mCanCreate;
 };
 
 #endif							// CREATEPOINTDIALOGUE_H
