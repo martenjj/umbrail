@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	13-May-16						//
+//  Edit:	23-Apr-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -62,21 +62,21 @@ void Project::setFileName(const QUrl &file)
 QString Project::save(KConfig *conf)
 {
     qDebug();
-    return (QString::null);
+    return (QString());
 }
 
 
 QString Project::load(const KConfig *conf)
 {
     qDebug();
-    return (QString::null);
+    return (QString());
 }
 
 
 QString Project::name(bool onlyIfValid) const
 {
     if (mSaveFile.isValid()) return (mSaveFile.fileName());
-    else return (onlyIfValid ? QString::null : i18n("Untitled"));
+    else return (onlyIfValid ? QString() : i18n("Untitled"));
 }
 
 

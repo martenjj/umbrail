@@ -53,7 +53,7 @@ public:
     virtual ~ItemContainer();
 
     TrackData::Type type() const override	{ return (TrackData::None); }
-    virtual QString iconName() const override	{ return (QString::null); }
+    virtual QString iconName() const override	{ return (QString()); }
 
 private:
     static int containerCounter;

@@ -39,7 +39,7 @@ void AbstractCoordinateHandler::updateValues(double lat, double lon)
 
 void AbstractCoordinateHandler::checkError()
 {
-    setError(QString::null);
+    setError(QString());
 }
 
 

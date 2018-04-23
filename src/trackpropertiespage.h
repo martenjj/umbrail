@@ -12,13 +12,12 @@ class TrackDataItem;
 
 #define CREATE_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
     TrackPropertiesPage *								\
-        TrackData ## ITEMTYPE::createProperties ## PAGETYPE ## Page(			\
+    TrackData ## ITEMTYPE::createProperties ## PAGETYPE ## Page(       			\
             const QList<TrackDataItem *> *items,                         		\
             QWidget *pnt) const                                         		\
     {											\
         return (new Track ## ITEMTYPE ## PAGETYPE ## Page(items, pnt));			\
     }
-
 
 #define NULL_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
     TrackPropertiesPage *								\
@@ -51,7 +50,7 @@ public slots:
 protected:
     TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
-    void addSeparatorField(const QString &title = QString::null);
+    void addSeparatorField(const QString &title = QString());
     void disableIfEmpty(QWidget *field, bool always = false);
 
 protected:

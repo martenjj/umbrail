@@ -93,7 +93,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mShowTrackArrowsCheck->setChecked(Settings::showTrackArrows());
     connect(mShowTrackArrowsCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
     mShowTrackArrowsCheck->setToolTip(kcsi->toolTip());
-    fl->addRow(QString::null, mShowTrackArrowsCheck);
+    fl->addRow("", mShowTrackArrowsCheck);
 
     fl->addItem(DialogBase::verticalSpacerItem());
 

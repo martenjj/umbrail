@@ -42,8 +42,8 @@ TrackDataFile *GpxImporter::load(const QUrl &file)
 
     mXmlIndent = 0;
     mXmlLocator = NULL;
-    mRestartTag = QString::null;
-    mContainedChars = QString::null;
+    mRestartTag.clear();
+    mContainedChars.clear();
 
     mWithinMetadata = false;
     mWithinExtensions = false;
@@ -543,7 +543,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         Q_ASSERT(folder!=NULL);
 
         // Clear the folder name metadata, will regenerate on export
-        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString::null);
+        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), "");
 
         folder->addChildItem(mCurrentWaypoint);		// add to destination folder
         mCurrentWaypoint = NULL;			// finished with temporary

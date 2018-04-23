@@ -72,7 +72,7 @@ void MapThemeDialogue::setThemeId(const QString &id)
 QString MapThemeDialogue::themeId() const
 {
     QList<QListWidgetItem *> selected = mListBox->selectedItems();
-    if (selected.count()==0) return (QString::null);	// should never happen
+    if (selected.count()==0) return (QString());	// should never happen
 
     QString id = selected.first()->data(Qt::UserRole).toString();
     qDebug() << id;

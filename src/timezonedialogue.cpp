@@ -87,9 +87,9 @@ void TimeZoneDialogue::setTimeZone(const QByteArray &zone)
 
 QString TimeZoneDialogue::timeZone() const
 {
-    if (mReturnUTC) return (QString::null);
+    if (mReturnUTC) return (QString());
     QStringList sel = mTimeZoneWidget->selection();
-    return (sel.isEmpty() ? QString::null : sel.first());
+    return (sel.isEmpty() ? QString() : sel.first());
 }
 
 

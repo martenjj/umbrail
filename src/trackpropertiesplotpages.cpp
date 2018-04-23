@@ -30,7 +30,7 @@ TrackItemPlotPage::TrackItemPlotPage(const QList<TrackDataItem *> *items, QWidge
 
     connect(mBearingLineCheck, SIGNAL(toggled(bool)), SLOT(slotUpdateButtons()));
     addSeparatorField();
-    mFormLayout->addRow(QString::null, mBearingLineCheck);
+    mFormLayout->addRow("", mBearingLineCheck);
 
     mBearingEntry = new QSpinBox(this);
     mBearingEntry->setMinimum(0);
@@ -75,12 +75,12 @@ TrackWaypointPlotPage::TrackWaypointPlotPage(const QList<TrackDataItem *> *items
 }
 
 
-CREATE_PROPERTIES_PAGE(Waypoint, Plot);
+CREATE_PROPERTIES_PAGE(Waypoint, Plot)
 
-NULL_PROPERTIES_PAGE(File, Plot);
-NULL_PROPERTIES_PAGE(Track, Plot);
-NULL_PROPERTIES_PAGE(Route, Plot);
-NULL_PROPERTIES_PAGE(Segment, Plot);
-NULL_PROPERTIES_PAGE(Trackpoint, Plot);
-NULL_PROPERTIES_PAGE(Folder, Plot);
-NULL_PROPERTIES_PAGE(Routepoint, Plot);
+NULL_PROPERTIES_PAGE(File, Plot)
+NULL_PROPERTIES_PAGE(Track, Plot)
+NULL_PROPERTIES_PAGE(Route, Plot)
+NULL_PROPERTIES_PAGE(Segment, Plot)
+NULL_PROPERTIES_PAGE(Trackpoint, Plot)
+NULL_PROPERTIES_PAGE(Folder, Plot)
+NULL_PROPERTIES_PAGE(Routepoint, Plot)

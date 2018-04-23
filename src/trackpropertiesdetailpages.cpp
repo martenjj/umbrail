@@ -82,7 +82,7 @@ void TrackItemDetailPage::addBoundingAreaField(const QList<TrackDataItem *> *ite
     mFormLayout->addRow(i18nc("@label:textbox", "Bounding area:"), l);
     disableIfEmpty(l);
     l = new TrackDataLabel(bb.south(), bb.east(), true, this);
-    mFormLayout->addRow(QString::null, l);
+    mFormLayout->addRow("", l);
     disableIfEmpty(l);
 }
 
@@ -620,11 +620,11 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
 
 
 
-CREATE_PROPERTIES_PAGE(File, Detail);
-CREATE_PROPERTIES_PAGE(Track, Detail);
-CREATE_PROPERTIES_PAGE(Route, Detail);
-CREATE_PROPERTIES_PAGE(Segment, Detail);
-CREATE_PROPERTIES_PAGE(Trackpoint, Detail);
-CREATE_PROPERTIES_PAGE(Folder, Detail);
-CREATE_PROPERTIES_PAGE(Waypoint, Detail);
-CREATE_PROPERTIES_PAGE(Routepoint, Detail);
+CREATE_PROPERTIES_PAGE(File, Detail)
+CREATE_PROPERTIES_PAGE(Track, Detail)
+CREATE_PROPERTIES_PAGE(Route, Detail)
+CREATE_PROPERTIES_PAGE(Segment, Detail)
+CREATE_PROPERTIES_PAGE(Trackpoint, Detail)
+CREATE_PROPERTIES_PAGE(Folder, Detail)
+CREATE_PROPERTIES_PAGE(Waypoint, Detail)
+CREATE_PROPERTIES_PAGE(Routepoint, Detail)

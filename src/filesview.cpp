@@ -201,7 +201,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
         list.append(tdi);
     }
 
-    qStableSort(list.begin(), list.end(), &lessThanByIndexRow);
+    std::stable_sort(list.begin(), list.end(), &lessThanByIndexRow);
     return (list);
 }
 

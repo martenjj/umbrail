@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	17-Nov-17						//
+//  Edit:	23-Apr-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -65,11 +65,11 @@ int main(int argc,char *argv[])
                          i18n("GPS track viewer and editor"),
                          KAboutLicense::GPL_V3,
                          i18n("Copyright (c) 2014-2016 Jonathan Marten"),
-                         QString::null,			// otherText
+                         "",				// otherText
                          "http://www.keelhaul.me.uk",	// homePageAddress
                         "jjm@keelhaul.me.uk");		// bugsEmailAddress
     aboutData.addAuthor(i18n("Jonathan Marten"),
-                        QString::null,
+                        "",
                         "jjm@keelhaul.me.uk",
                         "http://www.keelhaul.me.uk");
 

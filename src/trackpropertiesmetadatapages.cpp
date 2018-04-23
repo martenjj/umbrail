@@ -120,11 +120,11 @@ TrackRoutepointMetadataPage::TrackRoutepointMetadataPage(const QList<TrackDataIt
 
 
 
-CREATE_PROPERTIES_PAGE(File, Metadata);
-CREATE_PROPERTIES_PAGE(Track, Metadata);
-CREATE_PROPERTIES_PAGE(Route, Metadata);
-CREATE_PROPERTIES_PAGE(Segment, Metadata);
-CREATE_PROPERTIES_PAGE(Trackpoint, Metadata);
-CREATE_PROPERTIES_PAGE(Folder, Metadata);
-CREATE_PROPERTIES_PAGE(Waypoint, Metadata);
-CREATE_PROPERTIES_PAGE(Routepoint, Metadata);
+CREATE_PROPERTIES_PAGE(File, Metadata)
+CREATE_PROPERTIES_PAGE(Track, Metadata)
+CREATE_PROPERTIES_PAGE(Route, Metadata)
+CREATE_PROPERTIES_PAGE(Segment, Metadata)
+CREATE_PROPERTIES_PAGE(Trackpoint, Metadata)
+CREATE_PROPERTIES_PAGE(Folder, Metadata)
+CREATE_PROPERTIES_PAGE(Waypoint, Metadata)
+CREATE_PROPERTIES_PAGE(Routepoint, Metadata)

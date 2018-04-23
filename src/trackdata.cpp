@@ -239,7 +239,7 @@ QString TrackData::formattedLatLong(double lat, double lon, bool blankIfUnknown)
 {
     if (ISNAN(lat) || ISNAN(lon))
     {
-        if (blankIfUnknown) return (QString::null);
+        if (blankIfUnknown) return ("");
         return (i18nc("an unknown quantity", "unknown"));
     }
 
@@ -251,7 +251,7 @@ QString TrackData::formattedLatLong(double lat, double lon, bool blankIfUnknown)
 
 QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
 {
-    if (t==0 && blankIfZero) return (QString::null);
+    if (t==0 && blankIfZero) return ("");
 
     int sec = t % 60;					// seconds
     t -= sec;
@@ -433,16 +433,16 @@ void TrackDataItem::setMetadata(int idx, const QString &value)
 
 QString TrackDataItem::metadata(int idx) const
 {
-    if (mMetadata==NULL) return (QString::null);
+    if (mMetadata==NULL) return (QString());
     int cnt = mMetadata->count();
-    if (idx<0 || idx>=cnt) return (QString::null);
+    if (idx<0 || idx>=cnt) return (QString());
     return (mMetadata->at(idx));
 }
 
 
 QString TrackDataItem::metadata(const QString &key) const
 {
-    if (mMetadata==NULL) return (QString::null);
+    if (mMetadata==NULL) return (QString());
     return (metadata(DataIndexer::self()->index(key)));
 }
 
@@ -491,7 +491,7 @@ QString TrackDataItem::timeZone() const
         if (parentFile!=NULL) return (parentFile->metadata("timezone"));
         parentItem = parentItem->parent();
     }
-    return (QString::null);
+    return (QString());
 }
 
 

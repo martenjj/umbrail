@@ -93,7 +93,7 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
         cities.append(key);
         zonesByCity.insert(key, zone);
     }
-    qSort(cities.begin(), cities.end(), localeLessThan);
+    std::sort(cities.begin(), cities.end(), localeLessThan);
 
     foreach (const QString &key, cities)
     {

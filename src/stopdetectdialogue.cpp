@@ -73,7 +73,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     QFormLayout *fl = new QFormLayout;
     hb->addLayout(fl);
 
-    QLabel *l = new QLabel(QString::null, w);
+    QLabel *l = new QLabel("", w);
     fl->addRow(l);
 
     mTimeSlider = new ValueSlider(w, 30, 600, true, 120);
@@ -95,7 +95,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     connect(mNoiseSlider, SIGNAL(settingChanged(int)), mIdleTimer, SLOT(start()));
     fl->addRow(i18n("Noise points:"), mNoiseSlider);
 
-    fl->addRow(new QLabel(QString::null, this));
+    fl->addRow(new QLabel("", this));
 
     mFolderSelect = new FolderSelectWidget(this);
     connect(mFolderSelect, SIGNAL(folderChanged(const QString &)), SLOT(slotSetButtonStates()));

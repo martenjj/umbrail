@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	23-Apr-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -37,7 +37,7 @@ class QPushButton;
 class QTimer;
 class QUrl;
 
-namespace Phonon { class VideoPlayer; };
+namespace Phonon { class VideoPlayer; }
 
 
 class VideoViewer : public QWidget

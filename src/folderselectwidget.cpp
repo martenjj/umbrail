@@ -26,7 +26,7 @@ FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
     mDestFolder->setPlaceholderText(i18n("Select..."));
     hb->addWidget(mDestFolder);
 
-    QPushButton *reqButton = new QPushButton(QIcon::fromTheme("folder"), QString::null, this);
+    QPushButton *reqButton = new QPushButton(QIcon::fromTheme("folder"), "", this);
     connect(reqButton, SIGNAL(clicked(bool)), SLOT(slotSelectFolder()));
     hb->addWidget(reqButton);
 

@@ -48,7 +48,7 @@ public:
 private:
     QByteArray indent() const;
     inline bool parsing() const;
-    QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString::null);
+    QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString());
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);

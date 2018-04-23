@@ -640,7 +640,7 @@ void FilesController::slotUpdateActionState()
     {
         const TrackDataItem *tdi = view()->selectedItem();
         const QString name = tdi->name();
-        QString msg = QString::null;
+        QString msg = "";
 
         switch (selType)
         {
@@ -816,7 +816,7 @@ void FilesController::slotTrackProperties()
         qDebug() << "change status" << oldStatus << "->" << newStatus;
         ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
         cmd7->setDataItems(items);
-        cmd7->setData("status", (newStatus==0) ? QString::null : QString::number(newStatus));
+        cmd7->setData("status", (newStatus==0) ? "" : QString::number(newStatus));
     }
 
     if (cmd->childCount()==0)				// anything to actually do?
@@ -839,7 +839,7 @@ void FilesController::slotSetWaypointStatus()
     ChangeItemDataCommand *cmd = new ChangeItemDataCommand(this);
     cmd->setText(i18n("Waypoint Status %1", CommandBase::senderText(sender())));
     cmd->setDataItems(view()->selectedItems());
-    cmd->setData("status", (newStatus==0) ? QString::null : QString::number(newStatus));
+    cmd->setData("status", (newStatus==0) ? "" : QString::number(newStatus));
     mainWindow()->executeCommand(cmd);
 }
 
@@ -895,7 +895,7 @@ void FilesController::slotMergeSegments()
 
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()<2) return;
-    qSort(items.begin(), items.end(), &compareSegmentTimes);
+    std::sort(items.begin(), items.end(), &compareSegmentTimes);
 
     qDebug() << "sorted segments:";
     QDateTime prevEnd;

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	16-May-16						//
+//  Edit:	23-Apr-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -104,7 +104,7 @@ case VariableUnitCombo::BrgRelative:
 case VariableUnitCombo::BrgNautical:
             sign = (v<0 ? "R " : "G ");
             if (v<0) v = -v;
-            degs = QString::null;
+            degs = "";
             break;
         }
 

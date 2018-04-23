@@ -80,5 +80,5 @@ void TimeZoneProvider::reportError(const QString &msg)
                        xi18nc("@info", "Error fetching <link>%1</link><nl/><message>%2</message>",
                               mUrl.toDisplayString(), msg),
                        i18n("Error getting time zone"));
-    emit result(QString::null);
+    emit result(QString());
 }

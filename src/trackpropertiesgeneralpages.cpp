@@ -59,7 +59,7 @@ bool TrackItemGeneralPage::isDataValid() const
 
 QString TrackItemGeneralPage::newItemName() const
 {							// only if editable
-    if (!mNameEdit->isEnabled()) return (QString::null);
+    if (!mNameEdit->isEnabled()) return (QString());
     return (mNameEdit->text());
 }
 
@@ -80,7 +80,7 @@ QString TrackItemGeneralPage::newTrackType() const
     if (!mTypeCombo->isEnabled()) return ("-");		// not applicable
 
     int idx = mTypeCombo->currentIndex();
-    if (idx==0) return (QString::null);			// first is always "none"
+    if (idx==0) return ("");				// first is always "none"
     return (mTypeCombo->currentText());
 }
 
@@ -100,7 +100,7 @@ TrackData::WaypointStatus TrackItemGeneralPage::newWaypointStatus() const
 
 QString TrackItemGeneralPage::newTimeZone() const
 {							// only if editable
-    if (mTimeZoneSel==NULL || !mTimeZoneSel->isEnabled()) return (QString::null);
+    if (mTimeZoneSel==NULL || !mTimeZoneSel->isEnabled()) return (QString());
     return (mTimeZoneSel->timeZone());
 }
 
@@ -447,19 +447,19 @@ default:				typeName = i18n("(Unknown)");	break;
         switch (mWaypoint->waypointType())
         {
 case TrackData::WaypointAudioNote:
-            actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), QString::null, this);
+            actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayAudioNote()));
             break;
 
 case TrackData::WaypointVideoNote:
-            actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), QString::null, this);
+            actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the video note"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayVideoNote()));
             break;
 
 case TrackData::WaypointPhoto:
-            actionButton = new QPushButton(QIcon::fromTheme("document-preview"), QString::null, this);
+            actionButton = new QPushButton(QIcon::fromTheme("document-preview"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "View the photo"));
             connect(actionButton, SIGNAL(clicked()), SLOT(slotViewPhotoNote()));
             break;
@@ -531,11 +531,11 @@ QString TrackRouteGeneralPage::typeText(int count) const
 }
 
 
-CREATE_PROPERTIES_PAGE(File, General);
-CREATE_PROPERTIES_PAGE(Track, General);
-CREATE_PROPERTIES_PAGE(Segment, General);
-CREATE_PROPERTIES_PAGE(Trackpoint, General);
-CREATE_PROPERTIES_PAGE(Routepoint, General);
-CREATE_PROPERTIES_PAGE(Folder, General);
-CREATE_PROPERTIES_PAGE(Waypoint, General);
-CREATE_PROPERTIES_PAGE(Route, General);
+CREATE_PROPERTIES_PAGE(File, General)
+CREATE_PROPERTIES_PAGE(Track, General)
+CREATE_PROPERTIES_PAGE(Segment, General)
+CREATE_PROPERTIES_PAGE(Trackpoint, General)
+CREATE_PROPERTIES_PAGE(Routepoint, General)
+CREATE_PROPERTIES_PAGE(Folder, General)
+CREATE_PROPERTIES_PAGE(Waypoint, General)
+CREATE_PROPERTIES_PAGE(Route, General)

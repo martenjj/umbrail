@@ -462,7 +462,7 @@ bool MainWindow::queryClose()
     if (mProject->hasFileName()) query = xi18nc("@info", "File <emphasis strong=\"1\"><filename>%1</filename></emphasis> has been modified. Save changes?", mProject->name());
     else query = i18n("File has been modified. Save changes?");
 
-    switch (KMessageBox::warningYesNoCancel(this, query, QString::null,
+    switch (KMessageBox::warningYesNoCancel(this, query, QString(),
                                             KStandardGuiItem::save(), KStandardGuiItem::discard()))
     {
 case KMessageBox::Yes:

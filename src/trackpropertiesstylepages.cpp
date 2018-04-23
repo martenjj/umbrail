@@ -39,7 +39,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
 
         mPointInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
         mPointInheritCheck->setChecked(!s->hasPointColour());
-        mFormLayout->addRow(QString::null, mPointInheritCheck);
+        mFormLayout->addRow("", mPointInheritCheck);
     }
     else						// others have "Line colour"
     {
@@ -50,7 +50,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
 
         mLineInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
         mLineInheritCheck->setChecked(!s->hasLineColour());
-        mFormLayout->addRow(QString::null, mLineInheritCheck);
+        mFormLayout->addRow("", mLineInheritCheck);
     }
 }
 
@@ -123,12 +123,12 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
 
 
 
-CREATE_PROPERTIES_PAGE(File, Style);
-CREATE_PROPERTIES_PAGE(Track, Style);
-CREATE_PROPERTIES_PAGE(Route, Style);
-CREATE_PROPERTIES_PAGE(Segment, Style);
-CREATE_PROPERTIES_PAGE(Waypoint, Style);
+CREATE_PROPERTIES_PAGE(File, Style)
+CREATE_PROPERTIES_PAGE(Track, Style)
+CREATE_PROPERTIES_PAGE(Route, Style)
+CREATE_PROPERTIES_PAGE(Segment, Style)
+CREATE_PROPERTIES_PAGE(Waypoint, Style)
 
-NULL_PROPERTIES_PAGE(Trackpoint, Style);
-NULL_PROPERTIES_PAGE(Folder, Style);
-NULL_PROPERTIES_PAGE(Routepoint, Style);
+NULL_PROPERTIES_PAGE(Trackpoint, Style)
+NULL_PROPERTIES_PAGE(Folder, Style)
+NULL_PROPERTIES_PAGE(Routepoint, Style)
