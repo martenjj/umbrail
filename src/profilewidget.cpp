@@ -167,12 +167,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
         mSpeedCheck->setChecked(true);
     }
 
-    connect(ElevationManager::self(), &ElevationManager::tileReady, this,
-
-            [this](const ElevationTile *tile){ mUpdateTimer->start(); });
-
-//            &ProfileWidget::slotElevationTileReady);
-
+    connect(ElevationManager::self(), &ElevationManager::tileReady,
+            this, [this](const ElevationTile *tile){ mUpdateTimer->start(); });
     mUpdateTimer->start();				// do the first plot update
 }
 
@@ -446,10 +442,4 @@ void ProfileWidget::slotUpdatePlot()
     }
 
     mPlot->replot();
-}
-
-
-void ProfileWidget::slotElevationTileReady(const ElevationTile *tile)
-{
-    mUpdateTimer->start();
 }

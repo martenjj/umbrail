@@ -38,7 +38,6 @@ public:
 
 private slots:
     void slotUpdatePlot();
-    void slotElevationTileReady(const ElevationTile *tile);
 
 private:
     void getPlotData(const TrackDataItem *item);
