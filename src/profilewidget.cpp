@@ -41,6 +41,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     mTimeZone = NULL;
 
+    mPoints = filesController()->view()->selectedPoints();
+
     mUpdateTimer = new QTimer(this);
     mUpdateTimer->setSingleShot(true);
     mUpdateTimer->setInterval(50);
@@ -223,10 +225,10 @@ void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 }
 
 
-void ProfileWidget::getPlotData(const TrackDataItem *item)
+void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
 {
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
-    if (tdp!=NULL)					// is this a point?
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(point);
+    if (tdp!=NULL)					// is this a track point?
     {
         double distStep = 0;
         double timeStep = 0;
@@ -321,11 +323,6 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
         }
         mSpeedData.append(spd);
     }
-    else						// not a point, recurse for children
-    {
-        const int num = item->childCount(); 
-        for (int i = 0; i<num; ++i) getPlotData(item->childAt(i));
-    }
 }
 
 
@@ -349,8 +346,6 @@ void ProfileWidget::slotUpdatePlot()
     mCumulativeTravel = 0;
     mPrevPoint = NULL;
 
-    const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
-
     mRefData.clear();
     mElevData.clear();
     mSpeedData.clear();
@@ -368,7 +363,7 @@ void ProfileWidget::slotUpdatePlot()
         else qWarning() << "unknown time zone" << zoneName;
     }
 
-    for (int i = 0; i<items.count(); ++i) getPlotData(items[i]);
+    for (int i = 0; i<mPoints.count(); ++i) getPlotData(mPoints[i]);
     qDebug() << "got" << mRefData.count() << "data points";
 
     QCPGraph *graph = mPlot->graph(0);			// elevation graph

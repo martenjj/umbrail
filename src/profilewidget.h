@@ -16,13 +16,15 @@ class QCheckBox;
 class QComboBox;
 class QRadioButton;
 class QTimeZone;
-class TrackDataItem;
-class TrackDataTrackpoint;
+
+class KConfigGroup;
+
+class TrackDataAbstractPoint;
 class VariableUnitCombo;
+class ElevationTile;
+
 class QCustomPlot;
 class QCPAxisTicker;
-class KConfigGroup;
-class ElevationTile;
 
 
 class ProfileWidget : public DialogBase, public DialogStateSaver, public MainWindowInterface
@@ -40,7 +42,7 @@ private slots:
     void slotUpdatePlot();
 
 private:
-    void getPlotData(const TrackDataItem *item);
+    void getPlotData(const TrackDataAbstractPoint *point);
 
 private:
     QCheckBox *mElevationCheck;
@@ -56,6 +58,7 @@ private:
     VariableUnitCombo *mDistanceUnit;
     VariableUnitCombo *mTimeUnit;
 
+    QVector<const TrackDataAbstractPoint *> mPoints;
     QVector<double> mRefData;
     QVector<double> mElevData;
     QVector<double> mSpeedData;
@@ -80,7 +83,7 @@ private:
 
     bool mUseTravelDistance;
     double mCumulativeTravel;
-    const TrackDataTrackpoint *mPrevPoint;
+    const TrackDataAbstractPoint *mPrevPoint;
 
     time_t mBaseTime;
     QTimeZone *mTimeZone;
