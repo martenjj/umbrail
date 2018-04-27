@@ -289,7 +289,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
         }
 
         // Elevation, data always in metres
-        double ele = 0.0;
+        double ele = NAN;
         if (mElevationSource==ElevationSourceGPS)	// GPS elevation
         {
             ele = tdp->elevation();
@@ -308,7 +308,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
         if (mSpeedSource==SpeedSourceGPS)		// GPS speed
         {
             const QString speedMeta = tdp->metadata("speed");
-            if (speedMeta.isEmpty()) spd = 0;
+            if (speedMeta.isEmpty()) spd = NAN;
             else
             {
                 spd = VariableUnitCombo::distanceFromMetres(speedMeta.toDouble())*mSpeedUnit->factor()*3600;
@@ -316,7 +316,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
         }
         else						// speed from track
         {
-            if (timeStep==0) spd = 0;
+            if (timeStep==0) spd = NAN;
             else spd = (distStep*mSpeedUnit->factor()*3600)/timeStep;
         }
         mSpeedData.append(spd);
