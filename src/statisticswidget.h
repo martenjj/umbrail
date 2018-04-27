@@ -8,7 +8,7 @@
 
 
 class QGridLayout;
-class TrackDataItem;
+class TrackDataAbstractPoint;
 
 
 class StatisticsWidget : public DialogBase, public MainWindowInterface
@@ -20,7 +20,7 @@ public:
     virtual ~StatisticsWidget() = default;
 
 private:
-    void getPointData(const TrackDataItem *item);
+    void getPointData(const TrackDataAbstractPoint *point);
     void addRow(const QString &text, int num, bool withPercent = true);
 
 private:

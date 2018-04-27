@@ -32,8 +32,8 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithGpsSpeed = 0;
     mWithGpsHdop = 0;
 
-    const QList<TrackDataItem *> items = filesController()->view()->selectedItems();
-    for (int i = 0; i<items.count(); ++i) getPointData(items[i]);
+    const QVector<const TrackDataAbstractPoint *> points = filesController()->view()->selectedPoints();
+    for (int i = 0; i<points.count(); ++i) getPointData(points[i]);
 
     mWidget = new QWidget(this);
     mLayout = new QGridLayout(mWidget);
@@ -104,9 +104,9 @@ void StatisticsWidget::addRow(const QString &text, int num, bool withPercent)
 }
 
 
-void StatisticsWidget::getPointData(const TrackDataItem *item)
+void StatisticsWidget::getPointData(const TrackDataAbstractPoint *point)
 {
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(point);
     if (tdp!=NULL)					// is this a point?
     {
         ++mTotalPoints;					// count up total points
@@ -122,10 +122,5 @@ void StatisticsWidget::getPointData(const TrackDataItem *item)
 
         const QString hdopMeta = tdp->metadata("hdop");
         if (!hdopMeta.isEmpty()) ++mWithGpsHdop;	// GPS HDOP recorded
-    }
-    else						// not a point, recurse for children
-    {
-        const int num = item->childCount(); 
-        for (int i = 0; i<num; ++i) getPointData(item->childAt(i));
     }
 }
