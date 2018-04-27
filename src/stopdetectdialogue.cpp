@@ -61,7 +61,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     setButtonEnabled(QDialogButtonBox::Ok, false);
     setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Commit"));
 
-    mInputPoints = filesController()->view()->selectedPoints();
+    filesController()->view()->selectedPoints().swap(mInputPoints);
 
     mIdleTimer = new QTimer(this);
     mIdleTimer->setInterval(2000);
@@ -240,7 +240,7 @@ void StopDetectDialogue::slotDetectStops()
 
         qDebug() << "### loop2: startIndex" << startIndex;
 
-        pnt = mInputPoints[startIndex];			// initial point in run
+        pnt = mInputPoints.at(startIndex);		// initial point in run
         double runLat = pnt->latitude();		// centre of current run
         double runLon = pnt->longitude();
 
@@ -264,7 +264,7 @@ void StopDetectDialogue::slotDetectStops()
 
                 if (searchIndex>=mInputPoints.count()) break;
 							// end of points list
-                pnt = mInputPoints[searchIndex];
+                pnt = mInputPoints.at(searchIndex);
                 if (withinDistance(pnt, runLat, runLon, maxDist))
                 {					// within distance tolerance?
                     qDebug() << "  within distance tol";
@@ -282,11 +282,11 @@ void StopDetectDialogue::slotDetectStops()
             // foundIndex = index of end of this run
 
             qDebug() << "run found from startIndex" << startIndex << "to foundIndex" << foundIndex;
-            pnt = mInputPoints[startIndex];
-            qDebug() << "  start point" << pnt->name() << "found point" << mInputPoints[foundIndex]->name();
+            pnt = mInputPoints.at(startIndex);
+            qDebug() << "  start point" << pnt->name() << "found point" << mInputPoints.at(foundIndex)->name();
 
 #ifdef MOVING_AVERAGING
-            pnt = mInputPoints[foundIndex];
+            pnt = mInputPoints.at(foundIndex);
             sumLat += pnt->latitude();
             sumLon += pnt->longitude();
             ++sumNum;
@@ -304,7 +304,7 @@ void StopDetectDialogue::slotDetectStops()
  
              for (int i = startIndex+1; i<=foundIndex; ++i)
              {
-                 pnt = mInputPoints[i];
+                 pnt = mInputPoints.at(i);
                  if (withinDistance(pnt, refLat, refLon, maxDist))
                  {
                      qDebug() << "  including" << i << "in average";
@@ -329,8 +329,8 @@ void StopDetectDialogue::slotDetectStops()
         {
             qDebug() << "******** stop found from startIndex" << startIndex << "to currentIndex" << currentIndex;
 
-            const TrackDataAbstractPoint *startPoint = mInputPoints[startIndex];
-            const TrackDataAbstractPoint *endPoint = mInputPoints[currentIndex];
+            const TrackDataAbstractPoint *startPoint = mInputPoints.at(startIndex);
+            const TrackDataAbstractPoint *endPoint = mInputPoints.at(currentIndex);
 
             qDebug() << "  start point" << startPoint->name() << "end point" << endPoint->name();
 

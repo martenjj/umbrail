@@ -41,7 +41,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     mTimeZone = NULL;
 
-    mPoints = filesController()->view()->selectedPoints();
+    filesController()->view()->selectedPoints().swap(mPoints);
 
     mUpdateTimer = new QTimer(this);
     mUpdateTimer->setSingleShot(true);
@@ -363,7 +363,7 @@ void ProfileWidget::slotUpdatePlot()
         else qWarning() << "unknown time zone" << zoneName;
     }
 
-    for (int i = 0; i<mPoints.count(); ++i) getPlotData(mPoints[i]);
+    for (int i = 0; i<mPoints.count(); ++i) getPlotData(mPoints.at(i));
     qDebug() << "got" << mRefData.count() << "data points";
 
     QCPGraph *graph = mPlot->graph(0);			// elevation graph

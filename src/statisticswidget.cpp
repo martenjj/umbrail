@@ -32,8 +32,9 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithGpsSpeed = 0;
     mWithGpsHdop = 0;
 
-    const QVector<const TrackDataAbstractPoint *> points = filesController()->view()->selectedPoints();
-    for (int i = 0; i<points.count(); ++i) getPointData(points[i]);
+    QVector<const TrackDataAbstractPoint *> points;
+    filesController()->view()->selectedPoints().swap(points);
+    for (int i = 0; i<points.count(); ++i) getPointData(points.at(i));
 
     mWidget = new QWidget(this);
     mLayout = new QGridLayout(mWidget);
