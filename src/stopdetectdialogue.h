@@ -15,7 +15,7 @@ class QShowEvent;
 class MainWindow;
 class ValueSlider;
 class TrackDataItem;
-class TrackDataTrackpoint;
+class TrackDataAbstractPoint;
 class TrackDataWaypoint;
 class FolderSelectWidget;
 
@@ -49,6 +49,7 @@ private:
 
     QTimer *mIdleTimer;
 
+    QVector<const TrackDataAbstractPoint *> mInputPoints;
     QList<const TrackDataWaypoint *> mResultPoints;
 };
 
