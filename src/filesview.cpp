@@ -195,7 +195,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
     Q_ASSERT(selIndexes.count()==mSelectedCount);
 
     QList<TrackDataItem *> list;
-    foreach(const QModelIndex idx, selIndexes)
+    foreach (const QModelIndex idx, selIndexes)
     {
         TrackDataItem *tdi = static_cast<TrackDataItem *>(idx.internalPointer());
         list.append(tdi);
@@ -206,79 +206,37 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 }
 
 
+static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstractPoint *> *points)
+{
+    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    if (tdp!=NULL)					// is this a point?
+    {
+        if (ISNAN(tdp->latitude())) return;		// check position is valid
+        if (ISNAN(tdp->longitude())) return;
+
+        const QDateTime dt = tdp->time();		// check time is valid
+        if (!dt.isValid()) return;
+
+        points->append(tdp);				// add point to list
+    }
+    else						// not a point, recurse for children
+    {
+        const int num = item->childCount();
+        for (int i = 0; i<num; ++i) getPointData(item->childAt(i), points);
+    }
+}
 
 
+QVector<const TrackDataAbstractPoint *> FilesView::selectedPoints() const
+{
+    QVector<const TrackDataAbstractPoint *> result;
 
+    const QList<TrackDataItem *> items = selectedItems();
+    for (int i = 0; i<items.count(); ++i) getPointData(items[i], &result);
 
-//// Map the selection in the proxy model to the base model.
-//// This contains one model index for each selected item (all
-//// columns), so consider only those for the first column.
-//// Return the row index in the base model of each.
-//FilesView::RowList FilesView::selectedRows() const
-//{
-//    FilesView::RowList result;
-//
-//    // Could also do this with
-//    //
-//    //   QModelIndexList indexes = mProxyModel->mapSelectionToSource(
-//    //                               selectionModel()->selection()).indexes();
-//    //
-//    // but, since we have to iterate over the returned list anyway,
-//    // it should be more efficient to filter the list for column 0
-//    // first and then do the model mapping.
-//
-//    QAbstractProxyModel *pm = static_cast<QAbstractProxyModel *>(model());
-//    QModelIndexList indexes = selectedIndexes();
-//    for (QModelIndexList::const_iterator it = indexes.constBegin();
-//         it!=indexes.constEnd(); ++it)
-//    {
-//        QModelIndex idx = (*it);
-//        if (idx.column()==0) result.append(pm->mapToSource(idx).row());
-//    }
-//
-//    return (result);
-//}
-//
-//
-//void FilesView::selectRows(const QList<int> &rows)
-//{
-//    qDebug() << rows;
-//
-//    selectionModel()->reset();
-//    if (!rows.isEmpty())
-//    {
-//        QAbstractProxyModel *pm = static_cast<QAbstractProxyModel *>(model());
-//        QAbstractItemModel *sm = pm->sourceModel();
-//
-//        for (int i = 0; i<rows.count(); ++i)
-//        {
-//            qDebug() << "selecting row" << rows[i];
-//            selectionModel()->select(pm->mapFromSource(sm->index(rows[i], 0)),
-//                                     QItemSelectionModel::Select|QItemSelectionModel::Rows);
-//        }
-//
-//        scrollTo(pm->mapFromSource(sm->index(rows.first(), 0)));
-//    }
-//}
-//
-//
-//void FilesView::selectRows(int fromRow, int toRow)
-//{
-//    qDebug() << fromRow << "-" << toRow;
-//
-//    QAbstractProxyModel *pm = static_cast<QAbstractProxyModel *>(model());
-//    QAbstractItemModel *sm = pm->sourceModel();
-//
-//    selectionModel()->reset();
-//    for (int i = fromRow; i<=toRow; ++i)
-//    {
-//        qDebug() << "selecting row" << i;
-//        selectionModel()->select(pm->mapFromSource(sm->index(i, 0)),
-//                                 QItemSelectionModel::Select|QItemSelectionModel::Rows);
-//    }
-//
-//    scrollTo(pm->mapFromSource(sm->index(fromRow, 0)));
-//}
+    qDebug() << "from" << items.count() << "items got" << result.count() << "points";
+    return (result);
+}
 
 
 void FilesView::contextMenuEvent(QContextMenuEvent *ev)

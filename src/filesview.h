@@ -27,6 +27,7 @@ public:
     TrackData::Type selectedType() const	{ return (mSelectedType); }
     const TrackDataItem *selectedItem() const	{ return (mSelectedItem); }
     QList<TrackDataItem *> selectedItems() const;
+    QVector<const TrackDataAbstractPoint *> selectedPoints() const;
 
     void selectItem(const TrackDataItem *item, bool combine = false);
 
