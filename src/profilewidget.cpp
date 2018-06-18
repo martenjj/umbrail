@@ -2,6 +2,7 @@
 #include "profilewidget.h"
 
 #include <time.h>
+#include <float.h>
 
 #include <qgridlayout.h>
 #include <qvector.h>
@@ -15,6 +16,7 @@
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
+#include <kiconloader.h>
 
 #include <dialogstatewatcher.h>
 
@@ -28,6 +30,138 @@
 #include "elevationmanager.h"
 #include "elevationtile.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#undef DEBUG_WAYPOINTS
+#define DEBUG_WAYPOINTS
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+// Painting parameters							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#define ASSOCIATE_DISTANCE	(100.0/(6371*1000))	// distance tolerance in metres
+#define MARKER_SIZE		8			// if no icon image available
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  WaypointLayerable							//
+//									//
+//  A layerable item that can be added to the plot.  It draws the	//
+//  applicable waypoints on the elevation line.				//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class WaypointLayerable : public QCPLayerable
+{
+public:
+    explicit WaypointLayerable(QCustomPlot *plot, QString targetLayer = QString(), QCPLayerable *parentLayerable = nullptr);
+
+    void setData(const QMap<const TrackDataAbstractPoint *, int> *waypoints,
+                 const QVector<double> *refData,
+                 const QVector<double> *elevData);
+
+protected:
+    void draw(QCPPainter *painter) override;
+    void applyDefaultAntialiasingHint(QCPPainter *painter) const override;
+
+private:
+    const QMap<const TrackDataAbstractPoint *, int> *mWaypoints;
+    const QVector<double> *mRefData;
+    const QVector<double> *mElevData;
+};
+
+
+WaypointLayerable::WaypointLayerable(QCustomPlot *plot, QString targetLayer, QCPLayerable *parentLayerable)
+    : QCPLayerable(plot, targetLayer, parentLayerable)
+{
+#ifdef DEBUG_WAYPOINTS
+    qDebug() << "created on layer" << targetLayer;
+#endif
+
+    mWaypoints = nullptr;
+    mRefData = nullptr;
+    mElevData = nullptr;
+}
+
+
+void WaypointLayerable::setData(const QMap<const TrackDataAbstractPoint *, int> *waypoints,
+                                const QVector<double> *refData,
+                                const QVector<double> *elevData)
+{
+    mWaypoints = waypoints;
+    mRefData = refData;
+    mElevData = elevData;
+}
+
+
+void WaypointLayerable::draw(QCPPainter *painter)
+{
+    if (mWaypoints==nullptr || mRefData==nullptr || mElevData==nullptr) return;
+    if (mRefData->isEmpty()) return;			// data not extracted yet
+#ifdef DEBUG_WAYPOINTS
+    qDebug() << "have" << mWaypoints->count() << "waypoints";
+#endif
+
+    QCustomPlot *plot = parentPlot();
+    Q_ASSERT(plot!=nullptr);
+
+    QCPGraph *graph = plot->graph(0);			// the elevation graph
+    for (auto it = mWaypoints->constBegin(); it!=mWaypoints->constEnd(); ++it)
+    {
+        const TrackDataAbstractPoint *tdw = it.key();
+        const int idx = it.value();
+
+        const double ele = mElevData->at(idx);
+        if (isnan(ele))
+        {
+            qDebug() << "no elevation for" << tdw->name();
+            continue;
+        }
+
+        QPointF pos = graph->coordsToPixels(mRefData->at(idx), mElevData->at(idx));
+#ifdef DEBUG_WAYPOINTS
+        qDebug() << "plot" << tdw->name() << "at" << pos;
+#endif
+        // Draw the waypoint icon image
+        const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
+        if (!img.isNull())				// icon image available
+        {
+            QPointF coord(pos.x()-(img.width()/2), pos.y()-(img.height()/2));
+            painter->drawPixmap(coord, img);
+        }
+        else						// draw our own marker
+        {
+            painter->setPen(QPen(Qt::red, 2));
+            painter->setBrush(Qt::yellow);
+            QPointF coord(pos.x()-(MARKER_SIZE/2), pos.y()-(MARKER_SIZE/2));
+            painter->drawEllipse(pos, MARKER_SIZE, MARKER_SIZE);
+        }
+
+        // Followed by the waypoint text
+        painter->save();
+        painter->translate(14, 2);			// offset text from point
+        painter->setPen(Qt::black);
+        painter->drawText(pos, tdw->name());
+        painter->restore();
+    }
+}
+
+
+void WaypointLayerable::applyDefaultAntialiasingHint(QCPPainter *painter) const
+{
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  ProfileWidget							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 ProfileWidget::ProfileWidget(QWidget *pnt)
     : DialogBase(pnt),
@@ -168,6 +302,24 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
         mElevationCheck->setChecked(true);
         mSpeedCheck->setChecked(true);
     }
+
+    // Set up a new layer on which to draw the waypoints.  Assuming that
+    // getting 'overlayLayer' from the plot succeeds, the new layer will
+    // be inserted just below that overlay layer, in other words second down
+    // from the top.  If getting the overlay layer fails then the new layer will
+    // be inserted at the top of the stack anyway, so hopefully the
+    // addLayer() can never fail.
+    QCPLayer *overlayLayer = mPlot->layer("overlay");
+
+    bool added = mPlot->addLayer("waypoints", overlayLayer,  QCustomPlot::limBelow);
+    Q_ASSERT(added);
+
+    QCPLayer *waypointLayer = mPlot->layer("waypoints");
+    Q_ASSERT(waypointLayer!=nullptr);
+    mWaypointLayerable = new WaypointLayerable(mPlot, "waypoints");
+							// only needs to be done once
+    associateWaypoints(mainWindow()->filesController()->model()->rootFileItem());
+    qDebug() << "found" << mWaypoints.count() << "associated waypoints";
 
     connect(ElevationManager::self(), &ElevationManager::tileReady,
             this, [this](const ElevationTile *tile){ mUpdateTimer->start(); });
@@ -326,6 +478,9 @@ void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
 }
 
 
+
+
+
 void ProfileWidget::slotUpdatePlot()
 {
     const bool speedEnabled = mSpeedCheck->isChecked();
@@ -365,6 +520,7 @@ void ProfileWidget::slotUpdatePlot()
 
     for (int i = 0; i<mPoints.count(); ++i) getPlotData(mPoints.at(i));
     qDebug() << "got" << mRefData.count() << "data points";
+    mWaypointLayerable->setData(&mWaypoints, &mRefData, &mElevData);
 
     QCPGraph *graph = mPlot->graph(0);			// elevation graph
     graph->setData(mRefData, mElevData);
@@ -437,4 +593,65 @@ void ProfileWidget::slotUpdatePlot()
     }
 
     mPlot->replot();
+}
+
+
+void ProfileWidget::associateWaypoints(const TrackDataItem *item)
+{
+    const TrackDataAbstractPoint *tdp = nullptr;
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    if (tdw!=nullptr) tdp = tdw;
+    const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(item);
+    if (tdr!=nullptr) tdp = tdr;
+
+    if (tdp!=NULL)
+    {
+#ifdef DEBUG_WAYPOINTS
+        qDebug() << "trying" << tdp->name();
+#endif
+        const TrackDataAbstractPoint *closestPoint = nullptr;
+        double closestDist = FLT_MAX;
+        int closestIndex;
+
+        for (int i = 0; i<mPoints.count(); ++i)
+        {
+            const TrackDataAbstractPoint *pnt = mPoints.at(i);
+            double dist = tdp->distanceTo(pnt);
+            if (dist<closestDist)			// closest approach so far?
+            {
+                closestPoint = pnt;
+                closestDist = dist;
+                closestIndex = i;
+            }
+        }
+
+        if (closestPoint==nullptr)			// couldn't find anything
+        {
+#ifdef DEBUG_WAYPOINTS
+            qDebug() << "  no closest point found";
+#endif
+        }
+        else
+        {
+#ifdef DEBUG_WAYPOINTS
+            qDebug() << "  closest point" << closestPoint->name() << "dist" << closestDist;
+#endif
+            if (closestDist<ASSOCIATE_DISTANCE)
+            {
+#ifdef DEBUG_WAYPOINTS
+                qDebug() << "  accept at index" << closestIndex;
+#endif
+                mWaypoints.insert(tdp, closestIndex);
+            }
+            else
+            {
+#ifdef DEBUG_WAYPOINTS
+                qDebug() << "  too far away";
+#endif
+            }
+
+        }
+    }
+
+    for (int i = 0; i<item->childCount(); ++i) associateWaypoints(item->childAt(i));
 }

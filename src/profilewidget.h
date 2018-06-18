@@ -7,6 +7,7 @@
 #include <dialogstatesaver.h>
 
 #include <qvector.h>
+#include <qmap.h>
 
 #include "mainwindowinterface.h"
 
@@ -19,12 +20,15 @@ class QTimeZone;
 
 class KConfigGroup;
 
+class TrackDataItem;
 class TrackDataAbstractPoint;
 class VariableUnitCombo;
 class ElevationTile;
 
 class QCustomPlot;
 class QCPAxisTicker;
+class QCPLayerable;
+class WaypointLayerable;
 
 
 class ProfileWidget : public DialogBase, public DialogStateSaver, public MainWindowInterface
@@ -43,6 +47,7 @@ private slots:
 
 private:
     void getPlotData(const TrackDataAbstractPoint *point);
+    void associateWaypoints(const TrackDataItem *item);
 
 private:
     QCheckBox *mElevationCheck;
@@ -63,7 +68,11 @@ private:
     QVector<double> mElevData;
     QVector<double> mSpeedData;
 
+    QMap<const TrackDataAbstractPoint *, int> mWaypoints;
+
     QCustomPlot *mPlot;
+    WaypointLayerable *mWaypointLayerable;
+
     QTimer *mUpdateTimer;
 
     enum ElevationSource
