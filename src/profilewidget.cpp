@@ -15,6 +15,7 @@
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
+#include <kcolorscheme.h>
 
 #include <dialogstatewatcher.h>
 
@@ -412,6 +413,8 @@ void ProfileWidget::slotUpdatePlot()
     }
     mPlot->xAxis->rescale();
 
+    KColorScheme sch(QPalette::Disabled);		// for getting disabled colour
+
     if (mElevationSource==ElevationSourceGPS)		// elevation axis
     {
         mPlot->yAxis->setLabel(i18n("Elevation (GPS %1)", mElevationUnit->currentText()));
@@ -420,8 +423,7 @@ void ProfileWidget::slotUpdatePlot()
     {
         mPlot->yAxis->setLabel(i18n("Elevation (DEM %1)", mElevationUnit->currentText()));
     }
-
-    mPlot->yAxis->setLabelColor(Qt::red);
+    mPlot->yAxis->setLabelColor(!elevationEnabled ? sch.foreground(KColorScheme::NormalText).color() : Qt::red);
     mPlot->yAxis->setVisible(true);
 
     if (mSpeedSource==SpeedSourceGPS)			// speed axis
@@ -432,7 +434,7 @@ void ProfileWidget::slotUpdatePlot()
     {
         mPlot->yAxis2->setLabel(i18n("Speed (%1)", mSpeedUnit->currentText()));
     }
-    mPlot->yAxis2->setLabelColor(Qt::blue);
+    mPlot->yAxis2->setLabelColor(!speedEnabled ? sch.foreground(KColorScheme::NormalText).color() : Qt::blue);
     mPlot->yAxis2->setVisible(true);
 
     if (mScaleZeroRadio->isChecked())			// zero origin
