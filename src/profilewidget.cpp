@@ -111,7 +111,9 @@ void WaypointLayerable::draw(QCPPainter *painter)
     QCustomPlot *plot = parentPlot();
     Q_ASSERT(plot!=nullptr);
 
-    QCPGraph *graph = plot->graph(0);			// the elevation graph
+    const QRect axisRect = plot->axisRect(0)->rect();	// plot rectangle (inside axes)
+    const QCPGraph *graph = plot->graph(0);		// the elevation graph
+
     for (auto it = mWaypoints->constBegin(); it!=mWaypoints->constEnd(); ++it)
     {
         const TrackDataAbstractPoint *tdw = it.key();
@@ -128,7 +130,12 @@ void WaypointLayerable::draw(QCPPainter *painter)
 #ifdef DEBUG_WAYPOINTS
         qDebug() << "plot" << tdw->name() << "at" << pos;
 #endif
-        // Draw the waypoint icon image
+
+        // First draw the position/time line
+        painter->setPen(QPen(Qt::green, 1));
+        painter->drawLine(QPointF(pos.x(), axisRect.top()), QPointF(pos.x(), axisRect.bottom()-2));
+
+        // Then the waypoint icon image, if available
         const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
         if (!img.isNull())				// icon image available
         {
@@ -139,7 +146,6 @@ void WaypointLayerable::draw(QCPPainter *painter)
         {
             painter->setPen(QPen(Qt::red, 2));
             painter->setBrush(Qt::yellow);
-            QPointF coord(pos.x()-(MARKER_SIZE/2), pos.y()-(MARKER_SIZE/2));
             painter->drawEllipse(pos, MARKER_SIZE, MARKER_SIZE);
         }
 
