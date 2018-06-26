@@ -9,6 +9,7 @@
 #include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qradiobutton.h>
+#include <qpushbutton.h>
 #include <qbuttongroup.h>
 #include <qlabel.h>
 #include <qtimer.h>
@@ -67,15 +68,20 @@ public:
     void setData(const QMap<const TrackDataAbstractPoint *, int> *waypoints,
                  const QVector<double> *refData,
                  const QVector<double> *elevData);
+    void setShowPoints(WaypointSelectDialogue::SelectionSet sel);
 
 protected:
     void draw(QCPPainter *painter) override;
     void applyDefaultAntialiasingHint(QCPPainter *painter) const override;
 
 private:
+    bool isShowingPoint(const TrackDataAbstractPoint *pnt) const;
+
+private:
     const QMap<const TrackDataAbstractPoint *, int> *mWaypoints;
     const QVector<double> *mRefData;
     const QVector<double> *mElevData;
+    WaypointSelectDialogue::SelectionSet mSelection;
 };
 
 
@@ -102,6 +108,35 @@ void WaypointLayerable::setData(const QMap<const TrackDataAbstractPoint *, int> 
 }
 
 
+void WaypointLayerable::setShowPoints(WaypointSelectDialogue::SelectionSet sel)
+{
+    mSelection = sel;
+}
+
+
+bool WaypointLayerable::isShowingPoint(const TrackDataAbstractPoint *pnt) const
+{
+    if (dynamic_cast<const TrackDataRoutepoint *>(pnt)!=nullptr)
+    {							// is this a route point?
+        return (mSelection & WaypointSelectDialogue::SelectRoutepoints);
+    }
+
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(pnt);
+    if (tdw==nullptr) return (false);			// otherwise, should be a waypoint
+
+    const TrackData::WaypointType type = tdw->waypointType();
+    switch (type)
+    {
+case TrackData::WaypointNormal:		return (mSelection & WaypointSelectDialogue::SelectWaypoints);
+case TrackData::WaypointAudioNote:	return (mSelection & WaypointSelectDialogue::SelectAudioNotes);
+case TrackData::WaypointVideoNote:	return (mSelection & WaypointSelectDialogue::SelectVideoNotes);
+case TrackData::WaypointPhoto:		return (mSelection & WaypointSelectDialogue::SelectPhotos);
+case TrackData::WaypointStop:		return (mSelection & WaypointSelectDialogue::SelectStops);
+default:				return (false);
+    }
+}
+
+
 void WaypointLayerable::draw(QCPPainter *painter)
 {
     if (mWaypoints==nullptr || mRefData==nullptr || mElevData==nullptr) return;
@@ -119,6 +154,14 @@ void WaypointLayerable::draw(QCPPainter *painter)
     for (auto it = mWaypoints->constBegin(); it!=mWaypoints->constEnd(); ++it)
     {
         const TrackDataAbstractPoint *tdw = it.key();
+        if (!isShowingPoint(tdw))			// showing this type of point?
+        {
+#ifdef DEBUG_WAYPOINTS
+            qDebug() << "not showing" << tdw->name();
+#endif
+            continue;
+        }
+
         const int idx = it.value();
 
         const double ele = mElevData->at(idx);
@@ -280,12 +323,15 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     ++col;						// New column: spacer
     gl->setColumnMinimumWidth(col, DialogBase::horizontalSpacing());
 
-    ++col;						// New column: scaling label
+    ++col;						// New column: scaling/waypoint label
+
+    l = new QLabel(i18n("Waypoints:"), this);
+    gl->addWidget(l, 3, col, Qt::AlignRight);
 
     l = new QLabel(i18n("Scaling:"), this);
     gl->addWidget(l, 2, col, Qt::AlignRight);
 
-    ++col;						// New column: scaling combo
+    ++col;						// New column: scaling combo, waypoint select
 
     mScaleRangeCombo = new QComboBox(this);
     mScaleRangeCombo->addItem(i18n("Auto Range"), ScaleRangeAuto);
@@ -294,6 +340,10 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
             mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
     l->setBuddy(mScaleRangeCombo);
     gl->addWidget(mScaleRangeCombo, 2, col);
+
+    QPushButton *waypointSelectButton = new QPushButton(i18n("Show..."), this);
+    connect(waypointSelectButton, &QPushButton::clicked, this, &ProfileWidget::slotSelectWaypoints);
+    gl->addWidget(waypointSelectButton, 3, col);
 
     ++col;						// New column: stretch
     gl->setColumnStretch(col, 1);
@@ -325,6 +375,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 							// only needs to be done once
     associateWaypoints(mainWindow()->filesController()->model()->rootFileItem());
     qDebug() << "found" << mWaypoints.count() << "associated waypoints";
+    mWaypointSelection = WaypointSelectDialogue::SelectWaypoints|WaypointSelectDialogue::SelectRoutepoints;
 
     connect(ElevationManager::self(), &ElevationManager::tileReady,
             this, [this](const ElevationTile *tile){ mUpdateTimer->start(); });
@@ -360,6 +411,8 @@ void ProfileWidget::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
     mTimeUnit->setCurrentIndex(grp.readEntry("UnitTime", 0));
     mDistanceUnit->setCurrentIndex(grp.readEntry("UnitDistance", 0));
 
+    mWaypointSelection = static_cast<WaypointSelectDialogue::Selection>(grp.readEntry("ShowWaypoints",
+                                                                                      static_cast<int>(mWaypointSelection)));
     DialogStateSaver::restoreConfig(dialog, grp);
 }
 
@@ -377,6 +430,7 @@ void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
     grp.writeEntry("ReferenceDist", mReferenceDistRadio->isChecked());
     grp.writeEntry("UnitTime", mTimeUnit->currentIndex());
     grp.writeEntry("UnitDistance", mDistanceUnit->currentIndex());
+    grp.writeEntry("ShowWaypoints", static_cast<int>(mWaypointSelection));
 
     DialogStateSaver::saveConfig(dialog, grp);
 }
@@ -500,9 +554,6 @@ void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
 }
 
 
-
-
-
 void ProfileWidget::slotUpdatePlot()
 {
     const bool speedEnabled = mSpeedCheck->isChecked();
@@ -528,6 +579,7 @@ void ProfileWidget::slotUpdatePlot()
     mSpeedData.clear();
     mBaseTime = 0;
 
+    // TODO: can be a once off setup, will be that same every time
     delete mTimeZone;
     mTimeZone = NULL;					// no time zone available yet
 
@@ -543,6 +595,7 @@ void ProfileWidget::slotUpdatePlot()
     for (int i = 0; i<mPoints.count(); ++i) getPlotData(mPoints.at(i));
     qDebug() << "got" << mRefData.count() << "data points";
     mWaypointLayerable->setData(&mWaypoints, &mRefData, &mElevData);
+    mWaypointLayerable->setShowPoints(mWaypointSelection);
 
     QCPGraph *graph = mPlot->graph(0);			// elevation graph
     graph->setData(mRefData, mElevData);
@@ -677,4 +730,15 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
     }
 
     for (int i = 0; i<item->childCount(); ++i) associateWaypoints(item->childAt(i));
+}
+
+
+void ProfileWidget::slotSelectWaypoints()
+{
+    WaypointSelectDialogue d(this);
+    d.setSelection(mWaypointSelection);
+    if (!d.exec()) return;
+
+    mWaypointSelection = d.selection();
+    mUpdateTimer->start();
 }

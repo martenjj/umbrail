@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		25-Jun-18					#
+#  Edit:		26-Jun-18					#
 #########################################################################
 
 project(navtracks)
@@ -121,6 +121,7 @@ set(navtracks_SRCS
   variableunitdisplay.cpp
   variableunitcombo.cpp
   waypointimageprovider.cpp
+  waypointselectdialogue.cpp
   waypointslayer.cpp
 )
 

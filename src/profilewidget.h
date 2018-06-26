@@ -10,6 +10,7 @@
 #include <qmap.h>
 
 #include "mainwindowinterface.h"
+#include "waypointselectdialogue.h"
 
 
 class QTimer;
@@ -42,6 +43,9 @@ public:
     void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
     void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
+protected slots:
+    void slotSelectWaypoints();
+
 private slots:
     void slotUpdatePlot();
 
@@ -68,6 +72,7 @@ private:
     QVector<double> mSpeedData;
 
     QMap<const TrackDataAbstractPoint *, int> mWaypoints;
+    WaypointSelectDialogue::SelectionSet mWaypointSelection;
 
     QCustomPlot *mPlot;
     WaypointLayerable *mWaypointLayerable;
