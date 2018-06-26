@@ -62,7 +62,13 @@ void TrackItemDetailPage::addTimeDistanceSpeedFields(const QList<TrackDataItem *
     QWidget *w;
     if (tt>0)
     {
-        double averageSpeed = dist/(tt/3600.0);
+        // First calculate the average speed in metres/second.  It doesn't matter
+        // which unit is used here and below, as long as they are both the same!
+        double averageSpeed = Units::internalToLength(dist, Units::LengthMetres)/tt;
+        // Then convert the speed back into internal units.  It will then be
+        // converted back into the selected user unit for display.
+        averageSpeed = Units::speedToInternal(averageSpeed, Units::SpeedMetresSecond);
+
         vl = new VariableUnitDisplay(VariableUnitCombo::Speed, this);
         vl->setSaveId("averagespeed");
         vl->setValue(averageSpeed);

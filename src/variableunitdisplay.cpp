@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Apr-18						//
+//  Edit:	26-Jun-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -34,6 +34,8 @@
 #include <klocalizedstring.h>
 #include <ksharedconfig.h>
 #include <kconfiggroup.h>
+
+#include "units.h"
 
 
 VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QWidget *pnt)
@@ -86,34 +88,58 @@ void VariableUnitDisplay::slotUpdateDisplay()
     mComboIndex = mUnitCombo->currentIndex();
 
     double v = mValue;
-    if (mUnitCombo->type()==VariableUnitCombo::Bearing)
+    const VariableUnitCombo::DisplayType type = mUnitCombo->type();
+    const Units::Unit unit = mUnitCombo->unit();
+
+    switch (type)
     {
-        QString sign;
-        QString degs(QChar(0xB0));
-        switch (qRound(mUnitCombo->factor()))
+case VariableUnitCombo::Bearing:
         {
-case VariableUnitCombo::BrgAbsolute:
-            if (v<0) v += 360;
-            break;
+            QString sign;
+            QString degs(QChar(0xB0));
+            switch (unit)
+            {
+case Units::BearingAbsolute:
+                if (v<0) v += 360;
+                break;
 
-case VariableUnitCombo::BrgRelative:
-            sign = (v<0 ? "-" : "+");
-            if (v<0) v = -v;
-            break;
+case Units::BearingRelative:
+                sign = (v<0 ? "-" : "+");
+                if (v<0) v = -v;
+                break;
 
-case VariableUnitCombo::BrgNautical:
-            sign = (v<0 ? "R " : "G ");
-            if (v<0) v = -v;
-            degs = "";
-            break;
+case Units::BearingNautical:
+                sign = (v<0 ? "R " : "G ");
+                if (v<0) v = -v;
+                degs = "";
+                break;
+
+default:	qWarning() << "called for bearing with Units::Unit" << unit;
+                Q_ASSERT(false);
+            }
+
+            mValueLabel->setText(sign+QString::number(v, 'f', mUnitCombo->precision())+degs);
         }
+        break;
 
-        mValueLabel->setText(sign+QString::number(v, 'f', mUnitCombo->precision())+degs);
-    }
-    else
-    {
-        v *= mUnitCombo->factor();
+case VariableUnitCombo::Distance:
+        v = Units::internalToLength(v, unit);
         mValueLabel->setText(QString::number(v, 'f', mUnitCombo->precision()));
+        break;
+
+case VariableUnitCombo::Elevation:
+        v = Units::internalToElevation(v, unit);
+        mValueLabel->setText(QString::number(v, 'f', mUnitCombo->precision()));
+        break;
+
+case VariableUnitCombo::Speed:
+        v = Units::internalToSpeed(v, unit);
+        mValueLabel->setText(QString::number(v, 'f', mUnitCombo->precision()));
+        break;
+
+default:
+        qWarning() << "called for VariableUnitCombo::DisplayType" << type;
+        Q_ASSERT(false);
     }
 }
 

@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		14-Mar-18					#
+#  Edit:		25-Jun-18					#
 #########################################################################
 
 project(navtracks)
@@ -116,6 +116,7 @@ set(navtracks_SRCS
   trackpropertiesplotpages.cpp
   trackpropertiesstylepages.cpp
   trackslayer.cpp
+  units.cpp
   valueslider.cpp
   variableunitdisplay.cpp
   variableunitcombo.cpp

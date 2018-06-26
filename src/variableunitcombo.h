@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	15-Oct-14						//
+//  Edit:	26-Jun-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -31,6 +31,8 @@
 
 #include <qcombobox.h>
 
+#include "units.h"
+
 
 class VariableUnitCombo : public QComboBox
 {
@@ -46,27 +48,12 @@ public:
         Time
     };
 
-    enum BearingType
-    {
-        BrgAbsolute,
-        BrgRelative,
-        BrgNautical
-    };
-
-    enum TimeType
-    {
-        TimeAbsolute,
-        TimeRelative
-    };
-
-    explicit VariableUnitCombo(VariableUnitCombo::DisplayType displayType, QWidget *pnt = NULL);
-    virtual ~VariableUnitCombo();
+    explicit VariableUnitCombo(VariableUnitCombo::DisplayType displayType, QWidget *pnt = nullptr);
+    virtual ~VariableUnitCombo() = default;
 
     VariableUnitCombo::DisplayType type() const		{ return (mType); }
-    double factor() const;
+    Units::Unit unit() const;
     int precision() const;
-
-    static double distanceFromMetres(double m);
 
 private:
     int mPrecision;

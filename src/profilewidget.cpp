@@ -26,6 +26,7 @@
 #include "filesmodel.h"
 #include "trackdata.h"
 #include "variableunitcombo.h"
+#include "units.h"
 #include "elevationmanager.h"
 #include "elevationtile.h"
 
@@ -243,7 +244,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
             timeStep = mPrevPoint->timeTo(tdp);		// time interval this step
         }
 
-        mCumulativeTravel += distStep*mDistanceUnit->factor();
+        mCumulativeTravel += Units::internalToLength(distStep, mDistanceUnit->unit());
         mPrevPoint = tdp;
 
         // Reference: either cumulative travel distance, or GPS time (if valid)
@@ -282,7 +283,7 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
                 if (mTimeZone!=NULL) qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
             }
 
-            if (mTimeUnit->factor()==VariableUnitCombo::TimeRelative)
+            if (mTimeUnit->unit()==Units::TimeRelative)
             {						// to make times start at zero
                 tm = static_cast<time_t>(difftime(tm, mBaseTime));
             }
@@ -302,23 +303,40 @@ void ProfileWidget::getPlotData(const TrackDataItem *item)
             const ElevationTile *tile = ElevationManager::self()->requestTile(lat, lon, false);
             if (tile->state()==ElevationTile::Loaded) ele = tile->elevation(lat, lon);
         }
-        mElevData.append(ele*mElevationUnit->factor());
+        mElevData.append(Units::internalToElevation(ele, mElevationUnit->unit()));
 
         // Speed, either from GPS or calculated from track
         double spd;
         if (mSpeedSource==SpeedSourceGPS)		// GPS speed
         {
+            // Get the speed from the track metadata.
             const QString speedMeta = tdp->metadata("speed");
-            if (speedMeta.isEmpty()) spd = 0;
+            if (speedMeta.isEmpty()) spd = NAN;
             else
             {
-                spd = VariableUnitCombo::distanceFromMetres(speedMeta.toDouble())*mSpeedUnit->factor()*3600;
+                // First convert the GPS speed (in metres/second, defined in
+                // the GPX specification) into internal units.
+                spd = Units::speedToInternal(speedMeta.toDouble(), Units::SpeedMetresSecond);
+                // Then convert that speed back to the requested unit.
+                spd = Units::internalToSpeed(spd, mSpeedUnit->unit());
             }
         }
         else						// speed from track
         {
-            if (timeStep==0) spd = 0;
-            else spd = (distStep*mSpeedUnit->factor()*3600)/timeStep;
+            // Calculate speed based on the distance and time from the previous point
+            if (timeStep==0) spd = NAN;
+            else
+            {
+                // First get the distance in metres.
+                spd = Units::internalToLength(distStep, Units::LengthMetres);
+                // Then calculate the speed in metres/second
+                spd /= timeStep;
+                // Convert the speed (at this point known to be in
+                // metres/second) into internal units.
+                spd = Units::speedToInternal(spd, Units::SpeedMetresSecond);
+                // Then convert that speed back to the requested unit.
+                spd = Units::internalToSpeed(spd, mSpeedUnit->unit());
+            }
         }
         mSpeedData.append(spd);
     }
