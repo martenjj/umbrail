@@ -54,10 +54,9 @@ private:
     QCheckBox *mSpeedCheck;
     QComboBox *mElevationSourceCombo;
     QComboBox *mSpeedSourceCombo;
+    QComboBox *mScaleRangeCombo;
     QRadioButton *mReferenceTimeRadio;
     QRadioButton *mReferenceDistRadio;
-    QRadioButton *mScaleAutoRadio;
-    QRadioButton *mScaleZeroRadio;
     VariableUnitCombo *mElevationUnit;
     VariableUnitCombo *mSpeedUnit;
     VariableUnitCombo *mDistanceUnit;
@@ -85,6 +84,12 @@ private:
     {
         SpeedSourceGPS = 0,
         SpeedSourceTrack = 1
+    };
+
+    enum ScaleRange
+    {
+        ScaleRangeAuto = 0,
+        ScaleRangeZero = 1
     };
 
     ProfileWidget::ElevationSource mElevationSource;

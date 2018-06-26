@@ -285,18 +285,15 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     l = new QLabel(i18n("Scaling:"), this);
     gl->addWidget(l, 2, col, Qt::AlignRight);
 
-    ++col;						// New column: scaling radio
-    bg = new QButtonGroup(this);
+    ++col;						// New column: scaling combo
 
-    mScaleAutoRadio = new QRadioButton(i18n("Auto Range"), this);
-    connect(mScaleAutoRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
-    bg->addButton(mScaleAutoRadio);
-    gl->addWidget(mScaleAutoRadio, 2, col);
-
-    mScaleZeroRadio = new QRadioButton(i18n("Zero Origin"), this);
-    connect(mScaleZeroRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
-    bg->addButton(mScaleZeroRadio);
-    gl->addWidget(mScaleZeroRadio, 3, col);
+    mScaleRangeCombo = new QComboBox(this);
+    mScaleRangeCombo->addItem(i18n("Auto Range"), ScaleRangeAuto);
+    mScaleRangeCombo->addItem(i18n("Zero Origin"), ScaleRangeZero);
+    connect(mScaleRangeCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+    l->setBuddy(mScaleRangeCombo);
+    gl->addWidget(mScaleRangeCombo, 2, col);
 
     ++col;						// New column: stretch
     gl->setColumnStretch(col, 1);
@@ -354,13 +351,14 @@ void ProfileWidget::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
     val = grp.readEntry("SpeedSource", static_cast<int>(SpeedSourceGPS));
     idx = mSpeedSourceCombo->findData(val);
     if (idx!=-1) mSpeedSourceCombo->setCurrentIndex(idx);
+    val = grp.readEntry("ScaleRange", static_cast<int>(ScaleRangeAuto));
+    idx = mScaleRangeCombo->findData(val);
+    if (idx!=-1) mScaleRangeCombo->setCurrentIndex(idx);
 
     mReferenceTimeRadio->setChecked(grp.readEntry("ReferenceTime", true));
     mReferenceDistRadio->setChecked(grp.readEntry("ReferenceDist", false));
     mTimeUnit->setCurrentIndex(grp.readEntry("UnitTime", 0));
     mDistanceUnit->setCurrentIndex(grp.readEntry("UnitDistance", 0));
-    mScaleAutoRadio->setChecked(grp.readEntry("ScaleAuto", true));
-    mScaleZeroRadio->setChecked(grp.readEntry("ScaleZero", false));
 
     DialogStateSaver::restoreConfig(dialog, grp);
 }
@@ -374,12 +372,11 @@ void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
     grp.writeEntry("UnitSpeed", mSpeedUnit->currentIndex());
     grp.writeEntry("ElevationSource", mElevationSourceCombo->currentData().toInt());
     grp.writeEntry("SpeedSource", mSpeedSourceCombo->currentData().toInt());
+    grp.writeEntry("ScaleRange", mScaleRangeCombo->currentData().toInt());
     grp.writeEntry("ReferenceTime", mReferenceTimeRadio->isChecked());
     grp.writeEntry("ReferenceDist", mReferenceDistRadio->isChecked());
     grp.writeEntry("UnitTime", mTimeUnit->currentIndex());
     grp.writeEntry("UnitDistance", mDistanceUnit->currentIndex());
-    grp.writeEntry("ScaleAuto", mScaleAutoRadio->isChecked());
-    grp.writeEntry("ScaleZero", mScaleZeroRadio->isChecked());
 
     DialogStateSaver::saveConfig(dialog, grp);
 }
@@ -612,8 +609,8 @@ void ProfileWidget::slotUpdatePlot()
     mPlot->yAxis2->setLabelColor(!speedEnabled ? sch.foreground(KColorScheme::NormalText).color() : Qt::blue);
     mPlot->yAxis2->setVisible(true);
 
-    if (mScaleZeroRadio->isChecked())			// zero origin
-    {
+    if (mScaleRangeCombo->currentData()==ScaleRangeZero)
+    {							// zero origin
         mPlot->yAxis->setRangeLower(0);
         mPlot->yAxis2->setRangeLower(0);
     }
