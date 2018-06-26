@@ -30,6 +30,7 @@
 #include "folderselectwidget.h"
 #include "commands.h"
 #include "dataindexer.h"
+#include "units.h"
 
 
 
@@ -177,7 +178,7 @@ void StopDetectDialogue::slotShowOnMap()
 
 static bool withinDistance(const TrackDataAbstractPoint *tdp, double lat, double lon, int maxDist)
 {
-    double distance = qAbs(tdp->distanceTo(lat, lon))*(6371*1000);
+    double distance = qAbs(Units::internalToLength(tdp->distanceTo(lat, lon), Units::LengthMetres));
     return (distance<=double(maxDist));			// convert to metres and check
 }
 

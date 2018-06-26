@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	26-Jun-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,14 +32,6 @@
 #include <klocalizedstring.h>
 
 
-static const double EARTH_RADIUS_KM = 6371;		// kilometres
-static const double EARTH_RADIUS_MI = 3959;		// statute miles
-static const double EARTH_RADIUS_NM = 3440;		// nautical miles
-
-static const double ELEVATION_METRE = 1;		// metres
-static const double ELEVATION_FEET = 3.2808;		// feet
-
-
 VariableUnitCombo::VariableUnitCombo(VariableUnitCombo::DisplayType displayType, QWidget *pnt)
     : QComboBox(pnt)
 {
@@ -55,38 +47,38 @@ VariableUnitCombo::VariableUnitCombo(VariableUnitCombo::DisplayType displayType,
     switch (displayType)
     {
 case VariableUnitCombo::Distance:
-        addItem(i18n("kilometres"), EARTH_RADIUS_KM);
-        addItem(i18n("miles"), EARTH_RADIUS_MI);
-        addItem(i18n("nautical miles"), EARTH_RADIUS_NM);
+        addItem(i18n("kilometres"), Units::LengthKilometres);
+        addItem(i18n("miles"), Units::LengthMiles);
+        addItem(i18n("nautical miles"), Units::LengthNauticalMiles);
         // synchronise this with index in precision() below
-        addItem(i18n("metres"), EARTH_RADIUS_KM*1000);
+        addItem(i18n("metres"), Units::LengthMetres);
         mPrecision = 2;
         break;
 
 case VariableUnitCombo::Speed:
-        addItem(i18n("km/h"), EARTH_RADIUS_KM);
-        addItem(i18n("mph"), EARTH_RADIUS_MI);
-        addItem(i18n("knots"), EARTH_RADIUS_NM);
+        addItem(i18n("km/h"), Units::SpeedKilometresHour);
+        addItem(i18n("mph"), Units::SpeedMilesHour);
+        addItem(i18n("knots"), Units::SpeedKnots);
         // synchronise this with index in precision() below
-        addItem(i18n("m/s"), EARTH_RADIUS_KM*1000/3600);
+        addItem(i18n("m/s"), Units::SpeedMetresSecond);
         break;
 
 case VariableUnitCombo::Elevation:
-        addItem(i18n("metres"), ELEVATION_METRE);
-        addItem(i18n("feet"), ELEVATION_FEET);
+        addItem(i18n("metres"), Units::ElevationMetres);
+        addItem(i18n("feet"), Units::ElevationFeet);
         mPrecision = 0;
         break;
 
 case VariableUnitCombo::Bearing:
-        addItem(i18n("absolute"), VariableUnitCombo::BrgAbsolute);
-        addItem(i18n("relative"), VariableUnitCombo::BrgRelative);
-        addItem(i18n("nautical"), VariableUnitCombo::BrgNautical);
+        addItem(i18n("absolute"), Units::BearingAbsolute);
+        addItem(i18n("relative"), Units::BearingRelative);
+        addItem(i18n("nautical"), Units::BearingNautical);
         mPrecision = 0;
         break;
 
 case VariableUnitCombo::Time:
-        addItem(i18n("absolute"), VariableUnitCombo::TimeAbsolute);
-        addItem(i18n("relative"), VariableUnitCombo::TimeRelative);
+        addItem(i18n("absolute"), Units::TimeAbsolute);
+        addItem(i18n("relative"), Units::TimeRelative);
         break;
 
 default:
@@ -95,14 +87,9 @@ default:
 }
 
 
-VariableUnitCombo::~VariableUnitCombo()
+Units::Unit VariableUnitCombo::unit() const
 {
-}
-
-
-double VariableUnitCombo::factor() const
-{
-    return (itemData(currentIndex()).toDouble());
+    return (static_cast<Units::Unit>(itemData(currentIndex()).toInt()));
 }
 
 
@@ -111,10 +98,4 @@ int VariableUnitCombo::precision() const
     if (mType==VariableUnitCombo::Distance && currentIndex()==3) return (0);
     if (mType==VariableUnitCombo::Speed && currentIndex()==3) return (1);
     return (mPrecision);
-}
-
-
-double VariableUnitCombo::distanceFromMetres(double m)
-{
-    return (m/(1000*EARTH_RADIUS_KM));
 }

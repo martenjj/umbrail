@@ -14,6 +14,7 @@
 #include "mapview.h"
 #include "dataindexer.h"
 #include "trackdata.h"
+#include "units.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,16 +33,14 @@
 
 static const int POINT_CIRCLE_SIZE = 20;		// size of selected circle
 
-// Earth circumference is 2*PI*radius where radius = 6371km
-//
-// This corresponds to an value of 2*PI for the 'distance' parameter
-// to GeoDataCoordinates::moveByBearing()
+// Earth circumference is 2*PI*radius.  This corresponds to an value
+// of 2*PI for the 'distance' parameter to GeoDataCoordinates::moveByBearing().
 //
 // The 2*PI factor cancels out, so this value gives a bearing line
 // of that length in kilometres.
 
-static const double BEARING_LINE_LENGTH_KM = 10;
-static const double BEARING_LINE_LENGTH = (BEARING_LINE_LENGTH_KM/6371.0);
+static constexpr double BEARING_LINE_LENGTH_KM = 10;
+static constexpr double BEARING_LINE_LENGTH = BEARING_LINE_LENGTH_KM/Units::EARTH_RADIUS_KM;
 
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
