@@ -68,13 +68,11 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     mGeneralPage = qobject_cast<TrackItemGeneralPage *>(page);
     Q_ASSERT(mGeneralPage!=NULL);
     mGeneralPage->setTimeZone(zoneName);
-    connect(mGeneralPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
     connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
             mGeneralPage, SLOT(setTimeZone(const QString &)));
     connect(mGeneralPage, SIGNAL(pointPositionChanged(double,double)),
             mGeneralPage, SLOT(slotPointPositionChanged(double,double)));
-
-    mTabWidget->addTab(page, i18nc("@title:tab", "General"));
+    addPage(page, i18nc("@title:tab", "General"));
 
     typeLabel->setText(mGeneralPage->typeText(items->count()));
 
@@ -82,48 +80,46 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
     Q_ASSERT(mDetailPage!=NULL);
     mDetailPage->setTimeZone(zoneName);
-    connect(mDetailPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
     connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
             mDetailPage, SLOT(setTimeZone(const QString &)));
     connect(mGeneralPage, SIGNAL(pointPositionChanged(double,double)),
             mDetailPage, SLOT(slotPointPositionChanged(double,double)));
-
-    mTabWidget->addTab(page, i18nc("@title:tab", "Details"));
+    addPage(page, i18nc("@title:tab", "Details"));
 
     page = propif->createPropertiesStylePage(items, this);
+    addPage(page, i18nc("@title:tab", "Style"), (items->count()==1));
     mStylePage = qobject_cast<TrackItemStylePage *>(page);
-    if (mStylePage!=nullptr)				// if "Style" applies to item type
-    {
-        connect(mStylePage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
-        mTabWidget->addTab(page, i18nc("@title:tab", "Style"));
-
-        const bool styleEnabled = (items->count()==1);	// if "Style" applies to selection
-        if (!styleEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
-    }
 
     page = propif->createPropertiesPlotPage(items, this);
+    addPage(page, i18nc("@title:tab", "Plot"), (items->count()==1));
     mPlotPage = qobject_cast<TrackItemPlotPage *>(page);
-    if (mPlotPage!=nullptr)				// if "Plot" applies to item type
-    {
-        connect(mPlotPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
-        mTabWidget->addTab(page, i18nc("@title:tab", "Plot"));
-
-        const bool plotEnabled = (items->count()==1);	// if "Plot" applies to selection
-        if (!plotEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
-    }
 
     page = propif->createPropertiesMetadataPage(items, this);
+    addPage(page, i18nc("@title:tab", "Metadata"), (items->count()==1));
     mMetadataPage = qobject_cast<TrackItemMetadataPage *>(page);
     Q_ASSERT(mMetadataPage!=NULL);
-    connect(mMetadataPage, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
-    mTabWidget->addTab(page, i18nc("@title:tab", "Metadata"));
-
-    const bool metadataEnabled = (items->count()==1);	// whether "Metadata" is applicable here
-    if (!metadataEnabled) mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
 
     setMinimumSize(320,380);
     setStateSaver(this);
+}
 
+
+void TrackPropertiesDialogue::addPage(TrackPropertiesPage *page,
+                                      const QString &title,
+                                      bool enabled)
+{
+    if (page!=nullptr)					// if page applies to item type
+    {
+        connect(page, SIGNAL(dataChanged()), SLOT(slotDataChanged()));
+        mTabWidget->addTab(page, title);
+        mTabWidget->setTabEnabled(mTabWidget->count()-1, enabled);
+    }
+    else						// no page, just add a dummy one
+    {
+        QWidget *dummyPage = new QWidget(this);
+        mTabWidget->addTab(dummyPage, title);
+        mTabWidget->setTabEnabled(mTabWidget->count()-1, false);
+    }
 }
 
 

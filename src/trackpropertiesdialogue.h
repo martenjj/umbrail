@@ -39,10 +39,14 @@ public:
     TrackData::WaypointStatus newWaypointStatus() const;
     QString newBearingLine() const;
 
+    static void setNextPageIndex(int page);
+
+protected:
     void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
     void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
-    static void setNextPageIndex(int page);
+private:
+    void addPage(TrackPropertiesPage *page, const QString &title, bool enabled = true);
 
 protected slots:
     void slotDataChanged();
