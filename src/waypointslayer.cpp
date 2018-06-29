@@ -103,21 +103,25 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
                                  0, GeoDataCoordinates::Degree);
 
-        // First of all the bearing line, if there is one
+        // First of all the bearing lines, if there are any
         const QString brg = tdw->metadata("bearingline");
-        if (!brg.isEmpty() && !brg.startsWith('!'))
+        if (!brg.isEmpty())
         {
-            GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brg.toDouble()),
-                                                            BEARING_LINE_LENGTH);
+            const QStringList brgs = brg.split(';', QString::SkipEmptyParts);
+            foreach (const QString &brg, brgs)
+            {
+                GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brg.toDouble()),
+                                                                BEARING_LINE_LENGTH);
 
-            // Using Marble::Tessellate gives a great circle line.
-            // Not a great difference at small scales, but
-            // better to have the best accuracy.
-            GeoDataLineString lineString(Marble::Tessellate);
-            lineString << coord << coord2;
+                // Using Marble::Tessellate gives a great circle line.
+                // Not a great difference at small scales, but
+                // better to have the best accuracy.
+                GeoDataLineString lineString(Marble::Tessellate);
+                lineString << coord << coord2;
 
-            painter->setPen(QPen(Qt::black, 2, Qt::DashLine));
-            painter->drawPolyline(lineString);
+                painter->setPen(QPen(Qt::black, 2, Qt::DashLine));
+                painter->drawPolyline(lineString);
+            }
         }
 
         // Then the selection marker
