@@ -19,7 +19,6 @@ class TrackDataItem;
 class TrackDataAbstractPoint;
 class MapView;
 
-
 ////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +90,8 @@ protected:
     GeoDataCoordinates applyOffset(const GeoDataCoordinates &coords) const;
     void setSelectionColours(QPainter *painter, bool setBrush = true) const;
 
+    ViewportParams *viewport() const			{ return (mViewport); }
+
 private:
     void paintDataTree(const TrackDataItem *item, GeoPainter *painter, bool doSelected, bool parentSelected);
     const TrackDataAbstractPoint *findClickedPoint(const TrackDataItem *item);
@@ -113,6 +114,8 @@ private:
 
     double mLatMax, mLatMin;
     double mLonMax, mLonMin;
+
+    ViewportParams *mViewport;
 };
 
 #endif							// LAYERBASE_H
