@@ -33,7 +33,10 @@ protected slots:
 
 private:
     int rowOfButton(QObject *send) const;
-    void updateLayout();
+    void updateLayout(bool focusLast = false);
+
+private slots:
+    void slotFocusLast();
 
 private:
     PlotEditWidget::EntryType mType;

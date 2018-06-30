@@ -6,6 +6,7 @@
 #include <qpushbutton.h>
 #include <qlabel.h>
 #include <qicon.h>
+#include <qtimer.h>
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
@@ -81,7 +82,7 @@ void PlotEditWidget::setPlotData(const QString &newData)
 }
 
 
-void PlotEditWidget::updateLayout()
+void PlotEditWidget::updateLayout(bool focusLast)
 {
     int row;						// layout row
     QLayoutItem *li;					// layout item from grid
@@ -138,6 +139,16 @@ void PlotEditWidget::updateLayout()
     QPushButton *but = new QPushButton(QIcon::fromTheme("list-add"), QString(), this);
     connect(but, &QPushButton::clicked, this, &PlotEditWidget::slotAddRow);
     mLayout->addWidget(but, row, 2);
+
+    // If a row is being added, focus its numeric entry
+    if (focusLast) QTimer::singleShot(0, this, SLOT(slotFocusLast()));
+}
+
+
+void PlotEditWidget::slotFocusLast()
+{
+    if (mFields.isEmpty()) return;
+    mFields.last()->setFocus(Qt::TabFocusReason);
 }
 
 
@@ -189,5 +200,5 @@ void PlotEditWidget::slotAddRow()
     QSpinBox *box = createSpinBox(mType, this);		// create new spin box
     mFields.insert(row, box);				// insert into field list
 
-    updateLayout();					// lay out and set buttons
+    updateLayout(true);					// lay out and set buttons
 }
