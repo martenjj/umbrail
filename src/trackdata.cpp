@@ -146,33 +146,6 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 
 
 
-unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> *items)
-{
-    if (items==NULL) return (0);
-    int num = items->count();
-    if (num==0) return (0);
-
-    unsigned int tot = 0;				// running total
-    const TrackDataAbstractPoint *first = dynamic_cast<const TrackDataAbstractPoint *>(items->first());
-    if (first!=NULL)					// a list of points
-    {
-        const TrackDataAbstractPoint *last = dynamic_cast<const TrackDataAbstractPoint *>(items->last());
-        Q_ASSERT(last!=NULL);				// last point in sequence
-        tot = first->timeTo(last);
-    }
-    else						// not points, must be containers
-    {
-        for (int i = 0; i<num; ++i)			// sum over all of them
-        {
-            tot += items->at(i)->totalTravelTime();
-        }
-    }
-
-    return (tot);
-}
-
-
-
 unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> *items)
 {
     if (items==NULL) return (0);
@@ -366,12 +339,6 @@ BoundingArea TrackDataItem::boundingArea() const
 TimeRange TrackDataItem::timeSpan() const
 {
     return (TrackData::unifyTimeSpans(mChildren));
-}
-
-
-unsigned int TrackDataItem::totalTravelTime() const
-{
-    return (TrackData::sumTotalTravelTime(mChildren));
 }
 
 

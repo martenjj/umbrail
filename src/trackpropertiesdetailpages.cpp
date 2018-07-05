@@ -13,9 +13,87 @@
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Utility functions							//
+//  Total travel time and distance for the selection			//
 //									//
 //////////////////////////////////////////////////////////////////////////
+
+unsigned sumTotalTravelTime2(const TrackDataItem *item)
+{
+    const int num = item->childCount();
+    if (num==0) return (0);				// no children
+
+    unsigned tt = 0;					// running total
+
+    // Only consider segments (containing recorded tracks) for travel time.
+    // Get the time from the first contained point to the last.
+
+    const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
+    if (tds!=nullptr && num>=2)				// segment with enough points
+    {
+        const TrackDataAbstractPoint *tdp1 = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(0));
+        Q_ASSERT(tdp1!=nullptr);
+        const TrackDataAbstractPoint *tdp2 = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(num-1));
+        Q_ASSERT(tdp2!=nullptr);
+        tt = tdp1->timeTo(tdp2);
+    }
+    else						// any other container
+    {
+        // For any container that can contain segments (file or track),
+        // recurse into its children.
+
+        if (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
+            dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
+        {
+            for (int i = 0; i<num; ++i)
+            {
+                tt += sumTotalTravelTime2(item->childAt(i));
+            }
+        }
+    }
+
+    return (tt);
+}
+
+
+unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
+{
+    // Sum the total travel time over all selected items, recursively.
+
+    // This is simpler than the corresponding functions for travel distance,
+    // because only recorded tracks can be considered to have meaningful
+    // times, and also the time range can be obtained simply from the first
+    // and last in a sequence.
+
+    if (items==nullptr) return (0);
+    int num = items->count();
+    if (num==0) return (0);
+
+    const TrackDataItem *item1 = items->first();	// first item
+    unsigned tt = 0;					// running total
+
+    const TrackDataAbstractPoint *tdp1 = dynamic_cast<const TrackDataAbstractPoint *>(item1);
+
+    // If two or more points are selected (in a segment), get the time span
+    // between the first and last.
+
+    if (num>=2 && tdp1!=nullptr)
+    {
+        const TrackDataAbstractPoint *tdp2 = dynamic_cast<TrackDataAbstractPoint *>(items->last());
+        Q_ASSERT(tdp2!=nullptr);
+        tt = tdp1->timeTo(tdp2);
+        return (tt);
+    }
+
+    // Sum segments, and recurse into other containers.
+
+    foreach (const TrackDataItem *item, *items)
+    {
+        tt += sumTotalTravelTime2(item);
+    }
+
+    return (tt);
+}
+
 
 double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly)
 {
@@ -287,7 +365,7 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
     // Travel time
     if (disp & DisplayTravelTime)
     {
-        unsigned tt = TrackData::sumTotalTravelTime(items);
+        unsigned tt = sumTotalTravelTime(items);
         l = new TrackDataLabel(TrackData::formattedDuration(tt, blankTimes), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
         disableIfEmpty(l);
