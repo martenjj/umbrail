@@ -37,7 +37,8 @@ public:
     QString newTimeZone() const;
     bool newPointPosition(double *newLat, double *newLon) const;
     TrackData::WaypointStatus newWaypointStatus() const;
-    QString newBearingLine() const;
+    QString newBearingData() const;
+    QString newRangeData() const;
 
     static void setNextPageIndex(int page);
 

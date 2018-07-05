@@ -9,6 +9,7 @@
 #include <kiconloader.h>
 
 #include <marble/GeoPainter.h>
+#include <marble/ViewportParams.h>
 
 #include "settings.h"
 #include "mapview.h"
@@ -103,21 +104,67 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
                                  0, GeoDataCoordinates::Degree);
 
-        // First of all the bearing line, if there is one
+        // Set pen for bearing and range lines, if required
+        painter->setPen(QPen(Qt::black, 2, Qt::DashLine));
+        painter->setBrush(QBrush());
+
+        // First of all the bearing lines, if there are any
         const QString brg = tdw->metadata("bearingline");
-        if (!brg.isEmpty() && !brg.startsWith('!'))
+        if (!brg.isEmpty())
         {
-            GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brg.toDouble()),
-                                                            BEARING_LINE_LENGTH);
+            const QStringList brgs = brg.split(';', QString::SkipEmptyParts);
+            foreach (const QString &brgVal, brgs)
+            {
+                GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brgVal.toDouble()),
+                                                                Units::lengthToInternal(BEARING_LINE_LENGTH_KM,
+                                                                                        Units::LengthKilometres));
 
-            // Using Marble::Tessellate gives a great circle line.
-            // Not a great difference at small scales, but
-            // better to have the best accuracy.
-            GeoDataLineString lineString(Marble::Tessellate);
-            lineString << coord << coord2;
+                // Using Marble::Tessellate gives a great circle line.
+                // Not a great difference at small scales, but
+                // better to have the best accuracy.
+                GeoDataLineString lineString(Marble::Tessellate);
+                lineString << coord << coord2;
 
-            painter->setPen(QPen(Qt::black, 2, Qt::DashLine));
-            painter->drawPolyline(lineString);
+                painter->drawPolyline(lineString);
+            }
+        }
+
+        // The the range rings, if there are any
+        const QString rng = tdw->metadata("rangering");
+        if (!rng.isEmpty())
+        {
+            const QStringList rngs = rng.split(';', QString::SkipEmptyParts);
+            foreach (const QString &rngVal, rngs)
+            {
+                // To draw the range ring we convert all of the coordinates to screen
+                // pixels and use the underlying Marble::ClipPainter directly, bypassing
+                // Marble's GeoPainter.
+                //
+                // This is for two reasons:  firstly, the optimisation that GeoPainter
+                // applies is too aggressive, drawing nothing if the centre point is
+                // not visible - parts of the ring may be visible even if the central
+                // waypoint or any/all of its cardinal points are not.  Secondly,
+                // using GeoPainter::drawEllipse() with projected coordinates
+                // (as opposed to screen pixels) seems to be far too enthusiastic at
+                // flattening the curve and draws it with obvious straight line segments
+                // at the right and left.
+
+                qreal xCent, yCent;			// screen position of centre
+                viewport()->screenCoordinates(coord, xCent, yCent);
+					                // offset to right/top of circle
+                const double offset = Units::lengthToInternal(rngVal.toDouble(), Units::LengthMetres);
+
+                const GeoDataCoordinates coordRight = coord.moveByBearing(DEGREES_TO_RADIANS(90), offset);
+                qreal xRight, yRight;			// screen position of right
+                viewport()->screenCoordinates(coordRight, xRight, yRight);
+
+                const GeoDataCoordinates coordTop = coord.moveByBearing(DEGREES_TO_RADIANS(0), offset);
+                qreal xTop, yTop;			// screen position of top
+                viewport()->screenCoordinates(coordTop, xTop, yTop);
+							// now can draw the circle
+                ClipPainter *cp = static_cast<ClipPainter *>(painter);
+                cp->drawEllipse(QPointF(xCent, yCent), fabs(xRight-xCent), fabs(yTop-yCent));
+            }
         }
 
         // Then the selection marker

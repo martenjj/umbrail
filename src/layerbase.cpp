@@ -62,6 +62,7 @@ LayerBase::LayerBase(QWidget *pnt)
     mDraggingPoints = NULL;
     mClickTimer = new QElapsedTimer;
     mMovePointsMode = false;
+    mViewport = nullptr;
 
     QTimer::singleShot(0, this, SLOT(slotInstallEventFilter()));
 }
@@ -113,6 +114,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
                        const QString &renderPos, GeoSceneLayer *layer)
 {
     if (!isVisible()) return (true);			// no painting if not visible
+    mViewport = viewport;				// save for access by layers
 
     const FilesModel *filesModel = filesController()->model();
     if (filesModel==NULL) return (false);		// no data to use!

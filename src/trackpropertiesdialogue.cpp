@@ -156,10 +156,17 @@ QString TrackPropertiesDialogue::newTimeZone() const
 }
 
 
-QString TrackPropertiesDialogue::newBearingLine() const
+QString TrackPropertiesDialogue::newBearingData() const
 {
     if (mPlotPage==nullptr) return (QString());		// not applicable to this type
-    return (mPlotPage->newBearingLine());
+    return (mPlotPage->newBearingData());
+}
+
+
+QString TrackPropertiesDialogue::newRangeData() const
+{
+    if (mPlotPage==nullptr) return (QString());		// not applicable to this type
+    return (mPlotPage->newRangeData());
 }
 
 

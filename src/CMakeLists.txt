@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		26-Jun-18					#
+#  Edit:		29-Jun-18					#
 #########################################################################
 
 project(navtracks)
@@ -91,6 +91,7 @@ set(navtracks_SRCS
   metadatamodel.cpp
   moveitemdialogue.cpp
   photoviewer.cpp
+  ploteditwidget.cpp
   pluginmanager.cpp
   positioninfodialogue.cpp
   profilewidget.cpp

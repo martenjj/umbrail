@@ -784,15 +784,27 @@ void FilesController::slotTrackProperties()
         cmd5->setData("desc", newDesc);
     }
 
-    QString newBearingLine = d.newBearingLine();
-    if (newBearingLine!="-")					// new bearing is applicable
+    QString newBearingData = d.newBearingData();
+    if (newBearingData!="-")					// new bearing is applicable
     {
-        qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingLine;
-        if (newBearingLine!=item->metadata("bearingline"))
+        qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingData;
+        if (newBearingData!=item->metadata("bearingline"))
         {
             ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
             cmd8->setDataItem(item);
-            cmd8->setData("bearingline", newBearingLine);
+            cmd8->setData("bearingline", newBearingData);
+        }
+    }
+
+    QString newRangeData = d.newRangeData();
+    if (newRangeData!="-")					// new bearing is applicable
+    {
+        qDebug() << "change range ring" << item->metadata("rangering") << "->" << newRangeData;
+        if (newRangeData!=item->metadata("rangering"))
+        {
+            ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
+            cmd9->setDataItem(item);
+            cmd9->setData("rangering", newRangeData);
         }
     }
 

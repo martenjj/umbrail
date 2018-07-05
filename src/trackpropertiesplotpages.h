@@ -5,9 +5,9 @@
 #include "trackpropertiespage.h"
 
 
-class QCheckBox;
-class QSpinBox;
-
+//class QCheckBox;
+//class QSpinBox;
+class PlotEditWidget;
 class TrackDataItem;
 
 
@@ -16,20 +16,17 @@ class TrackItemPlotPage : public TrackPropertiesPage
     Q_OBJECT
 
 public:
-    virtual ~TrackItemPlotPage()				{}
+    virtual ~TrackItemPlotPage() = default;
 
-    QString newBearingLine() const;
+    QString newBearingData() const;
+    QString newRangeData() const;
 
 protected:
     TrackItemPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
-protected:
-    QCheckBox *mBearingLineCheck;
-    QSpinBox *mBearingEntry;
-
-protected slots:
-    void slotUpdateButtons();
-
+private:
+    PlotEditWidget *mBearingEdit;
+    PlotEditWidget *mRangeEdit;
 };
 
 
@@ -39,9 +36,7 @@ class TrackWaypointPlotPage : public TrackItemPlotPage
 
 public:
     TrackWaypointPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackWaypointPlotPage()				{}
-
-
+    virtual ~TrackWaypointPlotPage() = default;
 };
 
 
