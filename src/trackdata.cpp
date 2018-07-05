@@ -146,40 +146,6 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 
 
 
-double TrackData::sumTotalTravelDistance(const QList<TrackDataItem *> *items, bool tracksOnly)
-{
-    if (items==NULL) return (0.0);
-    int num = items->count();
-    if (num==0) return (0.0);
-
-    double dist = 0.0;					// running total
-    const TrackDataAbstractPoint *prev = (tracksOnly ? dynamic_cast<const TrackDataTrackpoint *>(items->first()) :
-                                                       dynamic_cast<const TrackDataAbstractPoint *>(items->first()));
-    if (prev!=NULL)					// a list of (applicable) points
-    {
-        for (int i = 1; i<num; ++i)
-        {
-            const TrackDataAbstractPoint *next = dynamic_cast<const TrackDataAbstractPoint *>(items->at(i));
-            Q_ASSERT(next!=NULL);			// next point in sequence
-
-            dist += prev->distanceTo(next);		// from previous point to this
-            prev = next;				// then move on current point
-        }
-    }
-    else						// not points, must be containers
-    {
-        for (int i = 0; i<num; ++i)			// sum over all of them
-        {
-            dist += items->at(i)->totalTravelDistance(tracksOnly);
-        }
-    }
-
-    return (dist);
-}
-
-
-
-
 unsigned TrackData::sumTotalTravelTime(const QList<TrackDataItem *> *items)
 {
     if (items==NULL) return (0);
@@ -400,12 +366,6 @@ BoundingArea TrackDataItem::boundingArea() const
 TimeRange TrackDataItem::timeSpan() const
 {
     return (TrackData::unifyTimeSpans(mChildren));
-}
-
-
-double TrackDataItem::totalTravelDistance(bool tracksOnly) const
-{
-    return (TrackData::sumTotalTravelDistance(mChildren, tracksOnly));
 }
 
 

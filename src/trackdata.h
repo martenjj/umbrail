@@ -152,7 +152,6 @@ namespace TrackData
 
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);
     TimeRange unifyTimeSpans(const QList<TrackDataItem *> *items);
-    double sumTotalTravelDistance(const QList<TrackDataItem *> *items, bool tracksOnly = true);
     unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items);
     unsigned sumTotalChildCount(const QList<TrackDataItem *> *items);
 
@@ -214,7 +213,6 @@ public:
 
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
-    virtual double totalTravelDistance(bool tracksOnly = true) const;
     virtual unsigned int totalTravelTime() const;
     QString timeZone() const;
 
