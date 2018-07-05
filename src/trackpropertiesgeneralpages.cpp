@@ -225,12 +225,12 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
 
 
 
-void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *items)
+void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items)
 {
     if (items->count()!=1) return;			// only for single selection
 
     TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items->first());
-    Q_ASSERT(p!=NULL);
+    Q_ASSERT(p!=nullptr);
     mPositionPoint = p;
     mPositionLatitude = p->latitude();
     mPositionLongitude = p->longitude();
@@ -251,8 +251,17 @@ void TrackItemGeneralPage::addPositionTimeFields(const QList<TrackDataItem *> *i
     hb->setFocusPolicy(Qt::StrongFocus);
     hlay->addWidget(b);
     mFormLayout->addRow(i18nc("@label:textbox", "Position:"), hb);
+}
 
-    l = new TrackDataLabel(p->time(), this);
+
+
+void TrackItemGeneralPage::addTimeField(const QList<TrackDataItem *> *items)
+{
+    if (items->count()!=1) return;			// only for single selection
+
+    TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items->first());
+    Q_ASSERT(p!=nullptr);
+    TrackDataLabel *l = new TrackDataLabel(p->time(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
 }
 
@@ -363,7 +372,8 @@ TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem
     qDebug();
     setObjectName("TrackPointGeneralPage");
 
-    addPositionTimeFields(items);
+    addPositionFields(items);
+    addTimeField(items);
     if (items->count()>1) addTimeSpanFields(items);
 }
 
@@ -382,8 +392,7 @@ TrackRoutepointGeneralPage::TrackRoutepointGeneralPage(const QList<TrackDataItem
     qDebug();
     setObjectName("TrackPointGeneralPage");
 
-    addPositionTimeFields(items);
-    if (items->count()>1) addTimeSpanFields(items);
+    addPositionFields(items);
 }
 
 
@@ -479,7 +488,8 @@ default:    break;
         addSeparatorField();
     }
 
-    addPositionTimeFields(items);
+    addPositionFields(items);
+    addTimeField(items);
     if (mWaypoint==NULL) addTimeSpanFields(items);
     addSeparatorField();
 

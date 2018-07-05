@@ -46,7 +46,8 @@ protected:
     void addTypeField(const QList<TrackDataItem *> *items);
     void addStatusField(const QList<TrackDataItem *> *items);
     void addDescField(const QList<TrackDataItem *> *items);
-    void addPositionTimeFields(const QList<TrackDataItem *> *items);
+    void addPositionFields(const QList<TrackDataItem *> *items);
+    void addTimeField(const QList<TrackDataItem *> *items);
 
 protected slots:
     void slotChangePosition();
