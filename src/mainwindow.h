@@ -66,6 +66,7 @@ protected slots:
     void slotImportFile();
     void slotPreferences();
     void slotImportPhoto();
+    void slotCopy();
     void slotPaste();
 
     void slotCanUndoChanged(bool can);
@@ -111,6 +112,7 @@ private:
     QAction *mExportAction;
     QAction *mImportAction;
 
+    QAction *mCopyAction;
     QAction *mPasteAction;
 
     QAction *mUndoAction;

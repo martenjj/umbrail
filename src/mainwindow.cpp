@@ -175,6 +175,9 @@ void MainWindow::setupActions()
     mRedoAction->setEnabled(false);
     mRedoText = mRedoAction->text();
 
+    mCopyAction = KStandardAction::copy(this, SLOT(slotCopy()), ac);
+    mCopyAction->setEnabled(false);
+
     mPasteAction = KStandardAction::paste(this, SLOT(slotPaste()), ac);
     mPasteAction->setEnabled(false);
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(slotUpdatePasteState()));
@@ -743,6 +746,7 @@ void MainWindow::slotUpdateActionState()
     TrackData::Type selType = filesController()->view()->selectedType();
     qDebug() << "selected" << selCount << "type" << selType;
 
+    bool copyEnabled = false;
     bool propsEnabled = false;
     bool profileEnabled = false;
     QString propsText = i18nc("@action:inmenu", "Properties...");
@@ -794,6 +798,7 @@ case TrackData::Point:
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
         profileEnabled = (selCount>1);
+        copyEnabled = true;
         break;
 
 case TrackData::Routepoint:
@@ -801,6 +806,7 @@ case TrackData::Routepoint:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
+        copyEnabled = true;
         break;
 
 case TrackData::Folder:
@@ -820,6 +826,7 @@ case TrackData::Waypoint:
         moveText = i18ncp("@action:inmenu", "Move Waypoint...", "Move Waypoints...", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
         statusEnabled = true;
+        copyEnabled = true;
 
         if (selCount==1)
         {
@@ -875,6 +882,7 @@ default:
     mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mClearSelectAction->setEnabled(selCount>0);
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
+    mCopyAction->setEnabled(copyEnabled);
 
     mSplitTrackAction->setEnabled(selCount==1 && selType==TrackData::Point);
     mMoveItemAction->setEnabled(moveEnabled);
@@ -1100,6 +1108,18 @@ void MainWindow::dropEvent(QDropEvent *ev)
     if (ev->dropAction()!=Qt::CopyAction) return;
     const QMimeData *mimeData = ev->mimeData();
     if (acceptMimeData(mimeData)) ev->accept();
+}
+
+
+void MainWindow::slotCopy()
+{
+    qDebug();
+
+
+
+
+
+
 }
 
 
