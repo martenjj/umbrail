@@ -130,8 +130,7 @@ void TrackPropertiesDialogue::slotDataChanged()
     for (int i = 0; i<num; ++i)
     {
         TrackPropertiesPage *page = qobject_cast<TrackPropertiesPage *>(mTabWidget->widget(i));
-        Q_ASSERT(page!=nullptr);
-        if (!page->isDataValid()) ok = false;
+        if (page!=nullptr && !page->isDataValid()) ok = false;
     }
 
     setButtonEnabled(QDialogButtonBox::Ok, ok);
