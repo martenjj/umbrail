@@ -673,12 +673,20 @@ case TrackData::Segment:    if (selCount==1) msg = i18n("Selected segment '%1'",
                             else msg = i18np("Selected %1 segment", "Selected %1 segments", selCount);
                             break;
 
+case TrackData::Route:      if (selCount==1) msg = i18n("Selected route '%1'", name);
+                            else msg = i18np("Selected %1 route", "Selected %1 routes", selCount);
+                            break;
+
 case TrackData::Point:      if (selCount==1) msg = i18n("Selected point '%1'", name);
                             else msg = i18np("Selected %1 point", "Selected %1 points", selCount);
                             break;
 
 case TrackData::Waypoint:   if (selCount==1) msg = i18n("Selected waypoint '%1'", name);
                             else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", selCount);
+                            break;
+
+case TrackData::Routepoint: if (selCount==1) msg = i18n("Selected routepoint '%1'", name);
+                            else msg = i18np("Selected %1 routepoint", "Selected %1 routepoints", selCount);
                             break;
 
 case TrackData::Folder:     if (selCount==1) msg = i18n("Selected folder '%1'", name);
