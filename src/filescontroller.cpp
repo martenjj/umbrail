@@ -376,7 +376,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
     if (options & ImporterExporterBase::SelectionOnly) exp->setSelectionId(view()->selectionId());
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
-    exp->save(exportTo, tdf);
+    exp->save(exportTo, tdf, options);
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))

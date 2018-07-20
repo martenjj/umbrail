@@ -20,14 +20,15 @@ public:
     ExporterBase();
     virtual ~ExporterBase() = default;
 
-    bool save(const QUrl &file, const TrackDataFile *item);
+    bool save(const QUrl &file, const TrackDataFile *item, ImporterExporterBase::Options options);
     void setSelectionId(unsigned long id);
 
 protected:
     virtual bool saveTo(QIODevice *dev, const TrackDataFile *item) = 0;
     bool isSelected(const TrackDataItem *item) const;
 
-protected:
+private:
+    ImporterExporterBase::Options mOptions;
     unsigned long mSelectionId;
 };
 
