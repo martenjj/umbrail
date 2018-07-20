@@ -320,7 +320,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
 }
 
 
-FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf)
+FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf, bool selectedOnly)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
 
@@ -372,6 +372,8 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
                                      "fileBackupInfo");
         }
     }
+
+    if (selectedOnly) exp->setSelectionId(view()->selectionId());
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->save(exportTo, tdf);

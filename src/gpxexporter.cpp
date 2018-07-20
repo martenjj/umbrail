@@ -36,15 +36,6 @@ GpxExporter::GpxExporter()
 }
 
 
-GpxExporter::~GpxExporter()
-{
-    qDebug() << "done";
-}
-
-
-
-
-
 static bool startedExtensions = false;
 
 
@@ -124,7 +115,7 @@ static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 
 static bool isNamespacedTag(const QString &name)
 {
-    return (name=="status" || name=="source" || name=="stop" || name=="bearingline");
+    return (name=="status" || name=="source" || name=="stop" || name=="bearingline" || name=="rangering");
 }
 
 
@@ -167,11 +158,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
 
 
 
-static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str);
-
-
-
-static inline bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &str)
+bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const
 {
     int num = item->childCount();
     for (int i = 0; i<num; ++i)
@@ -188,7 +175,7 @@ static inline bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &st
 
 
 
-static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
+bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const
 {
     bool status = true;
 
@@ -201,134 +188,144 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
     const TrackDataRoutepoint *tdm = dynamic_cast<const TrackDataRoutepoint *>(item);
 
-    // start tag
-    if (tdt!=NULL)					// element TRK
+    if (isSelected(item))
     {
-        str.writeCharacters("\n\n  ");
-        str.writeStartElement("trk");
-        // <name> xsd:string </name>
-        if (item->hasExplicitName()) str.writeTextElement("name", tdt->name());
-        // <desc> xsd:string </desc>
-        // <type> xsd:string </type>
-        writeMetadata(tdt, str, false);
-        // <cmt> xsd:string </cmt>
-    }
-    else if (tdr!=NULL)					// element RTE
-    {
-        str.writeCharacters("\n\n  ");
-        str.writeStartElement("rte");
-        // <name> xsd:string </name>
-        if (item->hasExplicitName()) str.writeTextElement("name", tdr->name());
-        // <desc> xsd:string </desc>
-        // <type> xsd:string </type>
-        writeMetadata(tdr, str, false);
-        // <cmt> xsd:string </cmt>
-    }
-    else if (tds!=NULL)					// element TRKSEG
-    {
-        str.writeStartElement("trkseg");
-        writeMetadata(tds, str, false);
-    }
-    else if (tdp!=NULL || tdw!=NULL || tdm!=NULL)	// element TRKPT or WPT
-    {
-        const TrackDataAbstractPoint *p;
-        if (tdp!=NULL)					// element TRKPT
+        // start tag
+        if (tdt!=NULL)					// element TRK
         {
-            p = tdp;
-            str.writeStartElement("trkpt");
-        }
-        else if (tdw!=NULL)				// element WPT
-        {
-            p = tdw;
             str.writeCharacters("\n\n  ");
-            str.writeStartElement("wpt");
+            str.writeStartElement("trk");
+            // <name> xsd:string </name>
+            if (item->hasExplicitName()) str.writeTextElement("name", tdt->name());
+            // <desc> xsd:string </desc>
+            // <type> xsd:string </type>
+            writeMetadata(tdt, str, false);
+            // <cmt> xsd:string </cmt>
         }
-        else						// element RTEPT
+        else if (tdr!=NULL)				// element RTE
         {
-            p = tdm;
-            str.writeCharacters("\n\n    ");
-            str.writeStartElement("rtept");
+            str.writeCharacters("\n\n  ");
+            str.writeStartElement("rte");
+            // <name> xsd:string </name>
+            if (item->hasExplicitName()) str.writeTextElement("name", tdr->name());
+            // <desc> xsd:string </desc>
+            // <type> xsd:string </type>
+            writeMetadata(tdr, str, false);
+            // <cmt> xsd:string </cmt>
         }
+        else if (tds!=NULL)				// element TRKSEG
+        {
+            str.writeStartElement("trkseg");
+            writeMetadata(tds, str, false);
+        }
+        else if (tdp!=NULL || tdw!=NULL || tdm!=NULL)	// element TRKPT, WPT or RTEPT
+        {
+            const TrackDataAbstractPoint *p;
+            if (tdp!=NULL)				// element TRKPT
+            {
+                p = tdp;
+                str.writeStartElement("trkpt");
+            }
+            else if (tdw!=NULL)				// element WPT
+            {
+                p = tdw;
+                str.writeCharacters("\n\n  ");
+                str.writeStartElement("wpt");
+            }
+            else					// element RTEPT
+            {
+                p = tdm;
+                str.writeCharacters("\n\n    ");
+                str.writeStartElement("rtept");
+            }
 
-        // lat="latitudeType"
-        // lon="longitudeType"
-        str.writeAttribute("lat", QString::number(p->latitude(), 'f'));
-        str.writeAttribute("lon", QString::number(p->longitude(), 'f'));
+            // lat="latitudeType"
+            // lon="longitudeType"
+            str.writeAttribute("lat", QString::number(p->latitude(), 'f'));
+            str.writeAttribute("lon", QString::number(p->longitude(), 'f'));
 
-        // <ele> xsd:decimal </ele>
-        double ele = p->elevation();
-        if (!ISNAN(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 3));
+            // <ele> xsd:decimal </ele>
+            double ele = p->elevation();
+            if (!ISNAN(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 3));
 
-        // <time> xsd:dateTime </time>
-        QDateTime dt = p->time();
-        if (dt.isValid()) str.writeTextElement("time", dt.toString(Qt::ISODate));
+            // <time> xsd:dateTime </time>
+            QDateTime dt = p->time();
+            if (dt.isValid()) str.writeTextElement("time", dt.toString(Qt::ISODate));
 
-        // <name> xsd:string </name>
-        if (item->hasExplicitName()) str.writeTextElement("name", p->name());
-        // <cmt> xsd:string </cmt>
-        // <desc> xsd:string </desc>
-        // <sym> xsd:string </sym>
+            // <name> xsd:string </name>
+            if (item->hasExplicitName()) str.writeTextElement("name", p->name());
+            // <cmt> xsd:string </cmt>
+            // <desc> xsd:string </desc>
+            // <sym> xsd:string </sym>
 
-        // <hdop> xsd:decimal </hdop>
-        writeMetadata(p, str, false);
-    }
-    else if (tdf!=NULL)					// Folder
-    {							// write nothing, but recurse for children
-    }
-    else						// anything else
-    {
-        qDebug() << "unknown item type" << item << item->name();
-        return (true);					// warning only, don't abort
+            // <hdop> xsd:decimal </hdop>
+            writeMetadata(p, str, false);
+        }
+        else if (tdf!=NULL)				// Folder
+        {						// write nothing, but recurse for children
+        }
+        else						// anything else
+        {
+            qDebug() << "unknown item type" << item << item->name();
+            return (true);				// warning only, don't abort
+        }
     }
 
 #ifdef EXTENSIONS_AFTER_CHILDREN
     writeChildren(item, str);				// write child items
 #endif
 
-    // <extensions> extensionsType </extensions>
-    if (tdt!=NULL)					// extensions for TRK
+    if (isSelected(item))
     {
-        writeMetadata(tdt, str, true);
-        writeStyle(tdt, str);
-    }
-    else if (tdr!=NULL)					// extensions for RTE
-    {
-        writeMetadata(tdr, str, true);
-        writeStyle(tdr, str);
-    }
-    else if (tds!=NULL)					// extensions for TRKSEG
-    {
-        // <name> xsd:string </name>
-        startExtensions(str);
-        if (item->hasExplicitName()) str.writeTextElement("name", tds->name());
-        writeMetadata(tds, str, true);
-        writeStyle(tds, str);
-    }
-    else if (tdp!=NULL)					// extensions for TRKPT
-    {
-        writeMetadata(tdp, str, true);
-        writeStyle(tdp, str);
-    }
-    else if (tdw!=NULL)					// extensions for WPT
-    {
-        writeStyle(tdw, str);
-        writeMetadata(tdw, str, true);
-        const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
-        if (fold!=NULL)					// within a folder?
-        {						// save the folder path
-            startExtensions(str);
-            str.writeTextElement("navtracks:folder", fold->path());
+        // <extensions> extensionsType </extensions>
+        if (tdt!=NULL)					// extensions for TRK
+        {
+            writeMetadata(tdt, str, true);
+            writeStyle(tdt, str);
         }
-    }
+        else if (tdr!=NULL)				// extensions for RTE
+        {
+            writeMetadata(tdr, str, true);
+            writeStyle(tdr, str);
+        }
+        else if (tds!=NULL)				// extensions for TRKSEG
+        {
+            // <name> xsd:string </name>
+            startExtensions(str);
+            if (item->hasExplicitName()) str.writeTextElement("name", tds->name());
+            writeMetadata(tds, str, true);
+            writeStyle(tds, str);
+        }
+        else if (tdp!=NULL)				// extensions for TRKPT
+        {
+            writeMetadata(tdp, str, true);
+            writeStyle(tdp, str);
+        }
+        else if (tdw!=NULL)				// extensions for WPT
+        {
+            writeStyle(tdw, str);
+            writeMetadata(tdw, str, true);
+            const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
+            if (fold!=NULL)				// within a folder?
+            {						// save the folder path
+                startExtensions(str);
+                str.writeTextElement("navtracks:folder", fold->path());
+            }
+        }
 
-    endExtensions(str);
+        endExtensions(str);
+    }
 
 #ifndef EXTENSIONS_AFTER_CHILDREN
     writeChildren(item, str);				// write child items
 #endif
 
-    // end tag
-    if (tdf==NULL) str.writeEndElement();		// nothing was started for this
+    if (isSelected(item))
+    {
+        // end tag
+        if (tdf==NULL) str.writeEndElement();		// nothing was started for this
+    }
+
     return (status);
 }
 
@@ -339,14 +336,13 @@ static bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str)
 
 
 
-bool GpxExporter::save(const QUrl &file, const TrackDataFile *item)
+bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 {
-    qDebug() << "item" << item->name() << "to" << file;
+    qDebug() << "item" << item->name() << "to" << dev;
 
-    if (!prepareSaveFile(file)) return (false);
     startedExtensions = false;
 
-    QXmlStreamWriter str(&mSaveFile);
+    QXmlStreamWriter str(dev);
     str.setAutoFormatting(true);
     str.setAutoFormattingIndent(2);
 
@@ -392,13 +388,6 @@ bool GpxExporter::save(const QUrl &file, const TrackDataFile *item)
     if (str.hasError())
     {
         qDebug() << "XML writing failed!";
-        mSaveFile.cancelWriting();
-        return (false);
-    }
-
-    if (!mSaveFile.commit())
-    {
-        reporter()->setError(ErrorReporter::Fatal, mSaveFile.errorString());
         return (false);
     }
 

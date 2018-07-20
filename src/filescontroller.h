@@ -48,7 +48,7 @@ public:
     };
 
     FilesController(QObject *pnt = NULL);
-    ~FilesController();
+    virtual ~FilesController();
 
     FilesView *view() const			{ return (mView); }
     FilesModel *model() const			{ return (mDataModel); }
@@ -57,7 +57,7 @@ public:
     void saveProperties();
 
     FilesController::Status importFile(const QUrl &importFrom);
-    FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf);
+    FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf, bool selectedOnly);
     FilesController::Status importPhoto(const QList<QUrl> &urls);
     void initNew();
 

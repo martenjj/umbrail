@@ -6,9 +6,11 @@
 
 #include "importerexporterbase.h"
 
-#include <qsavefile.h>
+class QUrl;
+class QIODevice;
 
 
+class TrackDataItem;
 class TrackDataFile;
 
 
@@ -16,15 +18,18 @@ class ExporterBase : public ImporterExporterBase
 {
 public:
     ExporterBase();
-    virtual ~ExporterBase();
+    virtual ~ExporterBase() = default;
 
-    virtual bool save(const QUrl &file, const TrackDataFile *item) = 0;
+
+    bool save(const QUrl &file, const TrackDataFile *item);
+    void setSelectionId(unsigned long id);
 
 protected:
-    bool prepareSaveFile(const QUrl &file);
+    virtual bool saveTo(QIODevice *dev, const TrackDataFile *item) = 0;
+    bool isSelected(const TrackDataItem *item) const;
 
 protected:
-    QSaveFile mSaveFile;
+    unsigned long mSelectionId;
 };
 
  

@@ -515,7 +515,7 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 
 
 // Error reporting and status messages are done in FilesController::exportFile()
-bool MainWindow::save(const QUrl &to)
+bool MainWindow::save(const QUrl &to, bool selectedOnly)
 {
     qDebug() << "to" << to;
 
@@ -531,7 +531,7 @@ bool MainWindow::save(const QUrl &to)
     tdf->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
     tdf->setMetadata(DataIndexer::self()->index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
-    if (filesController()->exportFile(to, tdf)!=FilesController::StatusOk) return (false);
+    if (filesController()->exportFile(to, tdf, selectedOnly)!=FilesController::StatusOk) return (false);
     slotStatusMessage(xi18nc("@info", "Saved <filename>%1</filename>", to.toDisplayString()));
     return (true);					// more appropriate message
 }
@@ -645,7 +645,7 @@ void MainWindow::slotSaveProject()
     QUrl projectFile = mProject->fileName();
     qDebug() << "to" << projectFile;
 
-    if (save(projectFile))
+    if (save(projectFile, false))
     {
         TrackDataFile *tdf = filesController()->model()->rootFileItem();
         if (tdf!=nullptr) tdf->setFileName(projectFile);
@@ -1115,11 +1115,8 @@ void MainWindow::slotCopy()
 {
     qDebug();
 
-
-
-
-
-
+    QUrl projectFile("clipboard:/a.gpx");		// selects clipboard, sets format
+    qDebug() << "save was ok?" << save(projectFile, true);
 }
 
 

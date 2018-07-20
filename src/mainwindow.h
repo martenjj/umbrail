@@ -90,7 +90,7 @@ private:
     void setupActions();
     void setupStatusBar();
 
-    bool save(const QUrl &to);
+    bool save(const QUrl &to, bool selectedOnly);
     FilesController::Status load(const QUrl &from);
 
     bool acceptMimeData(const QMimeData *mimeData);
