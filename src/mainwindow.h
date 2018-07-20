@@ -6,6 +6,7 @@
 #include <kxmlguiwindow.h>
 
 #include "filescontroller.h"
+#include "importerexporterbase.h"
 
 
 class QLabel;
@@ -90,7 +91,7 @@ private:
     void setupActions();
     void setupStatusBar();
 
-    bool save(const QUrl &to, bool selectedOnly);
+    bool save(const QUrl &to, ImporterExporterBase::Options options);
     FilesController::Status load(const QUrl &from);
 
     bool acceptMimeData(const QMimeData *mimeData);

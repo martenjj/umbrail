@@ -320,7 +320,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
 }
 
 
-FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf, bool selectedOnly)
+FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
 
@@ -334,7 +334,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
     }
 
     exportType = exportType.toUpper();
-    qDebug() << "to" << exportTo << "type" << exportType;
+    qDebug() << "to" << exportTo << "type" << exportType << "options" << options;
 
     QScopedPointer<ExporterBase> exp;			// exporter for requested format
     if (exportType=="GPX")				// export to GPX file
@@ -373,7 +373,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
         }
     }
 
-    if (selectedOnly) exp->setSelectionId(view()->selectionId());
+    if (options & ImporterExporterBase::SelectionOnly) exp->setSelectionId(view()->selectionId());
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->save(exportTo, tdf);
@@ -385,7 +385,22 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
         return (FilesController::StatusFailed);
     }
 
-    emit statusMessage(xi18nc("@info", "Exported <filename>%1</filename>", exportTo.toDisplayString()));
+    if (options & ImporterExporterBase::ToClipboard)
+    {
+        emit statusMessage(xi18nc("@info", "Copied selection to clipboard"));
+    }
+    else
+    {
+        if (options & ImporterExporterBase::SelectionOnly)
+        {
+            emit statusMessage(xi18nc("@info", "Saved selection to <filename>%1</filename>", exportTo.toDisplayString()));
+        }
+        else
+        {
+            emit statusMessage(xi18nc("@info", "Saved to <filename>%1</filename>", exportTo.toDisplayString()));
+        }
+    }
+
     return (FilesController::StatusOk);			// done, finished with exporter
 }
 

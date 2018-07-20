@@ -18,5 +18,4 @@ ImporterExporterBase::ImporterExporterBase()
 ImporterExporterBase::~ImporterExporterBase()
 {
     delete mReporter;
-    qDebug() << "done";
 }

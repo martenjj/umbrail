@@ -20,7 +20,6 @@ public:
     ExporterBase();
     virtual ~ExporterBase() = default;
 
-
     bool save(const QUrl &file, const TrackDataFile *item);
     void setSelectionId(unsigned long id);
 

@@ -5,6 +5,7 @@
  
 #include <qobject.h>
 #include "mainwindowinterface.h"
+#include "importerexporterbase.h"
 
 #include <math.h>					// need this for 'NAN'
 
@@ -57,7 +58,7 @@ public:
     void saveProperties();
 
     FilesController::Status importFile(const QUrl &importFrom);
-    FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf, bool selectedOnly);
+    FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options);
     FilesController::Status importPhoto(const QList<QUrl> &urls);
     void initNew();
 
