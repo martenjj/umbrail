@@ -188,7 +188,8 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
     const TrackDataRoutepoint *tdm = dynamic_cast<const TrackDataRoutepoint *>(item);
 
-    if (isSelected(item))
+    const bool isSel = isSelected(item);		// is the item selected?
+    if (isSel)
     {
         // start tag
         if (tdt!=NULL)					// element TRK
@@ -275,7 +276,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     writeChildren(item, str);				// write child items
 #endif
 
-    if (isSelected(item))
+    if (isSel)
     {
         // <extensions> extensionsType </extensions>
         if (tdt!=NULL)					// extensions for TRK
@@ -320,7 +321,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     writeChildren(item, str);				// write child items
 #endif
 
-    if (isSelected(item))
+    if (isSel)
     {
         // end tag
         if (tdf==NULL) str.writeEndElement();		// nothing was started for this

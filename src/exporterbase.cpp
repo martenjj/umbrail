@@ -35,17 +35,38 @@ void ExporterBase::setSelectionId(unsigned long id)
 
 bool ExporterBase::isSelected(const TrackDataItem *item) const
 {
-    return (mSelectionId==0 || item->selectionId()==mSelectionId);
+    if (!(mOptions & ImporterExporterBase::SelectionOnly)) return (true);
+							// all items, not just selection
+    const int num = item->childCount();
+    if (num>0)						// is this a container?
+    {
+        // See whether this is actually a container which includes the selected
+        // items.  If so, then do not consider the container itself as selected.
+        //
+        // This is not a trivial operation (needing to look at the selection
+        // state of all the child items), but it will only be called once for
+        // each parent container (track, segment, folder or route) in the file.
+        // There should not be too many of those, and the usual !SelectionOnly
+        // case is checked above first.
+        for (int i = 0; i<num; ++i)			// look at all children
+        {
+            const TrackDataItem *childItem = item->childAt(i);
+            if (childItem->selectionId()==mSelectionId) return (false);
+        }						// a child item is selected
+    }
+
+    return (item->selectionId()==mSelectionId);
 }
 
 
-bool ExporterBase::save(const QUrl &file, const TrackDataFile *item)
+bool ExporterBase::save(const QUrl &file, const TrackDataFile *item, ImporterExporterBase::Options options)
 {
-    qDebug() << "to" << file;
+    qDebug() << "to" << file << "options" << options;
+    mOptions = options;
     reporter()->setFile(file);
 
-    if (file.scheme()=="clipboard")			// output to the clipboard
-    {
+    if (options & ImporterExporterBase::ToClipboard)
+    {							// output to the clipboard
         QBuffer buf;
         if (!buf.open(QIODevice::WriteOnly))
         {
