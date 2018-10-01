@@ -12,10 +12,9 @@ class TrackDataItem;
 class TrackDataTrack;
 class TrackDataRoute;
 class TrackDataSegment;
-class TrackDataTrackpoint;
+class TrackDataAbstractPoint;
 class TrackDataFolder;
 class TrackDataWaypoint;
-class TrackDataRoutepoint;
 
 
 
@@ -60,9 +59,7 @@ private:
     TrackDataTrack *mCurrentTrack;
     TrackDataRoute *mCurrentRoute;
     TrackDataSegment *mCurrentSegment;
-    TrackDataTrackpoint *mCurrentPoint;
-    TrackDataWaypoint *mCurrentWaypoint;
-    TrackDataRoutepoint *mCurrentRoutepoint;
+    TrackDataAbstractPoint *mCurrentPoint;
 
     bool mWithinMetadata;
     bool mWithinExtensions;

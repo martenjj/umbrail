@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	26-Jun-18						//
+//  Edit:	01-Oct-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -42,6 +42,7 @@ VariableUnitCombo::VariableUnitCombo(VariableUnitCombo::DisplayType displayType,
     setObjectName("VariableUnitCombo");
 
     // TODO: global preference for default units
+    // TODO: or get from file timezone if available
     setCurrentIndex(0);
 
     switch (displayType)
