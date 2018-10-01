@@ -552,7 +552,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
     {
         QString s = tdf->metadata("position");
         qDebug() << "pos metadata" << s;
-        mapController()->view()->blockSignals(true);	// no status bar update from zooming
+        QSignalBlocker block(mapController()->view());	// no status bar update from zooming
         if (!s.isEmpty())
         {
             mapController()->view()->setCurrentPosition(s);
@@ -561,7 +561,6 @@ FilesController::Status MainWindow::load(const QUrl &from)
         {
             mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
         }
-        mapController()->view()->blockSignals(false);
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments
