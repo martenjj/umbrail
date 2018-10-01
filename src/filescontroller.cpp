@@ -605,7 +605,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         }
 
         // Find or create a folder to place the resulting waypoint in
-        TrackDataFolder *foundFolder = model()->rootFileItem()->findChildFolder(PHOTO_FOLDER_NAME);
+        TrackDataFolder *foundFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, model()->rootFileItem());
         if (foundFolder==NULL)				// find where to store point
         {
             if (containerCreated) qDebug() << "new folder already added";

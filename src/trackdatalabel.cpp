@@ -25,7 +25,7 @@ TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
         connect(page, SIGNAL(updateTimeZones(const QTimeZone *)), SLOT(slotTimeZoneChanged(const QTimeZone *)));
         slotTimeZoneChanged(page->timeZone());
     }
-    else slotTimeZoneChanged(NULL);
+    else slotTimeZoneChanged(nullptr);
     init();
 }
 

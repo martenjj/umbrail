@@ -158,6 +158,13 @@ namespace TrackData
     QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const QTimeZone *tz = nullptr);
 
+    /**
+     * Find a folder by name or path.
+     *
+     * @param path Path of the folder to find, names separated by '/'
+     * @param item Root item to start path search from
+     * @return The specified folder if it exists, otherwise, @c nullptr
+     **/
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
 }
 
@@ -202,15 +209,6 @@ public:
     void setMetadata(int idx, const QString &value);
     void setMetadata(int idx, const QVariant &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
-
-    // TODO: need not be member, can be static?
-    /**
-     * Find a child folder under this parent.
-     *
-     * @param wantName Name of the folder to find
-     * @return The named folder if it was found, otherwise, @c NULL
-     **/
-    TrackDataFolder *findChildFolder(const QString &wantName) const;
 
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;

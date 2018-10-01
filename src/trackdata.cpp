@@ -221,16 +221,34 @@ QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 
 TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataItem *root)
 {
-    const QStringList folders = path.split('/');
+    if (path.isEmpty()) return (nullptr);		// check for null path
+    const QStringList names = path.split('/');		// list of folder names
 
-    TrackDataFolder *foundFolder = NULL;
-    foreach (const QString &folder, folders)
+    const TrackDataItem *item = root;
+    foreach (const QString &name, names)		// descend through path names
     {
-        foundFolder = (foundFolder!=NULL ? foundFolder : root)->findChildFolder(folder);
-        if (foundFolder==NULL) break;
+        const int cnt = item->childCount();
+        if (cnt==0) return (nullptr);			// no children under this item
+
+        const TrackDataItem *folderItem = nullptr;
+        for (int i = 0; i<cnt; ++i)			// search through children
+        {
+            const TrackDataFolder *fold = dynamic_cast<const TrackDataFolder *>(item->childAt(i));
+            if (fold!=nullptr)				// child item is a folder
+            {
+                if (fold->name()==name)			// folder name matches
+                {
+                    folderItem = fold;			// continue from this item
+                    break;
+                }
+            }
+        }
+
+        if (folderItem==nullptr) return (nullptr);	// no child folder found
+        item = folderItem;				// continue descent from here
     }
 
-    return (foundFolder);
+    return (const_cast<TrackDataFolder *>(dynamic_cast<const TrackDataFolder *>(item)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -436,24 +454,6 @@ QString TrackDataItem::timeZone() const
         parentItem = parentItem->parent();
     }
     return (QString());
-}
-
-
-TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
-{
-    if (mChildren==nullptr) return (nullptr);		// no children exist
-
-    //qDebug() << "name" << wantName << "under" << name();
-    for (int i = 0; i<mChildren->count(); ++i)
-    {
-        TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(mChildren->at(i));
-        if (fold!=NULL)					// this child is a folder,
-        {						// check matching name
-            if (fold->name()==wantName) return (fold);
-        }
-    }
-
-    return (nullptr);
 }
 
 

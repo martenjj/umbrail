@@ -51,7 +51,7 @@ void FolderSelectDialogue::slotNewFolder()
     if (name.contains('/')) return;
 
     TrackDataItem *item = selectedItem();
-    TrackDataFolder *foundFolder = item->findChildFolder(name);
+    TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, item);
     if (foundFolder!=NULL)
     {
         KMessageBox::sorry(this,
@@ -67,7 +67,7 @@ void FolderSelectDialogue::slotNewFolder()
     mainWindow()->executeCommand(cmd);
 
     // select the added folder
-    TrackDataFolder *newFolder = item->findChildFolder(name);
+    TrackDataFolder *newFolder = TrackData::findFolderByPath(name, item);
     Q_ASSERT(newFolder!=NULL);
     setSelectedItem(newFolder);
 

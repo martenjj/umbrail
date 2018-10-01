@@ -141,7 +141,7 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
     for (QStringList::const_iterator it = folders.constBegin(); it!=folders.constEnd(); ++it)
     {
         const QString name = (*it);			// look for existing subfolder
-        foundFolder = cur->findChildFolder(name);
+        foundFolder = TrackData::findFolderByPath(name, cur);
         if (foundFolder==NULL)				// nothing existing found
         {
             qDebug() << "creating" << name << "under" << cur->name();
