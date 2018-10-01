@@ -64,17 +64,15 @@ void ValueSlider::setValue(int val)
     int spin = mSpinbox->value();
     if (spin!=val)
     {
-        mSpinbox->blockSignals(true);
+        QSignalBlocker block(mSpinbox);
         mSpinbox->setValue(val);			// track in spin box
-        mSpinbox->blockSignals(false);
     }
 
     int slid = mSlider->value();
     if (slid!=val)
     {
-        mSlider->blockSignals(true);
+        QSignalBlocker block(mSlider);
         mSlider->setValue(val);				// track in slider
-        mSlider->blockSignals(false);
     }
 }
 
