@@ -369,19 +369,12 @@ void StopDetectDialogue::slotDetectStops()
     const int num = mResultPoints.count();
     qDebug() << "###### found" << num << "stops";
 
-
-
-
-
-
-    mResultsList->blockSignals(true);
-
+    QSignalBlocker block(mResultsList);			// block individual slotSetButtonStates()
     while (mResultsList->count()>0)			// clear existing results
     {
         QListWidgetItem *item = mResultsList->takeItem(0);
         delete item;
     }
-
     for (int i = 0; i<num; ++i)				// generate new results
     {
         const TrackDataWaypoint *tdw = mResultPoints[i];
@@ -394,7 +387,6 @@ void StopDetectDialogue::slotDetectStops()
     }
 
     slotSetButtonStates();
-    mResultsList->blockSignals(false);
 
     mapController()->view()->setStopLayerData(&mResultPoints);
     unsetCursor();
