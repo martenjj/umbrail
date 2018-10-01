@@ -127,8 +127,8 @@ case Qt::ForegroundRole:
         switch (idx.column())
         {
 case COL_NAME:
-            QString status = tdi->metadata("status");
-            if (!status.isEmpty())
+            QVariant status = tdi->metadata("status");
+            if (!status.isNull())
             {
                 TrackData::WaypointStatus s = static_cast<TrackData::WaypointStatus>(status.toInt());
                 KColorScheme sch(QPalette::Normal);

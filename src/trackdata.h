@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include <qstring.h>
+#include <qvariant.h>
 #include <qlist.h>
 #include <qdatetime.h>
 #include <qvector.h>
@@ -156,7 +156,7 @@ namespace TrackData
 
     QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
     QString formattedDuration(unsigned t, bool blankIfZero = false);
-    QString formattedTime(const QDateTime &dt, const QTimeZone *tz = NULL);
+    QString formattedTime(const QDateTime &dt, const QTimeZone *tz = nullptr);
 
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
 }
@@ -197,11 +197,13 @@ public:
     const Style *style() const;
     void setStyle(const Style &s);
 
+    QVariant metadata(int idx) const;
+    QVariant metadata(const QString &key) const;
     void setMetadata(int idx, const QString &value);
-    QString metadata(int idx) const;
-    QString metadata(const QString &key) const;
+    void setMetadata(int idx, const QVariant &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
+    // TODO: need not be member, can be static?
     /**
      * Find a child folder under this parent.
      *
@@ -228,7 +230,7 @@ private:
     QString mName;
     bool mExplicitName;
     QList<TrackDataItem *> *mChildren;
-    QVector<QString> *mMetadata;
+    QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
     Style *mStyle;

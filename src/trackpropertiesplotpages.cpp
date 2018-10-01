@@ -22,11 +22,11 @@ TrackItemPlotPage::TrackItemPlotPage(const QList<TrackDataItem *> *items, QWidge
     Q_ASSERT(tdw!=nullptr);				// only applicable to waypoints
 
     mBearingEdit = new PlotEditWidget(PlotEditWidget::Bearing, this);
-    mBearingEdit->setPlotData(item->metadata("bearingline"));
+    mBearingEdit->setPlotData(item->metadata("bearingline").toString());
     mFormLayout->addRow(QString(), mBearingEdit);
 
     mRangeEdit = new PlotEditWidget(PlotEditWidget::Range, this);
-    mRangeEdit->setPlotData(item->metadata("rangering"));
+    mRangeEdit->setPlotData(item->metadata("rangering").toString());
     mFormLayout->addRow(QString(), mRangeEdit);
 }
 

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	16-May-16						//
+//  Edit:	30-Sep-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -62,12 +62,12 @@ static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType
         return (QUrl());
     }
 
-    QString n = item->metadata("link");			// first try saved media name
-    if (n.isEmpty()) n = item->metadata("media");	// compatibility with old metadata
-    if (n.isEmpty()) n = item->name();			// then the waypoint name
-    qDebug() << "item" << item->name() << "link" << n;
+    QVariant n = item->metadata("link");		// first try saved media name
+    if (n.isNull()) n = item->metadata("media");	// compatibility with old metadata
+    if (n.isNull()) n = item->name();			// then the waypoint name
+    qDebug() << "item" << item->name() << "link" << n.toString();
 
-    QUrl file(n);
+    QUrl file(n.toString());
     if (file.isRelative()) file = Settings::audioNotesDirectory().resolved(file);
     qDebug() << "->" << file;
     if (file.isLocalFile())				// can check for existence here

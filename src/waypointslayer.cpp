@@ -109,7 +109,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         painter->setBrush(QBrush());
 
         // First of all the bearing lines, if there are any
-        const QString brg = tdw->metadata("bearingline");
+        const QString brg = tdw->metadata("bearingline").toString();
         if (!brg.isEmpty())
         {
             const QStringList brgs = brg.split(';', QString::SkipEmptyParts);
@@ -130,7 +130,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         }
 
         // The the range rings, if there are any
-        const QString rng = tdw->metadata("rangering");
+        const QString rng = tdw->metadata("rangering").toString();
         if (!rng.isEmpty())
         {
             const QStringList rngs = rng.split(';', QString::SkipEmptyParts);

@@ -312,7 +312,7 @@ void ChangeItemDataCommand::undo()
     {
         TrackDataItem *item = (*it);
         Q_ASSERT(item!=NULL);
-        QString savedValue = mSavedValues.takeFirst();
+        QVariant savedValue = mSavedValues.takeFirst();
         qDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
         item->setMetadata(idx, savedValue);
         model()->changedItem(item);
@@ -1067,8 +1067,8 @@ void AddWaypointCommand::redo()
             newWaypoint->setElevation(mSourcePoint->elevation());
             newWaypoint->setTime(mSourcePoint->time());
             newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
-            const QString stopData = mSourcePoint->metadata("stop");
-            if (!stopData.isEmpty()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
+            const QVariant stopData = mSourcePoint->metadata("stop");
+            if (!stopData.isNull()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
         }
 
         mNewWaypointContainer->addChildItem(newWaypoint);

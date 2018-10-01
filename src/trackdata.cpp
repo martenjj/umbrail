@@ -344,12 +344,31 @@ TimeRange TrackDataItem::timeSpan() const
 
 void TrackDataItem::setMetadata(int idx, const QString &value)
 {
-    if (mMetadata==NULL)
+    // A special case.  Setting a null string item sets a null QVariant as the value.
+    // This is so that QVariant::isNull() can be used to test the metadata value
+    // and will give the expected result:  in this application an empty string is
+    // always considered to be equivalent to no value.
+    //
+    // Results obtained by experimentation:
+    //
+    //   QVariant()		->	isValid()=false		isNull()=true
+    //	 QVariant("str")	->	isValid()=true		isNull()=false
+    //	 QVariant("")		->	isValid()=true		isNull()=false
+    //	 QVariant(QString())	->	isValid()=true		isNull()=true
+
+    if (value.isEmpty()) setMetadata(idx, QVariant());
+    else setMetadata(idx, QVariant(value));
+}
+
+
+void TrackDataItem::setMetadata(int idx, const QVariant &value)
+{
+    if (mMetadata==nullptr)
     {
 #ifdef MEMORY_TRACKING
         ++allocMetadata;
 #endif
-        mMetadata = new QVector<QString>;
+        mMetadata = new QVector<QVariant>;
     }
 
     int cnt = mMetadata->count();
@@ -358,32 +377,30 @@ void TrackDataItem::setMetadata(int idx, const QString &value)
 }
 
 
-QString TrackDataItem::metadata(int idx) const
+QVariant TrackDataItem::metadata(int idx) const
 {
-    if (mMetadata==NULL) return (QString());
-    int cnt = mMetadata->count();
-    if (idx<0 || idx>=cnt) return (QString());
-    return (mMetadata->at(idx));
+    if (mMetadata==nullptr) return (QVariant());
+    return (mMetadata->value(idx));			// performs the bounds checking
 }
 
 
-QString TrackDataItem::metadata(const QString &key) const
+QVariant TrackDataItem::metadata(const QString &key) const
 {
-    if (mMetadata==NULL) return (QString());
+    if (mMetadata==nullptr) return (QVariant());
     return (metadata(DataIndexer::self()->index(key)));
 }
 
 
 void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
 {
-    if (other->mMetadata==NULL) return;			// nothing to copy
+    if (other->mMetadata==nullptr) return;		// nothing to copy
 
     for (int idx = 0; idx<other->mMetadata->size(); ++idx)
     {
-        QString om = other->mMetadata->at(idx);
-        if (om.isEmpty()) continue;
-        QString tm = this->metadata(idx);
-        if (!tm.isEmpty() && !overwrite) continue;
+        QVariant om = other->mMetadata->at(idx);
+        if (om.isNull()) continue;			// no source metadata
+        QVariant tm = this->metadata(idx);
+        if (!tm.isNull() && !overwrite) continue;	// already in destination and no overwrite
         this->setMetadata(idx, om);
     }
 }
@@ -415,7 +432,7 @@ QString TrackDataItem::timeZone() const
     while (parentItem!=NULL)
     {
         const TrackDataFile *parentFile = dynamic_cast<const TrackDataFile *>(parentItem);
-        if (parentFile!=NULL) return (parentFile->metadata("timezone"));
+        if (parentFile!=NULL) return (parentFile->metadata("timezone").toString());
         parentItem = parentItem->parent();
     }
     return (QString());
@@ -424,7 +441,7 @@ QString TrackDataItem::timeZone() const
 
 TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
 {
-    if (mChildren==NULL) return (NULL);			// no children exist
+    if (mChildren==nullptr) return (nullptr);		// no children exist
 
     //qDebug() << "name" << wantName << "under" << name();
     for (int i = 0; i<mChildren->count(); ++i)
@@ -436,7 +453,7 @@ TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
         }
     }
 
-    return (NULL);
+    return (nullptr);
 }
 
 
@@ -691,16 +708,17 @@ TrackDataWaypoint::TrackDataWaypoint()
 
 TrackData::WaypointType TrackDataWaypoint::waypointType() const
 {
-    QString n = metadata("stop");			// first try saved stop data
-    if (!n.isEmpty()) return (TrackData::WaypointStop);	// this means it's a stop
+    QVariant n = metadata("stop");			// first try saved stop data
+    if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
 
     n = metadata("link");				// then get saved link name
-    if (n.isEmpty()) n = metadata("media");		// compatibility with old metadata
-    if (n.isEmpty()) n = name();			// lastly try our waypoint name
+    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
+    if (n.isNull()) n = name();				// lastly try our waypoint name
 
-    if (n.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
-    if (n.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
-    if (n.contains(QRegExp("\\.jpg$"))) return (TrackData::WaypointPhoto);
+    QString ns = n.toString();
+    if (ns.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
+    if (ns.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
+    if (ns.contains(QRegExp("\\.jpg$"))) return (TrackData::WaypointPhoto);
     return (TrackData::WaypointNormal);
 }
 

@@ -138,7 +138,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         if (isInternalTag(name)) continue;		// internal to application only
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
 						        // not matching extension option
-        QString data = item->metadata(idx);
+        QString data = item->metadata(idx).toString();
         if (data.isEmpty()) continue;			// no data to output
 
         if (wantExtensions) startExtensions(str);
@@ -353,7 +353,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     // <gpx>
     str.writeStartElement("gpx");
     str.writeAttribute("version", "1.1");
-    str.writeAttribute("creator", item->metadata("creator"));
+    str.writeAttribute("creator", item->metadata("creator").toString());
     str.writeAttribute("xmlns", "http://www.topografix.com/GPX/1/1");
     str.writeNamespace("http://www.garmin.com/xmlschemas/GpxExtensions/v3", "gpxx");
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");

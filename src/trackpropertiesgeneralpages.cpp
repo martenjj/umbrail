@@ -158,7 +158,7 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
         const TrackDataItem *tdi = items->first();
         Q_ASSERT(tdi!=NULL);
 
-        mTypeCombo->setType(tdi->metadata("type"));
+        mTypeCombo->setType(tdi->metadata("type").toString());
         connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
         connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
     }
@@ -212,9 +212,13 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
 
-        QString d = tdi->metadata("desc");
-        if (!d.endsWith('\n')) d += "\n";
-        mDescEdit->setPlainText(d);
+        QVariant d = tdi->metadata("desc");
+        if (!d.isNull())
+        {
+            QString ds = d.toString();
+            if (!ds.endsWith('\n')) ds += "\n";
+            mDescEdit->setPlainText(ds);
+        }
 
         connect(mDescEdit, SIGNAL(textChanged()), SLOT(slotDataChanged()));
     }
@@ -289,7 +293,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
         Q_ASSERT(fileItem!=NULL);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
 
-        QString zone = fileItem->metadata("timezone");
+        const QString zone = fileItem->metadata("timezone").toString();
         if (!zone.isEmpty()) mTimeZoneSel->setTimeZone(zone);
 
         mTimeZoneSel->setItems(items);			// use these to get timezone

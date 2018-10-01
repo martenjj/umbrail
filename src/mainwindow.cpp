@@ -550,12 +550,13 @@ FilesController::Status MainWindow::load(const QUrl &from)
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf!=NULL)
     {
-        QString s = tdf->metadata("position");
+        QVariant s = tdf->metadata("position");
         qDebug() << "pos metadata" << s;
+        // TODO: use QSignalBlocker
         mapController()->view()->blockSignals(true);	// no status bar update from zooming
-        if (!s.isEmpty())
+        if (!s.isNull())
         {
-            mapController()->view()->setCurrentPosition(s);
+            mapController()->view()->setCurrentPosition(s.toString());
         }
         else
         {

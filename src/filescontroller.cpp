@@ -768,7 +768,7 @@ void FilesController::slotTrackProperties()
 
     QString newTimeZone = d.newTimeZone();
     //qDebug() << "new timezone" << newTimeZone;
-    if (newTimeZone!=item->metadata("timezone"))
+    if (newTimeZone!=item->metadata("timezone").toString())
     {
         qDebug() << "timezone change" << item->metadata("timezone") << "->" << newTimeZone;
         ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
@@ -788,20 +788,17 @@ void FilesController::slotTrackProperties()
 
     QString newType = d.newTrackType();
     //qDebug() << "new type" << newType;
-    if (newType!="-")					// new type is applicable
-    {
+    if (newType!="-" && newType!=item->metadata("type").toString())
+    {							// new type is applicable
         qDebug() << "change type" << item->metadata("type") << "->" << newType;
-        if (newType!=item->metadata("type"))
-        {
-            ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-            cmd4->setDataItem(item);
-            cmd4->setData("type", newType);
-        }
+        ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
+        cmd4->setDataItem(item);
+        cmd4->setData("type", newType);
     }
 
     QString newDesc = d.newItemDesc();
     //qDebug() << "new description" << newDesc;
-    if (newDesc!="-" && newDesc!=item->metadata("desc"))
+    if (newDesc!="-" && newDesc!=item->metadata("desc").toString())
     {							// new description is applicable
         qDebug() << "change desc" << item->metadata("desc") << "->" << newDesc;
         ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
@@ -810,27 +807,21 @@ void FilesController::slotTrackProperties()
     }
 
     QString newBearingData = d.newBearingData();
-    if (newBearingData!="-")					// new bearing is applicable
-    {
+    if (newBearingData!="-" && newBearingData!=item->metadata("bearingline").toString())
+    {							// new data is applicable
         qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingData;
-        if (newBearingData!=item->metadata("bearingline"))
-        {
-            ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
-            cmd8->setDataItem(item);
-            cmd8->setData("bearingline", newBearingData);
-        }
+        ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
+        cmd8->setDataItem(item);
+        cmd8->setData("bearingline", newBearingData);
     }
 
     QString newRangeData = d.newRangeData();
-    if (newRangeData!="-")					// new bearing is applicable
-    {
+    if (newRangeData!="-" && newRangeData!=item->metadata("rangering").toString())
+    {							// new data is applicable
         qDebug() << "change range ring" << item->metadata("rangering") << "->" << newRangeData;
-        if (newRangeData!=item->metadata("rangering"))
-        {
-            ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
-            cmd9->setDataItem(item);
-            cmd9->setData("rangering", newRangeData);
-        }
+        ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
+        cmd9->setDataItem(item);
+        cmd9->setData("rangering", newRangeData);
     }
 
     double newLat;

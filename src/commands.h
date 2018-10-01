@@ -157,7 +157,7 @@ public:
 private:
     QString mKey;
     QString mNewValue;
-    QStringList mSavedValues;
+    QVariantList mSavedValues;
 };
 
 

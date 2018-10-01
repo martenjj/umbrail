@@ -165,8 +165,8 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 
     if (tdw!=NULL)					// a waypoint is specified
     {
-        const QString path = tdw->metadata("folder");	// its folder, if it has one
-        if (!path.isEmpty()) return (getFolder(path));
+        const QVariant path = tdw->metadata("folder");	// its folder, if it has one
+        if (!path.isNull()) return (getFolder(path.toString()));
     }
 							// find or create folder
     return (getFolder(tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME));
@@ -526,7 +526,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // Only do this check if the "link" metadata has not already
             // been set by a LINK tag.
             const int idx = DataIndexer::self()->index("link");
-            if (mCurrentWaypoint->metadata(idx).isEmpty())
+            if (mCurrentWaypoint->metadata(idx).isNull())
             {
                 // An OsmAnd+ AV note is stored as a waypoint with a special name.
                 // Using the GUI, it is possible to rename such a waypoint;  relying
@@ -534,7 +534,6 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
                 // To get around this, we save the original name in the waypoint's
                 // metadata under a special key which will not get overwritten;  this
                 // will from then on be saved and loaded in the GPX file.
-
                 mCurrentWaypoint->setMetadata(idx, mCurrentWaypoint->name());
             }
         }
@@ -543,7 +542,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         Q_ASSERT(folder!=NULL);
 
         // Clear the folder name metadata, will regenerate on export
-        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), "");
+        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), QString(""));
 
         folder->addChildItem(mCurrentWaypoint);		// add to destination folder
         mCurrentWaypoint = NULL;			// finished with temporary
@@ -630,7 +629,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // For a waypoint, a synonym for CATEGORY but only if
             // there is no CATEGORY already.
             int idx = DataIndexer::self()->index("category");
-            if (item->metadata(idx).isEmpty()) item->setMetadata(idx, elementContents());
+            if (item->metadata(idx).isNull()) item->setMetadata(idx, elementContents());
         }
         else if (dynamic_cast<TrackDataTrack *>(item)!=NULL || dynamic_cast<TrackDataSegment *>(item)!=NULL)
         {
