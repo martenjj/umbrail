@@ -33,6 +33,8 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithGpsHdop = 0;
 
     QVector<const TrackDataAbstractPoint *> points;
+    // TODO: FilesView::selectedPoints() only returns points with time,
+    // so this total will always be 100%
     filesController()->view()->selectedPoints().swap(points);
     for (int i = 0; i<points.count(); ++i) getPointData(points.at(i));
 

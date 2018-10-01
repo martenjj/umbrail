@@ -562,20 +562,31 @@ QString TrackDataAbstractPoint::formattedElevation() const
 }
 
 
+QDateTime TrackDataAbstractPoint::time() const
+{
+    const QVariant v = metadata("time");
+    if (v.isNull()) return (QDateTime());
+    return (v.toDateTime());
+}
+
+
 QString TrackDataAbstractPoint::formattedTime(bool withZone) const
 {
+    const QDateTime dt = time();
+    if (!dt.isValid()) return (i18nc("an unknown date/time", "unknown"));
+
     if (withZone)
     {
         QString zoneName = timeZone();
         if (!zoneName.isEmpty())
         {
             QTimeZone tz(zoneName.toLatin1());
-            if (tz.isValid()) return (TrackData::formattedTime(mDateTime, &tz));
+            if (tz.isValid()) return (TrackData::formattedTime(dt, &tz));
             qWarning() << "unknown time zone" << zoneName;
         }
     }
 
-    return (TrackData::formattedTime(mDateTime));
+    return (TrackData::formattedTime(dt));
 }
 
 
@@ -652,7 +663,6 @@ void TrackDataAbstractPoint::copyData(const TrackDataAbstractPoint *other)
 {
     mLatitude = other->mLatitude;
     mLongitude = other->mLongitude;
-    mDateTime = other->mDateTime;
 }
 
 //////////////////////////////////////////////////////////////////////////

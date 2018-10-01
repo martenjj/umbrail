@@ -1066,7 +1066,8 @@ void AddWaypointCommand::redo()
         {
             int idx = DataIndexer::self()->index("ele");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
-            newWaypoint->setTime(mSourcePoint->time());
+            idx = DataIndexer::self()->index("time");
+            newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
             newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
             const QVariant stopData = mSourcePoint->metadata("stop");
             if (!stopData.isNull()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
@@ -1208,7 +1209,7 @@ void AddPhotoCommand::redo()
     TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
     Q_ASSERT(tdw!=NULL);				// retrieve the just added point
     if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.toDisplayString());
-    if (mDateTime.isValid()) tdw->setTime(mDateTime);
+    if (mDateTime.isValid()) tdw->setMetadata(DataIndexer::self()->index("time"), mDateTime);
 }
 
 

@@ -353,10 +353,9 @@ public:
     virtual ~TrackDataAbstractPoint() = default;
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
-    void setTime(const QDateTime &dt)			{ mDateTime = dt; }
 
     double elevation() const;
-    QDateTime time() const				{ return (mDateTime); }
+    QDateTime time() const;
     double latitude() const				{ return (mLatitude); }
     double longitude() const				{ return (mLongitude); }
 
@@ -377,7 +376,6 @@ public:
 private:
     double mLatitude;
     double mLongitude;
-    QDateTime mDateTime;
 };
 
 //////////////////////////////////////////////////////////////////////////
