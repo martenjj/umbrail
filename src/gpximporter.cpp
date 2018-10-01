@@ -51,6 +51,7 @@ TrackDataFile *GpxImporter::load(const QUrl &file)
     mCurrentRoute = NULL;
     mCurrentSegment = NULL;
     mCurrentPoint = NULL;
+    // TODO: can combine with mCurrentPoint?
     mCurrentWaypoint = NULL;
     mCurrentRoutepoint = NULL;
 
@@ -557,8 +558,8 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     if (localName=="ele")				// end of an ELE element
     {
         const double ele = elementContents().toDouble();
-        if (mCurrentPoint!=NULL) mCurrentPoint->setElevation(ele);
-        else if (mCurrentWaypoint!=NULL) mCurrentWaypoint->setElevation(ele);
+        if (mCurrentPoint!=NULL) mCurrentPoint->setMetadata(DataIndexer::self()->index(localName), ele);
+        else if (mCurrentWaypoint!=NULL) mCurrentWaypoint->setMetadata(DataIndexer::self()->index(localName), ele);
         else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
     }
     else if (localName=="time")				// end of a TIME element

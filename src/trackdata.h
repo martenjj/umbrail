@@ -353,10 +353,9 @@ public:
     virtual ~TrackDataAbstractPoint() = default;
 
     void setLatLong(double lat, double lon)		{ mLatitude = lat; mLongitude = lon; }
-    void setElevation(double ele)			{ mElevation = ele; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }
 
-    double elevation() const				{ return (mElevation); }
+    double elevation() const;
     QDateTime time() const				{ return (mDateTime); }
     double latitude() const				{ return (mLatitude); }
     double longitude() const				{ return (mLongitude); }
@@ -372,12 +371,12 @@ public:
     double bearingTo(const TrackDataAbstractPoint *other) const;
     int timeTo(const TrackDataAbstractPoint *other) const;
 
+    /////////////// TODO: eliminate after time() as metadata
     void copyData(const TrackDataAbstractPoint *other);
 
 private:
     double mLatitude;
     double mLongitude;
-    double mElevation;
     QDateTime mDateTime;
 };
 

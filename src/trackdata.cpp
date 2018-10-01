@@ -543,14 +543,22 @@ TrackDataAbstractPoint::TrackDataAbstractPoint(const char *format, int *counter)
     : TrackDataItem(format, counter)
 {
     mLatitude = mLongitude = NAN;
-    mElevation = NAN;
+}
+
+
+double TrackDataAbstractPoint::elevation() const
+{
+    const QVariant v = metadata("ele");
+    if (v.isNull()) return (NAN);
+    return (v.toDouble());
 }
 
 
 QString TrackDataAbstractPoint::formattedElevation() const
 {
-    if (ISNAN(mElevation)) return (i18nc("an unknown quantity", "unknown"));
-    return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
+    const double e = elevation();
+    if (e==NAN) return (i18nc("an unknown quantity", "unknown"));
+    return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(e, 'f', 1)));
 }
 
 
@@ -644,7 +652,6 @@ void TrackDataAbstractPoint::copyData(const TrackDataAbstractPoint *other)
 {
     mLatitude = other->mLatitude;
     mLongitude = other->mLongitude;
-    mElevation = other->mElevation;
     mDateTime = other->mDateTime;
 }
 

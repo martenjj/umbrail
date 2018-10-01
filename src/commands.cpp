@@ -1064,7 +1064,8 @@ void AddWaypointCommand::redo()
         newWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=NULL)
         {
-            newWaypoint->setElevation(mSourcePoint->elevation());
+            int idx = DataIndexer::self()->index("ele");
+            newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
             newWaypoint->setTime(mSourcePoint->time());
             newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
             const QVariant stopData = mSourcePoint->metadata("stop");
