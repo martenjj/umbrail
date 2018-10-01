@@ -384,12 +384,10 @@ void SplitSegmentCommand::redo()
         copySegment->setName(makeSplitName(mParentSegment->name()), false);
         copySegment->copyMetadata(mParentSegment);
         mNewSegmentContainer->addChildItem(copySegment);
-        // TODO: copy style
 
-        // TODO: can eliminate copyData with a copy constructor? or a clone()?
         TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
         copyPoint->setName(makeSplitName(splitPoint->name()), false);
-        copyPoint->copyData(splitPoint);
+        copyPoint->setLatLong(splitPoint->latitude(), splitPoint->longitude());
         copyPoint->copyMetadata(splitPoint);
         // TODO: copy style
         copySegment->addChildItem(copyPoint);

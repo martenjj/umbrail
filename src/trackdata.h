@@ -370,9 +370,6 @@ public:
     double bearingTo(const TrackDataAbstractPoint *other) const;
     int timeTo(const TrackDataAbstractPoint *other) const;
 
-    /////////////// TODO: eliminate after time() as metadata
-    void copyData(const TrackDataAbstractPoint *other);
-
 private:
     double mLatitude;
     double mLongitude;

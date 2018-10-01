@@ -659,12 +659,6 @@ int TrackDataAbstractPoint::timeTo(const TrackDataAbstractPoint *other) const
 }
 
 
-void TrackDataAbstractPoint::copyData(const TrackDataAbstractPoint *other)
-{
-    mLatitude = other->mLatitude;
-    mLongitude = other->mLongitude;
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFolder							//
