@@ -169,6 +169,24 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 }
 
 
+void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName)
+{
+    double lat = NAN;					// coordinates found
+    double lon = NAN;
+    for (int i = 0; i<atts.count(); ++i)
+    {
+        QString attrName = atts.localName(i);
+        QString attrValue = atts.value(i);
+        if (attrName=="lat") lat = attrValue.toDouble();
+        else if (attrName=="lon") lon = attrValue.toDouble();
+        else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on "+localName.toUpper()+" element"));
+    }
+
+    if (!ISNAN(lat) && !ISNAN(lon)) pnt->setLatLong(lat, lon);
+    else warning(makeXmlException("missing LAT/LON on "+localName.toUpper()+" element"));
+}
+
+
 bool GpxImporter::startDocument()
 {
     qDebug() << "start document";
@@ -218,7 +236,6 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="metadata")			// start of a METADATA element
     {
-        //if (mWithinMetadata || mCurrentTrack!=NULL)
         if (mWithinMetadata || currentItem()!=NULL)	// check not nested
         {
             return (error(makeXmlException("nested METADATA elements", "metadata")));
@@ -290,23 +307,9 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 							// start new implied segment
             mCurrentSegment = new TrackDataSegment;
         }
-							// start new point
-        mCurrentPoint = new TrackDataTrackpoint;
 
-        // TODO: common for all types of point
-        double lat = NAN;				// get coordinates
-        double lon = NAN;
-        for (int i = 0; i<atts.count(); ++i)
-        {
-            QString attrName = atts.localName(i);
-            QString attrValue = atts.value(i);
-            if (attrName=="lat") lat = attrValue.toDouble();
-            else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on TRKPT element"));
-        }
-
-        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentPoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing lat/lon on TRKPT element"));
+        mCurrentPoint = new TrackDataTrackpoint;	// start new point item
+        getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
     else if (localName=="ele")				// start of an ELEvation element
     {
@@ -335,20 +338,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         }
 
         mCurrentPoint = new TrackDataWaypoint;		// start new waypoint item
-
-        double lat = NAN;				// get coordinates
-        double lon = NAN;
-        for (int i = 0; i<atts.count(); ++i)
-        {
-            QString attrName = atts.localName(i);
-            QString attrValue = atts.value(i);
-            if (attrName=="lat") lat = attrValue.toDouble();
-            else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on WPT element"));
-        }
-
-        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentPoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing LAT/LON attribute on WPT element"));
+        getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
     else if (localName=="rtept")			// start of an RTEPT element
     {
@@ -363,20 +353,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         }
 
         mCurrentPoint = new TrackDataRoutepoint;	// start new route point item
-
-        double lat = NAN;				// get coordinates
-        double lon = NAN;
-        for (int i = 0; i<atts.count(); ++i)
-        {
-            QString attrName = atts.localName(i);
-            QString attrValue = atts.value(i);
-            if (attrName=="lat") lat = attrValue.toDouble();
-            else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on RTEPT element"));
-        }
-
-        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentPoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing LAT/LON attribute on RTEPT element"));
+        getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
     else if (localName=="link")				// start of a LINK element
     {

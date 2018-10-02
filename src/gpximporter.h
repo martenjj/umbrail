@@ -51,6 +51,7 @@ private:
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);
+    void getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName);
 
     bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
     QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
