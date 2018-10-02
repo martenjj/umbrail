@@ -13,7 +13,6 @@
 
 #include <kio/global.h>
 
-#include "style.h"
 #include "dataindexer.h"
 #include "waypointimageprovider.h"
 
@@ -268,7 +267,6 @@ void TrackDataItem::init()
 {
     mChildren = NULL;					// no children yet
     mParent = NULL;					// not attached to parent
-    mStyle = NULL;					// no style set yet
     mMetadata = NULL;					// no metadata yet
     mSelectionId = 1;					// nothing selected yet
     mExplicitName = false;
@@ -279,7 +277,6 @@ TrackDataItem::~TrackDataItem()
 {
     if (mChildren!=NULL) qDeleteAll(*mChildren);
     delete mChildren;
-    delete mStyle;
     delete mMetadata;
 }
 
@@ -360,12 +357,12 @@ TimeRange TrackDataItem::timeSpan() const
 }
 
 
-void TrackDataItem::setMetadata(int idx, const QString &value)
+void TrackDataItem::setMetadata(int idx, const QVariant &value)
 {
-    // A special case.  Setting a null string item sets a null QVariant as the value.
-    // This is so that QVariant::isNull() can be used to test the metadata value
-    // and will give the expected result:  in this application an empty string is
-    // always considered to be equivalent to no value.
+    // Strings are a special case;  setting a null string item sets a null QVariant
+    // as the value.  This is so that QVariant::isNull() can be used to test the
+    // metadata value and will give the expected result:  in this application an
+    // empty string is always considered to be equivalent to no value.
     //
     // Results obtained by experimentation:
     //
@@ -373,15 +370,33 @@ void TrackDataItem::setMetadata(int idx, const QString &value)
     //	 QVariant("str")	->	isValid()=true		isNull()=false
     //	 QVariant("")		->	isValid()=true		isNull()=false
     //	 QVariant(QString())	->	isValid()=true		isNull()=true
+    //
+    // The same reasoning as above applies to a colour value.
+    //
+    // It is not possible, however, to have overloaded functions
+    //
+    //   setMetadata(int idx, const QString &value)
+    //   setMetadata(int idx, const QColour &value)
+    //   setMetadata(int idx, const QVariant &value)
+    //
+    // as the overloads would be ambiguous.  Therefore we test the value type
+    // of the QVariant here, and transform null strings and invalid colours
+    // to a null variant.
 
-    if (value.isEmpty()) setMetadata(idx, QVariant());
-    else setMetadata(idx, QVariant(value));
-}
+    bool null = false;					// not yet, anyway
+    const QVariant::Type type = value.type();		// type of data contained
+    if (type==QVariant::Color)				// QColor
+    {
+        const QColor c = value.value<QColor>();
+        null = !c.isValid();
+    }
+    else if (type==QVariant::String)			// QString
+    {
+        const QString s = value.toString();
+        null = s.isEmpty();
+    }
 
-
-void TrackDataItem::setMetadata(int idx, const QVariant &value)
-{
-    if (mMetadata==nullptr)
+    if (mMetadata==nullptr)				// allocate array if needed
     {
 #ifdef MEMORY_TRACKING
         ++allocMetadata;
@@ -389,9 +404,9 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
         mMetadata = new QVector<QVariant>;
     }
 
-    int cnt = mMetadata->count();
-    if (idx>=cnt) mMetadata->resize(idx+1);
-    (*mMetadata)[idx] = value;
+    int cnt = mMetadata->count();			// current size of array
+    if (idx>=cnt) mMetadata->resize(idx+1);		// need to allocate more
+    (*mMetadata)[idx] = (!null ? value : QVariant());	// set value or null variant
 }
 
 
@@ -421,26 +436,6 @@ void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
         if (!tm.isNull() && !overwrite) continue;	// already in destination and no overwrite
         this->setMetadata(idx, om);
     }
-}
-
-
-const Style *TrackDataItem::style() const
-{
-    return ((mStyle!=NULL) ? mStyle : &Style::null);
-}
-
-
-void TrackDataItem::setStyle(const Style &s)
-{
-    if (mStyle==NULL)
-    {
-        //qDebug() << "set style for" << name();
-        mStyle = new Style(s);
-#ifdef MEMORY_TRACKING
-        ++allocStyle;
-#endif
-    }
-    else *mStyle = s;
 }
 
 
@@ -760,15 +755,14 @@ bool TrackDataWaypoint::isMediaType() const
 QIcon TrackDataWaypoint::icon() const
 {
     if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
-    if (!style()->hasPointColour()) return (TrackDataItem::icon());
 
-    // TODO: style inheritance
-    QColor col = style()->pointColour();
+    QColor col = metadata("color").value<QColor>();
+    if (!col.isValid()) return (TrackDataItem::icon());
 #ifdef DEBUG_ICONS
-    qDebug() << "need icon for waypoint" << name() << "col" << col.name();
+    qDebug() << "need icon for waypoint" << name() << "colour" << col.name();
 #endif
-    QIcon ic = WaypointImageProvider::self()->icon(col);
 
+    QIcon ic = WaypointImageProvider::self()->icon(col);
     if (ic.isNull()) return (TrackDataItem::icon());	// icon image not available
     return (ic);
 }
@@ -831,7 +825,6 @@ MemoryTracker::MemoryTracker()
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint" << sizeof(TrackDataRoutepoint) << "bytes";
-    qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
 
@@ -847,7 +840,6 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint allocated" << allocRoutepoint << "items, total" << allocRoutepoint*sizeof(TrackDataRoutepoint) << "bytes";
-    qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;
     qDebug() << "***********";

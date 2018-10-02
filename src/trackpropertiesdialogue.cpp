@@ -17,7 +17,6 @@
 #include "trackpropertiesstylepages.h"
 #include "trackpropertiesplotpages.h"
 #include "trackpropertiesmetadatapages.h"
-#include "style.h"
 
 
 static int sNextPageIndex = -1;				// page index to open with
@@ -175,15 +174,15 @@ TrackData::WaypointStatus TrackPropertiesDialogue::newWaypointStatus() const
 }
 
 
-Style TrackPropertiesDialogue::newStyle() const
+QColor TrackPropertiesDialogue::newColour() const
 {
-    if (mStylePage==nullptr) return (Style::null);	// not applicable to this type
+    if (mStylePage==nullptr) return (QColor());		// not applicable to this type
 
     const int idx = mTabWidget->indexOf(mStylePage);
     Q_ASSERT(idx!=-1);					// not applicable to selection
-    if (!mTabWidget->isTabEnabled(idx)) return (Style::null);
+    if (!mTabWidget->isTabEnabled(idx)) return (QColor());
 
-    return (mStylePage->newStyle());			// style from page
+    return (mStylePage->newColour());			// colour from page
 }
 
 

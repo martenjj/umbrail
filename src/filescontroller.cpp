@@ -37,7 +37,6 @@ using namespace KExiv2Iface;
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
 #include "createpointdialogue.h"
-#include "style.h"
 #include "errorreporter.h"
 #include "mapview.h"
 #include "mapcontroller.h"
@@ -776,14 +775,14 @@ void FilesController::slotTrackProperties()
         cmd2->setData("timezone", newTimeZone);
     }
 
-    const Style newStyle = d.newStyle();		// item style
-    //qDebug() << "new style" << newStyle;
-    if (newStyle!=*item->style())			// changing the style
-    {
-        qDebug() << "change style" << item->style() << "->" << newStyle;
-        ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
-        cmd3->setDataItem(item);
-        cmd3->setData(newStyle);
+    QColor newColour = d.newColour();
+    //qDebug() << "new col" << newColour;
+    if (newColour!=item->metadata("color").value<QColor>())
+    {							// new colour is applicable
+        qDebug() << "change colour" << item->metadata("color") << "->" << newColour;
+        ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
+        cmd4->setDataItem(item);
+        cmd4->setData("color", newColour);
     }
 
     QString newType = d.newTrackType();

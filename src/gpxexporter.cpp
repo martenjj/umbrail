@@ -8,6 +8,7 @@
 
 #include <qfile.h>
 #include <qdatetime.h>
+#include <qcolor.h>
 #include <qdebug.h>
 
 #include <QXmlStreamWriter>
@@ -15,7 +16,7 @@
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
-#include "style.h"
+// #include "style.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
 
@@ -65,27 +66,6 @@ static QString colourValue(const QColor &col)
 }
 
 
-static void writeStyle(const TrackDataItem *item, QXmlStreamWriter &str)
-{
-    const Style *s = item->style();
-    if (s->isEmpty()) return;
-
-    if (s->hasLineColour())				// for a track element
-    {
-        // GPX: <topografix:color>c0c0c0</topografix:color>
-        startExtensions(str);
-        str.writeTextElement("topografix:color", colourValue(s->lineColour()));
-    }
-    else if (s->hasPointColour())			// for a waypoint
-    {
-        // OsmAnd: <color>#c0c0c0</color>
-        startExtensions(str);
-        str.writeTextElement("color", '#'+colourValue(s->pointColour()));
-    }
-}
-
-
-
 static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 {
     if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=NULL)
@@ -112,17 +92,9 @@ static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 }
 
 
-
-static bool isNamespacedTag(const QString &name)
+static bool isApplicationTag(const QString &name)
 {
     return (name=="status" || name=="source" || name=="stop" || name=="bearingline" || name=="rangering");
-}
-
-
-
-static bool isInternalTag(const QString &name)
-{
-    return (name=="linecolour" || name=="pointcolour");
 }
 
 
@@ -134,14 +106,45 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         //         << "name" << DataIndexer::self()->name(idx)
         //         << "=" << item->metadata(idx);
 
-        QString name = DataIndexer::self()->name(idx);
-        if (isInternalTag(name)) continue;		// internal to application only
+        QString name = DataIndexer::self()->name(idx);	// check matching extension state
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
-						        // not matching extension option
-        QString data = item->metadata(idx).toString();
-        if (data.isEmpty()) continue;			// no data to output
 
-        if (wantExtensions) startExtensions(str);
+        QVariant v = item->metadata(idx);		// get metadata from item
+        if (v.isNull()) continue;			// no data to output
+
+        QString data;					// string form to output
+        QString nstag;					// namespace tag if needed
+
+        if (name=="color")				// line or point colour
+        {
+            if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+            {						// a point element
+                // OsmAnd: <color>#c0c0c0</color>
+                data = "#"+colourValue(v.value<QColor>());
+            }
+            else					// a container element
+            {
+                // GPX: <topografix:color>c0c0c0</topografix:color>
+                nstag = "topografix:";
+                data = colourValue(v.value<QColor>());
+            }
+        }
+        else if (name=="time")				// point or file time
+        {
+            data = v.toDateTime().toString(Qt::ISODate);
+        }
+        else						// all other items
+        {
+            data = item->metadata(idx).toString();	// default string format
+        }
+
+        if (nstag.isEmpty())				// no namespace assigned yet
+        {						// our application one if needed
+            if (isApplicationTag(name)) nstag = "navtracks:";
+        }
+
+        name.prepend(nstag);				// now set namespace tag
+        if (wantExtensions) startExtensions(str);	// start extensions if needed
 
         if (name=="link")				// special format for this
         {
@@ -150,7 +153,6 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         }
         else
         {
-            if (isNamespacedTag(name)) name = "navtracks:"+name;
             str.writeTextElement(name, data);
         }
     }
@@ -245,14 +247,6 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             str.writeAttribute("lat", QString::number(p->latitude(), 'f'));
             str.writeAttribute("lon", QString::number(p->longitude(), 'f'));
 
-            // <ele> xsd:decimal </ele>
-            double ele = p->elevation();
-            if (!ISNAN(ele)) str.writeTextElement("ele", QString::number(ele, 'f', 3));
-
-            // <time> xsd:dateTime </time>
-            QDateTime dt = p->time();
-            if (dt.isValid()) str.writeTextElement("time", dt.toString(Qt::ISODate));
-
             // <name> xsd:string </name>
             if (item->hasExplicitName()) str.writeTextElement("name", p->name());
             // <cmt> xsd:string </cmt>
@@ -282,12 +276,10 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         if (tdt!=NULL)					// extensions for TRK
         {
             writeMetadata(tdt, str, true);
-            writeStyle(tdt, str);
         }
         else if (tdr!=NULL)				// extensions for RTE
         {
             writeMetadata(tdr, str, true);
-            writeStyle(tdr, str);
         }
         else if (tds!=NULL)				// extensions for TRKSEG
         {
@@ -295,16 +287,13 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             startExtensions(str);
             if (item->hasExplicitName()) str.writeTextElement("name", tds->name());
             writeMetadata(tds, str, true);
-            writeStyle(tds, str);
         }
         else if (tdp!=NULL)				// extensions for TRKPT
         {
             writeMetadata(tdp, str, true);
-            writeStyle(tdp, str);
         }
         else if (tdw!=NULL)				// extensions for WPT
         {
-            writeStyle(tdw, str);
             writeMetadata(tdw, str, true);
             const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
             if (fold!=NULL)				// within a folder?

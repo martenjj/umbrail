@@ -18,7 +18,6 @@
 #include "trackdata.h"
 #include "mainwindow.h"
 #include "mapcontroller.h"
-#include "style.h"
 #include "settings.h"
 #include "trackslayer.h"
 #include "waypointslayer.h"
@@ -261,45 +260,37 @@ void MapView::slotShowLayer()
 }
 
 
-QColor MapView::resolveLineColour(const TrackDataItem *tdi)
+static QColor resolveColour(const TrackDataItem *item, const QColor &appDefault)
 {
-    // Resolving the line colour (in the case where it is not selected) could
-    // potentially be an expensive operation - needing to examine not only the
-    // style of the current item, but also all of its parents, up to the top
-    // level file, then finally the application's default style.  However, this
-    // search will only need to be performed once per track segment, of which it
-    // is expected that there will be at most a few tens of them existing within
-    // a typical project.  So the overhead here is not likely to be significant.
+    // Resolving a colour is not a trivial operation - needing to examine not only
+    // the metadata of the item, but also all of its parents, up to the top level file,
+    // then finally the application's default.  However, this search will only need
+    // to be performed once per track segment, of which it is expected that there
+    // will be at most a few tens of them existing within a typical project and are
+    // not nested arbitrarily deeply.  So the overhead here is not likely to be
+    // significant.
 
-    while (tdi!=NULL)					// search to root of tree
+    while (item!=nullptr)				// search to root of tree
     {
-        const Style *s = tdi->style();			// get style from item
-        //qDebug() << "style for" << tdi->name() << "is" << *s;
-        if (s->hasLineColour())				// has a style set?
-        {
-            //qDebug() << "inherited from" << tdi->name();
-            return (s->lineColour());			// use colour from that
-        }
-        tdi = tdi->parent();				// up to parent item
+        const QVariant v = item->metadata("color");	// metadata from this item
+        if (!v.isNull()) return (v.value<QColor>());	// colour value from that
+
+        item = item->parent();				// up to parent item
     }
 
-    return (Style::globalStyle()->lineColour());	// finally application default
+    return (appDefault);				// finally application default
+}
+
+
+QColor MapView::resolveLineColour(const TrackDataItem *tdi)
+{
+    return (resolveColour(tdi, Settings::lineColour()));
 }
 
 
 QColor MapView::resolvePointColour(const TrackDataItem *tdi)
 {
-    while (tdi!=NULL)					// search to root of tree
-    {
-        const Style *s = tdi->style();			// get style from item
-        if (s->hasPointColour())				// has a style set?
-        {
-            return (s->pointColour());			// use colour from that
-        }
-        tdi = tdi->parent();				// up to parent item
-    }
-
-    return (Style::globalStyle()->pointColour());	// finally application default
+    return (resolveColour(tdi, Settings::pointColour()));
 }
 
 

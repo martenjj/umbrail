@@ -42,7 +42,6 @@
 #include "mapview.h"
 #include "project.h"
 #include "settings.h"
-#include "style.h"
 #include "settingsdialogue.h"
 #include "profilewidget.h"
 #include "statisticswidget.h"

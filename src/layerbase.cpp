@@ -17,7 +17,6 @@
 #include "filesview.h"
 #include "mainwindow.h"
 #include "mapcontroller.h"
-#include "style.h"
 #include "settings.h"
 #include "mapview.h"
 

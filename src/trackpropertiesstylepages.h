@@ -8,7 +8,6 @@
 class QFormLayout;
 class QCheckBox;
 
-class Style;
 class TrackDataItem;
 
 class KColorButton;
@@ -26,7 +25,7 @@ public:
     virtual ~TrackItemStylePage()				{}
 
     QString newItemName() const;
-    const Style newStyle() const;
+    QColor newColour() const;
 
 protected:
     TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
@@ -39,7 +38,6 @@ protected:
 
 protected slots:
     void slotColourChanged(const QColor &col);
-
 };
 
 

@@ -19,7 +19,7 @@
 class QWidget;
 class QTimeZone;
 class QIcon;
-class Style;
+//class Style;
 class TrackDataItem;
 class TrackDataFolder;
 class TrackPropertiesPage;
@@ -201,12 +201,12 @@ public:
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
-    const Style *style() const;
-    void setStyle(const Style &s);
+    // const Style *style() const;
+    // void setStyle(const Style &s);
 
     QVariant metadata(int idx) const;
     QVariant metadata(const QString &key) const;
-    void setMetadata(int idx, const QString &value);
+    // void setMetadata(int idx, const QString &value);
     void setMetadata(int idx, const QVariant &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
@@ -231,7 +231,7 @@ private:
     QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
-    Style *mStyle;
+    // Style *mStyle;
 };
 
 //////////////////////////////////////////////////////////////////////////

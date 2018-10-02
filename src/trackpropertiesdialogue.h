@@ -13,7 +13,7 @@
 class QTabWidget;
 
 class TrackDataItem;
-class Style;
+//class Style;
 
 class TrackItemGeneralPage;
 class TrackItemDetailPage;
@@ -32,7 +32,7 @@ public:
 
     QString newItemName() const;
     QString newItemDesc() const;
-    Style newStyle() const;
+    QColor newColour() const;
     QString newTrackType() const;
     QString newTimeZone() const;
     bool newPointPosition(double *newLat, double *newLon) const;

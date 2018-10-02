@@ -8,7 +8,6 @@
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
-#include "style.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
 
@@ -580,21 +579,16 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
         TrackDataItem *item = currentItem();		// find innermost current element
-        if (item==NULL)
+        if (item==nullptr)
         {
             return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
         }
 
-        bool ok;
         QString rgbString = elementContents();
-        if (rgbString.startsWith('#')) rgbString.remove(0, 1);
-        unsigned int rgb = rgbString.toUInt(&ok, 16);
-        if (!ok) return (error(makeXmlException("invalid value for COLOR")));
-
-        Style s = *item->style();
-        if (dynamic_cast<TrackDataWaypoint *>(item)!=NULL) s.setPointColour(QColor(rgb));
-        else s.setLineColour(QColor(rgb));
-        item->setStyle(s);
+        if (!rgbString.startsWith('#')) rgbString.prepend('#');
+        QColor col(rgbString);
+        if (!col.isValid()) return (error(makeXmlException("invalid value for COLOR")));
+        item->setMetadata(DataIndexer::self()->index("color"), col);
     }
     else if (localName=="category")			// end of a CATEGORY element
     {

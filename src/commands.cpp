@@ -10,7 +10,6 @@
 
 #include "filesmodel.h"
 #include "filesview.h"
-#include "style.h"
 #include "dataindexer.h"
 
 
@@ -211,7 +210,7 @@ void ImportFileCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Change Item (name, style, metadata)					//
+//  Change Item (name, metadata)					//
 //									//
 //  All of these simply change the specified items in place, so they	//
 //  can retain a pointer to them.					//
@@ -253,35 +252,6 @@ void ChangeItemNameCommand::undo()
 }
 
 
-void ChangeItemStyleCommand::redo()
-{
-    Q_ASSERT(mDataItems.count()==1);
-    TrackDataItem *item = mDataItems.first();
-    Q_ASSERT(item!=NULL);
-    qDebug() << "item" << item->name() << "->" << mNewStyle.toString();
-
-    mSavedStyle = *item->style();			// save original item style
-    item->setStyle(mNewStyle);				// set new item style
-
-    model()->changedItem(item);
-    updateMap();
-}
-
-
-void ChangeItemStyleCommand::undo()
-{
-    Q_ASSERT(mDataItems.count()==1);
-    TrackDataItem *item = mDataItems.first();
-    Q_ASSERT(item!=NULL);
-    qDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
-
-    item->setStyle(mSavedStyle);			// restore original style
-
-    model()->changedItem(item);
-    updateMap();
-}
-
-
 void ChangeItemDataCommand::redo()
 {
     mSavedValues.clear();
@@ -316,7 +286,6 @@ void ChangeItemDataCommand::undo()
         qDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
         item->setMetadata(idx, savedValue);
         model()->changedItem(item);
-
     }
 
     Q_ASSERT(mSavedValues.count()==0);

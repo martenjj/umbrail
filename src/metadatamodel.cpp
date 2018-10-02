@@ -61,6 +61,7 @@ QVariant MetadataModel::data(const QModelIndex &idx, int role) const
     switch (idx.column())
     {
 case COL_NAME:     return (DataIndexer::self()->name(idx.row()));
+// TODO: display format for date and colour
 case COL_VALUE:    return (mItem->metadata(idx.row()));
     }
 
