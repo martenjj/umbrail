@@ -357,12 +357,12 @@ TimeRange TrackDataItem::timeSpan() const
 }
 
 
-void TrackDataItem::setMetadata(int idx, const QVariant &value)
+void TrackDataItem::setMetadata(int idx, const QString &value)
 {
     // Strings are a special case;  setting a null string item sets a null QVariant
     // as the value.  This is so that QVariant::isNull() can be used to test the
     // metadata value and will give the expected result:  in this application an
-    // empty string is always considered to be equivalent to no value.
+    // empty string is always considered to be equivalent to no metadata value.
     //
     // Results obtained by experimentation:
     //
@@ -370,32 +370,23 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
     //	 QVariant("str")	->	isValid()=true		isNull()=false
     //	 QVariant("")		->	isValid()=true		isNull()=false
     //	 QVariant(QString())	->	isValid()=true		isNull()=true
-    //
+
+    if (value.isEmpty()) setMetadata(idx, QVariant());
+    else setMetadata(idx, QVariant(value));
+}
+
+
+void TrackDataItem::setMetadata(int idx, const QColor &value)
+{
     // The same reasoning as above applies to a colour value.
-    //
-    // It is not possible, however, to have overloaded functions
-    //
-    //   setMetadata(int idx, const QString &value)
-    //   setMetadata(int idx, const QColour &value)
-    //   setMetadata(int idx, const QVariant &value)
-    //
-    // as the overloads would be ambiguous.  Therefore we test the value type
-    // of the QVariant here, and transform null strings and invalid colours
-    // to a null variant.
 
-    bool null = false;					// not yet, anyway
-    const QVariant::Type type = value.type();		// type of data contained
-    if (type==QVariant::Color)				// QColor
-    {
-        const QColor c = value.value<QColor>();
-        null = !c.isValid();
-    }
-    else if (type==QVariant::String)			// QString
-    {
-        const QString s = value.toString();
-        null = s.isEmpty();
-    }
+    if (!value.isValid()) setMetadata(idx, QVariant());
+    else setMetadata(idx, QVariant(value));
+}
 
+
+void TrackDataItem::setMetadata(int idx, const QVariant &value)
+{
     if (mMetadata==nullptr)				// allocate array if needed
     {
 #ifdef MEMORY_TRACKING
@@ -406,7 +397,7 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
 
     int cnt = mMetadata->count();			// current size of array
     if (idx>=cnt) mMetadata->resize(idx+1);		// need to allocate more
-    (*mMetadata)[idx] = (!null ? value : QVariant());	// set value or null variant
+    (*mMetadata)[idx] = value;				// set value of variant
 }
 
 

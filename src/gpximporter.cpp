@@ -544,7 +544,19 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     {
         const double ele = elementContents().toDouble();
         TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
-        if (p!=nullptr) p->setMetadata(DataIndexer::self()->index(localName), ele);
+
+        // The explicit use of QVariant(double) seems to be needed, otherwise there is
+        // an ambiguous overload:
+        //
+        //   gpximporter.cpp:547: error: call of overloaded 'setMetadata(int, const double&)' is ambiguous
+        //   In file included from gpximporter.cpp:10:
+        //   trackdata.h:207: note: candidate 'void TrackDataItem::setMetadata(int, const QColor&)'
+        //   trackdata.h:208: note: candidate 'void TrackDataItem::setMetadata(int, const QVariant&)'
+        //
+        // I don't understand why, because there is no explicit conversion defined from
+        // double to QColor and an implicit conversion from double to any sort of integer
+        // type should not be allowed.
+        if (p!=nullptr) p->setMetadata(DataIndexer::self()->index(localName), QVariant(ele));
         else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
     }
     else if (localName=="time")				// end of a TIME element

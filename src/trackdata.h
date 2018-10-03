@@ -201,13 +201,11 @@ public:
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
-    // const Style *style() const;
-    // void setStyle(const Style &s);
-
     QVariant metadata(int idx) const;
     QVariant metadata(const QString &key) const;
-    // void setMetadata(int idx, const QString &value);
     void setMetadata(int idx, const QVariant &value);
+    void setMetadata(int idx, const QString &value);
+    void setMetadata(int idx, const QColor &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
     virtual BoundingArea boundingArea() const;
