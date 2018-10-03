@@ -55,9 +55,11 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     iconLabel->setPixmap(item->icon().pixmap(KIconLoader::SizeMedium));
     gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);
 
+    gl->setRowMinimumHeight(1, 2*DialogBase::verticalSpacing());
+
     mTabWidget = new QTabWidget(this);
     mTabWidget->setTabsClosable(false);
-    gl->addWidget(mTabWidget, 1, 0, 1, -1);
+    gl->addWidget(mTabWidget, 2, 0, 1, -1);
 
     setMainWidget(w);
 
