@@ -18,27 +18,10 @@ enum COLUMN
 
 
 MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
-    : QAbstractItemModel(pnt)
+    : QAbstractTableModel(pnt)
 {
     qDebug() << "for" << item->name();
     mItem = item;
-}
-
-
-MetadataModel::~MetadataModel()
-{
-}
-
-
-QModelIndex MetadataModel::index(int row, int col, const QModelIndex &pnt) const
-{
-    return (createIndex(row, col));
-}
-
-
-QModelIndex MetadataModel::parent(const QModelIndex &idx) const
-{
-    return (QModelIndex());
 }
 
 

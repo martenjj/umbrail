@@ -3,22 +3,20 @@
 #ifndef METADATAMODEL_H
 #define METADATAMODEL_H
  
-#include <qabstractitemmodel.h>
+#include <QAbstractTableModel>
 
 
 class TrackDataItem;
 
 
-class MetadataModel : public QAbstractItemModel
+class MetadataModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    MetadataModel(const TrackDataItem *item, QObject *pnt = NULL);
-    virtual ~MetadataModel();
+    MetadataModel(const TrackDataItem *item, QObject *pnt = nullptr);
+    virtual ~MetadataModel() = default;
 
-    QModelIndex index(int row, int col, const QModelIndex &parent = QModelIndex()) const override;
-    QModelIndex parent(const QModelIndex &idx) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &idx, int role) const override;
