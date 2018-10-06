@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	26-Jun-18						//
+//  Edit:	06-Oct-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -26,6 +26,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "variableunitdisplay.h"
+
+#include <math.h>
 
 #include <qlabel.h>
 #include <qdebug.h>
@@ -88,6 +90,12 @@ void VariableUnitDisplay::slotUpdateDisplay()
     mComboIndex = mUnitCombo->currentIndex();
 
     double v = mValue;
+    if (v==NAN)						// blank value
+    {
+        mValueLabel->setText(QString());
+        return;
+    }
+
     const VariableUnitCombo::DisplayType type = mUnitCombo->type();
     const Units::Unit unit = mUnitCombo->unit();
 
