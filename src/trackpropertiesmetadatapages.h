@@ -16,17 +16,15 @@ class TrackItemMetadataPage : public TrackPropertiesPage
     Q_OBJECT
 
 public:
-    virtual ~TrackItemMetadataPage()				{}
+    virtual ~TrackItemMetadataPage() = default;
+    void refreshData() override;
 
 protected:
     TrackItemMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
 private:
     QTableView *mView;
-    MetadataModel *mModel;
 };
-
-
 
 
 class TrackFileMetadataPage : public TrackItemMetadataPage
@@ -35,10 +33,8 @@ class TrackFileMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackFileMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackFileMetadataPage()				{}
-
+    virtual ~TrackFileMetadataPage() = default;
 };
-
 
 
 class TrackTrackMetadataPage : public TrackItemMetadataPage
@@ -47,24 +43,8 @@ class TrackTrackMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackTrackMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackTrackMetadataPage()				{}
-
-
+    virtual ~TrackTrackMetadataPage() = default;
 };
-
-
-
-class TrackRouteMetadataPage : public TrackItemMetadataPage
-{
-    Q_OBJECT
-
-public:
-    TrackRouteMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRouteMetadataPage()				{}
-
-
-};
-
 
 
 class TrackSegmentMetadataPage : public TrackItemMetadataPage
@@ -73,11 +53,8 @@ class TrackSegmentMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackSegmentMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackSegmentMetadataPage()				{}
-
-
+    virtual ~TrackSegmentMetadataPage() = default;
 };
-
 
 
 class TrackTrackpointMetadataPage : public TrackItemMetadataPage
@@ -86,11 +63,8 @@ class TrackTrackpointMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackTrackpointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackTrackpointMetadataPage()			{}
-
-
+    virtual ~TrackTrackpointMetadataPage() = default;
 };
-
 
 
 class TrackFolderMetadataPage : public TrackItemMetadataPage
@@ -99,11 +73,8 @@ class TrackFolderMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackFolderMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackFolderMetadataPage()				{}
-
-
+    virtual ~TrackFolderMetadataPage() = default;
 };
-
 
 
 class TrackWaypointMetadataPage : public TrackItemMetadataPage
@@ -112,11 +83,18 @@ class TrackWaypointMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackWaypointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackWaypointMetadataPage()			{}
-
-
+    virtual ~TrackWaypointMetadataPage() = default;
 };
 
+
+class TrackRouteMetadataPage : public TrackItemMetadataPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteMetadataPage() = default;
+};
 
 
 class TrackRoutepointMetadataPage : public TrackItemMetadataPage
@@ -125,11 +103,7 @@ class TrackRoutepointMetadataPage : public TrackItemMetadataPage
 
 public:
     TrackRoutepointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRoutepointMetadataPage()			{}
-
-
+    virtual ~TrackRoutepointMetadataPage() = default;
 };
-
-
 
 #endif							// TRACKPROPERTIESMETADATAPAGES_H

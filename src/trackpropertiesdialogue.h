@@ -13,7 +13,7 @@
 class QTabWidget;
 
 class TrackDataItem;
-//class Style;
+class MetadataModel;
 
 class TrackItemGeneralPage;
 class TrackItemDetailPage;
@@ -30,15 +30,17 @@ public:
     TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt = NULL);
     virtual ~TrackPropertiesDialogue() = default;
 
-    QString newItemName() const;
-    QString newItemDesc() const;
+    // QString newItemName() const;
+    // QString newItemDesc() const;
     QColor newColour() const;
-    QString newTrackType() const;
-    QString newTimeZone() const;
-    bool newPointPosition(double *newLat, double *newLon) const;
-    TrackData::WaypointStatus newWaypointStatus() const;
+    // QString newTrackType() const;
+//     QString newTimeZone() const;
+    // bool newPointPosition(double *newLat, double *newLon) const;
+    // TrackData::WaypointStatus newWaypointStatus() const;
     QString newBearingData() const;
     QString newRangeData() const;
+
+    MetadataModel *dataModel() const			{ return (mDataModel); }
 
     static void setNextPageIndex(int page);
 
@@ -46,16 +48,24 @@ protected:
     void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
     void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
+    void showEvent(QShowEvent *ev) override;
+
 private:
     void addPage(TrackPropertiesPage *page, const QString &title, bool enabled = true);
 
 protected slots:
-    void slotDataChanged();
+    void slotModelDataChanged(int idx);
+    //void slotPageDataChanged(TrackPropertiesPage *page);
+    void slotTabChanged(int idx);
 
 private:
     QTabWidget *mTabWidget;
     TrackData::Type mItemType;
+    MetadataModel *mDataModel;
+    QVector<bool> mPageDataChanged;
+    QString mFileTimeZone;
 
+    // TODO: try to eliminate these
     TrackItemGeneralPage *mGeneralPage;
     TrackItemDetailPage *mDetailPage;
     TrackItemStylePage *mStylePage;

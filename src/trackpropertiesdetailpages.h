@@ -4,6 +4,7 @@
 
 #include "trackpropertiespage.h"
 
+
 class QLabel;
 
 class TrackDataItem;
@@ -39,10 +40,12 @@ protected:
     void addDisplayFields(const QList<TrackDataItem *> *items, DisplayItems disp);
     void addChildCountField(const QList<TrackDataItem *> *items, const QString &labelText);
     void addMetadataField(const TrackDataItem *tdi, const QString &key, const QString &label);
+
+private:
+    QLabel *mPositionLabel;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TrackItemDetailPage::DisplayItems)
-
 
 
 class TrackFileDetailPage : public TrackItemDetailPage
@@ -52,8 +55,8 @@ class TrackFileDetailPage : public TrackItemDetailPage
 public:
     TrackFileDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFileDetailPage() = default;
+    void refreshData() override;
 };
-
 
 
 class TrackTrackDetailPage : public TrackItemDetailPage
@@ -63,19 +66,8 @@ class TrackTrackDetailPage : public TrackItemDetailPage
 public:
     TrackTrackDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackDetailPage() = default;
+    void refreshData() override;
 };
-
-
-
-class TrackRouteDetailPage : public TrackItemDetailPage
-{
-    Q_OBJECT
-
-public:
-    TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRouteDetailPage() = default;
-};
-
 
 
 class TrackSegmentDetailPage : public TrackItemDetailPage
@@ -85,8 +77,8 @@ class TrackSegmentDetailPage : public TrackItemDetailPage
 public:
     TrackSegmentDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackSegmentDetailPage() = default;
+    void refreshData() override;
 };
-
 
 
 class TrackTrackpointDetailPage : public TrackItemDetailPage
@@ -96,8 +88,8 @@ class TrackTrackpointDetailPage : public TrackItemDetailPage
 public:
     TrackTrackpointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackpointDetailPage() = default;
+    void refreshData() override;
 };
-
 
 
 class TrackFolderDetailPage : public TrackItemDetailPage
@@ -107,8 +99,8 @@ class TrackFolderDetailPage : public TrackItemDetailPage
 public:
     TrackFolderDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFolderDetailPage() = default;
+    void refreshData() override;
 };
-
 
 
 class TrackWaypointDetailPage : public TrackItemDetailPage
@@ -118,6 +110,18 @@ class TrackWaypointDetailPage : public TrackItemDetailPage
 public:
     TrackWaypointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointDetailPage() = default;
+    void refreshData() override;
+};
+
+
+class TrackRouteDetailPage : public TrackItemDetailPage
+{
+    Q_OBJECT
+
+public:
+    TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteDetailPage() = default;
+    void refreshData() override;
 };
 
 
@@ -128,7 +132,7 @@ class TrackRoutepointDetailPage : public TrackItemDetailPage
 public:
     TrackRoutepointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackRoutepointDetailPage() = default;
+    void refreshData() override;
 };
-
 
 #endif							// TRACKPROPERTIESDETAILPAGES_H

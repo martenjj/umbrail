@@ -15,6 +15,7 @@ public:
     virtual ~ItemTypeCombo();
 
     void setType(const QString &type);
+    QString typeText() const;
 
 private:
     int mOriginalCount;

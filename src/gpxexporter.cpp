@@ -98,6 +98,12 @@ static bool isApplicationTag(const QString &name)
 }
 
 
+static bool isInternalTag(const QString &name)
+{
+    return (name=="name" || name=="latitude" || name=="longitude");
+}
+
+
 static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool wantExtensions)
 {
     for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
@@ -106,9 +112,10 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         //         << "name" << DataIndexer::self()->name(idx)
         //         << "=" << item->metadata(idx);
 
-        QString name = DataIndexer::self()->name(idx);	// check matching extension state
+        QString name = DataIndexer::self()->name(idx);
+        if (isInternalTag(name)) continue;		// ignore internally used tags
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
-
+							// check matches extension state
         QVariant v = item->metadata(idx);		// get metadata from item
         if (v.isNull()) continue;			// no data to output
 

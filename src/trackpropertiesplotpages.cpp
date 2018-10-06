@@ -9,6 +9,11 @@
 #include "ploteditwidget.h"
 #include "trackdata.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackItemPlotPage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackItemPlotPage::TrackItemPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
@@ -44,6 +49,11 @@ QString TrackItemPlotPage::newRangeData() const
     return (mRangeEdit->plotData());
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackWaypointPlotPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackWaypointPlotPage::TrackWaypointPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemPlotPage(items, pnt)
@@ -53,12 +63,24 @@ TrackWaypointPlotPage::TrackWaypointPlotPage(const QList<TrackDataItem *> *items
 }
 
 
+void TrackWaypointPlotPage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Page creation interface						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+
 CREATE_PROPERTIES_PAGE(Waypoint, Plot)
 
 NULL_PROPERTIES_PAGE(File, Plot)
 NULL_PROPERTIES_PAGE(Track, Plot)
-NULL_PROPERTIES_PAGE(Route, Plot)
 NULL_PROPERTIES_PAGE(Segment, Plot)
 NULL_PROPERTIES_PAGE(Trackpoint, Plot)
 NULL_PROPERTIES_PAGE(Folder, Plot)
+NULL_PROPERTIES_PAGE(Route, Plot)
 NULL_PROPERTIES_PAGE(Routepoint, Plot)

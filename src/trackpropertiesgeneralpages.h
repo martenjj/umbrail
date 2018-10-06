@@ -10,14 +10,15 @@ class QDateTime;
 class QFormLayout;
 class QComboBox;
 class QLineEdit;
+
 class KTextEdit;
+
 class ItemTypeCombo;
 class TrackDataItem;
 class TrackDataAbstractPoint;
 class TrackDataWaypoint;
 class TimeZoneSelector;
-
-
+class TrackDataLabel;
 
 
 
@@ -26,30 +27,37 @@ class TrackItemGeneralPage : public TrackPropertiesPage
     Q_OBJECT
 
 public:
-    virtual ~TrackItemGeneralPage()				{}
+    virtual ~TrackItemGeneralPage() = default;
 
-    QString newItemName() const;
-    QString newItemDesc() const;
-    QString newTrackType() const;
-    QString newTimeZone() const;
-    TrackData::WaypointStatus newWaypointStatus() const;
+    // QString newItemName() const;
+    // QString newItemDesc() const;
+    // QString newTrackType() const;
+//     QString newTimeZone() const;
+    // TrackData::WaypointStatus newWaypointStatus() const;
 
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const override;
+    virtual void refreshData() override;
 
-    bool newPointPosition(double *newLat, double *newLon);
+    // bool newPointPosition(double *newLat, double *newLon);
 
 protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
     void addTimeSpanFields(const QList<TrackDataItem *> *items);
     void addTypeField(const QList<TrackDataItem *> *items);
-    void addStatusField(const QList<TrackDataItem *> *items);
+//    void addStatusField(const QList<TrackDataItem *> *items);
     void addDescField(const QList<TrackDataItem *> *items);
     void addPositionFields(const QList<TrackDataItem *> *items);
     void addTimeField(const QList<TrackDataItem *> *items);
 
 protected slots:
+    void slotNameChanged(const QString &text);
+    void slotTypeChanged(const QString &text);
+    void slotDescChanged();
+
+
+
     void slotChangePosition();
 
 signals:
@@ -60,13 +68,11 @@ protected:
     QLineEdit *mNameEdit;
     ItemTypeCombo *mTypeCombo;
     KTextEdit *mDescEdit;
-    TimeZoneSelector *mTimeZoneSel;
-    QComboBox *mStatusCombo;
+    QLabel *mPositionLabel;
 
-    const TrackDataAbstractPoint *mPositionPoint;
-    bool mPositionChanged;
-    double mPositionLatitude;
-    double mPositionLongitude;
+    TrackDataLabel *mTimeLabel;
+    TrackDataLabel *mTimeStartLabel;
+    TrackDataLabel *mTimeEndLabel;
 };
 
 
@@ -78,13 +84,18 @@ class TrackFileGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackFileGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackFileGeneralPage()				{}
+    virtual ~TrackFileGeneralPage() = default;
 
     bool isDataValid() const override;
     QString typeText(int count) const override;
+    void refreshData() override;
+
+private slots:
+    void slotTimeZoneChanged(const QString &zoneName);
 
 private:
     QLineEdit *mUrlRequester;
+    TimeZoneSelector *mTimeZoneSel;
 };
 
 
@@ -95,9 +106,10 @@ class TrackTrackGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackTrackGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackTrackGeneralPage()				{}
+    virtual ~TrackTrackGeneralPage() = default;
 
     QString typeText(int count) const override;
+    void refreshData() override;
 };
 
 
@@ -108,9 +120,10 @@ class TrackSegmentGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackSegmentGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackSegmentGeneralPage()				{}
+    virtual ~TrackSegmentGeneralPage() = default;
 
     QString typeText(int count) const override;
+    void refreshData() override;
 };
 
 
@@ -121,26 +134,10 @@ class TrackTrackpointGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackTrackpointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackTrackpointGeneralPage()				{}
+    virtual ~TrackTrackpointGeneralPage() = default;
 
     QString typeText(int count) const override;
-
-
-private:
-};
-
-
-class TrackRoutepointGeneralPage : public TrackItemGeneralPage
-{
-    Q_OBJECT
-
-public:
-    TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRoutepointGeneralPage()				{}
-
-    QString typeText(int count) const override;
-
-private:
+    void refreshData() override;
 };
 
 
@@ -150,11 +147,10 @@ class TrackFolderGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackFolderGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackFolderGeneralPage()				{}
+    virtual ~TrackFolderGeneralPage() = default;
 
     QString typeText(int count) const override;
-
-private:
+    void refreshData() override;
 };
 
 
@@ -164,9 +160,10 @@ class TrackWaypointGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackWaypointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackWaypointGeneralPage()				{}
+    virtual ~TrackWaypointGeneralPage() = default;
 
     QString typeText(int count) const override;
+    void refreshData() override;
 
 protected slots:
     void slotPlayAudioNote();
@@ -174,7 +171,14 @@ protected slots:
     void slotViewPhotoNote();
 
 private:
+    void addStatusField(const QList<TrackDataItem *> *items);
+
+private slots:
+    void slotStatusChanged(int idx);
+
+private:
     const TrackDataWaypoint *mWaypoint;
+    QComboBox *mStatusCombo;
 };
 
 
@@ -184,10 +188,23 @@ class TrackRouteGeneralPage : public TrackItemGeneralPage
 
 public:
     TrackRouteGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRouteGeneralPage()				{}
+    virtual ~TrackRouteGeneralPage() = default;
 
     QString typeText(int count) const override;
+    void refreshData() override;
 };
 
+
+class TrackRoutepointGeneralPage : public TrackItemGeneralPage
+{
+    Q_OBJECT
+
+public:
+    TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRoutepointGeneralPage() = default;
+
+    QString typeText(int count) const override;
+    void refreshData() override;
+};
 
 #endif							// TRACKPROPERTIESGENERALPAGES_H

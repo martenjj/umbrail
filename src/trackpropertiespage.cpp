@@ -18,12 +18,13 @@
 TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : QWidget(pnt)
 {
-    Q_ASSERT(items!=NULL);
+    Q_ASSERT(items!=nullptr);
     Q_ASSERT(!items->isEmpty());
+
     mFormLayout = new QFormLayout(this);
 
-    mTimeZone = NULL;
-    mPositionLabel = NULL;
+    mTimeZone = nullptr;
+    // mPositionLabel = nullptr;
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
     if (mIsEmpty && !items->isEmpty())
     {
@@ -38,10 +39,19 @@ TrackPropertiesPage::~TrackPropertiesPage()
 }
 
 
+// void TrackPropertiesPage::setDataModel(MetadataModel *dataModel)
+// {
+    // mDataModel = dataModel;
+// }
+
+
 void TrackPropertiesPage::slotDataChanged()
 {
-    emit dataChanged();
+    emit dataChanged(this);
 }
+
+
+
 
 
 void TrackPropertiesPage::addSeparatorField(const QString &title)
@@ -59,43 +69,44 @@ void TrackPropertiesPage::addSeparatorField(const QString &title)
 }
 
 
-void TrackPropertiesPage::setTimeZone(const QString &name)
+void TrackPropertiesPage::setTimeZone(const QString &name, bool useDefault)
 {
     qDebug() << name;
-    delete mTimeZone;
-    if (name.isEmpty())
+
+    if (!name.isEmpty() && mDefaultTimeZone.isEmpty()) mDefaultTimeZone = name;
+
+    QString zoneName = name;
+    if (zoneName.isEmpty() && useDefault) zoneName = mDefaultTimeZone;
+    qDebug() << name << "->" << zoneName;
+
+    delete mTimeZone;					// remove existing time zone
+
+    if (zoneName.isEmpty())
     {
-        mTimeZone = NULL;
+        mTimeZone = nullptr;
         qDebug() << "set to no zone";
     }
     else
     {
-        mTimeZone = new QTimeZone(name.toLatin1());
-        if (!mTimeZone->isValid())
-        {
-            qWarning() << "unknown time zone" << name;
-            delete mTimeZone;
-            mTimeZone = NULL;
-        }
+        mTimeZone = new QTimeZone(zoneName.toLatin1());
+        if (!mTimeZone->isValid()) qWarning() << "unknown time zone" << zoneName;
         else qDebug() << "set to" << mTimeZone->id() << "offset" << mTimeZone->offsetFromUtc(QDateTime::currentDateTime());
     }
-
-    emit updateTimeZones(timeZone());
 }
 
 
-void TrackPropertiesPage::slotPointPositionChanged(double newLat, double newLon)
-{
-    if (mPositionLabel==NULL) return;
-    qDebug() << newLat << newLon;
-
-    mPositionLabel->setText(TrackData::formattedLatLong(newLat, newLon));
-
-    KColorScheme sch(QPalette::Normal);
-    QPalette pal(mPositionLabel->palette());
-    pal.setColor(QPalette::WindowText, sch.foreground(KColorScheme::NeutralText).color());
-    mPositionLabel->setPalette(pal);
-}
+// void TrackPropertiesPage::slotPointPositionChanged(double newLat, double newLon)
+// {
+    // if (mPositionLabel==NULL) return;
+    // qDebug() << newLat << newLon;
+// 
+    // mPositionLabel->setText(TrackData::formattedLatLong(newLat, newLon));
+// 
+    // KColorScheme sch(QPalette::Normal);
+    // QPalette pal(mPositionLabel->palette());
+    // pal.setColor(QPalette::WindowText, sch.foreground(KColorScheme::NeutralText).color());
+    // mPositionLabel->setPalette(pal);
+// }
 
 
 void TrackPropertiesPage::disableIfEmpty(QWidget *field, bool always)
@@ -106,3 +117,5 @@ void TrackPropertiesPage::disableIfEmpty(QWidget *field, bool always)
     if (l!=NULL) l->setEnabled(false);
     field->setEnabled(false);
 }
+
+

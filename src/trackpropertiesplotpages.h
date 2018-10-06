@@ -5,8 +5,6 @@
 #include "trackpropertiespage.h"
 
 
-//class QCheckBox;
-//class QSpinBox;
 class PlotEditWidget;
 class TrackDataItem;
 
@@ -37,7 +35,7 @@ class TrackWaypointPlotPage : public TrackItemPlotPage
 public:
     TrackWaypointPlotPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointPlotPage() = default;
+    void refreshData() override;
 };
-
 
 #endif							// TRACKPROPERTIESPLOTPAGES_H

@@ -100,7 +100,7 @@ double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly)
     const int num = item->childCount();
     if (num==0) return (0.0);				// no children
 
-    // Ignore folders.  Waypoints are not considred to be in either time or
+    // Ignore folders.  Waypoints are not considered to be in either time or
     // file order, so the concept of travel distance for them is meaningless.
     const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
     if (tdf!=nullptr) return (0.0);			// don't want folders here
@@ -275,6 +275,8 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
 {
     qDebug();
     setObjectName("TrackItemDetailPage");
+
+    mPositionLabel = nullptr;
 
     addSeparatorField();
 }
@@ -585,6 +587,12 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
     }
 }
 
+
+void TrackFileDetailPage::refreshData()
+{
+    qDebug();
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackTrackDetailPage						//
@@ -613,32 +621,10 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, 
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-//									//
-//  TrackRouteDetailPage						//
-//									//
-//////////////////////////////////////////////////////////////////////////
 
-TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemDetailPage(items, pnt)
+void TrackTrackDetailPage::refreshData()
 {
     qDebug();
-    setObjectName("TrackRouteDetailPage");
-
-    addChildCountField(items, i18nc("@label:textbox", "Points:"));
-    addDisplayFields(items, DisplayRouteLength);
-    addSeparatorField();
-    addDisplayFields(items, DisplayPosition);
-
-    if (items->count()==1)				// show metadata if only one
-    {
-        const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(items->first());
-        Q_ASSERT(tdr!=nullptr);
-
-        addSeparatorField();
-        addMetadataField(tdr, "creator", i18nc("@label:textbox", "Creator:"));
-        addMetadataField(tdr, "time", i18nc("@label:textbox", "Time:"));
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -678,6 +664,12 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *ite
     }
 }
 
+
+void TrackSegmentDetailPage::refreshData()
+{
+    qDebug();
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackTrackpointDetailPage						//
@@ -704,6 +696,12 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
     {
         addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation|DisplayTravelDistance|DisplayAverageSpeed|DisplayStraightLine|DisplayRelativeBearing);
     }
+}
+
+
+void TrackTrackpointDetailPage::refreshData()
+{
+    qDebug();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -751,6 +749,12 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
     else disableIfEmpty(pathDisplay, true);
 }
 
+
+void TrackFolderDetailPage::refreshData()
+{
+    qDebug();
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackWaypointDetailPage						//
@@ -785,6 +789,46 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     }
 }
 
+
+void TrackWaypointDetailPage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackRouteDetailPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemDetailPage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRouteDetailPage");
+
+    addChildCountField(items, i18nc("@label:textbox", "Points:"));
+    addDisplayFields(items, DisplayRouteLength);
+    addSeparatorField();
+    addDisplayFields(items, DisplayPosition);
+
+    if (items->count()==1)				// show metadata if only one
+    {
+        const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(items->first());
+        Q_ASSERT(tdr!=nullptr);
+
+        addSeparatorField();
+        addMetadataField(tdr, "creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField(tdr, "time", i18nc("@label:textbox", "Time:"));
+    }
+}
+
+
+void TrackRouteDetailPage::refreshData()
+{
+    qDebug();
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackRoutepointDetailPage						//
@@ -808,11 +852,22 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
 }
 
 
+void TrackRoutepointDetailPage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Page creation interface						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
 CREATE_PROPERTIES_PAGE(File, Detail)
 CREATE_PROPERTIES_PAGE(Track, Detail)
-CREATE_PROPERTIES_PAGE(Route, Detail)
 CREATE_PROPERTIES_PAGE(Segment, Detail)
 CREATE_PROPERTIES_PAGE(Trackpoint, Detail)
 CREATE_PROPERTIES_PAGE(Folder, Detail)
 CREATE_PROPERTIES_PAGE(Waypoint, Detail)
+CREATE_PROPERTIES_PAGE(Route, Detail)
 CREATE_PROPERTIES_PAGE(Routepoint, Detail)

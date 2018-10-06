@@ -13,6 +13,11 @@
 #include "variableunitdisplay.h"
 #include "mapview.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackItemStylePage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
@@ -29,6 +34,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
     const QColor col = item->metadata("color").value<QColor>();
     qDebug() << "initial colour" << col;
 
+    // TODO: a function to add each button, call as appropriate in subclasses
     // TODO: TrackDataFile should have both colours!
     if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=NULL)
     {							// points have "Point colour"
@@ -71,6 +77,12 @@ QColor TrackItemStylePage::newColour() const
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackFileStylePage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
 TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
@@ -82,6 +94,17 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWid
 }
 
 
+void TrackFileStylePage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackTrackStylePage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
 TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
 {
@@ -90,17 +113,16 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QW
 }
 
 
-
-TrackRouteStylePage::TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemStylePage(items, pnt)
+void TrackTrackStylePage::refreshData()
 {
     qDebug();
-    setObjectName("TrackRouteStylePage");
-
-    if (mLineColourButton!=NULL) mLineInheritCheck->setText(i18n("Use application default"));
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackSegmentStylePage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
@@ -110,6 +132,16 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items
 }
 
 
+void TrackSegmentStylePage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackWaypointStylePage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemStylePage(items, pnt)
@@ -121,12 +153,43 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
 }
 
 
+void TrackWaypointStylePage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackRouteStylePage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackRouteStylePage::TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemStylePage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRouteStylePage");
+
+    if (mLineColourButton!=NULL) mLineInheritCheck->setText(i18n("Use application default"));
+}
+
+
+void TrackRouteStylePage::refreshData()
+{
+    qDebug();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Page creation interface						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 CREATE_PROPERTIES_PAGE(File, Style)
 CREATE_PROPERTIES_PAGE(Track, Style)
-CREATE_PROPERTIES_PAGE(Route, Style)
 CREATE_PROPERTIES_PAGE(Segment, Style)
 CREATE_PROPERTIES_PAGE(Waypoint, Style)
+CREATE_PROPERTIES_PAGE(Route, Style)
 
 NULL_PROPERTIES_PAGE(Trackpoint, Style)
 NULL_PROPERTIES_PAGE(Folder, Style)

@@ -13,6 +13,12 @@
 #include "autotooltipdelegate.h"
 
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackItemMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
 TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
@@ -39,14 +45,29 @@ TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items
 
     if (items->count()!=1) return;			// only populate for single item
 
-    const TrackDataItem *item = items->first();
-    mModel = new MetadataModel(item, this);
-    mView->setModel(mModel);
+    // const TrackDataItem *item = items->first();
+    // mModel = new MetadataModel(item, this);
+    // mView->setModel(mModel);
     mView->resizeColumnsToContents();
     mView->resizeRowsToContents();
 }
 
 
+void TrackItemMetadataPage::refreshData()
+{
+    qDebug();
+    if (mView->model()==nullptr)
+    {
+        qDebug() << "setting model";
+        mView->setModel(dataModel());
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackFileMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackFileMetadataPage::TrackFileMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -55,7 +76,11 @@ TrackFileMetadataPage::TrackFileMetadataPage(const QList<TrackDataItem *> *items
     setObjectName("TrackFileMetadataPage");
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackTrackMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackTrackMetadataPage::TrackTrackMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -64,16 +89,11 @@ TrackTrackMetadataPage::TrackTrackMetadataPage(const QList<TrackDataItem *> *ite
     setObjectName("TrackTrackMetadataPage");
 }
 
-
-
-TrackRouteMetadataPage::TrackRouteMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemMetadataPage(items, pnt)
-{
-    qDebug();
-    setObjectName("TrackRouteMetadataPage");
-}
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackSegmentMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackSegmentMetadataPage::TrackSegmentMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -82,7 +102,11 @@ TrackSegmentMetadataPage::TrackSegmentMetadataPage(const QList<TrackDataItem *> 
     setObjectName("TrackSegmentMetadataPage");
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackTrackpointMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackTrackpointMetadataPage::TrackTrackpointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -91,7 +115,11 @@ TrackTrackpointMetadataPage::TrackTrackpointMetadataPage(const QList<TrackDataIt
     setObjectName("TrackPointMetadataPage");
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackFolderMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackFolderMetadataPage::TrackFolderMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -100,7 +128,11 @@ TrackFolderMetadataPage::TrackFolderMetadataPage(const QList<TrackDataItem *> *i
     setObjectName("TrackFolderMetadataPage");
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackWaypointMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackWaypointMetadataPage::TrackWaypointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -109,7 +141,24 @@ TrackWaypointMetadataPage::TrackWaypointMetadataPage(const QList<TrackDataItem *
     setObjectName("TrackWaypointMetadataPage");
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackRouteMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
+TrackRouteMetadataPage::TrackRouteMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemMetadataPage(items, pnt)
+{
+    qDebug();
+    setObjectName("TrackRouteMetadataPage");
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackRoutepointMetadataPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackRoutepointMetadataPage::TrackRoutepointMetadataPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemMetadataPage(items, pnt)
@@ -118,13 +167,17 @@ TrackRoutepointMetadataPage::TrackRoutepointMetadataPage(const QList<TrackDataIt
     setObjectName("TrackRoutepointMetadataPage");
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Page creation interface						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 CREATE_PROPERTIES_PAGE(File, Metadata)
 CREATE_PROPERTIES_PAGE(Track, Metadata)
-CREATE_PROPERTIES_PAGE(Route, Metadata)
 CREATE_PROPERTIES_PAGE(Segment, Metadata)
 CREATE_PROPERTIES_PAGE(Trackpoint, Metadata)
 CREATE_PROPERTIES_PAGE(Folder, Metadata)
 CREATE_PROPERTIES_PAGE(Waypoint, Metadata)
+CREATE_PROPERTIES_PAGE(Route, Metadata)
 CREATE_PROPERTIES_PAGE(Routepoint, Metadata)

@@ -6,8 +6,9 @@
 
 class QFormLayout;
 class QTimeZone;
-class QLabel;
+
 class TrackDataItem;
+class MetadataModel;
 
 
 #define CREATE_PROPERTIES_PAGE(ITEMTYPE, PAGETYPE)					\
@@ -39,34 +40,36 @@ public:
     virtual ~TrackPropertiesPage();
 
     virtual bool isDataValid() const				{ return (true); }
+    void setDataModel(MetadataModel *dataModel)			{ mDataModel = dataModel; }
+    void setTimeZone(const QString &zoneName, bool useDefault = true);
 
-    QTimeZone *timeZone() const					{ return (mTimeZone); }
+    virtual void refreshData() = 0;
+
     bool isEmpty() const					{ return (mIsEmpty); }
-
-public slots:
-    void setTimeZone(const QString &name);
-    void slotPointPositionChanged(double newLat, double newLon);
 
 protected:
     TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt);
+
+    MetadataModel *dataModel() const				{ return (mDataModel); }
+    QTimeZone *timeZone() const					{ return (mTimeZone); }
 
     void addSeparatorField(const QString &title = QString());
     void disableIfEmpty(QWidget *field, bool always = false);
 
 protected:
     QFormLayout *mFormLayout;
-    QLabel *mPositionLabel;
 
 protected slots:
     virtual void slotDataChanged();
 
 signals:
-    void dataChanged();
-    void updateTimeZones(const QTimeZone *tz);
+    void dataChanged(TrackPropertiesPage *page);
 
 private:
     bool mIsEmpty;
+    MetadataModel *mDataModel;
     QTimeZone *mTimeZone;
+    QString mDefaultTimeZone;
 };
 
 #endif							// TRACKPROPERTIESPAGE_H

@@ -709,6 +709,7 @@ TrackData::WaypointType TrackDataWaypoint::waypointType() const
     if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
 
     n = metadata("link");				// then get saved link name
+    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
     if (n.isNull()) n = metadata("media");		// compatibility with old metadata
     if (n.isNull()) n = name();				// lastly try our waypoint name
 
