@@ -56,8 +56,6 @@ protected slots:
     void slotTypeChanged(const QString &text);
     void slotDescChanged();
 
-
-
     void slotChangePosition();
 
 signals:

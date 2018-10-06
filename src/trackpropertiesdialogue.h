@@ -55,7 +55,6 @@ private:
 
 protected slots:
     void slotModelDataChanged(int idx);
-    //void slotPageDataChanged(TrackPropertiesPage *page);
     void slotTabChanged(int idx);
 
 private:

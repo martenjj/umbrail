@@ -36,11 +36,8 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
     setObjectName("TrackItemGeneralPage");
 
     mNameEdit = new QLineEdit(this);
-    // if (items->count()==1) mNameEdit->setText(items->first()->name());
-    // else
     if (items->count()>1) mNameEdit->setEnabled(false);
     connect(mNameEdit, &QLineEdit::textChanged, this, &TrackItemGeneralPage::slotNameChanged);
-    //connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
     addSeparatorField();
     mFormLayout->addRow(i18nc("@label:textbox", "Name:"), mNameEdit);
@@ -51,9 +48,6 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
     mPositionLabel = nullptr;
     mTimeLabel = nullptr;
     mTimeStartLabel = mTimeEndLabel = nullptr;
-
-//     mPositionPoint = NULL;
-//     mPositionChanged = false;
 }
 
 
@@ -85,32 +79,15 @@ void TrackItemGeneralPage::refreshData()
         mPositionLabel->setText(pos);
     }
 
-
-
-
-
-
-    QString zoneName = dataModel()->data("timezone").toString();
-    qDebug() << "item zone from metadata" << zoneName;
-//    if (tzname.isEmpty()) tzname = mDefaultTimeZone;
-    if (!zoneName.isEmpty()) setTimeZone(zoneName);	// except for file, use only if set
-
-
-
-
-
-
-
-
-
+    const QTimeZone *tz = dataModel()->timeZone();
     if (mTimeLabel!=nullptr)
     {
         mTimeLabel->setDateTime(dataModel()->data("time").toDateTime());
-        mTimeLabel->setTimeZone(timeZone());
+        mTimeLabel->setTimeZone(tz);
     }
 
-    if (mTimeStartLabel!=nullptr) mTimeStartLabel->setTimeZone(timeZone());
-    if (mTimeEndLabel!=nullptr) mTimeEndLabel->setTimeZone(timeZone());
+    if (mTimeStartLabel!=nullptr) mTimeStartLabel->setTimeZone(tz);
+    if (mTimeEndLabel!=nullptr) mTimeEndLabel->setTimeZone(tz);
 }
 
 
@@ -173,6 +150,7 @@ void TrackItemGeneralPage::refreshData()
 
 void TrackItemGeneralPage::slotNameChanged(const QString &text)
 {
+
     if (!mNameEdit->isEnabled()) return;		// name is read only
     dataModel()->setData(DataIndexer::self()->index("name"), text);
 }
@@ -211,12 +189,10 @@ void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> *items
 {
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     mTimeStartLabel = new TrackDataLabel(tsp.start(), this);
-    mTimeStartLabel->setTimeZone(timeZone());
     mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), mTimeStartLabel);
     disableIfEmpty(mTimeStartLabel);
 
     mTimeEndLabel = new TrackDataLabel(tsp.finish(), this);
-    mTimeEndLabel->setTimeZone(timeZone());
     mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), mTimeEndLabel);
     disableIfEmpty(mTimeEndLabel);
 }
@@ -248,20 +224,8 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
 
     if (items->count()==1)
     {
-        const TrackDataItem *tdi = items->first();
-        Q_ASSERT(tdi!=NULL);
-
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
-
-        // QVariant d = tdi->metadata("desc");
-        // if (!d.isNull())
-        // {
-            // QString ds = d.toString();
-            // if (!ds.endsWith('\n')) ds += "\n";
-            // mDescEdit->setPlainText(ds);
-        // }
-
         connect(mDescEdit, &KTextEdit::textChanged, this, &TrackItemGeneralPage::slotDescChanged);
     }
     else mDescEdit->setEnabled(false);
@@ -296,11 +260,7 @@ void TrackItemGeneralPage::addTimeField(const QList<TrackDataItem *> *items)
 {
     if (items->count()!=1) return;			// only for single selection
 
-//     TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(items->first());
-//     Q_ASSERT(tdp!=nullptr);
     mTimeLabel = new TrackDataLabel(QDateTime(), this);
-    mTimeLabel->setTimeZone(timeZone());
-//    mTimeLabel = new TrackDataLabel(p->time(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time:"), mTimeLabel);
     // cannot change in GUI, so no change slot needed
 }
@@ -320,22 +280,15 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
 
     mUrlRequester = new QLineEdit(this);
     mUrlRequester->setReadOnly(true);
-//    connect(mUrlRequester, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
     mTimeZoneSel = new TimeZoneSelector(this);
     connect(mTimeZoneSel, &TimeZoneSelector::zoneChanged, this, &TrackFileGeneralPage::slotTimeZoneChanged);
-//     connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SLOT(slotDataChanged()));
-//     connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SIGNAL(timeZoneChanged(const QString &)));
 
     if (items->count()==1)				// a single item
     {
         TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items->first());
         Q_ASSERT(fileItem!=NULL);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
-
-//         const QString zone = fileItem->metadata("timezone").toString();
-//         if (!zone.isEmpty()) mTimeZoneSel->setTimeZone(zone);
-
         mTimeZoneSel->setItems(items);			// use these to get timezone
     }
     else						// may be mixed MIME types
@@ -371,20 +324,13 @@ void TrackFileGeneralPage::refreshData()
 {
     qDebug();
 
-
-
-
-    QString zoneName = dataModel()->data("timezone").toString();
-    qDebug() << "file zone from metadata" << zoneName;
-    setTimeZone(zoneName, false);			// always use file time zone
-
-
-
-
     TrackItemGeneralPage::refreshData();
 
-
-    if (mTimeZoneSel!=nullptr) mTimeZoneSel->setTimeZone(zoneName);
+    if (mTimeZoneSel!=nullptr)
+    {
+        const QString zoneName = dataModel()->data("timezone").toString();
+        mTimeZoneSel->setTimeZone(zoneName);
+    }
 
 
 // TODO: update all time/span fields

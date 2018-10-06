@@ -5,7 +5,6 @@
 #include <qwidget.h>
 
 class QFormLayout;
-class QTimeZone;
 
 class TrackDataItem;
 class MetadataModel;
@@ -37,11 +36,10 @@ class TrackPropertiesPage : public QWidget
     Q_OBJECT
 
 public:
-    virtual ~TrackPropertiesPage();
+    virtual ~TrackPropertiesPage() = default;
 
     virtual bool isDataValid() const				{ return (true); }
     void setDataModel(MetadataModel *dataModel)			{ mDataModel = dataModel; }
-    void setTimeZone(const QString &zoneName, bool useDefault = true);
 
     virtual void refreshData() = 0;
 
@@ -51,7 +49,6 @@ protected:
     TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
     MetadataModel *dataModel() const				{ return (mDataModel); }
-    QTimeZone *timeZone() const					{ return (mTimeZone); }
 
     void addSeparatorField(const QString &title = QString());
     void disableIfEmpty(QWidget *field, bool always = false);
@@ -68,8 +65,6 @@ signals:
 private:
     bool mIsEmpty;
     MetadataModel *mDataModel;
-    QTimeZone *mTimeZone;
-    QString mDefaultTimeZone;
 };
 
 #endif							// TRACKPROPERTIESPAGE_H

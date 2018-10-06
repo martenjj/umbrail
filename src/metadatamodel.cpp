@@ -2,6 +2,7 @@
 #include "metadatamodel.h"
 
 #include <qdebug.h>
+#include <qtimezone.h>
 
 #include <klocalizedstring.h>
 
@@ -47,9 +48,20 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
         mItemData[DataIndexer::self()->index("longitude")] = tdp->longitude();
     }
 
+    // The default time zone to use is that appropriate for the reference item,
+    // which will be obtained by a search of that item and its parents up to
+    // the top level.  It may be null, meaning UTC.
+    mParentTimeZone = item->timeZone();
+    mUseParentTimeZone = (item->parent()!=nullptr);
+    qDebug() << "parent time zone" << mParentTimeZone << "use parent?" << mUseParentTimeZone;
+    mTimeZone = nullptr;
+    resolveTimeZone();
+}
 
-//     mTimeZone = item->timeZone();			// record for use by pages
 
+MetadataModel::~MetadataModel()
+{
+    delete mTimeZone;
 }
 
 
@@ -123,7 +135,10 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 void MetadataModel::setData(int idx, const QVariant &value)
 {
     mItemData[idx] = value;
-    emit metadataChanged(idx);
+
+    if (idx==DataIndexer::self()->index("timezone")) resolveTimeZone();
+							// update time zone data
+    emit metadataChanged(idx);				// signal that data changed
 }
 
 
@@ -159,4 +174,37 @@ case COL_VALUE:	return (i18nc("@title:column", "Value"));
     }
 
     return (QVariant());
+}
+
+
+void MetadataModel::resolveTimeZone()
+{
+    QString name = data("timezone").toString();
+    qDebug() << "zone from metadata" << name;
+
+    // The time zone used is either the "timezone" from this item's metadata,
+    // or that obtained by the closest ancestor that has it set in its metadata.
+    // If the reference item is a top level item (currently a TrackDataFile),
+    // then a blank time zone in the item's own metadata means really blank,
+    // that is UTC.  If the reference item is not a top level item than the
+    // resolved ancestor time zone is used.
+
+    if (name.isEmpty() && mUseParentTimeZone)
+    {
+        name = mParentTimeZone;
+        qDebug() << "using parent zone" << name;
+    }
+
+    delete mTimeZone;					// remove existing time zone
+    if (name.isEmpty())
+    {
+        mTimeZone = nullptr;
+        qDebug() << "set to no zone";
+    }
+    else
+    {
+        mTimeZone = new QTimeZone(name.toLatin1());
+        if (!mTimeZone->isValid()) qWarning() << "unknown time zone" << name;
+        else qDebug() << "set to" << mTimeZone->id() << "offset" << mTimeZone->offsetFromUtc(QDateTime::currentDateTime());
+    }
 }

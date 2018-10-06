@@ -72,11 +72,6 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     TrackPropertiesPage *page = propif->createPropertiesGeneralPage(items, this);
     mGeneralPage = qobject_cast<TrackItemGeneralPage *>(page);
     Q_ASSERT(mGeneralPage!=nullptr);
-    // mGeneralPage->setTimeZone(zoneName);
-    // connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
-            // mGeneralPage, SLOT(setTimeZone(const QString &)));
-    // connect(mGeneralPage, SIGNAL(pointPositionChanged(double,double)),
-            // mGeneralPage, SLOT(slotPointPositionChanged(double,double)));
     addPage(page, i18nc("@title:tab", "General"));
 
     typeLabel->setText(mGeneralPage->typeText(items->count()));
@@ -84,11 +79,6 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     page = propif->createPropertiesDetailPage(items, this);
     mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
     Q_ASSERT(mDetailPage!=nullptr);
-    // mDetailPage->setTimeZone(zoneName);
-    // connect(mGeneralPage, SIGNAL(timeZoneChanged(const QString &)),
-            // mDetailPage, SLOT(setTimeZone(const QString &)));
-    // connect(mGeneralPage, SIGNAL(pointPositionChanged(double,double)),
-            // mDetailPage, SLOT(slotPointPositionChanged(double,double)));
     addPage(page, i18nc("@title:tab", "Details"));
 
     page = propif->createPropertiesStylePage(items, this);
@@ -121,8 +111,6 @@ void TrackPropertiesDialogue::addPage(TrackPropertiesPage *page,
     if (page!=nullptr)					// if page applies to item type
     {
         page->setDataModel(mDataModel);
-        page->setTimeZone(mFileTimeZone);
-
         mTabWidget->addTab(page, title);
         mTabWidget->setTabEnabled(mTabWidget->count()-1, enabled);
     }

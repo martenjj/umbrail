@@ -6,6 +6,7 @@
 #include <QAbstractTableModel>
 
 
+class QTimeZone;
 class TrackDataItem;
 
 
@@ -15,7 +16,7 @@ class MetadataModel : public QAbstractTableModel
 
 public:
     MetadataModel(const TrackDataItem *item, QObject *pnt = nullptr);
-    virtual ~MetadataModel() = default;
+    virtual ~MetadataModel();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -26,27 +27,23 @@ public:
     const QVariant data(int idx) const;
     const QVariant data(const QString &nm) const;
     void setData(int idx, const QVariant &value);
-//     void ignoreUpdates(bool ignore);
 
-//     QString timeZone() const				{ return (mTimeZone); }
+    const QTimeZone *timeZone() const			{ return (mTimeZone); }
     double latitude() const;
     double longitude() const;
-    // QString name() const				{ return (mName); }
-
-    // void setName(const QString &value);
 
 signals:
     void metadataChanged(int idx);
 
 private:
+    void resolveTimeZone();
+
+private:
     QMap<int,QVariant> mItemData;
-//     bool mUpdatesIgnored;
 
-//     QString mTimeZone;
-
-    // double mLatitude;
-    // double mLongitude;
-    // QString mName;
+    QString mParentTimeZone;
+    bool mUseParentTimeZone;
+    QTimeZone *mTimeZone;
 };
  
 #endif							// METADATAMODEL_H
