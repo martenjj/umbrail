@@ -21,45 +21,42 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     : QAbstractTableModel(pnt)
 {
     qDebug() << "for" << item->name();
-							// copy existing item data
+
+    // Copy the existing item metadata.
+
     const int num = DataIndexer::self()->count();
-    for (int i = 0; i<num; ++i) mItemData.append(item->metadata(i));
+    for (int i = 0; i<num; ++i)
+    {
+        QVariant v = item->metadata(i);
+        if (!v.isNull()) mItemData[i] = v;		// only if present and meaningful
+    }
 
-    mTimeZone = item->timeZone();			// record for use by pages
-
-//     mUpdatesIgnored = false;
+    // TODO: a static function to access internal index list
 
     // Copy and record data which is not stored by item metadata.
-
-
-
-    // Allocate these indexes for internal data;  they are not used anywhere
-    // outside of this model.  If any are added here then they also need to
-    // be ignored in FilesController::slotTrackProperties() and in
-    // isInternalTag() in gpxexporter.cpp
-    // const int nameIdx = DataIndexer::self()->index("name");
-    // const int latIdx = DataIndexer::self()->index("latitude");
-    // const int lonIdx = DataIndexer::self()->index("longitude");
-
-    setData(DataIndexer::self()->index("name"), item->name());
-    // mItemData[nameIdx] = item->name();
+    //
+    // These names are only used here for internal data;  they are not
+    // used anywhere outside of this model.  If any are added here then
+    // they also need to be ignored in FilesController::slotTrackProperties()
+    // and in isInternalTag() in gpxexporter.cpp
+    mItemData[DataIndexer::self()->index("name")] = item->name();
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
     if (tdp!=NULL)
     {
-        setData(DataIndexer::self()->index("latitude"), tdp->latitude());
-        setData(DataIndexer::self()->index("longitude"), tdp->longitude());
-        // mItemData[latIdx] = tdp->latitude();
-        // mItemData[lonIdx] = tdp->longitude();
+        mItemData[DataIndexer::self()->index("latitude")] = tdp->latitude();
+        mItemData[DataIndexer::self()->index("longitude")] = tdp->longitude();
     }
+
+
+//     mTimeZone = item->timeZone();			// record for use by pages
 
 }
 
 
 int MetadataModel::rowCount(const QModelIndex &pnt) const
 {
-//    qDebug() << "returning" << mItemData.count();
-    return (mItemData.size());
-}
+    return (DataIndexer::self()->count());		// this must be the size of all,
+}							// not just what we have stored
 
 
 int MetadataModel::columnCount(const QModelIndex &pnt) const
@@ -101,8 +98,7 @@ default:
 
 const QVariant MetadataModel::data(int idx) const
 {
-    if (idx>=mItemData.size()) return (QVariant());	// nothing stored for that
-    return (mItemData[idx]);
+    return (mItemData.value(idx));
 }
 
 
@@ -110,8 +106,6 @@ const QVariant MetadataModel::data(const QString &nm) const
 {
     return (data(DataIndexer::self()->index(nm)));
 }
-
-
 
 
 bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int role)
@@ -126,26 +120,9 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 }
 
 
-
-
 void MetadataModel::setData(int idx, const QVariant &value)
 {
-//     if (mUpdatesIgnored) return;			// ignore this change
-
-    const int oldSize = mItemData.size();		// current size of array
-    const int newSize = idx+1;				// size that is required
-
-    bool doReset = false;				// not needed yet, anyway
-    if (newSize>oldSize)				// needs to be extended
-    {
-        qDebug() << "need to extend to size" << newSize;
-        mItemData.resize(newSize);
-        doReset = true;
-        beginResetModel();
-    }
-
     mItemData[idx] = value;
-    if (doReset) endResetModel();
     emit metadataChanged(idx);
 }
 
@@ -162,26 +139,6 @@ double MetadataModel::longitude() const
     const QVariant &v = data(DataIndexer::self()->index("longitude"));
     return (!v.isNull() ? v.toDouble() : NAN);
 }
-
-
-// void MetadataModel::setName(const QString &value)
-// {
-    // if (mUpdatesIgnored) return;
-    // mName = value;
-// ///////////////////////////////////////////////////////////////////////// TODO: temp
-    // emit metadataChanged(0);
-// }
-
-
-// void MetadataModel::ignoreUpdates(bool ignore)
-// {
-//     qDebug() << "ignore?" << ignore;
-//     mUpdatesIgnored = ignore;
-// }
-
-
-
-
 
 
 QVariant MetadataModel::headerData(int section, Qt::Orientation orientation, int role) const

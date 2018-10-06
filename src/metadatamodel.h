@@ -28,7 +28,7 @@ public:
     void setData(int idx, const QVariant &value);
 //     void ignoreUpdates(bool ignore);
 
-    QString timeZone() const				{ return (mTimeZone); }
+//     QString timeZone() const				{ return (mTimeZone); }
     double latitude() const;
     double longitude() const;
     // QString name() const				{ return (mName); }
@@ -39,10 +39,10 @@ signals:
     void metadataChanged(int idx);
 
 private:
-    QVector<QVariant> mItemData;
+    QMap<int,QVariant> mItemData;
 //     bool mUpdatesIgnored;
 
-    QString mTimeZone;
+//     QString mTimeZone;
 
     // double mLatitude;
     // double mLongitude;

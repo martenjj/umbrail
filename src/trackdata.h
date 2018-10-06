@@ -22,7 +22,7 @@ class QIcon;
 class TrackDataItem;
 class TrackDataFolder;
 class TrackPropertiesPage;
-class MetadataModel;
+//class MetadataModel;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
