@@ -432,14 +432,15 @@ void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
 
 QString TrackDataItem::timeZone() const
 {
-    const TrackDataItem *parentItem = this;
-    while (parentItem!=NULL)
+    const TrackDataItem *item = this;
+    while (item!=nullptr)
     {
-        const TrackDataFile *parentFile = dynamic_cast<const TrackDataFile *>(parentItem);
-        if (parentFile!=NULL) return (parentFile->metadata("timezone").toString());
-        parentItem = parentItem->parent();
+        const QVariant &v = item->metadata("timezone");	// look for timezone in metadata
+        if (!v.isNull()) return (v.toString());
+        item = item->parent();				// if present, use that
     }
-    return (QString());
+
+    return (QString());					// no time zone in item tree
 }
 
 
