@@ -58,7 +58,8 @@ void TrackDataLabel::setTimeZone(const QTimeZone *tz)
 
 void TrackDataLabel::updateDateTime()
 {
-    if (!mDateTime.isValid()) setText(i18nc("an invalid time", "(invalid)"));
+    if (mDateTime.isNull()) setText(QString());
+    else if (!mDateTime.isValid()) setText(i18nc("an invalid time", "(invalid)"));
     else if (mTimeZone!=nullptr && !mTimeZone->isValid()) setText(i18nc("an invalid time zone", "(invalid time zone)"));
     else setText(TrackData::formattedTime(mDateTime, mTimeZone));
 }
