@@ -395,14 +395,10 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
 
         if (tdp!=nullptr && num==1)			// a single point selected
         {						// show the point elevation
-            const double ele = tdp->elevation();
-            if (!ISNAN(ele))
-            {
-                vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
-                vl->setSaveId("elevation");
-                mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
-                mElevationLabel = vl;
-            }
+            vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
+            vl->setSaveId("elevation");
+            mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
+            mElevationLabel = vl;
         }
         else						// multiple or container selected
         {

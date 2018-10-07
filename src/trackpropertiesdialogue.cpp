@@ -210,18 +210,18 @@ void TrackPropertiesDialogue::showEvent(QShowEvent *ev)
 // }
 
 
-QString TrackPropertiesDialogue::newBearingData() const
-{
-    if (mPlotPage==nullptr) return (QString());		// not applicable to this type
-    return (mPlotPage->newBearingData());
-}
-
-
-QString TrackPropertiesDialogue::newRangeData() const
-{
-    if (mPlotPage==nullptr) return (QString());		// not applicable to this type
-    return (mPlotPage->newRangeData());
-}
+// QString TrackPropertiesDialogue::newBearingData() const
+// {
+//     if (mPlotPage==nullptr) return (QString());		// not applicable to this type
+//     return (mPlotPage->newBearingData());
+// }
+// 
+// 
+// QString TrackPropertiesDialogue::newRangeData() const
+// {
+//     if (mPlotPage==nullptr) return (QString());		// not applicable to this type
+//     return (mPlotPage->newRangeData());
+// }
 
 
 // TrackData::WaypointStatus TrackPropertiesDialogue::newWaypointStatus() const

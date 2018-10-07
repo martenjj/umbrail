@@ -37,8 +37,8 @@ public:
 //     QString newTimeZone() const;
     // bool newPointPosition(double *newLat, double *newLon) const;
     // TrackData::WaypointStatus newWaypointStatus() const;
-    QString newBearingData() const;
-    QString newRangeData() const;
+//     QString newBearingData() const;
+//     QString newRangeData() const;
 
     MetadataModel *dataModel() const			{ return (mDataModel); }
 

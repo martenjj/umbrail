@@ -808,23 +808,23 @@ void FilesController::slotTrackProperties()
         // cmd5->setData("desc", newDesc);
     // }
 
-    QString newBearingData = d.newBearingData();
-    if (newBearingData!="-" && newBearingData!=item->metadata("bearingline").toString())
-    {							// new data is applicable
-        qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingData;
-        ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
-        cmd8->setDataItem(item);
-        cmd8->setData("bearingline", newBearingData);
-    }
-
-    QString newRangeData = d.newRangeData();
-    if (newRangeData!="-" && newRangeData!=item->metadata("rangering").toString())
-    {							// new data is applicable
-        qDebug() << "change range ring" << item->metadata("rangering") << "->" << newRangeData;
-        ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
-        cmd9->setDataItem(item);
-        cmd9->setData("rangering", newRangeData);
-    }
+//     QString newBearingData = d.newBearingData();
+//     if (newBearingData!="-" && newBearingData!=item->metadata("bearingline").toString())
+//     {							// new data is applicable
+//         qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingData;
+//         ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
+//         cmd8->setDataItem(item);
+//         cmd8->setData("bearingline", newBearingData);
+//     }
+// 
+//     QString newRangeData = d.newRangeData();
+//     if (newRangeData!="-" && newRangeData!=item->metadata("rangering").toString())
+//     {							// new data is applicable
+//         qDebug() << "change range ring" << item->metadata("rangering") << "->" << newRangeData;
+//         ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
+//         cmd9->setDataItem(item);
+//         cmd9->setData("rangering", newRangeData);
+//     }
 
     // Point position
     const QVariant &latData = model->data(DataIndexer::self()->index("latitude"));
