@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Oct-18						//
+//  Edit:	07-Oct-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -59,6 +59,7 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QW
     mUnitCombo = new VariableUnitCombo(type, this);
     hb->addWidget(mUnitCombo);
     connect(mUnitCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdateDisplay()));
+    mComboIndex = -1;
 
     setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
     setFocusProxy(mUnitCombo);
@@ -194,4 +195,3 @@ void VariableUnitDisplay::setSaveId(const QString &id)
         if (idx!=-1) mUnitCombo->setCurrentIndex(idx);
     }
 }
-
