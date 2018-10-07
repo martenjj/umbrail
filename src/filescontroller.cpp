@@ -778,15 +778,15 @@ void FilesController::slotTrackProperties()
 //         cmd2->setData("timezone", newTimeZone);
 //     }
 
-    QColor newColour = d.newColour();
-    //qDebug() << "new col" << newColour;
-    if (newColour!=item->metadata("color").value<QColor>())
-    {							// new colour is applicable
-        qDebug() << "change colour" << item->metadata("color") << "->" << newColour;
-        ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-        cmd4->setDataItem(item);
-        cmd4->setData("color", newColour);
-    }
+//     QColor newColour = d.newColour();
+//     //qDebug() << "new col" << newColour;
+//     if (newColour!=item->metadata("color").value<QColor>())
+//     {							// new colour is applicable
+//         qDebug() << "change colour" << item->metadata("color") << "->" << newColour;
+//         ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
+//         cmd4->setDataItem(item);
+//         cmd4->setData("color", newColour);
+//     }
 
     // QString newType = d.newTrackType();
     // //qDebug() << "new type" << newType;
@@ -855,20 +855,29 @@ void FilesController::slotTrackProperties()
         if (name=="latitude" || name=="longitude") continue;
 
         const QVariant oldData = item->metadata(idx);
-        const QVariant newData = model->data(idx);
+        QVariant newData = model->data(idx);
         if (newData==oldData) continue;			// data has not changed
 
         qDebug() << "index" << idx << name << oldData << "->" << newData;
 
-        const TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(newData.toInt());
-        if (status!=TrackData::StatusInvalid)	// unless it is "No change"
-        {
-            ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
-            cmd7->setDataItems(items);
-            ////////////////////////////////////////////////////////////////////////////////
-            // TODO: have setData() take an index
-            cmd7->setData(DataIndexer::self()->name(idx), newData);
+        if (name=="status")				// changing waypoint status
+        {						// ignore if "No change"
+            const TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(newData.toInt());
+            if (status==TrackData::StatusInvalid) continue;
         }
+        else if (name=="color")				// changing item colour
+        {
+            // Alpha value encodes the inherit flag, see TrackItemStylePage
+            QColor col = newData.value<QColor>();
+            if (col.alpha()==0) newData = QVariant();	// here null colour means inherit
+            qDebug() << "index" << idx << name << oldData << "->" << newData;
+        }
+
+        ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
+        cmd7->setDataItems(items);
+        ////////////////////////////////////////////////////////////////////////////////
+        // TODO: have setData() take an index
+        cmd7->setData(DataIndexer::self()->name(idx), newData);
     }
 
 

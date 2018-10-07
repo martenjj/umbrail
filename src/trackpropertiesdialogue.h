@@ -32,7 +32,7 @@ public:
 
     // QString newItemName() const;
     // QString newItemDesc() const;
-    QColor newColour() const;
+//     QColor newColour() const;
     // QString newTrackType() const;
 //     QString newTimeZone() const;
     // bool newPointPosition(double *newLat, double *newLon) const;

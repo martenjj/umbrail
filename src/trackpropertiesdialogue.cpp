@@ -230,16 +230,16 @@ QString TrackPropertiesDialogue::newRangeData() const
 // }
 
 
-QColor TrackPropertiesDialogue::newColour() const
-{
-    if (mStylePage==nullptr) return (QColor());		// not applicable to this type
-
-    const int idx = mTabWidget->indexOf(mStylePage);
-    Q_ASSERT(idx!=-1);					// not applicable to selection
-    if (!mTabWidget->isTabEnabled(idx)) return (QColor());
-
-    return (mStylePage->newColour());			// colour from page
-}
+// QColor TrackPropertiesDialogue::newColour() const
+// {
+//     if (mStylePage==nullptr) return (QColor());		// not applicable to this type
+// 
+//     const int idx = mTabWidget->indexOf(mStylePage);
+//     Q_ASSERT(idx!=-1);					// not applicable to selection
+//     if (!mTabWidget->isTabEnabled(idx)) return (QColor());
+// 
+//     return (mStylePage->newColour());			// colour from page
+// }
 
 
 // bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon) const

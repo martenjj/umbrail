@@ -124,16 +124,21 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
 
         if (name=="color")				// line or point colour
         {
+            const QColor col = v.value<QColor>();
+            // An alpha value of 0 means this item has no colour.
+            // See TrackItemStylePage and FilesController::slotTrackProperties().
+            if (col.alpha()==0) continue;
+
             if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
             {						// a point element
                 // OsmAnd: <color>#c0c0c0</color>
-                data = "#"+colourValue(v.value<QColor>());
+                data = "#"+colourValue(col);
             }
             else					// a container element
             {
                 // GPX: <topografix:color>c0c0c0</topografix:color>
                 nstag = "topografix:";
-                data = colourValue(v.value<QColor>());
+                data = colourValue(col);
             }
         }
         else if (name=="time")				// point or file time

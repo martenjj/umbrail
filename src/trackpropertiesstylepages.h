@@ -19,9 +19,7 @@ class TrackItemStylePage : public TrackPropertiesPage
 
 public:
     virtual ~TrackItemStylePage() = default;
-
-    QString newItemName() const;
-    QColor newColour() const;
+    void refreshData() override;
 
 protected:
     TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
@@ -34,6 +32,7 @@ protected:
 
 protected slots:
     void slotColourChanged(const QColor &col);
+    void slotInheritChanged(bool on);
 };
 
 

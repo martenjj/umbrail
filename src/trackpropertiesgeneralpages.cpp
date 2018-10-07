@@ -53,9 +53,10 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
 
 bool TrackItemGeneralPage::isDataValid() const
 {
-    qDebug() << "name" << mNameEdit->text() << "enabled?" << mNameEdit->isEnabled();
+    const QVariant &name = dataModel()->data("name");
+    qDebug() << "name" << name << "enabled?" << mNameEdit->isEnabled();
     if (!mNameEdit->isEnabled()) return (true);
-    return (!mNameEdit->text().isEmpty());
+    return (!name.isNull());
 }
 
 
