@@ -45,9 +45,6 @@ TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items
 
     if (items->count()!=1) return;			// only populate for single item
 
-    // const TrackDataItem *item = items->first();
-    // mModel = new MetadataModel(item, this);
-    // mView->setModel(mModel);
     mView->resizeColumnsToContents();
     mView->resizeRowsToContents();
 }

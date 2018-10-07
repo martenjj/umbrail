@@ -768,64 +768,6 @@ void FilesController::slotTrackProperties()
         cmd1->setData(newItemName);
     }
 
-//     QString newTimeZone = d.newTimeZone();
-//     //qDebug() << "new timezone" << newTimeZone;
-//     if (newTimeZone!=item->metadata("timezone").toString())
-//     {
-//         qDebug() << "timezone change" << item->metadata("timezone") << "->" << newTimeZone;
-//         ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
-//         cmd2->setDataItem(item);
-//         cmd2->setData("timezone", newTimeZone);
-//     }
-
-//     QColor newColour = d.newColour();
-//     //qDebug() << "new col" << newColour;
-//     if (newColour!=item->metadata("color").value<QColor>())
-//     {							// new colour is applicable
-//         qDebug() << "change colour" << item->metadata("color") << "->" << newColour;
-//         ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-//         cmd4->setDataItem(item);
-//         cmd4->setData("color", newColour);
-//     }
-
-    // QString newType = d.newTrackType();
-    // //qDebug() << "new type" << newType;
-    // if (newType!="-" && newType!=item->metadata("type").toString())
-    // {							// new type is applicable
-        // qDebug() << "change type" << item->metadata("type") << "->" << newType;
-        // ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-        // cmd4->setDataItem(item);
-        // cmd4->setData("type", newType);
-    // }
-
-    // QString newDesc = d.newItemDesc();
-    // //qDebug() << "new description" << newDesc;
-    // if (newDesc!="-" && newDesc!=item->metadata("desc").toString())
-    // {							// new description is applicable
-        // qDebug() << "change desc" << item->metadata("desc") << "->" << newDesc;
-        // ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
-        // cmd5->setDataItem(item);
-        // cmd5->setData("desc", newDesc);
-    // }
-
-//     QString newBearingData = d.newBearingData();
-//     if (newBearingData!="-" && newBearingData!=item->metadata("bearingline").toString())
-//     {							// new data is applicable
-//         qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingData;
-//         ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
-//         cmd8->setDataItem(item);
-//         cmd8->setData("bearingline", newBearingData);
-//     }
-// 
-//     QString newRangeData = d.newRangeData();
-//     if (newRangeData!="-" && newRangeData!=item->metadata("rangering").toString())
-//     {							// new data is applicable
-//         qDebug() << "change range ring" << item->metadata("rangering") << "->" << newRangeData;
-//         ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
-//         cmd9->setDataItem(item);
-//         cmd9->setData("rangering", newRangeData);
-//     }
-
     // Point position
     const QVariant &latData = model->data(DataIndexer::self()->index("latitude"));
     const QVariant &lonData = model->data(DataIndexer::self()->index("longitude"));
@@ -840,9 +782,9 @@ void FilesController::slotTrackProperties()
         if (newLat!=tdp->latitude() || newLon!=tdp->longitude())
         {
             qDebug() << "change position" << newLat << newLon;
-            MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
-            cmd6->setDataItems((QList<TrackDataItem *>() << tdp));
-            cmd6->setData(newLat-tdp->latitude(), newLon-tdp->longitude());
+            MovePointsCommand *cmd2 = new MovePointsCommand(this, cmd);
+            cmd2->setDataItems((QList<TrackDataItem *>() << tdp));
+            cmd2->setData(newLat-tdp->latitude(), newLon-tdp->longitude());
         }
     }
 
@@ -873,15 +815,11 @@ void FilesController::slotTrackProperties()
             qDebug() << "index" << idx << name << oldData << "->" << newData;
         }
 
-        ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
-        cmd7->setDataItems(items);
-        ////////////////////////////////////////////////////////////////////////////////
-        // TODO: have setData() take an index
-        cmd7->setData(DataIndexer::self()->name(idx), newData);
+        ChangeItemDataCommand *cmd3 = new ChangeItemDataCommand(this, cmd);
+        cmd3->setDataItems(items);
+        // TODO: overload setData() to take an index
+        cmd3->setData(DataIndexer::self()->name(idx), newData);
     }
-
-
-
 
     if (cmd->childCount()==0)				// anything to actually do?
     {							// no changes above, so

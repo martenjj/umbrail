@@ -548,8 +548,6 @@ void TrackItemDetailPage::addMetadataField(const QString &key, const QString &la
 
 void TrackItemDetailPage::refreshData()
 {
-    qDebug();
-
     if (mPositionLabel!=nullptr)
     {
         const QString pos = TrackData::formattedLatLong(dataModel()->latitude(), dataModel()->longitude());
@@ -646,13 +644,6 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
     }
 }
 
-
-void TrackFileDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackTrackDetailPage						//
@@ -676,13 +667,6 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, 
         addMetadataField("creator", i18nc("@label:textbox", "Creator:"));
         addMetadataField("time", i18nc("@label:textbox", "Time:"));
     }
-}
-
-
-void TrackTrackDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -722,13 +706,6 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *ite
     }
 }
 
-
-void TrackSegmentDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackTrackpointDetailPage						//
@@ -752,13 +729,6 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
     {
         addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation|DisplayTravelDistance|DisplayAverageSpeed|DisplayStraightLine|DisplayRelativeBearing);
     }
-}
-
-
-void TrackTrackpointDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -812,7 +782,6 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
 
 void TrackFolderDetailPage::refreshData()
 {
-    qDebug();
     TrackItemDetailPage::refreshData();
 
     const QString name = dataModel()->data("name").toString();
@@ -853,13 +822,6 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     }
 }
 
-
-void TrackWaypointDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackRouteDetailPage						//
@@ -885,13 +847,6 @@ TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, 
     }
 }
 
-
-void TrackRouteDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackRoutepointDetailPage						//
@@ -912,13 +867,6 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
     {
         addDisplayFields(items, DisplayPosition|DisplayElevation|DisplayStraightLine|DisplayRelativeBearing|DisplayTravelDistance);
     }
-}
-
-
-void TrackRoutepointDetailPage::refreshData()
-{
-    qDebug();
-    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////

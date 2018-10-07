@@ -1,5 +1,5 @@
 
-#include "trackpropertiesdetailpages.h"
+#include "trackpropertiespage.h"
 
 #include <qformlayout.h>
 #include <qgroupbox.h>

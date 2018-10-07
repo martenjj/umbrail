@@ -21,7 +21,6 @@ class TimeZoneSelector;
 class TrackDataLabel;
 
 
-
 class TrackItemGeneralPage : public TrackPropertiesPage
 {
     Q_OBJECT
@@ -29,24 +28,15 @@ class TrackItemGeneralPage : public TrackPropertiesPage
 public:
     virtual ~TrackItemGeneralPage() = default;
 
-    // QString newItemName() const;
-    // QString newItemDesc() const;
-    // QString newTrackType() const;
-//     QString newTimeZone() const;
-    // TrackData::WaypointStatus newWaypointStatus() const;
-
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const override;
     virtual void refreshData() override;
-
-    // bool newPointPosition(double *newLat, double *newLon);
 
 protected:
     TrackItemGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
     void addTimeSpanFields(const QList<TrackDataItem *> *items);
     void addTypeField(const QList<TrackDataItem *> *items);
-//    void addStatusField(const QList<TrackDataItem *> *items);
     void addDescField(const QList<TrackDataItem *> *items);
     void addPositionFields(const QList<TrackDataItem *> *items);
     void addTimeField(const QList<TrackDataItem *> *items);
@@ -74,8 +64,6 @@ protected:
 };
 
 
-
-
 class TrackFileGeneralPage : public TrackItemGeneralPage
 {
     Q_OBJECT
@@ -97,7 +85,6 @@ private:
 };
 
 
-
 class TrackTrackGeneralPage : public TrackItemGeneralPage
 {
     Q_OBJECT
@@ -107,9 +94,7 @@ public:
     virtual ~TrackTrackGeneralPage() = default;
 
     QString typeText(int count) const override;
-    void refreshData() override;
 };
-
 
 
 class TrackSegmentGeneralPage : public TrackItemGeneralPage
@@ -121,9 +106,7 @@ public:
     virtual ~TrackSegmentGeneralPage() = default;
 
     QString typeText(int count) const override;
-    void refreshData() override;
 };
-
 
 
 class TrackTrackpointGeneralPage : public TrackItemGeneralPage
@@ -135,7 +118,6 @@ public:
     virtual ~TrackTrackpointGeneralPage() = default;
 
     QString typeText(int count) const override;
-    void refreshData() override;
 };
 
 
@@ -148,7 +130,6 @@ public:
     virtual ~TrackFolderGeneralPage() = default;
 
     QString typeText(int count) const override;
-    void refreshData() override;
 };
 
 
@@ -189,7 +170,6 @@ public:
     virtual ~TrackRouteGeneralPage() = default;
 
     QString typeText(int count) const override;
-    void refreshData() override;
 };
 
 
@@ -202,7 +182,6 @@ public:
     virtual ~TrackRoutepointGeneralPage() = default;
 
     QString typeText(int count) const override;
-    void refreshData() override;
 };
 
 #endif							// TRACKPROPERTIESGENERALPAGES_H

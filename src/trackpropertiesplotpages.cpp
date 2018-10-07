@@ -63,7 +63,6 @@ void TrackWaypointPlotPage::slotPlotDataChanged()
 
 void TrackWaypointPlotPage::refreshData()
 {
-    qDebug();
     mBearingEdit->setPlotData(dataModel()->data("bearingline").toString());
     mRangeEdit->setPlotData(dataModel()->data("rangering").toString());
 }

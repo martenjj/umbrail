@@ -10,16 +10,11 @@
 
 #include "trackdata.h"
 
+
 class QTabWidget;
 
 class TrackDataItem;
 class MetadataModel;
-
-class TrackItemGeneralPage;
-class TrackItemDetailPage;
-class TrackItemStylePage;
-class TrackItemPlotPage;
-class TrackItemMetadataPage;
 
 
 class TrackPropertiesDialogue : public DialogBase, public DialogStateSaver
@@ -29,16 +24,6 @@ class TrackPropertiesDialogue : public DialogBase, public DialogStateSaver
 public:
     TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt = NULL);
     virtual ~TrackPropertiesDialogue() = default;
-
-    // QString newItemName() const;
-    // QString newItemDesc() const;
-//     QColor newColour() const;
-    // QString newTrackType() const;
-//     QString newTimeZone() const;
-    // bool newPointPosition(double *newLat, double *newLon) const;
-    // TrackData::WaypointStatus newWaypointStatus() const;
-//     QString newBearingData() const;
-//     QString newRangeData() const;
 
     MetadataModel *dataModel() const			{ return (mDataModel); }
 
@@ -62,14 +47,6 @@ private:
     TrackData::Type mItemType;
     MetadataModel *mDataModel;
     QVector<bool> mPageDataChanged;
-    QString mFileTimeZone;
-
-    // TODO: try to eliminate these
-    TrackItemGeneralPage *mGeneralPage;
-    TrackItemDetailPage *mDetailPage;
-    TrackItemStylePage *mStylePage;
-    TrackItemPlotPage *mPlotPage;
-    TrackItemMetadataPage *mMetadataPage;
 };
 
 #endif							// TRACKPROPERTIESDIALOGUE_H

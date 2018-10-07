@@ -127,7 +127,6 @@ void TrackItemStylePage::slotInheritChanged(bool on)
 
 void TrackItemStylePage::refreshData()
 {
-    qDebug();
     const QColor col = dataModel()->data("color").value<QColor>();
 							// combined colour as stored
     const bool inherit = (col.alpha()==0);		// has it alpha component?
@@ -166,13 +165,6 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWid
     if (mPointColourButton!=NULL) mPointInheritCheck->setText(i18n("Use application default"));
 }
 
-
-void TrackFileStylePage::refreshData()
-{
-    qDebug();
-    TrackItemStylePage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackTrackStylePage							//
@@ -186,13 +178,6 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QW
     setObjectName("TrackTrackStylePage");
 }
 
-
-void TrackTrackStylePage::refreshData()
-{
-    qDebug();
-    TrackItemStylePage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackSegmentStylePage						//
@@ -204,13 +189,6 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items
 {
     qDebug();
     setObjectName("TrackSegmentStylePage");
-}
-
-
-void TrackSegmentStylePage::refreshData()
-{
-    qDebug();
-    TrackItemStylePage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,13 +206,6 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
     if (mPointColourButton!=NULL) mPointInheritCheck->setText(i18n("Use waypoint icon"));
 }
 
-
-void TrackWaypointStylePage::refreshData()
-{
-    qDebug();
-    TrackItemStylePage::refreshData();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackRouteStylePage							//
@@ -248,13 +219,6 @@ TrackRouteStylePage::TrackRouteStylePage(const QList<TrackDataItem *> *items, QW
     setObjectName("TrackRouteStylePage");
 
     if (mLineColourButton!=NULL) mLineInheritCheck->setText(i18n("Use application default"));
-}
-
-
-void TrackRouteStylePage::refreshData()
-{
-    qDebug();
-    TrackItemStylePage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////

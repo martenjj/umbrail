@@ -62,8 +62,6 @@ bool TrackItemGeneralPage::isDataValid() const
 
 void TrackItemGeneralPage::refreshData()
 {
-    qDebug();
-
     mNameEdit->setText(dataModel()->data("name").toString());
     if (mTypeCombo!=nullptr) mTypeCombo->setType(dataModel()->data("type").toString());
 
@@ -92,70 +90,12 @@ void TrackItemGeneralPage::refreshData()
 }
 
 
-// QString TrackItemGeneralPage::newItemName() const
-// {							// only if editable
-    // if (!mNameEdit->isEnabled()) return (QString());
-    // return (mNameEdit->text());
-// }
-
-
-// QString TrackItemGeneralPage::newItemDesc() const
-// {							// only if editable
-    // if (mDescEdit==NULL) return ("-");			// not for this data
-    // if (!mDescEdit->isEnabled()) return ("-");		// not applicable
-    // return (mDescEdit->toPlainText().trimmed());
-// }
-
-
-
-// QString TrackItemGeneralPage::newTrackType() const
-// {
-    // if (mTypeCombo==NULL) return ("-");			// not for this data
-    // if (!mTypeCombo->isEnabled()) return ("-");		// not applicable
-// 
-    // int idx = mTypeCombo->currentIndex();
-    // if (idx==0) return ("");				// first is always "none"
-    // return (mTypeCombo->currentText());
-// }
-
-
-
-// TrackData::WaypointStatus TrackItemGeneralPage::newWaypointStatus() const
-// {
-    // if (mStatusCombo==NULL) return (TrackData::StatusInvalid);
-							// // not for this data
-    // if (!mStatusCombo->isEnabled()) return (TrackData::StatusInvalid);
-							// // not applicable
-    // int status = mStatusCombo->itemData(mStatusCombo->currentIndex()).toInt();
-    // return (static_cast<TrackData::WaypointStatus>(status));
-// }
-
-
-
-// QString TrackItemGeneralPage::newTimeZone() const
-// {							// only if editable
-//     if (mTimeZoneSel==NULL || !mTimeZoneSel->isEnabled()) return (QString());
-//     return (mTimeZoneSel->timeZone());
-// }
-
-
-
-// bool TrackItemGeneralPage::newPointPosition(double *newLat, double *newLon)
-// {
-    // if (!mPositionChanged) return (false);
-    // *newLat = mPositionLatitude;
-    // *newLon = mPositionLongitude;
-    // return (true);
-// }
-
-
 void TrackItemGeneralPage::slotNameChanged(const QString &text)
 {
 
     if (!mNameEdit->isEnabled()) return;		// name is read only
     dataModel()->setData(DataIndexer::self()->index("name"), text);
 }
-
 
 
 void TrackItemGeneralPage::slotTypeChanged(const QString &text)
@@ -322,12 +262,8 @@ bool TrackFileGeneralPage::isDataValid() const
 }
 
 
-
-// TODO: all of these that are empty can be eliminated
 void TrackFileGeneralPage::refreshData()
 {
-    qDebug();
-
     TrackItemGeneralPage::refreshData();
 
     if (mTimeZoneSel!=nullptr)
@@ -367,13 +303,6 @@ QString TrackTrackGeneralPage::typeText(int count) const
     return (i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", count));
 }
 
-
-void TrackTrackGeneralPage::refreshData()
-{
-    TrackItemGeneralPage::refreshData();
-    qDebug();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackSegmentGeneralPage						//
@@ -395,13 +324,6 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> *i
 QString TrackSegmentGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Segment</b>", "<b>%1 segments</b>", count));
-}
-
-
-void TrackSegmentGeneralPage::refreshData()
-{
-    TrackItemGeneralPage::refreshData();
-    qDebug();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -426,13 +348,6 @@ QString TrackTrackpointGeneralPage::typeText(int count) const
     return (i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", count));
 }
 
-
-void TrackTrackpointGeneralPage::refreshData()
-{
-    TrackItemGeneralPage::refreshData();
-    qDebug();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackFolderGeneralPage						//
@@ -443,13 +358,6 @@ TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> *ite
     : TrackItemGeneralPage(items, pnt)
 {
     setObjectName("TrackFolderGeneralPage");
-}
-
-
-void TrackFolderGeneralPage::refreshData()
-{
-    TrackItemGeneralPage::refreshData();
-    qDebug();
 }
 
 
@@ -556,7 +464,6 @@ void TrackWaypointGeneralPage::refreshData()
 {
     TrackItemGeneralPage::refreshData();
 
-    qDebug() << "status" << dataModel()->data("status") << "=" << dataModel()->data("status").toInt();
     mStatusCombo->setCurrentIndex(dataModel()->data("status").toInt());
 }
 
@@ -635,13 +542,6 @@ QString TrackRouteGeneralPage::typeText(int count) const
     return (i18ncp("@item:intable", "<b>Route</b>", "<b>%1 routes</b>", count));
 }
 
-
-void TrackRouteGeneralPage::refreshData()
-{
-    TrackItemGeneralPage::refreshData();
-    qDebug();
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackRoutepointGeneralPage						//
@@ -660,13 +560,6 @@ TrackRoutepointGeneralPage::TrackRoutepointGeneralPage(const QList<TrackDataItem
 QString TrackRoutepointGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Route point</b>", "<b>%1 route points</b>", count));
-}
-
-
-void TrackRoutepointGeneralPage::refreshData()
-{
-    TrackItemGeneralPage::refreshData();
-    qDebug();
 }
 
 //////////////////////////////////////////////////////////////////////////

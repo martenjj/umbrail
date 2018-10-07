@@ -5,11 +5,8 @@
 #include "trackpropertiespage.h"
 
 
-class QFormLayout;
 class QCheckBox;
-
 class KColorButton;
-
 class TrackDataItem;
 
 
@@ -43,7 +40,6 @@ class TrackFileStylePage : public TrackItemStylePage
 public:
     TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackFileStylePage() = default;
-    void refreshData() override;
 };
 
 
@@ -54,7 +50,6 @@ class TrackTrackStylePage : public TrackItemStylePage
 public:
     TrackTrackStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackTrackStylePage() = default;
-    void refreshData() override;
 };
 
 
@@ -65,7 +60,6 @@ class TrackSegmentStylePage : public TrackItemStylePage
 public:
     TrackSegmentStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackSegmentStylePage() = default;
-    void refreshData() override;
 };
 
 
@@ -76,7 +70,6 @@ class TrackWaypointStylePage : public TrackItemStylePage
 public:
     TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointStylePage() = default;
-    void refreshData() override;
 };
 
 
@@ -87,7 +80,6 @@ class TrackRouteStylePage : public TrackItemStylePage
 public:
     TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackRouteStylePage() = default;
-    void refreshData() override;
 };
 
 #endif							// TRACKPROPERTIESSTYLEPAGES_H

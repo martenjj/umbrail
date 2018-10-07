@@ -38,13 +38,11 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     const TrackDataItem *item = items->first();
     Q_ASSERT(item!=NULL);
     mItemType = item->type();
-    mFileTimeZone = item->timeZone();
 
     mDataModel = new MetadataModel(item, this);
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
-
     gl->setColumnMinimumWidth(0, DialogBase::horizontalSpacing());
     gl->setColumnStretch(1, 1);
     gl->setColumnMinimumWidth(3, DialogBase::horizontalSpacing());
@@ -61,7 +59,6 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     mTabWidget = new QTabWidget(this);
     mTabWidget->setTabsClosable(false);
-
     gl->addWidget(mTabWidget, 1, 0, 1, -1);
 
     setMainWidget(w);
@@ -70,29 +67,22 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     Q_ASSERT(propif!=nullptr);
 
     TrackPropertiesPage *page = propif->createPropertiesGeneralPage(items, this);
-    mGeneralPage = qobject_cast<TrackItemGeneralPage *>(page);
-    Q_ASSERT(mGeneralPage!=nullptr);
     addPage(page, i18nc("@title:tab", "General"));
-
-    typeLabel->setText(mGeneralPage->typeText(items->count()));
+    TrackItemGeneralPage *gp = qobject_cast<TrackItemGeneralPage *>(page);
+    Q_ASSERT(gp!=nullptr);
+    typeLabel->setText(gp->typeText(items->count()));
 
     page = propif->createPropertiesDetailPage(items, this);
-    mDetailPage = qobject_cast<TrackItemDetailPage *>(page);
-    Q_ASSERT(mDetailPage!=nullptr);
     addPage(page, i18nc("@title:tab", "Details"));
 
     page = propif->createPropertiesStylePage(items, this);
     addPage(page, i18nc("@title:tab", "Style"), (items->count()==1));
-    mStylePage = qobject_cast<TrackItemStylePage *>(page);
 
     page = propif->createPropertiesPlotPage(items, this);
     addPage(page, i18nc("@title:tab", "Plot"), (items->count()==1));
-    mPlotPage = qobject_cast<TrackItemPlotPage *>(page);
 
     page = propif->createPropertiesMetadataPage(items, this);
     addPage(page, i18nc("@title:tab", "Metadata"), (items->count()==1));
-    mMetadataPage = qobject_cast<TrackItemMetadataPage *>(page);
-    Q_ASSERT(mMetadataPage!=nullptr);
 
     setButtonEnabled(QDialogButtonBox::Ok, false);	// no data changed yet
 
@@ -178,86 +168,11 @@ void TrackPropertiesDialogue::slotTabChanged(int idx)
 }
 
 
-
-
 void TrackPropertiesDialogue::showEvent(QShowEvent *ev)
 {
     DialogBase::showEvent(ev);				// restore size and shown tab
     slotTabChanged(mTabWidget->currentIndex());		// refresh tab now showing
 }
-
-
-
-
-
-
-
-// QString TrackPropertiesDialogue::newItemName() const
-// {
-    // return (mGeneralPage->newItemName());
-// }
-
-
-// QString TrackPropertiesDialogue::newItemDesc() const
-// {
-    // return (mGeneralPage->newItemDesc());
-// }
-
-
-// QString TrackPropertiesDialogue::newTimeZone() const
-// {
-//     return (mGeneralPage->newTimeZone());
-// }
-
-
-// QString TrackPropertiesDialogue::newBearingData() const
-// {
-//     if (mPlotPage==nullptr) return (QString());		// not applicable to this type
-//     return (mPlotPage->newBearingData());
-// }
-// 
-// 
-// QString TrackPropertiesDialogue::newRangeData() const
-// {
-//     if (mPlotPage==nullptr) return (QString());		// not applicable to this type
-//     return (mPlotPage->newRangeData());
-// }
-
-
-// TrackData::WaypointStatus TrackPropertiesDialogue::newWaypointStatus() const
-// {
-    // return (mGeneralPage->newWaypointStatus());
-// }
-
-
-// QColor TrackPropertiesDialogue::newColour() const
-// {
-//     if (mStylePage==nullptr) return (QColor());		// not applicable to this type
-// 
-//     const int idx = mTabWidget->indexOf(mStylePage);
-//     Q_ASSERT(idx!=-1);					// not applicable to selection
-//     if (!mTabWidget->isTabEnabled(idx)) return (QColor());
-// 
-//     return (mStylePage->newColour());			// colour from page
-// }
-
-
-// bool TrackPropertiesDialogue::newPointPosition(double *newLat, double *newLon) const
-// {
-    // return (mGeneralPage->newPointPosition(newLat, newLon));
-// }
-
-
-// QString TrackPropertiesDialogue::newTrackType() const
-// {
-    // TrackTrackGeneralPage *trackPage = qobject_cast<TrackTrackGeneralPage *>(mGeneralPage);
-    // if (trackPage!=NULL) return (trackPage->newTrackType());	// setting from page
-// 
-    // TrackSegmentGeneralPage *segPage = qobject_cast<TrackSegmentGeneralPage *>(mGeneralPage);
-    // if (segPage!=NULL) return (segPage->newTrackType());	// setting from page
-// 
-    // return ("-");					// not applicable, but
-// }							// not the same as "blank"
 
 
 void TrackPropertiesDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
