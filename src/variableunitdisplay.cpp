@@ -91,7 +91,7 @@ void VariableUnitDisplay::slotUpdateDisplay()
     mComboIndex = mUnitCombo->currentIndex();
 
     double v = mValue;
-    if (v==NAN)						// blank value
+    if (isnan(v))					// blank value
     {
         mValueLabel->setText(QString());
         return;
