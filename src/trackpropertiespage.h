@@ -56,12 +56,6 @@ protected:
 protected:
     QFormLayout *mFormLayout;
 
-protected slots:
-    virtual void slotDataChanged();
-
-signals:
-    void dataChanged(TrackPropertiesPage *page);
-
 private:
     bool mIsEmpty;
     MetadataModel *mDataModel;

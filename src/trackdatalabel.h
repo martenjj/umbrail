@@ -26,10 +26,6 @@ public:
     void setDateTime(const QDateTime &dt);
     void setTimeZone(const QTimeZone *tz);
 
-
-// private slots:
-//     void slotTimeZoneChanged(const QTimeZone *tz);
-
 private:
     void init();
     void updateDateTime();

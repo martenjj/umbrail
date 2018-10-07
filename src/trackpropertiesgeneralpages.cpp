@@ -187,6 +187,9 @@ void TrackItemGeneralPage::slotChangePosition()
 
 void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> *items)
 {
+    // Time start/end cannot change with container or multiple item
+    // metadata, but the time zone can.
+
     TimeRange tsp = TrackData::unifyTimeSpans(items);
     mTimeStartLabel = new TrackDataLabel(tsp.start(), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), mTimeStartLabel);
@@ -331,15 +334,7 @@ void TrackFileGeneralPage::refreshData()
         const QString zoneName = dataModel()->data("timezone").toString();
         mTimeZoneSel->setTimeZone(zoneName);
     }
-
-
-// TODO: update all time/span fields
-
-
-
 }
-
-
 
 
 void TrackFileGeneralPage::slotTimeZoneChanged(const QString &zoneName)
@@ -566,7 +561,6 @@ void TrackWaypointGeneralPage::refreshData()
 
 
 void TrackWaypointGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
-//void TrackItemGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
 {
     mStatusCombo = new QComboBox(this);
     mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());

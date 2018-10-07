@@ -827,8 +827,8 @@ void FilesController::slotTrackProperties()
     }
 
     // Point position
-    const QVariant latData = model->data(DataIndexer::self()->index("latitude"));
-    const QVariant lonData = model->data(DataIndexer::self()->index("longitude"));
+    const QVariant &latData = model->data(DataIndexer::self()->index("latitude"));
+    const QVariant &lonData = model->data(DataIndexer::self()->index("longitude"));
     if (!latData.isNull() && !lonData.isNull())		// if applies to this point
     {
         TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(item);
@@ -847,7 +847,7 @@ void FilesController::slotTrackProperties()
     }
 
     // The remaining metadata
-    const int num = model->rowCount();
+    const int num = model->rowCount();			// same as DataIndexer::self()->count()
     for (int idx = 0; idx<num; ++idx)
     {
         const QString name = DataIndexer::self()->name(idx);

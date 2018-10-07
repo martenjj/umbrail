@@ -7,7 +7,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kcolorscheme.h>
 
 #include <dialogbase.h>
 
@@ -27,12 +26,6 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QW
     {
         if (dynamic_cast<const TrackDataAbstractPoint *>(items->first())!=NULL) mIsEmpty = false;
     }
-}
-
-
-void TrackPropertiesPage::slotDataChanged()
-{
-    emit dataChanged(this);
 }
 
 

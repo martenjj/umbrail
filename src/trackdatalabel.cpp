@@ -22,15 +22,6 @@ TrackDataLabel::TrackDataLabel(const QDateTime &dt, QWidget *pnt)
 {
     mDateTime = dt;
     init();
-
-    // TrackPropertiesPage *page = qobject_cast<TrackPropertiesPage *>(pnt);
-    // if (page!=NULL)					// part of a parent page
-    // {
-        // connect(page, SIGNAL(updateTimeZones(const QTimeZone *)), SLOT(slotTimeZoneChanged(const QTimeZone *)));
-        // slotTimeZoneChanged(page->timeZone());
-    // }
-    // else
-//         slotTimeZoneChanged(nullptr);
 }
 
 
@@ -48,14 +39,6 @@ void TrackDataLabel::setTimeZone(const QTimeZone *tz)
 }
 
 
-
-// void TrackDataLabel::slotTimeZoneChanged(const QTimeZone *tz)
-// {
-//     if (!mDateTime.isValid()) return;			// not a date/time label
-//     setText(TrackData::formattedTime(mDateTime, tz));	// date/time with zone
-// }
-
-
 void TrackDataLabel::updateDateTime()
 {
     if (mDateTime.isNull()) setText(QString());
@@ -63,9 +46,6 @@ void TrackDataLabel::updateDateTime()
     else if (mTimeZone!=nullptr && !mTimeZone->isValid()) setText(i18nc("an invalid time zone", "(invalid time zone)"));
     else setText(TrackData::formattedTime(mDateTime, mTimeZone));
 }
-
-
-
 
 
 TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *pnt)

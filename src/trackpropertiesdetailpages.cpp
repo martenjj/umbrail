@@ -10,6 +10,7 @@
 #include "trackdatalabel.h"
 #include "variableunitdisplay.h"
 #include "dataindexer.h"
+#include "metadatamodel.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -277,6 +278,9 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
     setObjectName("TrackItemDetailPage");
 
     mPositionLabel = nullptr;
+    mTimeLabel = nullptr;
+    mTimeStartLabel = mTimeEndLabel = nullptr;
+    mElevationLabel = nullptr;
 
     addSeparatorField();
 }
@@ -323,7 +327,7 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
     {
         if (num==1 && tdp!=nullptr)			// a single point selected
         {
-            l = new TrackDataLabel(tdp->formattedPosition(), this);
+            l = new TrackDataLabel(QString(), this);
             mFormLayout->addRow(i18nc("@label:textbox", "Position:"), l);
             mPositionLabel = l;
         }
@@ -344,19 +348,26 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
     {
         if (num==1 && tdp!=nullptr)			// a single point selected
         {
-            l = new TrackDataLabel(tdp->time(), this);
+            l = new TrackDataLabel(QDateTime(), this);
             mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
+            mTimeLabel = l;
         }
         else						// multiple or container selected
         {
+            // Time start/end cannot change with container or multiple item
+            // metadata, but the time zone can.
+
             l = new TrackDataLabel(tsp.start(), this);
             mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), l);
             disableIfEmpty(l);
+            mTimeStartLabel = l;
 
             l = new TrackDataLabel(tsp.finish(), this);
             mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
             disableIfEmpty(l);
+            mTimeEndLabel = l;
 
+            // Time span does not change with time zone, so no refresh needed
             unsigned tt = tsp.timeSpan();
             l = new TrackDataLabel(TrackData::formattedDuration(tt, blankTimes), this);
             mFormLayout->addRow(i18nc("@label:textbox", "Time span:"), l);
@@ -367,6 +378,7 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
     // Travel time
     if (disp & DisplayTravelTime)
     {
+        // Does not change with time zone, so no refresh needed
         unsigned tt = sumTotalTravelTime(items);
         l = new TrackDataLabel(TrackData::formattedDuration(tt, blankTimes), this);
         mFormLayout->addRow(i18nc("@label:textbox", "Travel time:"), l);
@@ -388,8 +400,8 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
             {
                 vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
                 vl->setSaveId("elevation");
-                vl->setValue(ele);
                 mFormLayout->addRow(i18nc("@label:textbox", "Elevation:"), vl);
+                mElevationLabel = vl;
             }
         }
         else						// multiple or container selected
@@ -404,6 +416,9 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
                 double ele2 = pnt2->elevation();
                 if (!ISNAN(ele1) && !ISNAN(ele2))
                 {
+                    // Elevation difference cannot change with multiple item
+                    // metadata.
+
                     vl = new VariableUnitDisplay(VariableUnitCombo::Elevation, this);
                     vl->setSaveId("elediff");
                     vl->setValue(ele2-ele1);
@@ -516,27 +531,78 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> *items
 }
 
 
-void TrackItemDetailPage::addMetadataField(const TrackDataItem *tdi, const QString &key, const QString &label)
+void TrackItemDetailPage::addMetadataField(const QString &key, const QString &label)
 {
-    QString s = tdi->metadata(DataIndexer::self()->index(key)).toString();
-    if (s.isEmpty()) return;				// nothing to display
+    const int idx = DataIndexer::self()->index(key);
 
     TrackDataLabel *l;
     if (key=="time")					// special conversion for this
     {
-        l = new TrackDataLabel(QDateTime::fromString(s, Qt::ISODate), this);
-    }
-    else if (key=="speed")				// special conversion for this
-    {
-        double speed = s.toDouble();
-        l = new TrackDataLabel(QString::number(speed, 'f', 3), this);
+        l = new TrackDataLabel(QDateTime(), this);
     }
     else						// just string value
     {
-        l = new TrackDataLabel(s, this);
+        l = new TrackDataLabel(QString(), this);
     }
 
     mFormLayout->addRow(label, l);
+    mMetadataMap[idx] = l;				// record for refreshData()
+}
+
+
+void TrackItemDetailPage::refreshData()
+{
+    qDebug();
+
+    if (mPositionLabel!=nullptr)
+    {
+        const QString pos = TrackData::formattedLatLong(dataModel()->latitude(), dataModel()->longitude());
+        mPositionLabel->setText(pos);
+    }
+
+    const QTimeZone *tz = dataModel()->timeZone();
+    if (mTimeLabel!=nullptr)
+    {
+        mTimeLabel->setDateTime(dataModel()->data("time").toDateTime());
+        mTimeLabel->setTimeZone(tz);
+    }
+
+    if (mTimeStartLabel!=nullptr) mTimeStartLabel->setTimeZone(tz);
+    if (mTimeEndLabel!=nullptr) mTimeEndLabel->setTimeZone(tz);
+
+    if (mElevationLabel!=nullptr)
+    {							// blanks display for NAN
+        const QVariant &v = dataModel()->data("ele");
+        mElevationLabel->setValue(v.isValid() ? v.toDouble() : NAN);
+    }
+
+    for (QMap<int,QWidget *>::iterator it = mMetadataMap.begin(); it!=mMetadataMap.end(); ++it)
+    {
+        const int idx = it.key();
+        const QVariant &v = dataModel()->data(idx);
+        QWidget *l = it.value();
+
+        if (idx==DataIndexer::self()->index("time"))	// special conversion for this
+        {
+            TrackDataLabel *tl = qobject_cast<TrackDataLabel *>(l);
+            Q_ASSERT(tl!=nullptr);
+            const QDateTime dt = dataModel()->data(idx).toDateTime();
+            tl->setDateTime(dt);
+            tl->setTimeZone(tz);
+        }
+        else if (idx==DataIndexer::self()->index("speed"))
+        {						// special 'double' value
+            QLabel *ql = qobject_cast<QLabel *>(l);
+            Q_ASSERT(ql!=nullptr);
+            ql->setText(v.isValid() ? QString::number(v.toDouble(), 'f', 3) : QString());
+        }
+        else						// normal string value
+        {
+            QLabel *ql = qobject_cast<QLabel *>(l);
+            Q_ASSERT(ql!=nullptr);
+            ql->setText(dataModel()->data(idx).toString());
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -578,12 +644,9 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
 
     if (items->count()==1)				// show metadata if only one
     {
-        const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(items->first());
-        Q_ASSERT(tdf!=nullptr);
-
         addSeparatorField();
-        addMetadataField(tdf, "creator", i18nc("@label:textbox", "Creator:"));
-        addMetadataField(tdf, "time", i18nc("@label:textbox", "Save time:"));
+        addMetadataField("creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField("time", i18nc("@label:textbox", "Save time:"));
     }
 }
 
@@ -591,6 +654,7 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
 void TrackFileDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -612,12 +676,9 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, 
 
     if (items->count()==1)				// show metadata if only one
     {
-        const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(items->first());
-        Q_ASSERT(tdt!=nullptr);
-
         addSeparatorField();
-        addMetadataField(tdt, "creator", i18nc("@label:textbox", "Creator:"));
-        addMetadataField(tdt, "time", i18nc("@label:textbox", "Time:"));
+        addMetadataField("creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField("time", i18nc("@label:textbox", "Time:"));
     }
 }
 
@@ -625,6 +686,7 @@ TrackTrackDetailPage::TrackTrackDetailPage(const QList<TrackDataItem *> *items, 
 void TrackTrackDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -668,6 +730,7 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *ite
 void TrackSegmentDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -684,13 +747,10 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 
     if (items->count()==1)				// single selection
     {
-        const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(items->first());
-        Q_ASSERT(tdp!=nullptr);
-
         addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
         addSeparatorField();
-        addMetadataField(tdp, "hdop", i18nc("@label:textbox", "GPS HDOP:"));
-        addMetadataField(tdp, "speed", i18nc("@label:textbox", "GPS speed:"));
+        addMetadataField("hdop", i18nc("@label:textbox", "GPS HDOP:"));
+        addMetadataField("speed", i18nc("@label:textbox", "GPS speed:"));
     }
     else						// multiple selection
     {
@@ -702,6 +762,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
 void TrackTrackpointDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -736,23 +797,30 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
 
     addSeparatorField();
 
-    QLabel *pathDisplay = new QLabel(this);
-    pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-    mFormLayout->addRow(i18nc("@label:textbox", "Path:"), pathDisplay);
+    mPathDisplay = new QLabel(this);
+    mPathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    mFormLayout->addRow(i18nc("@label:textbox", "Path:"), mPathDisplay);
 
     if (items->count()==1)				// a single item
     {
         TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(items->first());
-        Q_ASSERT(folderItem!=NULL);
-        pathDisplay->setText(folderItem->path());
+        Q_ASSERT(folderItem!=nullptr);
+        mFolderParent = folderItem->path();
+        const int idx = mFolderParent.lastIndexOf('/');
+        if (idx!=-1) mFolderParent = mFolderParent.left(idx);
+        else mFolderParent = QString();
     }
-    else disableIfEmpty(pathDisplay, true);
+    else disableIfEmpty(mPathDisplay, true);
 }
 
 
 void TrackFolderDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
+
+    const QString name = dataModel()->data("name").toString();
+    mPathDisplay->setText(mFolderParent.isEmpty() ? name : (mFolderParent+'/'+name));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -793,6 +861,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
 void TrackWaypointDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -814,12 +883,9 @@ TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, 
 
     if (items->count()==1)				// show metadata if only one
     {
-        const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(items->first());
-        Q_ASSERT(tdr!=nullptr);
-
         addSeparatorField();
-        addMetadataField(tdr, "creator", i18nc("@label:textbox", "Creator:"));
-        addMetadataField(tdr, "time", i18nc("@label:textbox", "Time:"));
+        addMetadataField("creator", i18nc("@label:textbox", "Creator:"));
+        addMetadataField("time", i18nc("@label:textbox", "Time:"));
     }
 }
 
@@ -827,6 +893,7 @@ TrackRouteDetailPage::TrackRouteDetailPage(const QList<TrackDataItem *> *items, 
 void TrackRouteDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -855,6 +922,7 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
 void TrackRoutepointDetailPage::refreshData()
 {
     qDebug();
+    TrackItemDetailPage::refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
