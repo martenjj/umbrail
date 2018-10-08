@@ -13,7 +13,6 @@
 
 #include <kio/global.h>
 
-#include "style.h"
 #include "dataindexer.h"
 #include "waypointimageprovider.h"
 
@@ -221,16 +220,34 @@ QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 
 TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataItem *root)
 {
-    const QStringList folders = path.split('/');
+    if (path.isEmpty()) return (nullptr);		// check for null path
+    const QStringList names = path.split('/');		// list of folder names
 
-    TrackDataFolder *foundFolder = NULL;
-    foreach (const QString &folder, folders)
+    const TrackDataItem *item = root;
+    foreach (const QString &name, names)		// descend through path names
     {
-        foundFolder = (foundFolder!=NULL ? foundFolder : root)->findChildFolder(folder);
-        if (foundFolder==NULL) break;
+        const int cnt = item->childCount();
+        if (cnt==0) return (nullptr);			// no children under this item
+
+        const TrackDataItem *folderItem = nullptr;
+        for (int i = 0; i<cnt; ++i)			// search through children
+        {
+            const TrackDataFolder *fold = dynamic_cast<const TrackDataFolder *>(item->childAt(i));
+            if (fold!=nullptr)				// child item is a folder
+            {
+                if (fold->name()==name)			// folder name matches
+                {
+                    folderItem = fold;			// continue from this item
+                    break;
+                }
+            }
+        }
+
+        if (folderItem==nullptr) return (nullptr);	// no child folder found
+        item = folderItem;				// continue descent from here
     }
 
-    return (foundFolder);
+    return (const_cast<TrackDataFolder *>(dynamic_cast<const TrackDataFolder *>(item)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -250,7 +267,6 @@ void TrackDataItem::init()
 {
     mChildren = NULL;					// no children yet
     mParent = NULL;					// not attached to parent
-    mStyle = NULL;					// no style set yet
     mMetadata = NULL;					// no metadata yet
     mSelectionId = 1;					// nothing selected yet
     mExplicitName = false;
@@ -261,7 +277,6 @@ TrackDataItem::~TrackDataItem()
 {
     if (mChildren!=NULL) qDeleteAll(*mChildren);
     delete mChildren;
-    delete mStyle;
     delete mMetadata;
 }
 
@@ -344,99 +359,88 @@ TimeRange TrackDataItem::timeSpan() const
 
 void TrackDataItem::setMetadata(int idx, const QString &value)
 {
-    if (mMetadata==NULL)
+    // Strings are a special case;  setting a null string item sets a null QVariant
+    // as the value.  This is so that QVariant::isNull() can be used to test the
+    // metadata value and will give the expected result:  in this application an
+    // empty string is always considered to be equivalent to no metadata value.
+    //
+    // Results obtained by experimentation:
+    //
+    //   QVariant()		->	isValid()=false		isNull()=true
+    //	 QVariant("str")	->	isValid()=true		isNull()=false
+    //	 QVariant("")		->	isValid()=true		isNull()=false
+    //	 QVariant(QString())	->	isValid()=true		isNull()=true
+
+    if (value.isEmpty()) setMetadata(idx, QVariant());
+    else setMetadata(idx, QVariant(value));
+}
+
+
+void TrackDataItem::setMetadata(int idx, const QColor &value)
+{
+    // The same reasoning as above applies to a colour value.
+
+    if (!value.isValid()) setMetadata(idx, QVariant());
+    else setMetadata(idx, QVariant(value));
+}
+
+
+void TrackDataItem::setMetadata(int idx, const QVariant &value)
+{
+    if (mMetadata==nullptr)				// allocate array if needed
     {
 #ifdef MEMORY_TRACKING
         ++allocMetadata;
 #endif
-        mMetadata = new QVector<QString>;
+        mMetadata = new QVector<QVariant>;
     }
 
-    int cnt = mMetadata->count();
-    if (idx>=cnt) mMetadata->resize(idx+1);
-    (*mMetadata)[idx] = value;
+    int cnt = mMetadata->count();			// current size of array
+    if (idx>=cnt) mMetadata->resize(idx+1);		// need to allocate more
+    (*mMetadata)[idx] = value;				// set value of variant
 }
 
 
-QString TrackDataItem::metadata(int idx) const
+QVariant TrackDataItem::metadata(int idx) const
 {
-    if (mMetadata==NULL) return (QString());
-    int cnt = mMetadata->count();
-    if (idx<0 || idx>=cnt) return (QString());
-    return (mMetadata->at(idx));
+    if (mMetadata==nullptr) return (QVariant());
+    return (mMetadata->value(idx));			// performs the bounds checking
 }
 
 
-QString TrackDataItem::metadata(const QString &key) const
+QVariant TrackDataItem::metadata(const QString &key) const
 {
-    if (mMetadata==NULL) return (QString());
+    if (mMetadata==nullptr) return (QVariant());
     return (metadata(DataIndexer::self()->index(key)));
 }
 
 
 void TrackDataItem::copyMetadata(const TrackDataItem *other, bool overwrite)
 {
-    if (other->mMetadata==NULL) return;			// nothing to copy
+    if (other->mMetadata==nullptr) return;		// nothing to copy
 
     for (int idx = 0; idx<other->mMetadata->size(); ++idx)
     {
-        QString om = other->mMetadata->at(idx);
-        if (om.isEmpty()) continue;
-        QString tm = this->metadata(idx);
-        if (!tm.isEmpty() && !overwrite) continue;
+        QVariant om = other->mMetadata->at(idx);
+        if (om.isNull()) continue;			// no source metadata
+        QVariant tm = this->metadata(idx);
+        if (!tm.isNull() && !overwrite) continue;	// already in destination and no overwrite
         this->setMetadata(idx, om);
     }
 }
 
 
-const Style *TrackDataItem::style() const
-{
-    return ((mStyle!=NULL) ? mStyle : &Style::null);
-}
-
-
-void TrackDataItem::setStyle(const Style &s)
-{
-    if (mStyle==NULL)
-    {
-        //qDebug() << "set style for" << name();
-        mStyle = new Style(s);
-#ifdef MEMORY_TRACKING
-        ++allocStyle;
-#endif
-    }
-    else *mStyle = s;
-}
-
-
 QString TrackDataItem::timeZone() const
 {
-    const TrackDataItem *parentItem = this;
-    while (parentItem!=NULL)
+    const TrackDataItem *item = this;
+    while (item!=nullptr)
     {
-        const TrackDataFile *parentFile = dynamic_cast<const TrackDataFile *>(parentItem);
-        if (parentFile!=NULL) return (parentFile->metadata("timezone"));
-        parentItem = parentItem->parent();
-    }
-    return (QString());
-}
-
-
-TrackDataFolder *TrackDataItem::findChildFolder(const QString &wantName) const
-{
-    if (mChildren==NULL) return (NULL);			// no children exist
-
-    //qDebug() << "name" << wantName << "under" << name();
-    for (int i = 0; i<mChildren->count(); ++i)
-    {
-        TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(mChildren->at(i));
-        if (fold!=NULL)					// this child is a folder,
-        {						// check matching name
-            if (fold->name()==wantName) return (fold);
-        }
+        const QVariant &v = item->metadata("timezone");	// look for timezone in metadata
+        if (!v.isNull()) return (v.toString());
+        item = item->parent();				// if present, use that
     }
 
-    return (NULL);
+    return (QString());					// no time zone in item tree
 }
 
 
@@ -526,31 +530,50 @@ TrackDataAbstractPoint::TrackDataAbstractPoint(const char *format, int *counter)
     : TrackDataItem(format, counter)
 {
     mLatitude = mLongitude = NAN;
-    mElevation = NAN;
+}
+
+
+double TrackDataAbstractPoint::elevation() const
+{
+    const QVariant v = metadata("ele");
+    if (v.isNull()) return (NAN);
+    return (v.toDouble());
 }
 
 
 QString TrackDataAbstractPoint::formattedElevation() const
 {
-    if (ISNAN(mElevation)) return (i18nc("an unknown quantity", "unknown"));
-    return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(mElevation, 'f', 1)));
+    const double e = elevation();
+    if (e==NAN) return (i18nc("an unknown quantity", "unknown"));
+    return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(e, 'f', 1)));
+}
+
+
+QDateTime TrackDataAbstractPoint::time() const
+{
+    const QVariant v = metadata("time");
+    if (v.isNull()) return (QDateTime());
+    return (v.toDateTime());
 }
 
 
 QString TrackDataAbstractPoint::formattedTime(bool withZone) const
 {
+    const QDateTime dt = time();
+    if (!dt.isValid()) return (i18nc("an unknown date/time", "unknown"));
+
     if (withZone)
     {
         QString zoneName = timeZone();
         if (!zoneName.isEmpty())
         {
             QTimeZone tz(zoneName.toLatin1());
-            if (tz.isValid()) return (TrackData::formattedTime(mDateTime, &tz));
+            if (tz.isValid()) return (TrackData::formattedTime(dt, &tz));
             qWarning() << "unknown time zone" << zoneName;
         }
     }
 
-    return (TrackData::formattedTime(mDateTime));
+    return (TrackData::formattedTime(dt));
 }
 
 
@@ -623,14 +646,6 @@ int TrackDataAbstractPoint::timeTo(const TrackDataAbstractPoint *other) const
 }
 
 
-void TrackDataAbstractPoint::copyData(const TrackDataAbstractPoint *other)
-{
-    mLatitude = other->mLatitude;
-    mLongitude = other->mLongitude;
-    mElevation = other->mElevation;
-    mDateTime = other->mDateTime;
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFolder							//
@@ -691,16 +706,18 @@ TrackDataWaypoint::TrackDataWaypoint()
 
 TrackData::WaypointType TrackDataWaypoint::waypointType() const
 {
-    QString n = metadata("stop");			// first try saved stop data
-    if (!n.isEmpty()) return (TrackData::WaypointStop);	// this means it's a stop
+    QVariant n = metadata("stop");			// first try saved stop data
+    if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
 
     n = metadata("link");				// then get saved link name
-    if (n.isEmpty()) n = metadata("media");		// compatibility with old metadata
-    if (n.isEmpty()) n = name();			// lastly try our waypoint name
+    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
+    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
+    if (n.isNull()) n = name();				// lastly try our waypoint name
 
-    if (n.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
-    if (n.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
-    if (n.contains(QRegExp("\\.jpg$"))) return (TrackData::WaypointPhoto);
+    QString ns = n.toString();
+    if (ns.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
+    if (ns.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
+    if (ns.contains(QRegExp("\\.jpg$"))) return (TrackData::WaypointPhoto);
     return (TrackData::WaypointNormal);
 }
 
@@ -731,15 +748,14 @@ bool TrackDataWaypoint::isMediaType() const
 QIcon TrackDataWaypoint::icon() const
 {
     if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
-    if (!style()->hasPointColour()) return (TrackDataItem::icon());
 
-    // TODO: style inheritance
-    QColor col = style()->pointColour();
+    const QColor col = metadata("pointcolor").value<QColor>();
+    if (!col.isValid()) return (TrackDataItem::icon());
 #ifdef DEBUG_ICONS
-    qDebug() << "need icon for waypoint" << name() << "col" << col.name();
+    qDebug() << "need icon for waypoint" << name() << "colour" << col.name();
 #endif
-    QIcon ic = WaypointImageProvider::self()->icon(col);
 
+    QIcon ic = WaypointImageProvider::self()->icon(col);
     if (ic.isNull()) return (TrackDataItem::icon());	// icon image not available
     return (ic);
 }
@@ -802,7 +818,6 @@ MemoryTracker::MemoryTracker()
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint" << sizeof(TrackDataRoutepoint) << "bytes";
-    qDebug() << "style" << sizeof(Style) << "bytes";
     qDebug() << "***********";
 }
 
@@ -818,7 +833,6 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint allocated" << allocRoutepoint << "items, total" << allocRoutepoint*sizeof(TrackDataRoutepoint) << "bytes";
-    qDebug() << "style allocated" << allocStyle << "items, total" << allocStyle*sizeof(Style) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;
     qDebug() << "***********";

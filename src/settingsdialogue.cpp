@@ -21,7 +21,6 @@
 #include <dialogstatesaver.h>
 
 #include "settings.h"
-#include "style.h"
 #include "filescontroller.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -128,9 +127,6 @@ void SettingsMapStylePage::slotSave()
     Settings::setSelectedMarkInner(mSelectedInnerButton->color());
     Settings::setSelectedUseSystemColours(mSelectedUseSystemCheck->isChecked());
     Settings::setShowTrackArrows(mShowTrackArrowsCheck->isChecked());
-
-    // Update the global style from the new application settings
-    Style::globalStyle()->setLineColour(mLineColourButton->color());
 }
 
 

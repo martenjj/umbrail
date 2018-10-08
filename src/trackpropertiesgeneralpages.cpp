@@ -21,132 +21,125 @@
 #include "timezoneselector.h"
 #include "latlongdialogue.h"
 #include "mediaplayer.h"
+#include "metadatamodel.h"
+#include "dataindexer.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackItemGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackPropertiesPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackItemGeneralPage");
 
     mNameEdit = new QLineEdit(this);
-    if (items->count()==1) mNameEdit->setText(items->first()->name());
-    else mNameEdit->setEnabled(false);
-    connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
+    if (items->count()>1) mNameEdit->setEnabled(false);
+    connect(mNameEdit, &QLineEdit::textChanged, this, &TrackItemGeneralPage::slotNameChanged);
 
     addSeparatorField();
     mFormLayout->addRow(i18nc("@label:textbox", "Name:"), mNameEdit);
     addSeparatorField();
 
-    mTypeCombo = NULL;					// not applicable yet
-    mStatusCombo = NULL;
-    mDescEdit = NULL;
-    mTimeZoneSel = NULL;
-
-    mPositionPoint = NULL;
-    mPositionChanged = false;
+    mTypeCombo = nullptr;				// fields which may be created later
+    mDescEdit = nullptr;
+    mPositionLabel = nullptr;
+    mTimeLabel = nullptr;
+    mTimeStartLabel = mTimeEndLabel = nullptr;
 }
-
 
 
 bool TrackItemGeneralPage::isDataValid() const
 {
+    const QVariant &name = dataModel()->data("name");
+    qDebug() << "name" << name << "enabled?" << mNameEdit->isEnabled();
     if (!mNameEdit->isEnabled()) return (true);
-    return (!mNameEdit->text().isEmpty());
+    return (!name.isNull());
 }
 
 
-
-QString TrackItemGeneralPage::newItemName() const
-{							// only if editable
-    if (!mNameEdit->isEnabled()) return (QString());
-    return (mNameEdit->text());
-}
-
-
-
-QString TrackItemGeneralPage::newItemDesc() const
-{							// only if editable
-    if (mDescEdit==NULL) return ("-");			// not for this data
-    if (!mDescEdit->isEnabled()) return ("-");		// not applicable
-    return (mDescEdit->toPlainText().trimmed());
-}
-
-
-
-QString TrackItemGeneralPage::newTrackType() const
+void TrackItemGeneralPage::refreshData()
 {
-    if (mTypeCombo==NULL) return ("-");			// not for this data
-    if (!mTypeCombo->isEnabled()) return ("-");		// not applicable
+    mNameEdit->setText(dataModel()->data("name").toString());
+    if (mTypeCombo!=nullptr) mTypeCombo->setType(dataModel()->data("type").toString());
 
-    int idx = mTypeCombo->currentIndex();
-    if (idx==0) return ("");				// first is always "none"
-    return (mTypeCombo->currentText());
+    if (mDescEdit!=nullptr)
+    {
+        QString desc = dataModel()->data("desc").toString();
+        if (!desc.isEmpty() && !desc.endsWith('\n')) desc += '\n';
+        mDescEdit->setPlainText(desc);
+    }
+
+    if (mPositionLabel!=nullptr)
+    {
+        const QString pos = TrackData::formattedLatLong(dataModel()->latitude(), dataModel()->longitude());
+        mPositionLabel->setText(pos);
+    }
+
+    const QTimeZone *tz = dataModel()->timeZone();
+    if (mTimeLabel!=nullptr)
+    {
+        mTimeLabel->setDateTime(dataModel()->data("time").toDateTime());
+        mTimeLabel->setTimeZone(tz);
+    }
+
+    if (mTimeStartLabel!=nullptr) mTimeStartLabel->setTimeZone(tz);
+    if (mTimeEndLabel!=nullptr) mTimeEndLabel->setTimeZone(tz);
 }
 
 
-
-TrackData::WaypointStatus TrackItemGeneralPage::newWaypointStatus() const
+void TrackItemGeneralPage::slotNameChanged(const QString &text)
 {
-    if (mStatusCombo==NULL) return (TrackData::StatusInvalid);
-							// not for this data
-    if (!mStatusCombo->isEnabled()) return (TrackData::StatusInvalid);
-							// not applicable
-    int status = mStatusCombo->itemData(mStatusCombo->currentIndex()).toInt();
-    return (static_cast<TrackData::WaypointStatus>(status));
+
+    if (!mNameEdit->isEnabled()) return;		// name is read only
+    dataModel()->setData(DataIndexer::self()->index("name"), text);
 }
 
 
-
-QString TrackItemGeneralPage::newTimeZone() const
-{							// only if editable
-    if (mTimeZoneSel==NULL || !mTimeZoneSel->isEnabled()) return (QString());
-    return (mTimeZoneSel->timeZone());
+void TrackItemGeneralPage::slotTypeChanged(const QString &text)
+{							// do not use 'text', it could be "none"
+    dataModel()->setData(DataIndexer::self()->index("type"), mTypeCombo->typeText());
 }
 
 
-
-bool TrackItemGeneralPage::newPointPosition(double *newLat, double *newLon)
+void TrackItemGeneralPage::slotDescChanged()
 {
-    if (!mPositionChanged) return (false);
-    *newLat = mPositionLatitude;
-    *newLon = mPositionLongitude;
-    return (true);
+    const QString desc = mDescEdit->toPlainText().trimmed();
+    qDebug() << desc;
+    dataModel()->setData(DataIndexer::self()->index("desc"), desc);
 }
-
 
 
 void TrackItemGeneralPage::slotChangePosition()
 {
-    Q_ASSERT(mPositionPoint!=NULL);
-
     LatLongDialogue d(this);
-    d.setLatLong(mPositionLatitude, mPositionLongitude);
+    d.setLatLong(dataModel()->latitude(), dataModel()->longitude());
     d.setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Set"));
 
-    if (d.exec())
-    {
-        mPositionChanged = true;
-        mPositionLatitude = d.latitude();
-        mPositionLongitude = d.longitude();
-        emit pointPositionChanged(mPositionLatitude, mPositionLongitude);
-    }
-}
+    if (!d.exec()) return;
 
+    dataModel()->setData(DataIndexer::self()->index("latitude"), d.latitude());
+    dataModel()->setData(DataIndexer::self()->index("longitude"), d.longitude());
+    refreshData();					// update the position display
+}
 
 
 void TrackItemGeneralPage::addTimeSpanFields(const QList<TrackDataItem *> *items)
 {
+    // Time start/end cannot change with container or multiple item
+    // metadata, but the time zone can.
+
     TimeRange tsp = TrackData::unifyTimeSpans(items);
-    TrackDataLabel *l = new TrackDataLabel(tsp.start(), this);
-    mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), l);
-    disableIfEmpty(l);
+    mTimeStartLabel = new TrackDataLabel(tsp.start(), this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Time start:"), mTimeStartLabel);
+    disableIfEmpty(mTimeStartLabel);
 
-    l = new TrackDataLabel(tsp.finish(), this);
-    mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), l);
-    disableIfEmpty(l);
+    mTimeEndLabel = new TrackDataLabel(tsp.finish(), this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Time end:"), mTimeEndLabel);
+    disableIfEmpty(mTimeEndLabel);
 }
-
 
 
 void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
@@ -158,45 +151,14 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
         const TrackDataItem *tdi = items->first();
         Q_ASSERT(tdi!=NULL);
 
-        mTypeCombo->setType(tdi->metadata("type"));
-        connect(mTypeCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
-        connect(mTypeCombo, SIGNAL(editTextChanged(const QString &)), SLOT(slotDataChanged()));
+        // TODO: are both needed?
+        connect(mTypeCombo, &QComboBox::currentTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
+        connect(mTypeCombo, &QComboBox::editTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
     }
     else mTypeCombo->setEnabled(false);
 
     mFormLayout->addRow(i18nc("@label:listbox", "Type:"), mTypeCombo);
 }
-
-
-
-void TrackItemGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
-{
-    mStatusCombo = new QComboBox(this);
-    mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());
-
-    mStatusCombo->addItem(QIcon::fromTheme("unknown"), i18n("(None)"), TrackData::StatusNone);
-    mStatusCombo->addItem(QIcon::fromTheme("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
-    mStatusCombo->addItem(QIcon::fromTheme("task-complete"), i18n("Done"), TrackData::StatusDone);
-    mStatusCombo->addItem(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
-    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), i18n("Unwanted"), TrackData::StatusUnwanted);
-
-    if (items->count()>1)
-    {
-        mStatusCombo->addItem(QIcon::fromTheme("task-delegate"), i18n("(No change)"), TrackData::StatusInvalid);
-        mStatusCombo->setCurrentIndex(mStatusCombo->count()-1);
-    }
-    else
-    {
-        const TrackDataItem *tdi = items->first();
-        Q_ASSERT(tdi!=NULL);
-        mStatusCombo->setCurrentIndex(tdi->metadata("status").toInt());
-    }
-
-    connect(mStatusCombo, SIGNAL(currentIndexChanged(const QString &)), SLOT(slotDataChanged()));
-
-    mFormLayout->addRow(i18nc("@label:listbox", "Status:"), mStatusCombo);
-}
-
 
 
 void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
@@ -206,17 +168,9 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
 
     if (items->count()==1)
     {
-        const TrackDataItem *tdi = items->first();
-        Q_ASSERT(tdi!=NULL);
-
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
-
-        QString d = tdi->metadata("desc");
-        if (!d.endsWith('\n')) d += "\n";
-        mDescEdit->setPlainText(d);
-
-        connect(mDescEdit, SIGNAL(textChanged()), SLOT(slotDataChanged()));
+        connect(mDescEdit, &KTextEdit::textChanged, this, &TrackItemGeneralPage::slotDescChanged);
     }
     else mDescEdit->setEnabled(false);
 
@@ -224,25 +178,17 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
 }
 
 
-
 void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items)
 {
     if (items->count()!=1) return;			// only for single selection
-
-    TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items->first());
-    Q_ASSERT(p!=nullptr);
-    mPositionPoint = p;
-    mPositionLatitude = p->latitude();
-    mPositionLongitude = p->longitude();
 
     QWidget *hb = new QWidget(this);
     QHBoxLayout *hlay = new QHBoxLayout(hb);
     hlay->setMargin(0);
     hlay->setSpacing(DialogBase::horizontalSpacing());
-    TrackDataLabel *l = new TrackDataLabel(TrackData::formattedLatLong(mPositionLatitude, mPositionLongitude), this);
-    hlay->addWidget(l);
+    mPositionLabel = new TrackDataLabel(QString(), this);
+    hlay->addWidget(mPositionLabel);
     hlay->addStretch(1);
-    mPositionLabel = l;
 
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
     b->setToolTip(i18nc("@info:tooltip", "Change the latitude/longitude position"));
@@ -254,44 +200,39 @@ void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items
 }
 
 
-
 void TrackItemGeneralPage::addTimeField(const QList<TrackDataItem *> *items)
 {
     if (items->count()!=1) return;			// only for single selection
 
-    TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(items->first());
-    Q_ASSERT(p!=nullptr);
-    TrackDataLabel *l = new TrackDataLabel(p->time(), this);
-    mFormLayout->addRow(i18nc("@label:textbox", "Time:"), l);
+    mTimeLabel = new TrackDataLabel(QDateTime(), this);
+    mFormLayout->addRow(i18nc("@label:textbox", "Time:"), mTimeLabel);
+    // cannot change in GUI, so no change slot needed
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackFileGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackFileGeneralPage");
 
     mNameEdit->setReadOnly(true);			// can't rename here for files
 
     mUrlRequester = new QLineEdit(this);
     mUrlRequester->setReadOnly(true);
-    connect(mUrlRequester, SIGNAL(textChanged(const QString &)), SLOT(slotDataChanged()));
 
     mTimeZoneSel = new TimeZoneSelector(this);
-    connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SLOT(slotDataChanged()));
-    connect(mTimeZoneSel, SIGNAL(zoneChanged(const QString &)), SIGNAL(timeZoneChanged(const QString &)));
+    connect(mTimeZoneSel, &TimeZoneSelector::zoneChanged, this, &TrackFileGeneralPage::slotTimeZoneChanged);
 
     if (items->count()==1)				// a single item
     {
         TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items->first());
         Q_ASSERT(fileItem!=NULL);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
-
-        QString zone = fileItem->metadata("timezone");
-        if (!zone.isEmpty()) mTimeZoneSel->setTimeZone(zone);
-
         mTimeZoneSel->setItems(items);			// use these to get timezone
     }
     else						// may be mixed MIME types
@@ -308,12 +249,10 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
 }
 
 
-
 QString TrackFileGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>File</b>", "<b>%1 files</b>", count));
 }
-
 
 
 bool TrackFileGeneralPage::isDataValid() const
@@ -323,11 +262,33 @@ bool TrackFileGeneralPage::isDataValid() const
 }
 
 
+void TrackFileGeneralPage::refreshData()
+{
+    TrackItemGeneralPage::refreshData();
+
+    if (mTimeZoneSel!=nullptr)
+    {
+        const QString zoneName = dataModel()->data("timezone").toString();
+        mTimeZoneSel->setTimeZone(zoneName);
+    }
+}
+
+
+void TrackFileGeneralPage::slotTimeZoneChanged(const QString &zoneName)
+{
+    dataModel()->setData(DataIndexer::self()->index("timezone"), zoneName);
+    refreshData();					// update times on this page
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackTrackGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackTrackGeneralPage");
 
     addTimeSpanFields(items);
@@ -337,18 +298,20 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> *items
 }
 
 
-
 QString TrackTrackGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Track</b>", "<b>%1 tracks</b>", count));
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackSegmentGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackSegmentGeneralPage");
 
     addTimeSpanFields(items);
@@ -358,19 +321,21 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> *i
 }
 
 
-
 QString TrackSegmentGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Segment</b>", "<b>%1 segments</b>", count));
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackTrackpointGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
-    setObjectName("TrackPointGeneralPage");
+    setObjectName("TrackTrackpointGeneralPage");
 
     addPositionFields(items);
     addTimeField(items);
@@ -378,39 +343,22 @@ TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem
 }
 
 
-
 QString TrackTrackpointGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Point</b>", "<b>%1 points</b>", count));
 }
 
-
-
-TrackRoutepointGeneralPage::TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : TrackItemGeneralPage(items, pnt)
-{
-    qDebug();
-    setObjectName("TrackPointGeneralPage");
-
-    addPositionFields(items);
-}
-
-
-
-QString TrackRoutepointGeneralPage::typeText(int count) const
-{
-    return (i18ncp("@item:intable", "<b>Route point</b>", "<b>%1 route points</b>", count));
-}
-
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackFolderGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackFolderGeneralPage::TrackFolderGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackFolderGeneralPage");
 }
-
 
 
 QString TrackFolderGeneralPage::typeText(int count) const
@@ -418,19 +366,27 @@ QString TrackFolderGeneralPage::typeText(int count) const
     return (i18ncp("@item:intable", "<b>Folder</b>", "<b>%1 folders</b>", count));
 }
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackWaypointGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackWaypointGeneralPage");
 
     mWaypoint = NULL;
+    mStatusCombo = NULL;
+
     if (items->count()==1)
     {
+        // TODO: The "Media" field and the media that is output when the play
+        // button is pressed is not automatically updated from the metadata.
+
         mWaypoint = dynamic_cast<const TrackDataWaypoint *>(items->first());
-        Q_ASSERT(mWaypoint!=NULL);
+        Q_ASSERT(mWaypoint!=nullptr);
 
         QString typeName;
         switch (mWaypoint->waypointType())
@@ -483,7 +439,7 @@ default:    break;
             hlay->addWidget(actionButton);
         }
 
-        mFormLayout->addRow(i18nc("@label:textbox", "Type:"), hb);
+        mFormLayout->addRow(i18nc("@label:textbox", "Media:"), hb);
 
         addSeparatorField();
     }
@@ -504,6 +460,45 @@ QString TrackWaypointGeneralPage::typeText(int count) const
 }
 
 
+void TrackWaypointGeneralPage::refreshData()
+{
+    TrackItemGeneralPage::refreshData();
+
+    mStatusCombo->setCurrentIndex(dataModel()->data("status").toInt());
+}
+
+
+void TrackWaypointGeneralPage::addStatusField(const QList<TrackDataItem *> *items)
+{
+    mStatusCombo = new QComboBox(this);
+    mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());
+
+    mStatusCombo->addItem(QIcon::fromTheme("unknown"), i18n("(None)"), TrackData::StatusNone);
+    mStatusCombo->addItem(QIcon::fromTheme("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
+    mStatusCombo->addItem(QIcon::fromTheme("task-complete"), i18n("Done"), TrackData::StatusDone);
+    mStatusCombo->addItem(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
+    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), i18n("Unwanted"), TrackData::StatusUnwanted);
+
+    if (items->count()>1)
+    {
+        mStatusCombo->addItem(QIcon::fromTheme("task-delegate"), i18n("(No change)"), TrackData::StatusInvalid);
+        mStatusCombo->setCurrentIndex(mStatusCombo->count()-1);
+    }
+
+    connect(mStatusCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotStatusChanged(int)));
+    mFormLayout->addRow(i18nc("@label:listbox", "Status:"), mStatusCombo);
+}
+
+
+void TrackWaypointGeneralPage::slotStatusChanged(int idx)
+{
+    qDebug() << idx;
+
+    const int status = mStatusCombo->itemData(idx).toInt();
+    dataModel()->setData(DataIndexer::self()->index("status"), (status==0 ? QVariant() : status));
+}
+
+
 void TrackWaypointGeneralPage::slotPlayAudioNote()
 {
     MediaPlayer::playAudioNote(mWaypoint);
@@ -521,11 +516,15 @@ void TrackWaypointGeneralPage::slotViewPhotoNote()
     MediaPlayer::viewPhotoNote(mWaypoint);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackRouteGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 TrackRouteGeneralPage::TrackRouteGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : TrackItemGeneralPage(items, pnt)
 {
-    qDebug();
     setObjectName("TrackRouteGeneralPage");
 
     addSeparatorField();
@@ -534,18 +533,42 @@ TrackRouteGeneralPage::TrackRouteGeneralPage(const QList<TrackDataItem *> *items
 }
 
 
-
 QString TrackRouteGeneralPage::typeText(int count) const
 {
     return (i18ncp("@item:intable", "<b>Route</b>", "<b>%1 routes</b>", count));
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackRoutepointGeneralPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackRoutepointGeneralPage::TrackRoutepointGeneralPage(const QList<TrackDataItem *> *items, QWidget *pnt)
+    : TrackItemGeneralPage(items, pnt)
+{
+    setObjectName("TrackRoutepointGeneralPage");
+
+    addPositionFields(items);
+}
+
+
+QString TrackRoutepointGeneralPage::typeText(int count) const
+{
+    return (i18ncp("@item:intable", "<b>Route point</b>", "<b>%1 route points</b>", count));
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Page creation interface						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 CREATE_PROPERTIES_PAGE(File, General)
 CREATE_PROPERTIES_PAGE(Track, General)
 CREATE_PROPERTIES_PAGE(Segment, General)
 CREATE_PROPERTIES_PAGE(Trackpoint, General)
-CREATE_PROPERTIES_PAGE(Routepoint, General)
 CREATE_PROPERTIES_PAGE(Folder, General)
 CREATE_PROPERTIES_PAGE(Waypoint, General)
 CREATE_PROPERTIES_PAGE(Route, General)
+CREATE_PROPERTIES_PAGE(Routepoint, General)

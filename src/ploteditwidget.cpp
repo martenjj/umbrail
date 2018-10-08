@@ -35,12 +35,18 @@ PlotEditWidget::PlotEditWidget(PlotEditWidget::EntryType type, QWidget *parent)
 
     QLabel *l = new QLabel(titleFor(type), this);
     mLayout->addWidget(l, 0, 0, Qt::AlignRight);
+
+    // Using a timer here to combine fast repeated updates from spin boxes.
+    mDataChangedTimer = new QTimer(this);
+    mDataChangedTimer->setSingleShot(true);
+    mDataChangedTimer->setInterval(100);
+    connect(mDataChangedTimer, &QTimer::timeout, this, [this](){ emit dataChanged(); });
 }
 
 
-static QSpinBox *createSpinBox(PlotEditWidget::EntryType type, QWidget *parent)
+QSpinBox *PlotEditWidget::createSpinBox(PlotEditWidget::EntryType type)
 {
-    QSpinBox *box = new QSpinBox(parent);
+    QSpinBox *box = new QSpinBox(this);
     switch (type)
     {
 case PlotEditWidget::Bearing:
@@ -56,6 +62,7 @@ case PlotEditWidget::Range:
         break;
     }
 
+    connect(box, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](){ mDataChangedTimer->start(); });
     return (box);
 }
 
@@ -72,7 +79,7 @@ void PlotEditWidget::setPlotData(const QString &newData)
     foreach (const QString &item, items)
     {							// get existing spin box
         // Create a spin box for each data item
-        QSpinBox *box = createSpinBox(mType, this);	// create new spin box
+        QSpinBox *box = createSpinBox(mType);		// create new spin box
         box->setValue(item.toInt());			// set value from data
         mFields.append(box);				// append to field list
         ++row;						// on to next row
@@ -183,6 +190,7 @@ void PlotEditWidget::slotRemoveRow()
     w->deleteLater();					// it's no longer needed
 
     updateLayout();					// lay out and set buttons
+    mDataChangedTimer->start();
 }
 
 
@@ -197,8 +205,9 @@ void PlotEditWidget::slotAddRow()
 
     qDebug() << "at row" << row;
 
-    QSpinBox *box = createSpinBox(mType, this);		// create new spin box
+    QSpinBox *box = createSpinBox(mType);		// create new spin box
     mFields.insert(row, box);				// insert into field list
 
     updateLayout(true);					// lay out and set buttons
+    mDataChangedTimer->start();
 }

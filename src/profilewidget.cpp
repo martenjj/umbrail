@@ -521,8 +521,8 @@ void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
         if (mSpeedSource==SpeedSourceGPS)		// GPS speed
         {
             // Get the speed from the track metadata.
-            const QString speedMeta = tdp->metadata("speed");
-            if (speedMeta.isEmpty()) spd = NAN;
+            const QVariant speedMeta = tdp->metadata("speed");
+            if (speedMeta.isNull()) spd = NAN;
             else
             {
                 // First convert the GPS speed (in metres/second, defined in
@@ -584,10 +584,10 @@ void ProfileWidget::slotUpdatePlot()
     mTimeZone = NULL;					// no time zone available yet
 
     // Resolve the file time zone
-    QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
-    if (!zoneName.isEmpty())
+    QVariant zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
+    if (!zoneName.isNull())
     {
-        QTimeZone *tz = new QTimeZone(zoneName.toLatin1());
+        QTimeZone *tz = new QTimeZone(zoneName.toByteArray());
         if (tz->isValid()) mTimeZone = tz;		// use as time zone
         else qWarning() << "unknown time zone" << zoneName;
     }

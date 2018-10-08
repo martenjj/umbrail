@@ -10,7 +10,6 @@
 
 #include "filesmodel.h"
 #include "filesview.h"
-#include "style.h"
 #include "dataindexer.h"
 
 
@@ -211,7 +210,7 @@ void ImportFileCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Change Item (name, style, metadata)					//
+//  Change Item (name, metadata)					//
 //									//
 //  All of these simply change the specified items in place, so they	//
 //  can retain a pointer to them.					//
@@ -253,35 +252,6 @@ void ChangeItemNameCommand::undo()
 }
 
 
-void ChangeItemStyleCommand::redo()
-{
-    Q_ASSERT(mDataItems.count()==1);
-    TrackDataItem *item = mDataItems.first();
-    Q_ASSERT(item!=NULL);
-    qDebug() << "item" << item->name() << "->" << mNewStyle.toString();
-
-    mSavedStyle = *item->style();			// save original item style
-    item->setStyle(mNewStyle);				// set new item style
-
-    model()->changedItem(item);
-    updateMap();
-}
-
-
-void ChangeItemStyleCommand::undo()
-{
-    Q_ASSERT(mDataItems.count()==1);
-    TrackDataItem *item = mDataItems.first();
-    Q_ASSERT(item!=NULL);
-    qDebug() << "item" << item->name() << "back to" << mSavedStyle.toString();
-
-    item->setStyle(mSavedStyle);			// restore original style
-
-    model()->changedItem(item);
-    updateMap();
-}
-
-
 void ChangeItemDataCommand::redo()
 {
     mSavedValues.clear();
@@ -312,11 +282,10 @@ void ChangeItemDataCommand::undo()
     {
         TrackDataItem *item = (*it);
         Q_ASSERT(item!=NULL);
-        QString savedValue = mSavedValues.takeFirst();
+        QVariant savedValue = mSavedValues.takeFirst();
         qDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
         item->setMetadata(idx, savedValue);
         model()->changedItem(item);
-
     }
 
     Q_ASSERT(mSavedValues.count()==0);
@@ -384,12 +353,10 @@ void SplitSegmentCommand::redo()
         copySegment->setName(makeSplitName(mParentSegment->name()), false);
         copySegment->copyMetadata(mParentSegment);
         mNewSegmentContainer->addChildItem(copySegment);
-        // TODO: copy style
 
-        // TODO: can eliminate copyData with a copy constructor? or a clone()?
         TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
         copyPoint->setName(makeSplitName(splitPoint->name()), false);
-        copyPoint->copyData(splitPoint);
+        copyPoint->setLatLong(splitPoint->latitude(), splitPoint->longitude());
         copyPoint->copyMetadata(splitPoint);
         // TODO: copy style
         copySegment->addChildItem(copyPoint);
@@ -1064,11 +1031,13 @@ void AddWaypointCommand::redo()
         newWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=NULL)
         {
-            newWaypoint->setElevation(mSourcePoint->elevation());
-            newWaypoint->setTime(mSourcePoint->time());
+            int idx = DataIndexer::self()->index("ele");
+            newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
+            idx = DataIndexer::self()->index("time");
+            newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
             newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
-            const QString stopData = mSourcePoint->metadata("stop");
-            if (!stopData.isEmpty()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
+            const QVariant stopData = mSourcePoint->metadata("stop");
+            if (!stopData.isNull()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
         }
 
         mNewWaypointContainer->addChildItem(newWaypoint);
@@ -1207,7 +1176,7 @@ void AddPhotoCommand::redo()
     TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
     Q_ASSERT(tdw!=NULL);				// retrieve the just added point
     if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.toDisplayString());
-    if (mDateTime.isValid()) tdw->setTime(mDateTime);
+    if (mDateTime.isValid()) tdw->setMetadata(DataIndexer::self()->index("time"), mDateTime);
 }
 
 

@@ -8,7 +8,6 @@
 
 #include "trackdata.h"
 #include "filescontroller.h"
-#include "style.h"
 
 
 class ItemContainer;
@@ -121,26 +120,6 @@ private:
 
 
 
-class ChangeItemStyleCommand : public ChangeItemCommand
-{
-public:
-    ChangeItemStyleCommand(FilesController *fc, QUndoCommand *parent = NULL)
-        : ChangeItemCommand(fc, parent)			{}
-    virtual ~ChangeItemStyleCommand()			{}
-
-    void setData(const Style &style)			{ mNewStyle = style; }
-
-    void redo() override;
-    void undo() override;
-
-private:
-    Style mNewStyle;
-    Style mSavedStyle;
-};
-
-
-
-
 class ChangeItemDataCommand : public ChangeItemCommand
 {
 public:
@@ -149,15 +128,15 @@ public:
     virtual ~ChangeItemDataCommand()			{}
 
     void setData(const QString &key,
-                 const QString &value)			{ mKey = key; mNewValue = value; }
+                 const QVariant &value)			{ mKey = key; mNewValue = value; }
 
     void redo() override;
     void undo() override;
 
 private:
     QString mKey;
-    QString mNewValue;
-    QStringList mSavedValues;
+    QVariant mNewValue;
+    QVariantList mSavedValues;
 };
 
 

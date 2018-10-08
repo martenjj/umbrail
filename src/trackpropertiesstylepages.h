@@ -5,17 +5,9 @@
 #include "trackpropertiespage.h"
 
 
-class QFormLayout;
 class QCheckBox;
-
-class Style;
-class TrackDataItem;
-
 class KColorButton;
-
-
-
-
+class TrackDataItem;
 
 
 class TrackItemStylePage : public TrackPropertiesPage
@@ -23,26 +15,33 @@ class TrackItemStylePage : public TrackPropertiesPage
     Q_OBJECT
 
 public:
-    virtual ~TrackItemStylePage()				{}
-
-    QString newItemName() const;
-    const Style newStyle() const;
+    virtual ~TrackItemStylePage() = default;
+    void refreshData() override;
 
 protected:
     TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
+    void addLineColourButton(const QString &text = QString());
+    void addPointColourButton(const QString &text = QString());
+
 protected:
     KColorButton *mLineColourButton;
     QCheckBox *mLineInheritCheck;
+
     KColorButton *mPointColourButton;
     QCheckBox *mPointInheritCheck;
 
+    bool mIsTopLevel;
+
 protected slots:
     void slotColourChanged(const QColor &col);
+    void slotInheritChanged(bool on);
 
+private:
+    QColor getColourData(bool isLine);
+    void setColourData(bool isLine, const QColor &col);
+    void setColourButtons(KColorButton *colBut, QCheckBox *inheritBut, bool isLine);
 };
-
-
 
 
 class TrackFileStylePage : public TrackItemStylePage
@@ -51,10 +50,8 @@ class TrackFileStylePage : public TrackItemStylePage
 
 public:
     TrackFileStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackFileStylePage()				{}
-
+    virtual ~TrackFileStylePage() = default;
 };
-
 
 
 class TrackTrackStylePage : public TrackItemStylePage
@@ -63,24 +60,8 @@ class TrackTrackStylePage : public TrackItemStylePage
 
 public:
     TrackTrackStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackTrackStylePage()				{}
-
-
+    virtual ~TrackTrackStylePage() = default;
 };
-
-
-
-class TrackRouteStylePage : public TrackItemStylePage
-{
-    Q_OBJECT
-
-public:
-    TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRouteStylePage()				{}
-
-
-};
-
 
 
 class TrackSegmentStylePage : public TrackItemStylePage
@@ -89,37 +70,8 @@ class TrackSegmentStylePage : public TrackItemStylePage
 
 public:
     TrackSegmentStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackSegmentStylePage()				{}
-
-
+    virtual ~TrackSegmentStylePage() = default;
 };
-
-
-
-class TrackTrackpointStylePage : public TrackItemStylePage
-{
-    Q_OBJECT
-
-public:
-    TrackTrackpointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackTrackpointStylePage()				{}
-
-
-};
-
-
-
-class TrackFolderStylePage : public TrackItemStylePage
-{
-    Q_OBJECT
-
-public:
-    TrackFolderStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackFolderStylePage()				{}
-
-
-};
-
 
 
 class TrackWaypointStylePage : public TrackItemStylePage
@@ -128,24 +80,17 @@ class TrackWaypointStylePage : public TrackItemStylePage
 
 public:
     TrackWaypointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackWaypointStylePage()				{}
-
-
+    virtual ~TrackWaypointStylePage() = default;
 };
 
 
-
-class TrackRoutepointStylePage : public TrackItemStylePage
+class TrackRouteStylePage : public TrackItemStylePage
 {
     Q_OBJECT
 
 public:
-    TrackRoutepointStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
-    virtual ~TrackRoutepointStylePage()				{}
-
-
+    TrackRouteStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
+    virtual ~TrackRouteStylePage() = default;
 };
-
-
 
 #endif							// TRACKPROPERTIESSTYLEPAGES_H

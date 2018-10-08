@@ -37,11 +37,12 @@ using namespace KExiv2Iface;
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
 #include "createpointdialogue.h"
-#include "style.h"
 #include "errorreporter.h"
 #include "mapview.h"
 #include "mapcontroller.h"
 #include "settings.h"
+#include "metadatamodel.h"
+#include "dataindexer.h"
 
 #define GROUP_FILES		"Files"
 
@@ -605,7 +606,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         }
 
         // Find or create a folder to place the resulting waypoint in
-        TrackDataFolder *foundFolder = model()->rootFileItem()->findChildFolder(PHOTO_FOLDER_NAME);
+        TrackDataFolder *foundFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, model()->rootFileItem());
         if (foundFolder==NULL)				// find where to store point
         {
             if (containerCreated) qDebug() << "new folder already added";
@@ -753,11 +754,12 @@ void FilesController::slotTrackProperties()
 
     if (!d.exec()) return;
 
-    TrackDataItem *item = items.first();
+    TrackDataItem *item = items.first();		// the item to change
     QUndoCommand *cmd = new QUndoCommand();		// parent command
+    const MetadataModel *model = d.dataModel();		// model for new data
 
-    QString newItemName = d.newItemName();		// new name for item
-    //qDebug() << "new name" << newItemName;
+    // Item name
+    const QString newItemName = model->data(DataIndexer::self()->index("name")).toString();
     if (!newItemName.isEmpty() && newItemName!=item->name())
     {							// changing the name
         qDebug() << "name change" << item->name() << "->" << newItemName;
@@ -766,94 +768,57 @@ void FilesController::slotTrackProperties()
         cmd1->setData(newItemName);
     }
 
-    QString newTimeZone = d.newTimeZone();
-    //qDebug() << "new timezone" << newTimeZone;
-    if (newTimeZone!=item->metadata("timezone"))
+    // Point position
+    const QVariant &latData = model->data(DataIndexer::self()->index("latitude"));
+    const QVariant &lonData = model->data(DataIndexer::self()->index("longitude"));
+    if (!latData.isNull() && !lonData.isNull())		// if applies to this point
     {
-        qDebug() << "timezone change" << item->metadata("timezone") << "->" << newTimeZone;
-        ChangeItemDataCommand *cmd2 = new ChangeItemDataCommand(this, cmd);
-        cmd2->setDataItem(item);
-        cmd2->setData("timezone", newTimeZone);
-    }
+        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(item);
+        Q_ASSERT(tdp!=nullptr);
 
-    const Style newStyle = d.newStyle();		// item style
-    //qDebug() << "new style" << newStyle;
-    if (newStyle!=*item->style())			// changing the style
-    {
-        qDebug() << "change style" << item->style() << "->" << newStyle;
-        ChangeItemStyleCommand *cmd3 = new ChangeItemStyleCommand(this, cmd);
-        cmd3->setDataItem(item);
-        cmd3->setData(newStyle);
-    }
+        const double newLat = latData.toDouble();
+        const double newLon = lonData.toDouble();
 
-    QString newType = d.newTrackType();
-    //qDebug() << "new type" << newType;
-    if (newType!="-")					// new type is applicable
-    {
-        qDebug() << "change type" << item->metadata("type") << "->" << newType;
-        if (newType!=item->metadata("type"))
+        if (newLat!=tdp->latitude() || newLon!=tdp->longitude())
         {
-            ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-            cmd4->setDataItem(item);
-            cmd4->setData("type", newType);
+            qDebug() << "change position" << newLat << newLon;
+            MovePointsCommand *cmd2 = new MovePointsCommand(this, cmd);
+            cmd2->setDataItems((QList<TrackDataItem *>() << tdp));
+            cmd2->setData(newLat-tdp->latitude(), newLon-tdp->longitude());
         }
     }
 
-    QString newDesc = d.newItemDesc();
-    //qDebug() << "new description" << newDesc;
-    if (newDesc!="-" && newDesc!=item->metadata("desc"))
-    {							// new description is applicable
-        qDebug() << "change desc" << item->metadata("desc") << "->" << newDesc;
-        ChangeItemDataCommand *cmd5 = new ChangeItemDataCommand(this, cmd);
-        cmd5->setDataItem(item);
-        cmd5->setData("desc", newDesc);
-    }
-
-    QString newBearingData = d.newBearingData();
-    if (newBearingData!="-")					// new bearing is applicable
+    // The remaining metadata
+    const int num = model->rowCount();			// same as DataIndexer::self()->count()
+    for (int idx = 0; idx<num; ++idx)
     {
-        qDebug() << "change brg line" << item->metadata("bearingline") << "->" << newBearingData;
-        if (newBearingData!=item->metadata("bearingline"))
-        {
-            ChangeItemDataCommand *cmd8 = new ChangeItemDataCommand(this, cmd);
-            cmd8->setDataItem(item);
-            cmd8->setData("bearingline", newBearingData);
+        const QString name = DataIndexer::self()->name(idx);
+        if (name=="name") continue;			// these handled specially above
+        if (name=="latitude" || name=="longitude") continue;
+
+        const QVariant oldData = item->metadata(idx);
+        QVariant newData = model->data(idx);
+        if (newData==oldData) continue;			// data has not changed
+
+        qDebug() << "index" << idx << name << oldData << "->" << newData;
+
+        if (name=="status")				// changing waypoint status
+        {						// ignore if "No change"
+            const TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(newData.toInt());
+            if (status==TrackData::StatusInvalid) continue;
         }
-    }
-
-    QString newRangeData = d.newRangeData();
-    if (newRangeData!="-")					// new bearing is applicable
-    {
-        qDebug() << "change range ring" << item->metadata("rangering") << "->" << newRangeData;
-        if (newRangeData!=item->metadata("rangering"))
-        {
-            ChangeItemDataCommand *cmd9 = new ChangeItemDataCommand(this, cmd);
-            cmd9->setDataItem(item);
-            cmd9->setData("rangering", newRangeData);
+        else if (name=="linecolor" || name=="pointcolor")
+        {						// changing item colour
+            // Alpha value encodes the inherit flag, see TrackItemStylePage
+            QColor col = newData.value<QColor>();
+            if (col.alpha()==0) newData = QVariant();	// here null colour means inherit
+            qDebug() << "index" << idx << name << oldData << "->" << newData;
         }
-    }
 
-    double newLat;
-    double newLon;
-    if (d.newPointPosition(&newLat, &newLon))
-    {
-        qDebug() << "change position";
-        TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(item);
-        Q_ASSERT(p!=NULL);
-        MovePointsCommand *cmd6 = new MovePointsCommand(this, cmd);
-        cmd6->setDataItems((QList<TrackDataItem *>() << p));
-        cmd6->setData(newLat-p->latitude(), newLon-p->longitude());
-    }
-
-    TrackData::WaypointStatus newStatus = d.newWaypointStatus();
-    TrackData::WaypointStatus oldStatus = static_cast<TrackData::WaypointStatus>(item->metadata("status").toInt());
-    if (items.count()>1) oldStatus = TrackData::StatusInvalid;
-    if (newStatus!=TrackData::StatusInvalid && newStatus!=oldStatus)
-    {
-        qDebug() << "change status" << oldStatus << "->" << newStatus;
-        ChangeItemDataCommand *cmd7 = new ChangeItemDataCommand(this, cmd);
-        cmd7->setDataItems(items);
-        cmd7->setData("status", (newStatus==0) ? "" : QString::number(newStatus));
+        ChangeItemDataCommand *cmd3 = new ChangeItemDataCommand(this, cmd);
+        cmd3->setDataItems(items);
+        // TODO: overload setData() to take an index
+        cmd3->setData(DataIndexer::self()->name(idx), newData);
     }
 
     if (cmd->childCount()==0)				// anything to actually do?

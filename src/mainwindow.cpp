@@ -42,7 +42,6 @@
 #include "mapview.h"
 #include "project.h"
 #include "settings.h"
-#include "style.h"
 #include "settingsdialogue.h"
 #include "profilewidget.h"
 #include "statisticswidget.h"
@@ -550,17 +549,11 @@ FilesController::Status MainWindow::load(const QUrl &from)
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
     if (tdf!=NULL)
     {
-        QString s = tdf->metadata("position");
+        QVariant s = tdf->metadata("position");
         qDebug() << "pos metadata" << s;
         QSignalBlocker block(mapController()->view());	// no status bar update from zooming
-        if (!s.isEmpty())
-        {
-            mapController()->view()->setCurrentPosition(s);
-        }
-        else
-        {
-            mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
-        }
+        if (!s.isNull()) mapController()->view()->setCurrentPosition(s.toString());
+        else mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
     }
 
     filesController()->view()->expandToDepth(1);	// expand to show segments

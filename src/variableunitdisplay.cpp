@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	26-Jun-18						//
+//  Edit:	07-Oct-18						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -26,6 +26,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "variableunitdisplay.h"
+
+#include <math.h>
 
 #include <qlabel.h>
 #include <qdebug.h>
@@ -57,6 +59,7 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QW
     mUnitCombo = new VariableUnitCombo(type, this);
     hb->addWidget(mUnitCombo);
     connect(mUnitCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdateDisplay()));
+    mComboIndex = -1;
 
     setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
     setFocusProxy(mUnitCombo);
@@ -88,6 +91,12 @@ void VariableUnitDisplay::slotUpdateDisplay()
     mComboIndex = mUnitCombo->currentIndex();
 
     double v = mValue;
+    if (isnan(v))					// blank value
+    {
+        mValueLabel->setText(QString());
+        return;
+    }
+
     const VariableUnitCombo::DisplayType type = mUnitCombo->type();
     const Units::Unit unit = mUnitCombo->unit();
 
@@ -186,4 +195,3 @@ void VariableUnitDisplay::setSaveId(const QString &id)
         if (idx!=-1) mUnitCombo->setCurrentIndex(idx);
     }
 }
-

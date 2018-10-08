@@ -8,6 +8,7 @@
 
 class QGridLayout;
 class QSpinBox;
+class QTimer;
 
 
 class PlotEditWidget : public QFrame
@@ -31,7 +32,11 @@ protected slots:
     void slotAddRow();
     void slotRemoveRow();
 
+signals:
+    void dataChanged();
+
 private:
+    QSpinBox *createSpinBox(PlotEditWidget::EntryType type);
     int rowOfButton(QObject *send) const;
     void updateLayout(bool focusLast = false);
 
@@ -42,7 +47,7 @@ private:
     PlotEditWidget::EntryType mType;
     QGridLayout *mLayout;
     QVector<QSpinBox *> mFields;
+    QTimer *mDataChangedTimer;
 };
-
 
 #endif							// PLOTEDITWIDGET_H

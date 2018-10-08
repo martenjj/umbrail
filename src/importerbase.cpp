@@ -70,9 +70,9 @@ static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
     qDebug() << source.toLatin1().constData();
     for (int i = 0; i<DataIndexer::self()->count(); ++i)
     {
-        QString s =  tdd->metadata(i);
-        if (s.isEmpty()) continue;
-        qDebug() << "  " << i << DataIndexer::self()->name(i) << "=" << s;
+        QVariant s =  tdd->metadata(i);
+        if (s.isNull()) continue;
+        qDebug() << "  " << i << DataIndexer::self()->name(i) << "=" << s.toString();
     }
 }
 #endif
@@ -100,7 +100,7 @@ bool ImporterBase::finaliseLoadFile(const QUrl &file)
         dumpMetadata(tdt, QString("original metadata of track %1:").arg(i));
 #endif
 
-        if (tdt->metadata("creator").isEmpty())		// only if blank already
+        if (tdt->metadata("creator").isNull())		// only if blank already
         {
             tdt->copyMetadata(mDataRoot, false);
 #ifdef DEBUG_IMPORT

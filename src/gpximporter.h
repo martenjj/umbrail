@@ -12,10 +12,9 @@ class TrackDataItem;
 class TrackDataTrack;
 class TrackDataRoute;
 class TrackDataSegment;
-class TrackDataTrackpoint;
+class TrackDataAbstractPoint;
 class TrackDataFolder;
 class TrackDataWaypoint;
-class TrackDataRoutepoint;
 
 
 
@@ -52,6 +51,7 @@ private:
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);
+    void getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName);
 
     bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
     QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
@@ -60,9 +60,7 @@ private:
     TrackDataTrack *mCurrentTrack;
     TrackDataRoute *mCurrentRoute;
     TrackDataSegment *mCurrentSegment;
-    TrackDataTrackpoint *mCurrentPoint;
-    TrackDataWaypoint *mCurrentWaypoint;
-    TrackDataRoutepoint *mCurrentRoutepoint;
+    TrackDataAbstractPoint *mCurrentPoint;
 
     bool mWithinMetadata;
     bool mWithinExtensions;

@@ -8,7 +8,6 @@
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
-#include "style.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
 
@@ -36,7 +35,7 @@ GpxImporter::~GpxImporter()
 TrackDataFile *GpxImporter::load(const QUrl &file)
 {
     qDebug() << "from" << file;
-    if (!ImporterBase::prepareLoadFile(file)) return (NULL);
+    if (!ImporterBase::prepareLoadFile(file)) return (nullptr);
 
     // prepare to read into 'mDataRoot'
 
@@ -51,8 +50,6 @@ TrackDataFile *GpxImporter::load(const QUrl &file)
     mCurrentRoute = NULL;
     mCurrentSegment = NULL;
     mCurrentPoint = NULL;
-    mCurrentWaypoint = NULL;
-    mCurrentRoutepoint = NULL;
 
     mUndefinedNamespaces.clear();
 
@@ -118,8 +115,6 @@ void GpxImporter::setDocumentLocator(QXmlLocator *locator)
 TrackDataItem *GpxImporter::currentItem() const
 {
     TrackDataItem *item = mCurrentPoint;		// find innermost current element
-    if (item==NULL) item = mCurrentWaypoint;
-    if (item==NULL) item = mCurrentRoutepoint;
     if (item==NULL) item = mCurrentSegment;
     if (item==NULL) item = mCurrentTrack;
     if (item==NULL) item = mCurrentRoute;
@@ -141,7 +136,7 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
     for (QStringList::const_iterator it = folders.constBegin(); it!=folders.constEnd(); ++it)
     {
         const QString name = (*it);			// look for existing subfolder
-        foundFolder = cur->findChildFolder(name);
+        foundFolder = TrackData::findFolderByPath(name, cur);
         if (foundFolder==NULL)				// nothing existing found
         {
             qDebug() << "creating" << name << "under" << cur->name();
@@ -165,11 +160,29 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 
     if (tdw!=NULL)					// a waypoint is specified
     {
-        const QString path = tdw->metadata("folder");	// its folder, if it has one
-        if (!path.isEmpty()) return (getFolder(path));
+        const QVariant path = tdw->metadata("folder");	// its folder, if it has one
+        if (!path.isNull()) return (getFolder(path.toString()));
     }
 							// find or create folder
     return (getFolder(tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME));
+}
+
+
+void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName)
+{
+    double lat = NAN;					// coordinates found
+    double lon = NAN;
+    for (int i = 0; i<atts.count(); ++i)
+    {
+        QString attrName = atts.localName(i);
+        QString attrValue = atts.value(i);
+        if (attrName=="lat") lat = attrValue.toDouble();
+        else if (attrName=="lon") lon = attrValue.toDouble();
+        else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on "+localName.toUpper()+" element"));
+    }
+
+    if (!ISNAN(lat) && !ISNAN(lon)) pnt->setLatLong(lat, lon);
+    else warning(makeXmlException("missing LAT/LON on "+localName.toUpper()+" element"));
 }
 
 
@@ -222,7 +235,6 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
     }
     else if (localName=="metadata")			// start of a METADATA element
     {
-        //if (mWithinMetadata || mCurrentTrack!=NULL)
         if (mWithinMetadata || currentItem()!=NULL)	// check not nested
         {
             return (error(makeXmlException("nested METADATA elements", "metadata")));
@@ -294,33 +306,20 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 							// start new implied segment
             mCurrentSegment = new TrackDataSegment;
         }
-							// start new point
-        mCurrentPoint = new TrackDataTrackpoint;
 
-        double lat = NAN;				// get coordinates
-        double lon = NAN;
-        for (int i = 0; i<atts.count(); ++i)
-        {
-            QString attrName = atts.localName(i);
-            QString attrValue = atts.value(i);
-            if (attrName=="lat") lat = attrValue.toDouble();
-            else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on TRKPT element"));
-        }
-
-        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentPoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing lat/lon on TRKPT element"));
+        mCurrentPoint = new TrackDataTrackpoint;	// start new point item
+        getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
     else if (localName=="ele")				// start of an ELEvation element
     {
-        if (mCurrentPoint==NULL && mCurrentWaypoint==NULL)
+        if (mCurrentPoint==nullptr)
         {						// check properly nested
             return (error(makeXmlException(localName.toUpper()+" start not within TRKPT or WPT", localName)));
         }
     }
     else if (localName=="time")
     {							// start of a TIME element
-        if (mCurrentPoint==NULL && mCurrentWaypoint==NULL && mCurrentTrack==NULL && !mWithinMetadata)
+        if (mCurrentPoint==NULL && mCurrentTrack==NULL && !mWithinMetadata)
         {						// check properly nested
             warning(makeXmlException(localName.toUpper()+" start not within TRKPT, WPT or METADATA"));
         }
@@ -332,65 +331,39 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             return (error(makeXmlException("WPT start within TRK or RTE", "wpt")));
         }
 
-        if (mCurrentWaypoint!=NULL)			// check not nested
+        if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested WPT elements", "wpt")));
+            return (error(makeXmlException("nested WPT element", "wpt")));
         }
 
-        mCurrentWaypoint = new TrackDataWaypoint;	// start new waypoint item
-
-        double lat = NAN;				// get coordinates
-        double lon = NAN;
-        for (int i = 0; i<atts.count(); ++i)
-        {
-            QString attrName = atts.localName(i);
-            QString attrValue = atts.value(i);
-            if (attrName=="lat") lat = attrValue.toDouble();
-            else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on WPT element"));
-        }
-
-        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentWaypoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing LAT/LON attribute on WPT element"));
+        mCurrentPoint = new TrackDataWaypoint;		// start new waypoint item
+        getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
     else if (localName=="rtept")			// start of an RTEPT element
     {
         if (mCurrentRoute==NULL)
         {
-            return (error(makeXmlException("RTEPT start not within route", "rtept")));
+            return (error(makeXmlException("RTEPT start not within RTE", "rtept")));
         }
 
-        if (mCurrentRoutepoint!=NULL)			// check not nested
+        if (mCurrentPoint!=NULL)			// check not nested
         {
-            return (error(makeXmlException("nested RTEPT elements", "rtept")));
+            return (error(makeXmlException("nested RTEPT element", "rtept")));
         }
 
-        mCurrentRoutepoint = new TrackDataRoutepoint;	// start new route point item
-
-        double lat = NAN;				// get coordinates
-        double lon = NAN;
-        for (int i = 0; i<atts.count(); ++i)
-        {
-            QString attrName = atts.localName(i);
-            QString attrValue = atts.value(i);
-            if (attrName=="lat") lat = attrValue.toDouble();
-            else if (attrName=="lon") lon = attrValue.toDouble();
-            else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on RTEPT element"));
-        }
-
-        if (!ISNAN(lat) && !ISNAN(lon)) mCurrentRoutepoint->setLatLong(lat, lon);
-        else warning(makeXmlException("missing LAT/LON attribute on RTEPT element"));
+        mCurrentPoint = new TrackDataRoutepoint;	// start new route point item
+        getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
     else if (localName=="link")				// start of a LINK element
     {
-        if (mCurrentWaypoint==NULL)			// check not nested
-        {
+        if (dynamic_cast<TrackDataWaypoint *>(mCurrentPoint)==nullptr)
+        {						// check contained where expected
             return (error(makeXmlException("LINK start not within WPT", "link")));
         }
 
         QString link = atts.value("link");
         if (link.isEmpty()) link = atts.value("href");
-        if (!link.isEmpty()) mCurrentWaypoint->setMetadata(DataIndexer::self()->index("link"), link);
+        if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::self()->index("link"), link);
         else warning(makeXmlException("missing LINK/HREF attribute on LINK element"));
     }
 
@@ -472,6 +445,11 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             return (error(makeXmlException("TRKPT element not started")));
         }
 
+        if (dynamic_cast<TrackDataTrackpoint *>(mCurrentPoint)==nullptr)
+        {						// check start element matched
+            return (error(makeXmlException("TRKPT end did not start element")));
+        }
+
 #ifdef DEBUG_IMPORT
         qDebug() << "got a TRKPT:" << mCurrentPoint->name();
 #endif
@@ -489,7 +467,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         }
 
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a RTE:" << mCurrentRoute->name();
+        qDebug() << "got a RTE:" << mCurrentRoute->name();
 #endif
         mDataRoot->addChildItem(mCurrentRoute);
         mCurrentRoute = NULL;				// finished with temporary
@@ -497,36 +475,44 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     }
     else if (localName=="rtept")			// end of a RTEPT element
     {
-        if (mCurrentRoutepoint==NULL)			// check must have started
+        if (mCurrentPoint==NULL)			// check must have started
         {
             return (error(makeXmlException("RTEPT element not started")));
         }
 
+        if (dynamic_cast<TrackDataRoutepoint *>(mCurrentPoint)==nullptr)
+        {						// check start element matched
+            return (error(makeXmlException("RTEPT end did not start element")));
+        }
+
 #ifdef DEBUG_IMPORT
-        kDebug() << "got a RTEPT:" << mCurrentRoutepoint->name();
+        qDebug() << "got a RTEPT:" << mCurrentPoint->name();
 #endif
         Q_ASSERT(mCurrentRoute!=NULL);
-        mCurrentRoute->addChildItem(mCurrentRoutepoint);
-        mCurrentRoutepoint = NULL;			// finished with temporary
+        mCurrentRoute->addChildItem(mCurrentPoint);
+        mCurrentPoint = nullptr;			// finished with temporary
         return (true);
     }
     else if (localName=="wpt")				// end of a WPT element
     {
-        if (mCurrentWaypoint==NULL)			// check must have started
+        if (mCurrentPoint==NULL)			// check must have started
         {
             return (error(makeXmlException("WPT element not started")));
         }
 
 #ifdef DEBUG_IMPORT
-        qDebug() << "got a WPT:" << mCurrentWaypoint->name();
+        qDebug() << "got a WPT:" << mCurrentPoint->name();
 #endif
 
-        if (mCurrentWaypoint->isMediaType())
+        TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mCurrentPoint);
+        if (tdw==nullptr) return (error(makeXmlException("WPT end did not start element")));
+
+        if (tdw->isMediaType())
         {
             // Only do this check if the "link" metadata has not already
             // been set by a LINK tag.
             const int idx = DataIndexer::self()->index("link");
-            if (mCurrentWaypoint->metadata(idx).isEmpty())
+            if (tdw->metadata(idx).isNull())
             {
                 // An OsmAnd+ AV note is stored as a waypoint with a special name.
                 // Using the GUI, it is possible to rename such a waypoint;  relying
@@ -534,19 +520,18 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
                 // To get around this, we save the original name in the waypoint's
                 // metadata under a special key which will not get overwritten;  this
                 // will from then on be saved and loaded in the GPX file.
-
-                mCurrentWaypoint->setMetadata(idx, mCurrentWaypoint->name());
+                tdw->setMetadata(idx, tdw->name());
             }
         }
 
-        TrackDataFolder *folder = waypointFolder(mCurrentWaypoint);
+        TrackDataFolder *folder = waypointFolder(tdw);
         Q_ASSERT(folder!=NULL);
 
         // Clear the folder name metadata, will regenerate on export
-        mCurrentWaypoint->setMetadata(DataIndexer::self()->index("folder"), "");
+        tdw->setMetadata(DataIndexer::self()->index("folder"), QString(""));
 
-        folder->addChildItem(mCurrentWaypoint);		// add to destination folder
-        mCurrentWaypoint = NULL;			// finished with temporary
+        folder->addChildItem(tdw);			// add to destination folder
+        mCurrentPoint = nullptr;			// finished with temporary
         return (true);
     }
 
@@ -558,23 +543,29 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     if (localName=="ele")				// end of an ELE element
     {
         const double ele = elementContents().toDouble();
-        if (mCurrentPoint!=NULL) mCurrentPoint->setElevation(ele);
-        else if (mCurrentWaypoint!=NULL) mCurrentWaypoint->setElevation(ele);
+        TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
+
+        // The explicit use of QVariant(double) seems to be needed, otherwise there is
+        // an ambiguous overload:
+        //
+        //   gpximporter.cpp:547: error: call of overloaded 'setMetadata(int, const double&)' is ambiguous
+        //   In file included from gpximporter.cpp:10:
+        //   trackdata.h:207: note: candidate 'void TrackDataItem::setMetadata(int, const QColor&)'
+        //   trackdata.h:208: note: candidate 'void TrackDataItem::setMetadata(int, const QVariant&)'
+        //
+        // I don't understand why, because there is no explicit conversion defined from
+        // double to QColor and an implicit conversion from double to any sort of integer
+        // type should not be allowed.
+        if (p!=nullptr) p->setMetadata(DataIndexer::self()->index(localName), QVariant(ele));
         else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
     }
     else if (localName=="time")				// end of a TIME element
-    {							// check properly nested
-        if (mCurrentPoint!=NULL || mCurrentWaypoint!=NULL)
-        {
-            // The time spec of the decoded date/time is UTC, which is what we want.
-            TrackDataAbstractPoint *p = static_cast<TrackDataAbstractPoint *>(currentItem());
-            p->setTime(QDateTime::fromString(elementContents(), Qt::ISODate));
-        }
-        else if (mCurrentTrack!=NULL)
-        {
-            mCurrentTrack->setMetadata(DataIndexer::self()->index(localName), elementContents());
-        }
-        else
+    {							// may belong to any element
+        // The time spec of the decoded date/time is UTC, which is what we want.
+        const QDateTime dt = QDateTime::fromString(elementContents(), Qt::ISODate);
+
+        TrackDataItem *item = currentItem();		// find innermost current element
+        if (item==nullptr)				// no element in progress?
         {
             // GPSbabel does not enclose TIME within METADATA:
             //
@@ -584,42 +575,48 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // <bounds minlat="46.827816667" minlon="8.370250000" maxlat="46.850700000" maxlon="8.391166667"/>
             // <wpt> ...
             //
-            if (!mWithinMetadata) warning(makeXmlException("TIME end not within TRK, TRKPT, WPT or METADATA"));
-            mDataRoot->setMetadata(DataIndexer::self()->index(localName), elementContents());
+            if (mWithinMetadata) item = mDataRoot;	// but can be in metadata
         }
+
+        if (item!=nullptr) item->setMetadata(DataIndexer::self()->index(localName), dt);
+        else return (error(makeXmlException("TIME end not within TRK, TRKPT, WPT or METADATA")));
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=NULL) item->setName(elementContents(), true);	// assign its name
         else if (mWithinMetadata) mDataRoot->setMetadata(DataIndexer::self()->index(localName), elementContents());
-        else warning(makeXmlException("NAME not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA"));
+        else warning(makeXmlException("NAME end not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA"));
     }
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
         TrackDataItem *item = currentItem();		// find innermost current element
-        if (item==NULL)
-        {
-            return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
-        }
+        if (item==nullptr) return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
 
-        bool ok;
         QString rgbString = elementContents();
-        if (rgbString.startsWith('#')) rgbString.remove(0, 1);
-        unsigned int rgb = rgbString.toUInt(&ok, 16);
-        if (!ok) return (error(makeXmlException("invalid value for COLOR")));
+        if (!rgbString.startsWith('#')) rgbString.prepend('#');
+        QColor col(rgbString);
+        if (!col.isValid()) return (error(makeXmlException("invalid value for COLOR")));
 
-        Style s = *item->style();
-        if (dynamic_cast<TrackDataWaypoint *>(item)!=NULL) s.setPointColour(QColor(rgb));
-        else s.setLineColour(QColor(rgb));
-        item->setStyle(s);
+        // The COLOR attribute will only set our internal LINECOLOR/POINTCOLOR
+        // attributes if they are not already set.
+        if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+        {						// colour for a point
+            const QVariant &v = item->metadata("pointcolor");
+            if (v.isNull()) item->setMetadata(DataIndexer::self()->index("pointcolor"), col);
+        }
+        else						// colour for a line/container
+        {
+            const QVariant &v = item->metadata("linecolor");
+            if (v.isNull()) item->setMetadata(DataIndexer::self()->index("linecolor"), col);
+        }
     }
     else if (localName=="category")			// end of a CATEGORY element
     {
         TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
-        if (item==NULL) return (warning(makeXmlException("CATEGORY end not within WPT")));
 
-        item->setMetadata(DataIndexer::self()->index(localName), elementContents());
+        if (item!=nullptr) item->setMetadata(DataIndexer::self()->index(localName), elementContents());
+        else warning(makeXmlException("CATEGORY end not within WPT"));
     }
     else if (localName=="type")				// end of a TYPE element
     {
@@ -630,14 +627,14 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
             // For a waypoint, a synonym for CATEGORY but only if
             // there is no CATEGORY already.
             int idx = DataIndexer::self()->index("category");
-            if (item->metadata(idx).isEmpty()) item->setMetadata(idx, elementContents());
+            if (item->metadata(idx).isNull()) item->setMetadata(idx, elementContents());
         }
         else if (dynamic_cast<TrackDataTrack *>(item)!=NULL || dynamic_cast<TrackDataSegment *>(item)!=NULL)
         {
             // For a track or segment, normal metadata.
             item->setMetadata(DataIndexer::self()->index(localName), elementContents());
         }
-        else return (warning(makeXmlException("TYPE end not within WPT, TRK or TRKSEG")));
+        else warning(makeXmlException("TYPE end not within WPT, TRK or TRKSEG"));
     }
     else if (localName=="Category" && qName.startsWith("gpxx:"))
     {							// ignore this, covered in CATEGORY/TYPE

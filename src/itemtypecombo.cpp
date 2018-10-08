@@ -58,3 +58,10 @@ void ItemTypeCombo::setType(const QString &type)
         setCurrentIndex(idx);				// set item as current
     }
 }
+
+
+QString ItemTypeCombo::typeText() const
+{
+    if (currentIndex()==0) return (QString());		// "none" means blank
+    return (currentText());
+}

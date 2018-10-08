@@ -33,6 +33,8 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithGpsHdop = 0;
 
     QVector<const TrackDataAbstractPoint *> points;
+    // TODO: FilesView::selectedPoints() only returns points with time,
+    // so this total will always be 100%
     filesController()->view()->selectedPoints().swap(points);
     for (int i = 0; i<points.count(); ++i) getPointData(points.at(i));
 
@@ -118,10 +120,10 @@ void StatisticsWidget::getPointData(const TrackDataAbstractPoint *point)
         const double ele = tdp->elevation();		// elevation available
         if (!ISNAN(ele) && ele!=0) ++mWithElevation;	// (and also nozero)
 
-        const QString speedMeta = tdp->metadata("speed");
-        if (!speedMeta.isEmpty()) ++mWithGpsSpeed;	// GPS speed recorded
+        const QVariant speedMeta = tdp->metadata("speed");
+        if (!speedMeta.isNull()) ++mWithGpsSpeed;	// GPS speed recorded
 
-        const QString hdopMeta = tdp->metadata("hdop");
-        if (!hdopMeta.isEmpty()) ++mWithGpsHdop;	// GPS HDOP recorded
+        const QVariant hdopMeta = tdp->metadata("hdop");
+        if (!hdopMeta.isNull()) ++mWithGpsHdop;		// GPS HDOP recorded
     }
 }
