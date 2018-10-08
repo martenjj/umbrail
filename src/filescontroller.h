@@ -62,6 +62,8 @@ public:
     FilesController::Status importPhoto(const QList<QUrl> &urls);
     void initNew();
 
+    void doUpdateMap()				{ emit updateMap(); }
+
     static QString allImportFilters();
     static QString allExportFilters();
     static QString allProjectFilters(bool includeAllFiles);

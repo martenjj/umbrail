@@ -102,20 +102,9 @@ QString CommandBase::senderText(const QObject *sdr)
 }
 
 
-
 void CommandBase::setSenderText(const QObject *sdr)
 {
     setText(senderText(sdr));
-}
-
-
-
-/////////// TODO: function in controller
-void FilesCommandBase::updateMap() const
-{
-    // Cannot emit a signal directly, because we are not a QObject.
-    // Ask the FilesController to emit the signal instead.
-    QMetaObject::invokeMethod(controller(), "updateMap");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -173,7 +162,7 @@ void ImportFileCommand::redo()
     }
 
     controller()->view()->clearSelection();
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -205,7 +194,7 @@ void ImportFileCommand::undo()
     qDebug() << "saved" << mImportData->name() << "children" << mImportData->childCount();
 
     controller()->view()->clearSelection();
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -235,7 +224,7 @@ void ChangeItemNameCommand::redo()
 
     item->setName(mNewName, true);
     model()->changedItem(item);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -248,7 +237,7 @@ void ChangeItemNameCommand::undo()
 
     item->setName(mSavedName, mSavedExplicit);
     model()->changedItem(item);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -269,7 +258,6 @@ void ChangeItemDataCommand::redo()
     }
 
     Q_ASSERT(mSavedValues.count()==mDataItems.count());
-    //updateMap();
 }
 
 
@@ -289,7 +277,6 @@ void ChangeItemDataCommand::undo()
     }
 
     Q_ASSERT(mSavedValues.count()==0);
-    //updateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -386,7 +373,7 @@ void SplitSegmentCommand::redo()
     model()->endLayoutChange();
     controller()->view()->selectItem(mParentSegment);
     controller()->view()->selectItem(newSegment, true);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -426,7 +413,7 @@ void SplitSegmentCommand::undo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(mParentSegment);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -512,7 +499,7 @@ void MergeSegmentsCommand::redo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(mMasterSegment);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -569,7 +556,7 @@ void MergeSegmentsCommand::undo()
         const TrackDataItem *item = mSourceSegments[i];
         controller()->view()->selectItem(item, true);
     }
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -643,7 +630,6 @@ void AddContainerCommand::redo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(newItem);
-    //updateMap();					// cannot cause a visual change
 }
 
 
@@ -660,7 +646,6 @@ void AddContainerCommand::undo()
     mNewItemContainer->addChildItem(newItem);
 
     model()->endLayoutChange();
-    //updateMap();					// cannot cause a visual change
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -728,7 +713,7 @@ void AddPointCommand::redo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(newPoint);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -752,7 +737,7 @@ void AddPointCommand::undo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(mAtPoint);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -814,7 +799,7 @@ void MoveItemCommand::redo()
     }
 
     model()->endLayoutChange();
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -845,7 +830,7 @@ void MoveItemCommand::undo()
     }
 
     model()->endLayoutChange();
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -904,7 +889,7 @@ void DeleteItemsCommand::redo()
     }
 
     model()->endLayoutChange();
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -932,7 +917,7 @@ void DeleteItemsCommand::undo()
     mParentIndexes.clear();
 
     model()->endLayoutChange();
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -961,7 +946,7 @@ void MovePointsCommand::redo()
         model()->changedItem(item);
     }
 
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -976,7 +961,7 @@ void MovePointsCommand::undo()
         model()->changedItem(item);
     }
 
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1049,7 +1034,7 @@ void AddWaypointCommand::redo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(newPoint);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -1068,7 +1053,7 @@ void AddWaypointCommand::undo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(mWaypointFolder);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1132,7 +1117,7 @@ void AddRoutepointCommand::redo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(newPoint);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 
@@ -1151,7 +1136,7 @@ void AddRoutepointCommand::undo()
 
     model()->endLayoutChange();
     controller()->view()->selectItem(mRoutepointRoute);
-    updateMap();
+    controller()->doUpdateMap();
 }
 
 //////////////////////////////////////////////////////////////////////////
