@@ -21,15 +21,26 @@ public:
 protected:
     TrackItemStylePage(const QList<TrackDataItem *> *items, QWidget *pnt);
 
+    void addLineColourButton(const QString &text = QString());
+    void addPointColourButton(const QString &text = QString());
+
 protected:
     KColorButton *mLineColourButton;
     QCheckBox *mLineInheritCheck;
+
     KColorButton *mPointColourButton;
     QCheckBox *mPointInheritCheck;
+
+    bool mIsTopLevel;
 
 protected slots:
     void slotColourChanged(const QColor &col);
     void slotInheritChanged(bool on);
+
+private:
+    QColor getColourData(bool isLine);
+    void setColourData(bool isLine, const QColor &col);
+    void setColourButtons(KColorButton *colBut, QCheckBox *inheritBut, bool isLine);
 };
 
 

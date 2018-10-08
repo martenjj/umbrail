@@ -495,10 +495,6 @@ void TrackWaypointGeneralPage::slotStatusChanged(int idx)
     qDebug() << idx;
 
     const int status = mStatusCombo->itemData(idx).toInt();
-// TODO: check what happens for multiple points and (no change) selected
-//    const TrackData::WaypointStatus wps = static_cast<TrackData::WaypointStatus>(status);
-//    if (wps==TrackData::StatusInvalid) return;		// no change
-
     dataModel()->setData(DataIndexer::self()->index("status"), (status==0 ? QVariant() : status));
 }
 

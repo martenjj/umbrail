@@ -49,7 +49,6 @@ static void startExtensions(QXmlStreamWriter &str)
 }
 
 
-
 static void endExtensions(QXmlStreamWriter &str)
 {
     if (!startedExtensions) return;			// not started
@@ -58,43 +57,41 @@ static void endExtensions(QXmlStreamWriter &str)
 }
 
 
-static QString colourValue(const QColor &col)
+static bool isApplicationTag(const QString &name)
 {
-    QString result = col.name();
-    if (result.startsWith('#')) result.remove(0, 1);
-    return (result);
+    return (name=="status" || name=="source" || name=="stop" ||
+            name=="linecolor" || name=="pointcolor" ||
+            name=="bearingline" || name=="rangering");
 }
 
 
 static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 {
-    if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=NULL)
+    if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (false);
+							// file metadata - not in extensions
+    if (isApplicationTag(name)) return (true);		// application tag always in extensions
+
+    if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
     {							// point - these not in extensions
         return (!(name=="name" || name=="ele" || name=="time" || name=="hdop"));
     }
-    else if (dynamic_cast<const TrackDataTrack *>(item)!=NULL)
+    else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
     {							// track - these not in extensions
         return (!(name=="name" || name=="desc" || name=="type"));
     }
-    else if (dynamic_cast<const TrackDataRoute *>(item)!=NULL)
+    else if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
     {							// route - these not in extensions
         return (!(name=="name" || name=="desc" || name=="type"));
     }
-    else if (dynamic_cast<const TrackDataSegment *>(item)!=NULL)
+    else if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr)
     {							// segment - all in extensions
         return (true);
     }
-    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL)
+    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr)
     {							// waypoint - these not in extensions
         return (!(name=="link"));
     }
-    else return (false);				// metadata - no extensions
-}
-
-
-static bool isApplicationTag(const QString &name)
-{
-    return (name=="status" || name=="source" || name=="stop" || name=="bearingline" || name=="rangering");
+    else return (false);				// other - assume not in extensions
 }
 
 
@@ -116,29 +113,38 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         if (isInternalTag(name)) continue;		// ignore internally used tags
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
 							// check matches extension state
-        QVariant v = item->metadata(idx);		// get metadata from item
+        const QVariant &v = item->metadata(idx);	// get metadata from item
         if (v.isNull()) continue;			// no data to output
+
+        if (wantExtensions) startExtensions(str);	// start extensions if needed
 
         QString data;					// string form to output
         QString nstag;					// namespace tag if needed
 
-        if (name=="color")				// line or point colour
+        // Our internal LINECOLOR/POINTCOLOR data is namespaced and only for
+        // our own purposes.  The COLOR attribute of the item is also set
+        // for use by other GPX applications.
+
+        if (name=="linecolor" || name =="pointcolor")	// line or point colour
         {
             const QColor col = v.value<QColor>();
             // An alpha value of 0 means this item has no colour.
             // See TrackItemStylePage and FilesController::slotTrackProperties().
             if (col.alpha()==0) continue;
 
-            if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
-            {						// a point element
-                // OsmAnd: <color>#c0c0c0</color>
-                data = "#"+colourValue(col);
-            }
-            else					// a container element
-            {
-                // GPX: <topografix:color>c0c0c0</topografix:color>
-                nstag = "topografix:";
-                data = colourValue(col);
+            data = col.name();				// in format "#rrggbb"
+            if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
+            {						// no COLOR at top level
+                if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+                {					// a point element
+                    // OsmAnd: <color>#c0c0c0</color>
+                    str.writeTextElement("color", data);
+                }
+                else					// a container element
+                {
+                    // GPX: <topografix:color>c0c0c0</topografix:color>
+                    str.writeTextElement("topografix:color", data.mid(1));
+                }
             }
         }
         else if (name=="time")				// point or file time
@@ -147,16 +153,14 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         }
         else						// all other items
         {
-            data = item->metadata(idx).toString();	// default string format
+            data = v.toString();			// default string format
         }
 
         if (nstag.isEmpty())				// no namespace assigned yet
         {						// our application one if needed
             if (isApplicationTag(name)) nstag = "navtracks:";
         }
-
         name.prepend(nstag);				// now set namespace tag
-        if (wantExtensions) startExtensions(str);	// start extensions if needed
 
         if (name=="link")				// special format for this
         {

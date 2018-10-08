@@ -591,16 +591,25 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
         TrackDataItem *item = currentItem();		// find innermost current element
-        if (item==nullptr)
-        {
-            return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
-        }
+        if (item==nullptr) return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
 
         QString rgbString = elementContents();
         if (!rgbString.startsWith('#')) rgbString.prepend('#');
         QColor col(rgbString);
         if (!col.isValid()) return (error(makeXmlException("invalid value for COLOR")));
-        item->setMetadata(DataIndexer::self()->index("color"), col);
+
+        // The COLOR attribute will only set our internal LINECOLOR/POINTCOLOR
+        // attributes if they are not already set.
+        if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+        {						// colour for a point
+            const QVariant &v = item->metadata("pointcolor");
+            if (v.isNull()) item->setMetadata(DataIndexer::self()->index("pointcolor"), col);
+        }
+        else						// colour for a line/container
+        {
+            const QVariant &v = item->metadata("linecolor");
+            if (v.isNull()) item->setMetadata(DataIndexer::self()->index("linecolor"), col);
+        }
     }
     else if (localName=="category")			// end of a CATEGORY element
     {

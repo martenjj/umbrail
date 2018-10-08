@@ -807,8 +807,8 @@ void FilesController::slotTrackProperties()
             const TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(newData.toInt());
             if (status==TrackData::StatusInvalid) continue;
         }
-        else if (name=="color")				// changing item colour
-        {
+        else if (name=="linecolor" || name=="pointcolor")
+        {						// changing item colour
             // Alpha value encodes the inherit flag, see TrackItemStylePage
             QColor col = newData.value<QColor>();
             if (col.alpha()==0) newData = QVariant();	// here null colour means inherit

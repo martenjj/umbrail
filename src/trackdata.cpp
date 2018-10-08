@@ -749,7 +749,7 @@ QIcon TrackDataWaypoint::icon() const
 {
     if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
 
-    QColor col = metadata("color").value<QColor>();
+    const QColor col = metadata("pointcolor").value<QColor>();
     if (!col.isValid()) return (TrackDataItem::icon());
 #ifdef DEBUG_ICONS
     qDebug() << "need icon for waypoint" << name() << "colour" << col.name();

@@ -260,7 +260,7 @@ void MapView::slotShowLayer()
 }
 
 
-static QColor resolveColour(const TrackDataItem *item, const QColor &appDefault)
+static QColor resolveColour(const TrackDataItem *item, const char *key, const QColor &appDefault)
 {
     // Resolving a colour is not a trivial operation - needing to examine not only
     // the metadata of the item, but also all of its parents, up to the top level file,
@@ -272,9 +272,8 @@ static QColor resolveColour(const TrackDataItem *item, const QColor &appDefault)
 
     while (item!=nullptr)				// search to root of tree
     {
-        const QVariant v = item->metadata("color");	// metadata from this item
+        const QVariant v = item->metadata(key);		// metadata from this item
         if (!v.isNull()) return (v.value<QColor>());	// colour value from that
-
         item = item->parent();				// up to parent item
     }
 
@@ -284,13 +283,21 @@ static QColor resolveColour(const TrackDataItem *item, const QColor &appDefault)
 
 QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 {
-    return (resolveColour(tdi, Settings::lineColour()));
+    return (resolveColour(tdi, "linecolor", Settings::lineColour()));
 }
 
 
 QColor MapView::resolvePointColour(const TrackDataItem *tdi)
 {
-    return (resolveColour(tdi, Settings::pointColour()));
+    // Currently point colour is not inherited.  If set on the point item
+    // then it will be used, otherwise waypoints will use the default icon
+    // and other sorts of points will use the application setting.
+
+    //return (resolveColour(tdi, "pointcolour", Settings::pointColour()));
+
+    const QVariant v = tdi->metadata("pointcolor");	// metadata from this item
+    if (!v.isNull()) return (v.value<QColor>());	// colour value from that
+    return (QColor());					// no colour set
 }
 
 

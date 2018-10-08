@@ -29,39 +29,72 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
 
     addSeparatorField();
 
-    mLineColourButton = NULL;
-    mPointColourButton = NULL;
+    mLineColourButton = nullptr;			// no buttons created yet
+    mLineInheritCheck = nullptr;
+    mPointColourButton = nullptr;
+    mPointInheritCheck = nullptr;
 
     const TrackDataItem *item = items->first();
-    const QColor col = item->metadata("color").value<QColor>();
-    qDebug() << "initial colour" << col;
+    mIsTopLevel = (item->parent()==nullptr);
 
-    // TODO: a function to add each button, call as appropriate in subclasses
-    // TODO: TrackDataFile should have both colours!
-    if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=NULL)
-    {							// points have "Point colour"
-        mPointColourButton = new KColorButton(MapView::resolvePointColour(item), this);
-        mPointColourButton->setAlphaChannelEnabled(false);
-        connect(mPointColourButton, SIGNAL(changed(const QColor &)), SLOT(slotColourChanged(const QColor &)));
-        mFormLayout->addRow(i18n("Point colour:"), mPointColourButton);
-
-        mPointInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
-        mPointInheritCheck->setChecked(!col.isValid());
-        connect(mPointInheritCheck, &QCheckBox::toggled, this, &TrackItemStylePage::slotInheritChanged);
-        mFormLayout->addRow("", mPointInheritCheck);
-    }
-    else						// others have "Line colour"
+    const QVariant v = item->metadata("color");		// get old compatibility value
+    if (!v.isNull())
     {
-        mLineColourButton = new KColorButton(MapView::resolveLineColour(item), this);
-        mLineColourButton->setAlphaChannelEnabled(false);
-        connect(mLineColourButton, SIGNAL(changed(const QColor &)), SLOT(slotColourChanged(const QColor &)));
-        mFormLayout->addRow(i18n("Line colour:"), mLineColourButton);
-
-        mLineInheritCheck = new QCheckBox(i18n("Inherit from parent"), this);
-        mLineInheritCheck->setChecked(!col.isValid());
-        connect(mLineInheritCheck, &QCheckBox::toggled, this, &TrackItemStylePage::slotInheritChanged);
-        mFormLayout->addRow("", mLineInheritCheck);
+        qWarning() << "item" << item->name() << "uses old COLOR data";
+        if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+        {						// colour for a point
+            dataModel()->setData(DataIndexer::self()->index("pointcolor"), v);
+            dataModel()->setData(DataIndexer::self()->index("color"), QVariant());
+        }
+        else						// colour for a line/container
+        {
+            dataModel()->setData(DataIndexer::self()->index("linecolor"), v);
+            dataModel()->setData(DataIndexer::self()->index("color"), QVariant());
+        }
     }
+}
+
+
+static QString checkText(const QString &text, bool isTopLevel)
+{
+    // Use the explicit text for the button, if it is supplied.
+    if (!text.isEmpty()) return (text);
+
+    // Otherwise, choose the text depending on whether the reference item
+    // is at the top level of the tree.
+    return (isTopLevel ? i18n("Use application default") : i18n("Use colour from parent"));
+}
+
+
+void TrackItemStylePage::addLineColourButton(const QString &text)
+{
+    mLineColourButton = new KColorButton(this);
+    mLineColourButton->setAlphaChannelEnabled(false);
+    connect(mLineColourButton, &KColorButton::changed, this, &TrackItemStylePage::slotColourChanged);
+    mFormLayout->addRow(i18n("Line colour:"), mLineColourButton);
+
+    mLineInheritCheck = new QCheckBox(checkText(text, mIsTopLevel), this);
+    connect(mLineInheritCheck, &QCheckBox::toggled, this, &TrackItemStylePage::slotInheritChanged);
+    mFormLayout->addRow("", mLineInheritCheck);
+
+    mLineColourButton->setProperty("isLine", true);	// identify which color/check set
+    mLineInheritCheck->setProperty("isLine", true);
+}
+
+
+void TrackItemStylePage::addPointColourButton(const QString &text)
+{
+    mPointColourButton = new KColorButton(this);
+    mPointColourButton->setAlphaChannelEnabled(false);
+    connect(mPointColourButton, &KColorButton::changed, this, &TrackItemStylePage::slotColourChanged);
+    mFormLayout->addRow(i18n("Point colour:"), mPointColourButton);
+
+    mPointInheritCheck = new QCheckBox(checkText(text, mIsTopLevel), this);
+    connect(mPointInheritCheck, &QCheckBox::toggled, this, &TrackItemStylePage::slotInheritChanged);
+    mFormLayout->addRow("", mPointInheritCheck);
+
+    mPointColourButton->setProperty("isLine", false);	// identify which color/check set
+    mPointInheritCheck->setProperty("isLine", false);
 }
 
 //  The state of the colour selection - colour and inherit flag - needs to be
@@ -75,25 +108,42 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
 //  to an invalid QColor, so that the RGB value is not lost when the inherit flag
 //  is toggled.
 
+static inline const char *colourKey(bool isLine)
+{
+    return (isLine ? "linecolor" : "pointcolor");	// could use UK spelling, but
+}							// do this for consistency
+
+
+QColor TrackItemStylePage::getColourData(bool isLine)
+{
+    return (dataModel()->data(colourKey(isLine)).value<QColor>());
+}
+
+
+void TrackItemStylePage::setColourData(bool isLine, const QColor &col)
+{
+    dataModel()->setData(DataIndexer::self()->index(colourKey(isLine)), col);
+}
+
+
 void TrackItemStylePage::slotColourChanged(const QColor &col)
 {							// colour button selected colour
+    const bool isLine = sender()->property("isLine").toBool();
+    qDebug() << "line?" << isLine << "col" << col;
+
     // The KColorButton does not have its alpha channel enabled, so the
     // colour value passed in here will always be RGB only.  Selecting a
     // colour via a colour button always turns off the inherit flag.
 
-    // TODO: this will need to handle 2 cases if File extended for both colours
+    setColourData(isLine, col);
 
-    qDebug() << col;
-
-    dataModel()->setData(DataIndexer::self()->index("color"), col);
-
-    if (mLineColourButton!=nullptr)
+    if (isLine && mLineColourButton!=nullptr)
     {
         Q_ASSERT(mLineInheritCheck!=nullptr);
         mLineInheritCheck->setChecked(!col.isValid());
     }
 
-    if (mPointColourButton!=nullptr)
+    if (!isLine && mPointColourButton!=nullptr)
     {
         Q_ASSERT(mPointInheritCheck!=nullptr);
         mPointInheritCheck->setChecked(!col.isValid());
@@ -103,48 +153,40 @@ void TrackItemStylePage::slotColourChanged(const QColor &col)
 
 void TrackItemStylePage::slotInheritChanged(bool on)
 {							// inherit check box toggled
-    // TODO: this will need to handle 2 cases if File extended for both colours
-//     QCheckBox *check = qobject_cast<QCheckBox *>(sender());
-//     Q_ASSERT(check!=nullptr);
-//     if (check==mLineInheritCheck)			// for line colour
-//     {
-//         Q_ASSERT(mLineColourButton!=nullptr);
+    const bool isLine = sender()->property("isLine").toBool();
+    qDebug() << "line?" << isLine << "on" << on;
 
-        QColor col = dataModel()->data("color").value<QColor>();
-        col.setAlpha(on ? 0 : 255);
-        qDebug() << "set col" << col << "valid?" << col.isValid();
+    QColor col = getColourData(isLine);
+    col.setAlpha(on ? 0 : 255);
+    qDebug() << "set col" << col << "valid?" << col.isValid();
+    setColourData(isLine, col);
+}
 
-        dataModel()->setData(DataIndexer::self()->index("color"), col);
-//     }
-//     else if (check==mPointInheritCheck)			// for point colour
-//     {
-//         Q_ASSERT(mPointColourButton!=nullptr);
-// 
-//     }
-//     else Q_ASSERT(false);				// must be one or the other
+
+void TrackItemStylePage::setColourButtons(KColorButton *colBut, QCheckBox *inheritBut, bool isLine)
+{
+    const QColor col = getColourData(isLine);		// combined colour as stored
+    const bool inherit = (col.alpha()==0);		// has it alpha component?
+    const QColor rgbcol = QColor(col.rgb());		// remove any alpha component
+    qDebug() << "line?" << isLine << "col" << col << "inherit?" << inherit;
+
+    colBut->setColor(rgbcol);
+    inheritBut->setChecked(inherit || !col.isValid());
 }
 
 
 void TrackItemStylePage::refreshData()
 {
-    const QColor col = dataModel()->data("color").value<QColor>();
-							// combined colour as stored
-    const bool inherit = (col.alpha()==0);		// has it alpha component?
-    const QColor rgbcol = QColor(col.rgb());		// remove any alpha component
-    qDebug() << "col" << col << "inherit?" << inherit;
-
     if (mLineColourButton!=nullptr)
     {
         Q_ASSERT(mLineInheritCheck!=nullptr);
-        mLineColourButton->setColor(rgbcol);
-        mLineInheritCheck->setChecked(inherit || !col.isValid());
+        setColourButtons(mLineColourButton, mLineInheritCheck, true);
     }
 
     if (mPointColourButton!=nullptr)
     {
         Q_ASSERT(mPointInheritCheck!=nullptr);
-        mPointColourButton->setColor(rgbcol);
-        mPointInheritCheck->setChecked(inherit || !col.isValid());
+        setColourButtons(mPointColourButton, mPointInheritCheck, false);
     }
 }
 
@@ -160,9 +202,9 @@ TrackFileStylePage::TrackFileStylePage(const QList<TrackDataItem *> *items, QWid
     qDebug();
     setObjectName("TrackFileStylePage");
 
-    // TODO: use Item, detect whether ref item has parent
-    if (mLineColourButton!=NULL) mLineInheritCheck->setText(i18n("Use application default"));
-    if (mPointColourButton!=NULL) mPointInheritCheck->setText(i18n("Use application default"));
+    addLineColourButton();
+    addSeparatorField();
+    addPointColourButton();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -176,6 +218,8 @@ TrackTrackStylePage::TrackTrackStylePage(const QList<TrackDataItem *> *items, QW
 {
     qDebug();
     setObjectName("TrackTrackStylePage");
+
+    addLineColourButton();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -189,6 +233,8 @@ TrackSegmentStylePage::TrackSegmentStylePage(const QList<TrackDataItem *> *items
 {
     qDebug();
     setObjectName("TrackSegmentStylePage");
+
+    addLineColourButton();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -203,7 +249,7 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
     qDebug();
     setObjectName("TrackWaypointStylePage");
 
-    if (mPointColourButton!=NULL) mPointInheritCheck->setText(i18n("Use waypoint icon"));
+    addPointColourButton(i18n("Use waypoint icon"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -218,7 +264,7 @@ TrackRouteStylePage::TrackRouteStylePage(const QList<TrackDataItem *> *items, QW
     qDebug();
     setObjectName("TrackRouteStylePage");
 
-    if (mLineColourButton!=NULL) mLineInheritCheck->setText(i18n("Use application default"));
+    addLineColourButton();
 }
 
 //////////////////////////////////////////////////////////////////////////

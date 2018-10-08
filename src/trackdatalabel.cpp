@@ -48,13 +48,6 @@ void TrackDataLabel::updateDateTime()
 }
 
 
-TrackDataLabel::TrackDataLabel(double lat, double lon, QWidget *pnt)
-    : QLabel(TrackData::formattedLatLong(lat, lon), pnt)
-{
-    init();
-}
-
-
 TrackDataLabel::TrackDataLabel(double lat, double lon, bool blankIfUnknown, QWidget *pnt)
     : QLabel(TrackData::formattedLatLong(lat, lon, blankIfUnknown), pnt)
 {
