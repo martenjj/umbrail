@@ -5,11 +5,14 @@
 #include <qlabel.h>
 #include <qdebug.h>
 #include <qtabwidget.h>
+#include <qpushbutton.h>
 
 #include <klocalizedstring.h>
 #include <kiconloader.h>
 #include <kconfiggroup.h>
 #include <kstandardguiitem.h>
+
+#include <dialogstatewatcher.h>
 
 #include "trackdata.h"
 #include "metadatamodel.h"
@@ -33,6 +36,8 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     setModal(true);
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Close);
+    stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
+    mCloseButtonShown = true;
 
     Q_ASSERT(!items->isEmpty());
     const TrackDataItem *item = items->first();
@@ -133,6 +138,7 @@ void TrackPropertiesDialogue::slotModelDataChanged(int idx)
 
     setButtonEnabled(QDialogButtonBox::Ok, ok);
     setButtonGuiItem(QDialogButtonBox::Close, KStandardGuiItem::cancel());
+    mCloseButtonShown = false;
 }
 
 
@@ -179,6 +185,13 @@ void TrackPropertiesDialogue::showEvent(QShowEvent *ev)
 
 void TrackPropertiesDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
+    // Because of the setSaveOnButton(QDialogButtonBox::Close) used in
+    // the constructor, this will be called when that button is used
+    // regardless of whether it says "Close" or "Cancel".  So we use
+    // the flag to check what the button says, and only save state
+    // if it is still "Close".
+    if (!mCloseButtonShown) return;			// button is actually "Cancel"
+
     grp.writeEntry(QString("Index%1").arg(mItemType), mTabWidget->currentIndex());
     DialogStateSaver::saveConfig(dialog, grp);
 }

@@ -47,6 +47,7 @@ private:
     TrackData::Type mItemType;
     MetadataModel *mDataModel;
     QVector<bool> mPageDataChanged;
+    bool mCloseButtonShown;
 };
 
 #endif							// TRACKPROPERTIESDIALOGUE_H
