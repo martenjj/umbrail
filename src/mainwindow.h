@@ -86,6 +86,8 @@ protected slots:
     void slotOpenMedia();
     void slotSaveMedia();
 
+    void slotResetAndCancel();
+
 private:
     void init();
     void setupActions();

@@ -311,6 +311,16 @@ void MapView::setMovePointsMode(bool on)
 }
 
 
+void MapView::cancelDrag()
+{
+    qDebug();
+    foreach (LayerBase *layer, mLayers)
+    {
+        layer->cancelDrag();
+    }
+}
+
+
 bool MapView::eventFilter(QObject *obj, QEvent *ev)
 {
     if (ev->type()==QEvent::CursorChange)

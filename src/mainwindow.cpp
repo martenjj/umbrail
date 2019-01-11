@@ -373,6 +373,12 @@ void MainWindow::setupActions()
     a->setIcon(QIcon::fromTheme("view-pim-mail"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
 
+    a = ac->addAction("reset_cancel");
+    a->setText(i18n("Reset/Cancel"));			// only seen in "Configure Shortcuts"
+    a->setIcon(QIcon::fromTheme("dialog-cancel"));
+    ac->setDefaultShortcut(a, Qt::Key_Escape);
+    connect(a, SIGNAL(triggered()), this, SLOT(slotResetAndCancel()));
+
     MapView *mapView = mapController()->view();
 
     KActionMenu *itemsMenu = new KActionMenu(this);
@@ -1139,4 +1145,11 @@ void MainWindow::slotTrackStopDetect()
 {
     StopDetectDialogue *d = new StopDetectDialogue(this);
     d->show();
+}
+
+
+void MainWindow::slotResetAndCancel()
+{
+    mapController()->view()->cancelDrag();
+    filesController()->view()->clearSelection();
 }

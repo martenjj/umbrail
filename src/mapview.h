@@ -41,6 +41,7 @@ public:
     static QColor resolveLineColour(const TrackDataItem *tdi);
     static QColor resolvePointColour(const TrackDataItem *tdi);
 
+    void cancelDrag();
     void setStopLayerData(const QList<const TrackDataWaypoint *> *stops);
 
 public slots:               

@@ -72,6 +72,7 @@ public:
     void setMovePointsMode(bool on);
     bool isVisible() const				{ return (mVisible); }
     void setVisible(bool on)				{ mVisible = on; }
+    void cancelDrag();
 
 signals:
     void draggedPoints(qreal latOff, qreal lonOff);

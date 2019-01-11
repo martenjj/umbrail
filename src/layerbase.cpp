@@ -482,3 +482,18 @@ void LayerBase::setSelectionColours(QPainter *painter, bool setBrush) const
         if (setBrush) painter->setBrush(Settings::selectedMarkInner());
     }
 }
+
+
+void LayerBase::cancelDrag()
+{
+#ifdef DEBUG_DRAGGING
+        qDebug() << className(this).constData();
+#endif
+        if (mDraggingPoints!=NULL)
+        {
+            delete mDraggingPoints; mDraggingPoints = NULL;
+            mapController()->view()->update();
+        }
+
+        mClickedPoint = NULL;
+}
