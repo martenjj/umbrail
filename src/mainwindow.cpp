@@ -236,6 +236,7 @@ void MainWindow::setupActions()
     mDeleteItemsAction = ac->addAction("edit_delete_track");
     mDeleteItemsAction->setText(i18n("Delete"));
     mDeleteItemsAction->setIcon(QIcon::fromTheme("edit-delete"));
+    ac->setDefaultShortcut(mDeleteItemsAction, KStandardShortcut::deleteFile().value(0));
     connect(mDeleteItemsAction, SIGNAL(triggered()), filesController(), SLOT(slotDeleteItems()));
 
     mSplitTrackAction = ac->addAction("track_split");
