@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		05-Mar-19					#
+#  Edit:		02-Apr-19					#
 #########################################################################
 
 project(navtracks)
@@ -192,5 +192,7 @@ add_subdirectory(plugins)
 #									#
 #########################################################################
 
-install(TARGETS navtracks ${INSTALL_TARGETS_DEFAULT_ARGS})
+if (INSTALL_BINARIES)
+  install(TARGETS navtracks ${INSTALL_TARGETS_DEFAULT_ARGS})
+endif (INSTALL_BINARIES)
 install(FILES settings.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR}/navtracks.kcfg)

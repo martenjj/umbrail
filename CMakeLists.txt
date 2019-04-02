@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		18-Nov-17					#
+#  Edit:		02-Apr-19					#
 #########################################################################
 #									#
 #									#
@@ -32,6 +32,14 @@ include(KDECMakeSettings)
 include(KDEFrameworkCompilerSettings)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${KDE_INSTALL_FULL_DATAROOTDIR}/marble/cmake)
+
+#########################################################################
+#									#
+#  Options								#
+#									#
+#########################################################################
+
+option(INSTALL_BINARIES "Install the binaries and libraries, turn off for development in place" ON)
 
 #########################################################################
 #									#

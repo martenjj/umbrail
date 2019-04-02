@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		08-Dec-17					#
+#  Edit:		02-Apr-19					#
 #########################################################################
 
 project(navtracks)
@@ -24,9 +24,11 @@ add_definitions("-DPLUGIN_EXPORT='__attribute__ ((visibility (\"default\")))'")
 
 add_library(abstractcoordinate SHARED abstractcoordinatehandler.cpp)
 set_target_properties(abstractcoordinate PROPERTIES SOVERSION "1.0.0")
-target_link_libraries(abstractcoordinate Qt5::Core Qt5::Widgets)
+target_link_libraries(abstractcoordinate Qt5::Core Qt5::Gui Qt5::Widgets)
 
-install(TARGETS abstractcoordinate ${INSTALL_TARGETS_DEFAULT_ARGS})
+if (INSTALL_BINARIES)
+  install(TARGETS abstractcoordinate ${INSTALL_TARGETS_DEFAULT_ARGS})
+endif (INSTALL_BINARIES)
 
 #########################################################################
 #									#
@@ -41,7 +43,9 @@ target_link_libraries(decimalcoordinate
   Qt5::Widgets
   KF5::I18n
 )
-install(TARGETS decimalcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+if (INSTALL_BINARIES)
+  install(TARGETS decimalcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+endif (INSTALL_BINARIES)
 
 add_library(dmscoordinate MODULE dmscoordinate.cpp)
 target_link_libraries(dmscoordinate
@@ -51,7 +55,9 @@ target_link_libraries(dmscoordinate
   KF5::I18n
   ${DIALOGUTIL_LIBRARIES}
 )
-install(TARGETS dmscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+if (INSTALL_BINARIES)
+  install(TARGETS dmscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+endif (INSTALL_BINARIES)
 
 add_library(swisscoordinate MODULE swisscoordinate.cpp)
 target_link_libraries(swisscoordinate
@@ -60,7 +66,9 @@ target_link_libraries(swisscoordinate
   Qt5::Widgets
   KF5::I18n
 )
-install(TARGETS swisscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+if (INSTALL_BINARIES)
+  install(TARGETS swisscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+endif (INSTALL_BINARIES)
 
 add_library(osgbcoordinate MODULE osgbcoordinate.cpp)
 target_link_libraries(osgbcoordinate
@@ -70,4 +78,6 @@ target_link_libraries(osgbcoordinate
   KF5::I18n
   ${DIALOGUTIL_LIBRARIES}
 )
-install(TARGETS osgbcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+if (INSTALL_BINARIES)
+  install(TARGETS osgbcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
+endif (INSTALL_BINARIES)

@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		18-Nov-17					#
+#  Edit:		02-Apr-19					#
 #########################################################################
 
 project(navtracks)
@@ -20,6 +20,8 @@ add_definitions("-DQT_NO_NARROWING_CONVERSIONS_IN_CONNECT")
 
 remove_definitions("-DQT_NO_CAST_FROM_ASCII")
 remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
+
+find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets)
 
 #########################################################################
 #									#
