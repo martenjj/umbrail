@@ -576,6 +576,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
 void MainWindow::slotStatusMessage(const QString &text)
 {
     mStatusMessage->setText(text);
+    mStatusMessage->repaint();				// show new message immediately
 }
 
 
