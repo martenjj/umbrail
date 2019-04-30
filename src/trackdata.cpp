@@ -544,7 +544,7 @@ double TrackDataAbstractPoint::elevation() const
 QString TrackDataAbstractPoint::formattedElevation() const
 {
     const double e = elevation();
-    if (e==NAN) return (i18nc("an unknown quantity", "unknown"));
+    if (ISNAN(e)) return (i18nc("an unknown quantity", "unknown"));
     return (i18nc("@item:intable Number with unit of metres", "%1 m", QString::number(e, 'f', 1)));
 }
 
