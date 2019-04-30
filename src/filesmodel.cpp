@@ -176,6 +176,14 @@ case COL_NAME:
                 const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi);
                 if (tdw!=NULL) return (i18n("Waypoint, elevation %1", tdw->formattedElevation()));
             }
+            {
+                const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(tdi);
+                if (tdr!=NULL) return (i18np("Route with %1 point", "Route with %1 points", tdr->childCount()));
+            }
+            {
+                const TrackDataRoutepoint *tdp = dynamic_cast<const TrackDataRoutepoint *>(tdi);
+                if (tdp!=NULL) return (i18n("Routepoint, elevation %1", tdp->formattedElevation()));
+            }
             break;
         }
         break;
