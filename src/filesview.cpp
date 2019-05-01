@@ -214,8 +214,11 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
         if (ISNAN(tdp->latitude())) return;		// check position is valid
         if (ISNAN(tdp->longitude())) return;
 
-        const QVariant dt = tdp->metadata("time");	// check time is valid
-        if (!dt.canConvert(QMetaType::QDateTime)) return;
+        if (dynamic_cast<const TrackDataRoutepoint *>(tdp)==nullptr)
+        {						// if not a route point,
+            const QVariant dt = tdp->metadata("time");	// check time is valid
+            if (!dt.canConvert(QMetaType::QDateTime)) return;
+        }
 
         points->append(tdp);				// add point to list
     }

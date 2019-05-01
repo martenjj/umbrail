@@ -52,6 +52,7 @@ private slots:
 private:
     void getPlotData(const TrackDataAbstractPoint *point);
     void associateWaypoints(const TrackDataItem *item);
+    void getRoutePoints();
 
 private:
     QCheckBox *mElevationCheck;
@@ -106,6 +107,9 @@ private:
 
     time_t mBaseTime;
     QTimeZone *mTimeZone;
+
+    bool mRouteMode;
+    QVector<const TrackDataAbstractPoint *> mRoutePoints;
 
     QSharedPointer<QCPAxisTicker> mNumberTicker;
     QSharedPointer<QCPAxisTicker> mTimeTicker;

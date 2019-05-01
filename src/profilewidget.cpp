@@ -48,8 +48,9 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#define ASSOCIATE_DISTANCE	(100.0/(6371*1000))	// distance tolerance in metres
+#define ASSOCIATE_DISTANCE	(100.0/(6371*1000))	// distance tolerance, metres
 #define MARKER_SIZE		8			// if no icon image available
+#define ROUTEPOINT_STEP		50			// point separation, metres
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -165,7 +166,7 @@ void WaypointLayerable::draw(QCPPainter *painter)
         const int idx = it.value();
 
         const double ele = mElevData->at(idx);
-        if (isnan(ele))
+        if (ISNAN(ele))
         {
             qDebug() << "no elevation for" << tdw->name();
             continue;
@@ -224,9 +225,24 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     setObjectName("ProfileWidget");
     setButtons(QDialogButtonBox::Close);
 
-    mTimeZone = NULL;
+    mTimeZone = nullptr;
 
+    // Get the selected points.
     filesController()->view()->selectedPoints().swap(mPoints);
+    Q_ASSERT(!mPoints.isEmpty());
+
+    // See if the first of those is a route point.  If so, assume that all of them are
+    // and the plot is in route mode (interpolated points, limited options).
+    const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(mPoints.first());
+    mRouteMode = (tdr!=nullptr);
+    qDebug() << "route mode?" << mRouteMode;
+
+    // If a route, rewrite the selected point data to contain the original route points
+    // with intermediate points interpolated between them.
+    if (mRouteMode) getRoutePoints();
+
+    // Now it is possible to set the window title appropriately.
+    setWindowTitle(mRouteMode ? i18n("Route Profile") : i18n("Track Profile"));
 
     mUpdateTimer = new QTimer(this);
     mUpdateTimer->setSingleShot(true);
@@ -240,7 +256,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     mPlot = new QCustomPlot(this);
     mPlot->addGraph(mPlot->xAxis, mPlot->yAxis);
-    mPlot->addGraph(mPlot->xAxis, mPlot->yAxis2);
+    if (!mRouteMode) mPlot->addGraph(mPlot->xAxis, mPlot->yAxis2);
     gl->addWidget(mPlot, 0, col, 1, -1);
 
     gl->setRowStretch(0, 1);
@@ -255,6 +271,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     gl->addWidget(mElevationCheck, 2, col);
 
     mSpeedCheck = new QCheckBox(i18n("Speed"), this);
+    if (mRouteMode) mSpeedCheck->setEnabled(false);
     connect(mSpeedCheck, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     gl->addWidget(mSpeedCheck, 3, col);
 
@@ -273,6 +290,11 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     mElevationSourceCombo = new QComboBox(this);
     mElevationSourceCombo->addItem(i18n("GPS"), ElevationSourceGPS);
     mElevationSourceCombo->addItem(i18n("DEM"), ElevationSourceDEM);
+    if (mRouteMode)
+    {
+        mElevationSourceCombo->setCurrentIndex(1);	// only DEM allowed for route
+        mElevationSourceCombo->setEnabled(false);
+    }
     connect(mElevationSourceCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
     l = new QLabel(i18n("source"), this);
@@ -301,11 +323,13 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     QButtonGroup *bg = new QButtonGroup(this);
 
     mReferenceTimeRadio = new QRadioButton(i18n("Time"), this);
+    if (mRouteMode) mReferenceTimeRadio->setEnabled(false);
     connect(mReferenceTimeRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mReferenceTimeRadio);
     gl->addWidget(mReferenceTimeRadio, 2, col);
 
     mReferenceDistRadio = new QRadioButton(i18n("Distance"), this);
+    if (mRouteMode) mReferenceDistRadio->setChecked(true);
     connect(mReferenceDistRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
     bg->addButton(mReferenceDistRadio);
     gl->addWidget(mReferenceDistRadio, 3, col);
@@ -355,7 +379,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     if (!mElevationCheck->isChecked() && !mSpeedCheck->isChecked())
     {							// if nothing on, set both on
         mElevationCheck->setChecked(true);
-        mSpeedCheck->setChecked(true);
+        if (mSpeedCheck->isEnabled()) mSpeedCheck->setChecked(true);
     }
 
     // Set up a new layer on which to draw the waypoints.  Assuming that
@@ -386,28 +410,34 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 ProfileWidget::~ProfileWidget()
 {
     delete mTimeZone;
+    qDeleteAll(mRoutePoints);
 }
 
 
 void ProfileWidget::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
     mElevationCheck->setChecked(grp.readEntry("ShowElevation", true));
-    mSpeedCheck->setChecked(grp.readEntry("ShowSpeed", true));
+    if (mSpeedCheck->isEnabled()) mSpeedCheck->setChecked(grp.readEntry("ShowSpeed", true));
     mElevationUnit->setCurrentIndex(grp.readEntry("UnitElevation", 0));
     mSpeedUnit->setCurrentIndex(grp.readEntry("UnitSpeed", 0));
 
-    int val = grp.readEntry("ElevationSource", static_cast<int>(ElevationSourceGPS));
-    int idx = mElevationSourceCombo->findData(val);
-    if (idx!=-1) mElevationSourceCombo->setCurrentIndex(idx);
+    int val = grp.readEntry("ScaleRange", static_cast<int>(ScaleRangeAuto));
+    int idx = mScaleRangeCombo->findData(val);
+    if (idx!=-1) mScaleRangeCombo->setCurrentIndex(idx);
+
+    if (mElevationSourceCombo->isEnabled())
+    {
+        val = grp.readEntry("ElevationSource", static_cast<int>(ElevationSourceGPS));
+        idx = mElevationSourceCombo->findData(val);
+        if (idx!=-1) mElevationSourceCombo->setCurrentIndex(idx);
+    }
+
     val = grp.readEntry("SpeedSource", static_cast<int>(SpeedSourceGPS));
     idx = mSpeedSourceCombo->findData(val);
     if (idx!=-1) mSpeedSourceCombo->setCurrentIndex(idx);
-    val = grp.readEntry("ScaleRange", static_cast<int>(ScaleRangeAuto));
-    idx = mScaleRangeCombo->findData(val);
-    if (idx!=-1) mScaleRangeCombo->setCurrentIndex(idx);
 
-    mReferenceTimeRadio->setChecked(grp.readEntry("ReferenceTime", true));
-    mReferenceDistRadio->setChecked(grp.readEntry("ReferenceDist", false));
+    if (mReferenceTimeRadio->isEnabled()) mReferenceTimeRadio->setChecked(grp.readEntry("ReferenceTime", true));
+    if (mReferenceDistRadio->isEnabled()) mReferenceDistRadio->setChecked(grp.readEntry("ReferenceDist", false));
     mTimeUnit->setCurrentIndex(grp.readEntry("UnitTime", 0));
     mDistanceUnit->setCurrentIndex(grp.readEntry("UnitDistance", 0));
 
@@ -420,14 +450,14 @@ void ProfileWidget::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
     grp.writeEntry("ShowElevation", mElevationCheck->isChecked());
-    grp.writeEntry("ShowSpeed", mSpeedCheck->isChecked());
+    if (mSpeedCheck->isEnabled()) grp.writeEntry("ShowSpeed", mSpeedCheck->isChecked());
     grp.writeEntry("UnitElevation", mElevationUnit->currentIndex());
     grp.writeEntry("UnitSpeed", mSpeedUnit->currentIndex());
-    grp.writeEntry("ElevationSource", mElevationSourceCombo->currentData().toInt());
+    if (mElevationSourceCombo->isEnabled()) grp.writeEntry("ElevationSource", mElevationSourceCombo->currentData().toInt());
     grp.writeEntry("SpeedSource", mSpeedSourceCombo->currentData().toInt());
     grp.writeEntry("ScaleRange", mScaleRangeCombo->currentData().toInt());
-    grp.writeEntry("ReferenceTime", mReferenceTimeRadio->isChecked());
-    grp.writeEntry("ReferenceDist", mReferenceDistRadio->isChecked());
+    if (mReferenceTimeRadio->isEnabled()) grp.writeEntry("ReferenceTime", mReferenceTimeRadio->isChecked());
+    if (mReferenceDistRadio->isEnabled()) grp.writeEntry("ReferenceDist", mReferenceDistRadio->isChecked());
     grp.writeEntry("UnitTime", mTimeUnit->currentIndex());
     grp.writeEntry("UnitDistance", mDistanceUnit->currentIndex());
     grp.writeEntry("ShowWaypoints", static_cast<int>(mWaypointSelection));
@@ -438,90 +468,93 @@ void ProfileWidget::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 
 void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
 {
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(point);
-    if (tdp!=NULL)					// is this a track point?
+    // The point here can be either a track or a route point.  If the plot is for a
+    // route, the selected route or route points will already have had interpolated
+    // points (of type Trackpoint) added between them.
+
+    double distStep = 0;
+    double timeStep = 0;
+
+    if (mPrevPoint!=nullptr)
     {
-        double distStep = 0;
-        double timeStep = 0;
+        distStep = mPrevPoint->distanceTo(point, true);	// distance travelled this step
+        timeStep = mPrevPoint->timeTo(point);		// time interval this step
+    }
 
-        QDateTime dt = tdp->time();
+    mCumulativeTravel += Units::internalToLength(distStep, mDistanceUnit->unit());
+    mPrevPoint = point;					// note this as new previous
+
+    // Reference: either cumulative travel distance, or GPS time (if valid)
+    if (mUseTravelDistance)				// plot against distance
+    {
+        mRefData.append(mCumulativeTravel);
+    }
+    else						// plot against time
+    {
+        QDateTime dt = point->time();
+        if (!dt.isValid()) return;			// no time available this point
+
         // do time zone conversion
-        if (mTimeZone!=NULL) dt = dt.toUTC().toTimeZone(*mTimeZone);
+        if (mTimeZone!=nullptr) dt = dt.toUTC().toTimeZone(*mTimeZone);
 
-        if (mPrevPoint!=NULL)
+        time_t tm = dt.toTime_t();
+
+        if (mTimeZone!=nullptr)				// file time zone available
         {
-            distStep = mPrevPoint->distanceTo(tdp, true);
-							// distance travelled this step
-            timeStep = mPrevPoint->timeTo(tdp);		// time interval this step
+            // Axis times to be displayed by QCustomPlot are passed to it
+            // as double values representing a time_t.  They may either be
+            // local time or UTC, and the corresponding setting passed to
+            // QCPAxis::setDateTimeSpec() gives the correct display.
+            //
+            // However, it is not possible to display the value converted to
+            // a time zone time, which is what is required.  So that is done
+            // manually here instead, using the offset from UTC to the file
+            // time zone, and setting the axis to display UTC values.  The
+            // offset can vary depending on the time of year (i.e. whether
+            // DST is in operation), so it is calculated here at the time of
+            // the data point.  This hopefully means that the displayed time
+            // values will be correct even if they span DST transitions.
+
+            tm += mTimeZone->offsetFromUtc(dt);
         }
 
-        mCumulativeTravel += Units::internalToLength(distStep, mDistanceUnit->unit());
-        mPrevPoint = tdp;
-
-        // Reference: either cumulative travel distance, or GPS time (if valid)
-        if (mUseTravelDistance)				// plot against distance
+        if (mBaseTime==0)				// this is the first point
         {
-            mRefData.append(mCumulativeTravel);
-        }
-        else						// plot against time
-        {
-            if (!dt.isValid()) return;			// no time available this point
-
-            time_t tm = dt.toTime_t();
-
-            if (mTimeZone!=NULL)			// file time zone available
-            {
-                // Axis times to be displayed by QCustomPlot are passed to it
-                // as double values representing a time_t.  They may either be
-                // local time or UTC, and the corresponding setting passed to
-                // QCPAxis::setDateTimeSpec() gives the correct display.
-                //
-                // However, it is not possible to display the value converted to
-                // a time zone time, which is what is required.  So that is done
-                // manually here instead, using the offset from UTC to the file
-                // time zone, and setting the axis to display UTC values.  The
-                // offset can vary depending on the time of year (i.e. whether
-                // DST is in operation), so it is calculated here at the time of
-                // the data point.  This hopefully means that the displayed time
-                // values will be correct even if they span DST transitions.
-
-                tm += mTimeZone->offsetFromUtc(dt);
-            }
-
-            if (mBaseTime==0)				// this is the first point
-            {
-                mBaseTime = tm;				// use this as base time
-                if (mTimeZone!=NULL) qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
-            }
-
-            if (mTimeUnit->unit()==Units::TimeRelative)
-            {						// to make times start at zero
-                tm = static_cast<time_t>(difftime(tm, mBaseTime));
-            }
-            mRefData.append(tm);
+            mBaseTime = tm;				// use this as base time
+            if (mTimeZone!=nullptr) qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
         }
 
-        // Elevation, data always in metres
-        double ele = NAN;
-        if (mElevationSource==ElevationSourceGPS)	// GPS elevation
-        {
-            ele = tdp->elevation();
+        if (mTimeUnit->unit()==Units::TimeRelative)
+        {						// to make times start at zero
+            tm = static_cast<time_t>(difftime(tm, mBaseTime));
         }
-        else						// DEM elevation
-        {
-            const double lat = tdp->latitude();
-            const double lon = tdp->longitude();
-            const ElevationTile *tile = ElevationManager::self()->requestTile(lat, lon, false);
-            if (tile->state()==ElevationTile::Loaded) ele = tile->elevation(lat, lon);
-        }
-        mElevData.append(Units::internalToElevation(ele, mElevationUnit->unit()));
+        mRefData.append(tm);
+    }
 
-        // Speed, either from GPS or calculated from track
-        double spd;
+    // Elevation, data always in metres
+    double ele = NAN;
+    if (mElevationSource==ElevationSourceGPS)		// GPS elevation
+    {
+        // Not expected to be valid for route plotting.
+        ele = point->elevation();
+    }
+    else						// DEM elevation
+    {
+        const double lat = point->latitude();
+        const double lon = point->longitude();
+        const ElevationTile *tile = ElevationManager::self()->requestTile(lat, lon, false);
+        if (tile->state()==ElevationTile::Loaded) ele = tile->elevation(lat, lon);
+    }
+    mElevData.append(Units::internalToElevation(ele, mElevationUnit->unit()));
+
+    // Speed, either from GPS or calculated from track
+    double spd = NAN;
+    if (!mRouteMode)					// not for route plotting
+    {
         if (mSpeedSource==SpeedSourceGPS)		// GPS speed
         {
             // Get the speed from the track metadata.
-            const QVariant speedMeta = tdp->metadata("speed");
+            const QVariant speedMeta = point->metadata("speed");
             if (speedMeta.isNull()) spd = NAN;
             else
             {
@@ -549,8 +582,8 @@ void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
                 spd = Units::internalToSpeed(spd, mSpeedUnit->unit());
             }
         }
-        mSpeedData.append(spd);
     }
+    mSpeedData.append(spd);
 }
 
 
@@ -561,7 +594,7 @@ void ProfileWidget::slotUpdatePlot()
     mSpeedUnit->setEnabled(speedEnabled);
 
     const bool elevationEnabled = mElevationCheck->isChecked();
-    mElevationSourceCombo->setEnabled(elevationEnabled);
+    mElevationSourceCombo->setEnabled(elevationEnabled && !mRouteMode);
     mElevationUnit->setEnabled(elevationEnabled);
 
     mElevationSource = static_cast<ElevationSource>(mElevationSourceCombo->currentData().toInt());
@@ -572,7 +605,7 @@ void ProfileWidget::slotUpdatePlot()
     mDistanceUnit->setEnabled(mUseTravelDistance);
 
     mCumulativeTravel = 0;
-    mPrevPoint = NULL;
+    mPrevPoint = nullptr;
 
     mRefData.clear();
     mElevData.clear();
@@ -581,7 +614,7 @@ void ProfileWidget::slotUpdatePlot()
 
     // TODO: can be a once off setup, will be that same every time
     delete mTimeZone;
-    mTimeZone = NULL;					// no time zone available yet
+    mTimeZone = nullptr;				// no time zone available yet
 
     // Resolve the file time zone
     QVariant zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
@@ -592,7 +625,8 @@ void ProfileWidget::slotUpdatePlot()
         else qWarning() << "unknown time zone" << zoneName;
     }
 
-    for (int i = 0; i<mPoints.count(); ++i) getPlotData(mPoints.at(i));
+    const int num = mPoints.count()-1;
+    for (int i = 0; i<=num; ++i) getPlotData(mPoints.at(i));
     qDebug() << "got" << mRefData.count() << "data points";
     mWaypointLayerable->setData(&mWaypoints, &mRefData, &mElevData);
     mWaypointLayerable->setShowPoints(mWaypointSelection);
@@ -603,11 +637,14 @@ void ProfileWidget::slotUpdatePlot()
     graph->setPen(QPen(Qt::red));
     graph->rescaleValueAxis();
 
-    graph = mPlot->graph(1);				// speed graph
-    graph->setData(mRefData, mSpeedData);
-    graph->setVisible(speedEnabled);
-    graph->setPen(QPen(Qt::blue));
-    graph->rescaleValueAxis();
+    if (!mRouteMode)
+    {
+        graph = mPlot->graph(1);			// speed graph
+        graph->setData(mRefData, mSpeedData);
+        graph->setVisible(speedEnabled);
+        graph->setPen(QPen(Qt::blue));
+        graph->rescaleValueAxis();
+    }
 
     if (mReferenceTimeRadio->isChecked())		// reference axis
     {
@@ -626,7 +663,7 @@ void ProfileWidget::slotUpdatePlot()
     }
     else
     {
-        mPlot->xAxis->setLabel(i18n("Travel (%1)", mDistanceUnit->currentText()));
+        mPlot->xAxis->setLabel(i18n("Distance (%1)", mDistanceUnit->currentText()));
 
         if (mNumberTicker.isNull())			// needs to be created now
         {
@@ -651,16 +688,16 @@ void ProfileWidget::slotUpdatePlot()
     mPlot->yAxis->setLabelColor(!elevationEnabled ? sch.foreground(KColorScheme::NormalText).color() : Qt::red);
     mPlot->yAxis->setVisible(true);
 
-    if (mSpeedSource==SpeedSourceGPS)			// speed axis
+    if (mSpeedSource==SpeedSourceGPS)		// speed axis
     {
         mPlot->yAxis2->setLabel(i18n("Speed (GPS %1)", mSpeedUnit->currentText()));
     }
     else
     {
-        mPlot->yAxis2->setLabel(i18n("Speed (%1)", mSpeedUnit->currentText()));
+        mPlot->yAxis2->setLabel(i18n("Speed (From track %1)", mSpeedUnit->currentText()));
     }
     mPlot->yAxis2->setLabelColor(!speedEnabled ? sch.foreground(KColorScheme::NormalText).color() : Qt::blue);
-    mPlot->yAxis2->setVisible(true);
+    mPlot->yAxis2->setVisible(!mRouteMode);
 
     if (mScaleRangeCombo->currentData()==ScaleRangeZero)
     {							// zero origin
@@ -680,7 +717,7 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
     const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(item);
     if (tdr!=nullptr) tdp = tdr;
 
-    if (tdp!=NULL)
+    if (tdp!=nullptr)
     {
 #ifdef DEBUG_WAYPOINTS
         qDebug() << "trying" << tdp->name();
@@ -741,4 +778,55 @@ void ProfileWidget::slotSelectWaypoints()
 
     mWaypointSelection = d.selection();
     mUpdateTimer->start();
+}
+
+
+void ProfileWidget::getRoutePoints()
+{
+    qDebug() << "originally" << mPoints.count() << "input points";
+
+    QVector<const TrackDataAbstractPoint *> originalPoints;
+    mPoints.swap(originalPoints);			// temporary copy of original
+
+    const TrackDataAbstractPoint *prevPoint = originalPoints.first();
+    mPoints.append(prevPoint);				// copy first route point
+
+    for (int i1 = 1; i1<originalPoints.count(); ++i1)
+    {
+        const TrackDataAbstractPoint *thisPoint = originalPoints.at(i1);
+        qDebug() << " " << prevPoint->name() << "->" << thisPoint->name();
+
+        // Interpolate latitude/longitude between the previous point and
+        // this one, not including that previous point but including this
+        // as the last.
+
+        const double dist = prevPoint->distanceTo(thisPoint);
+        const double distMetres = Units::internalToLength(dist, Units::LengthMetres);
+        const int num = static_cast<int>((distMetres+(ROUTEPOINT_STEP/2))/ROUTEPOINT_STEP);
+        const double distStep = dist/num;
+        qDebug() << "  distM" << distMetres << "num" << num << "step" << Units::internalToLength(distStep, Units::LengthMetres);
+
+        double lat = prevPoint->latitude();
+        double lon = prevPoint->longitude();
+
+        const double latStep = (thisPoint->latitude()-lat)/num;
+        const double lonStep = (thisPoint->longitude()-lon)/num;
+
+        for (int i2 = 1; i2<num; ++i2)
+        {
+            lat += latStep;				// position of new point
+            lon += lonStep;
+
+            TrackDataTrackpoint *pnt = new TrackDataTrackpoint;
+            pnt->setLatLong(lat, lon);			// create and set position
+
+            mPoints.append(pnt);			// add to plotted points
+            mRoutePoints.append(pnt);			// record to be deleted later
+        }
+
+        mPoints.append(thisPoint);			// finally the current point
+        prevPoint = thisPoint;				// note this as new previous
+    }
+
+    qDebug() << "now" << mPoints.count() << "points";
 }
