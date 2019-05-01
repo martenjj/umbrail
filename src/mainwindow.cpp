@@ -778,6 +778,7 @@ case TrackData::Route:
         propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
+        profileEnabled = true;
         break;
 
 case TrackData::Segment:
@@ -804,6 +805,7 @@ case TrackData::Routepoint:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
+        profileEnabled = (selCount>1);
         copyEnabled = true;
         break;
 
@@ -1001,7 +1003,6 @@ void MainWindow::slotTrackProfile()
     ProfileWidget *w = new ProfileWidget(this);
     w->setAttribute(Qt::WA_DeleteOnClose);
     w->setModal(false);
-    w->setWindowTitle(i18n("Track Profile"));
     w->show();
 }
 
