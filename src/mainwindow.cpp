@@ -777,6 +777,7 @@ case TrackData::Route:
         propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
+        profileEnabled = true;
         break;
 
 case TrackData::Segment:
@@ -803,6 +804,7 @@ case TrackData::Routepoint:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
+        profileEnabled = (selCount>1);
         copyEnabled = true;
         break;
 
