@@ -220,12 +220,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
       DialogStateSaver(this),
       MainWindowInterface(pnt)
 {
-    qDebug();
-
     setObjectName("ProfileWidget");
     setButtons(QDialogButtonBox::Close);
-
-    mTimeZone = nullptr;
 
     // Get the selected points.
     filesController()->view()->selectedPoints().swap(mPoints);
@@ -243,6 +239,16 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     // Now it is possible to set the window title appropriately.
     setWindowTitle(mRouteMode ? i18n("Route Profile") : i18n("Track Profile"));
+
+    // Resolve the file time zone.
+    mTimeZone = nullptr;
+    QVariant zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
+    if (!zoneName.isNull())
+    {
+        QTimeZone *tz = new QTimeZone(zoneName.toByteArray());
+        if (tz->isValid()) mTimeZone = tz;		// use as time zone
+        else qWarning() << "unknown time zone" << zoneName;
+    }
 
     mUpdateTimer = new QTimer(this);
     mUpdateTimer->setSingleShot(true);
@@ -521,7 +527,7 @@ void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
         if (mBaseTime==0)				// this is the first point
         {
             mBaseTime = tm;				// use this as base time
-            if (mTimeZone!=nullptr) qDebug() << "time zone offset" << mTimeZone->offsetFromUtc(dt);
+            if (mTimeZone!=nullptr) qDebug() << "base time zone offset" << mTimeZone->offsetFromUtc(dt);
         }
 
         if (mTimeUnit->unit()==Units::TimeRelative)
@@ -611,19 +617,6 @@ void ProfileWidget::slotUpdatePlot()
     mElevData.clear();
     mSpeedData.clear();
     mBaseTime = 0;
-
-    // TODO: can be a once off setup, will be that same every time
-    delete mTimeZone;
-    mTimeZone = nullptr;				// no time zone available yet
-
-    // Resolve the file time zone
-    QVariant zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
-    if (!zoneName.isNull())
-    {
-        QTimeZone *tz = new QTimeZone(zoneName.toByteArray());
-        if (tz->isValid()) mTimeZone = tz;		// use as time zone
-        else qWarning() << "unknown time zone" << zoneName;
-    }
 
     const int num = mPoints.count()-1;
     for (int i = 0; i<=num; ++i) getPlotData(mPoints.at(i));
