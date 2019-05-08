@@ -304,3 +304,37 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine)
     selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
     scrollTo(idx);					// also expand if necessary
 }
+
+
+void FilesView::slotCollapseAll()
+{
+    // Not directly calling collapseAll(), because that is not a particularly
+    // useful action.  Collapse to the second level (one down from the root) only.
+    expandToDepth(0);
+}
+
+
+void FilesView::expandItem(const QModelIndex &idx)
+{
+    const TrackDataItem *item = FilesModel::itemForIndex(idx);
+
+    if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr ||
+        dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
+    {
+        collapse(idx);
+        return;
+    }
+
+    expand(idx);
+
+    const int num = model()->rowCount(idx);
+    for (int i = 0; i<num; ++i) expandItem(model()->index(i, 0, idx));
+}
+
+
+void FilesView::slotExpandAll()
+{
+    // Again not directly calling expandAll(), because that is also not a
+    // useful operation.  Expand everything apart from segments and routes.
+    expandItem(rootIndex());
+}

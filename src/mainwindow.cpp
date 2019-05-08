@@ -182,15 +182,25 @@ void MainWindow::setupActions()
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(slotUpdatePasteState()));
 
     a = ac->addAction("track_expand_all");
-    a->setText(i18n("Expand All"));
+    a->setText(i18n("Expand View"));
     a->setIcon(QIcon::fromTheme("application_side_tree"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Period);
+    connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(slotExpandAll()));
+
+    a = ac->addAction("track_expand_complete");
+    a->setText(i18n("Expand All"));
+    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::Key_Period);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(expandAll()));
 
     a = ac->addAction("track_collapse_all");
-    a->setText(i18n("Collapse All"));
+    a->setText(i18n("Collapse View"));
     a->setIcon(QIcon::fromTheme("application_side_list"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Comma);
+    connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(slotCollapseAll()));
+
+    a = ac->addAction("track_collapse_complete");
+    a->setText(i18n("Collapse All"));
+    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::Key_Comma);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
 
     mAddTrackAction = ac->addAction("edit_add_track");

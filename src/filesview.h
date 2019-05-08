@@ -17,8 +17,8 @@ class FilesView : public QTreeView, public MainWindowInterface
     Q_OBJECT
 
 public:
-    FilesView(QWidget *pnt = NULL);
-    ~FilesView();
+    FilesView(QWidget *pnt = nullptr);
+    virtual ~FilesView();
 
     void readProperties();
     void saveProperties();
@@ -37,12 +37,18 @@ public slots:
     void slotSelectAllSiblings();
     void slotClickedItem(const QModelIndex &index, unsigned int flags);
 
+    void slotCollapseAll();
+    void slotExpandAll();
+
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel) override;
     void contextMenuEvent(QContextMenuEvent *ev) override;
 
 signals:
     void updateActionState();
+
+private:
+    void expandItem(const QModelIndex &idx);
 
 private:
     int mSelectedCount;
