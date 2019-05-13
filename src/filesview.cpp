@@ -31,6 +31,7 @@ FilesView::FilesView(QWidget *pnt)
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setAllColumnsShowFocus(true);
+    setDropIndicatorShown(true);
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -337,4 +338,10 @@ void FilesView::slotExpandAll()
     // Again not directly calling expandAll(), because that is also not a
     // useful operation.  Expand everything apart from segments and routes.
     expandItem(rootIndex());
+}
+
+
+void FilesView::setMovePointsMode(bool on)
+{
+    setDragDropMode(on ? QAbstractItemView::DragDrop : QAbstractItemView::NoDragDrop);
 }

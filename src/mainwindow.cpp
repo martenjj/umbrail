@@ -1004,7 +1004,9 @@ void MainWindow::slotPreferences()
 
 void MainWindow::slotMapMovePoints()
 {
-    mapController()->view()->setMovePointsMode(mMapDragAction->isChecked());
+    const bool on = mMapDragAction->isChecked();
+    mapController()->view()->setMovePointsMode(on);
+    filesController()->view()->setMovePointsMode(on);
 }
 
 
