@@ -325,7 +325,6 @@ QMimeData *FilesModel::mimeData(const QModelIndexList &idxs) const
 }
 
 
-// TODO: common with FilesView
 static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
 {
     const TrackDataItem *parentA = a->parent();
@@ -336,6 +335,12 @@ static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
     int indexA = parentA->childIndex(a);
     int indexB = parentB->childIndex(b);
     return (indexA<indexB);
+}
+
+
+/* static */ void FilesModel::sortByIndexRow(QList<TrackDataItem *> *list)
+{
+    std::stable_sort(list->begin(), list->end(), &lessThanByIndexRow);
 }
 
 
@@ -356,7 +361,7 @@ static QList<TrackDataItem *> decodeItemData(const QMimeData *data)
         list.append(item);
     }
 
-    std::stable_sort(list.begin(), list.end(), &lessThanByIndexRow);
+    FilesModel::sortByIndexRow(&list);			// ensure in predictable order
     return (list);
 }
 

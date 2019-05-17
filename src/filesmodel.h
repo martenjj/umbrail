@@ -48,6 +48,7 @@ public:
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
     static TrackDataItem *itemForIndex(const QModelIndex &idx);
+    static void sortByIndexRow(QList<TrackDataItem *> *list);
 
 signals:
     void clickedItem(const QModelIndex &index, unsigned int flags);

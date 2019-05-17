@@ -175,21 +175,6 @@ void FilesView::selectionChanged(const QItemSelection &sel,
 }
 
 
-
-static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
-{
-    const TrackDataItem *parentA = a->parent();
-    Q_ASSERT(parentA!=NULL);
-    const TrackDataItem *parentB = b->parent();
-    Q_ASSERT(parentB!=NULL);
-
-    int indexA = parentA->childIndex(a);
-    int indexB = parentB->childIndex(b);
-    return (indexA<indexB);
-}
-
-
-
 QList<TrackDataItem *> FilesView::selectedItems() const
 {
     QModelIndexList selIndexes = selectionModel()->selectedIndexes();
@@ -202,7 +187,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
         list.append(tdi);
     }
 
-    std::stable_sort(list.begin(), list.end(), &lessThanByIndexRow);
+    FilesModel::sortByIndexRow(&list);			// ensure in predictable order
     return (list);
 }
 
