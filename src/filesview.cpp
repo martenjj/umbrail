@@ -343,5 +343,5 @@ void FilesView::slotExpandAll()
 
 void FilesView::setMovePointsMode(bool on)
 {
-    setDragDropMode(on ? QAbstractItemView::DragDrop : QAbstractItemView::NoDragDrop);
+    setDragDropMode(on ? QAbstractItemView::InternalMove : QAbstractItemView::NoDragDrop);
 }

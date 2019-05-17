@@ -228,7 +228,7 @@ public:
     MoveItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
     virtual ~MoveItemCommand();
 
-    void setData(const QList<TrackDataItem *> &items, TrackDataItem *dest);
+    void setData(const QList<TrackDataItem *> &items, TrackDataItem *dest, int row = -1);
 
     void redo() override;
     void undo() override;
@@ -237,7 +237,8 @@ private:
     QList<TrackDataItem *> mItems;
     QVector<TrackDataItem *> mParentItems;
     QVector<int> mParentIndexes;
-    TrackDataItem *mDestination;
+    TrackDataItem *mDestinationParent;
+    int mDestinationRow;
 };
 
 

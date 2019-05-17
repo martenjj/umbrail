@@ -20,6 +20,7 @@ class ErrorReporter;
 #ifdef SORTABLE_VIEW
 class QSortFilterProxyModel;
 #endif
+class TrackDataItem;
 
 
 class DialogueConstraintFilter : public QObject
@@ -103,6 +104,7 @@ private:
 
 private slots:
     void slotUpdateActionState();
+    void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
 
 private:
     FilesView *mView;

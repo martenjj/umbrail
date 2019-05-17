@@ -4,6 +4,7 @@
 #include <qfont.h>
 #include <qicon.h>
 #include <qitemselectionmodel.h>
+#include <qmimedata.h>
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
@@ -34,6 +35,9 @@ FilesModel::FilesModel(QObject *pnt)
 {
     qDebug();
     mRootFileItem = NULL;
+
+    // Drag and drop depends on being able to encode and serialise a pointer.
+    Q_ASSERT(sizeof(TrackDataItem *)<=sizeof(qulonglong));
 }
 
 
@@ -187,13 +191,6 @@ case COL_NAME:
             break;
         }
         break;
-
-//case Qt::SizeHintRole:
-//        switch (idx.column())
-//        {
-//case COL_SYM:      return (SIZE_HINT);
-//        }
-//        break;
     }
 
     return (QVariant());
@@ -263,4 +260,166 @@ void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardMod
 
     qDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
     emit clickedItem(indexForItem(tdp), static_cast<unsigned int>(selFlags));
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Drag and Drop							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+Qt::ItemFlags FilesModel::flags(const QModelIndex &idx) const
+{
+    Qt::ItemFlags f = QAbstractItemModel::flags(idx);
+
+    // Any item can be dragged, apart from the top level root item.
+    if (idx.parent()!=QModelIndex()) f |= Qt::ItemIsDragEnabled;
+    // These flags will say that dragged items can be dropped anywhere.
+    // The checks in canDropMimeData() will enforce our restrictions.
+    f |= Qt::ItemIsDropEnabled;
+
+    return (f);
+}
+
+
+Qt::DropActions FilesModel::supportedDropActions() const
+{
+    return (Qt::MoveAction);
+}
+
+
+static QString itemMimeType()
+{
+    return ("application/x-navtracks-internal");
+}
+
+
+QStringList FilesModel::mimeTypes() const
+{
+    return (QStringList() << itemMimeType());
+}
+
+
+QMimeData *FilesModel::mimeData(const QModelIndexList &idxs) const
+{
+    if (idxs.isEmpty()) return (nullptr);
+    qDebug() << "starting to drag" << idxs.count() << "items";
+
+    QByteArray encoded;
+    for (const QModelIndex &idx : qAsConst(idxs))
+    {
+        const TrackDataItem *item = itemForIndex(idx);
+        if (item==nullptr) continue;
+        qDebug() << "  " << item->name();
+
+        // inspired by https://stackoverflow.com/questions/24345681/
+        qulonglong ptrval = reinterpret_cast<qulonglong>(item);
+        encoded.append(QByteArray::number(ptrval, 16));
+        encoded.append(',');
+    }
+
+    //qDebug() << "encoded size" << encoded.size() << "=" << encoded;
+    QMimeData *data = new QMimeData;
+    data->setData(mimeTypes().first(), encoded);
+    return (data);
+}
+
+
+// TODO: common with FilesView
+static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
+{
+    const TrackDataItem *parentA = a->parent();
+    Q_ASSERT(parentA!=NULL);
+    const TrackDataItem *parentB = b->parent();
+    Q_ASSERT(parentB!=NULL);
+
+    int indexA = parentA->childIndex(a);
+    int indexB = parentB->childIndex(b);
+    return (indexA<indexB);
+}
+
+
+static QList<TrackDataItem *> decodeItemData(const QMimeData *data)
+{
+    QList<TrackDataItem *> list;
+
+    const QByteArray encoded = data->data(itemMimeType());
+    qDebug() << "decoding" << encoded;
+    const QList<QByteArray> ptrs = encoded.split(',');
+
+    for (const QByteArray &b : qAsConst(ptrs))
+    {
+        if (b.isEmpty()) continue;
+        qulonglong ptrval = b.toULongLong(nullptr, 16);
+        TrackDataItem *item = reinterpret_cast<TrackDataItem *>(ptrval);
+        qDebug() << "  ->" << item->name();
+        list.append(item);
+    }
+
+    std::stable_sort(list.begin(), list.end(), &lessThanByIndexRow);
+    return (list);
+}
+
+
+bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row, const QModelIndex &pnt)
+{
+    // Drops are not accepted over an item, only between them.
+    if (row==-1) return (false);
+
+    qDebug() << "doit" << doit << "row" << row << "pnt" << pnt;
+
+    // Get the parent item of the drop location.
+    TrackDataItem *ontoParent = itemForIndex(pnt);
+    if (ontoParent==nullptr) return (false);
+
+    qDebug() << "  onto parent" << ontoParent->name();
+
+    // Get the first drag source item.  The GUI will ensure that move mode
+    // cannot be entered unless the selection is consistent;  that is, any
+    // additionally selected items will have the same parent.
+    QList<TrackDataItem *> sourceItems = decodeItemData(data);
+    if (sourceItems.isEmpty()) return (false);
+
+    // TEMP TODO: Ensure that the source item is being dropped
+    // within the same parent container.
+    const TrackDataItem *sourceItem = sourceItems.first();
+    qDebug() << "  src item" << sourceItem->name();
+    if (sourceItem->parent()!=ontoParent) return (false);
+
+    // If the drag and drop is within the same parent container, check that
+    // an item is not being dropped onto itself.
+    if (sourceItem->parent()==ontoParent)
+    {
+        // Dropping an item onto or after itself or any of the selected items
+        // is confusing, and would be a no-op anyway unless the selection is
+        // not contiguous.  It is not allowed, even in this unusual case,
+        // to avoid a pointless no-op in the undo history.
+        for (const TrackDataItem *sourceItem : qAsConst(sourceItems))
+        {
+            const int sourceRow = ontoParent->childIndex(sourceItem);
+            if (row==sourceRow || row==(sourceRow+1)) return (false);
+        }
+    }
+
+    if (doit) emit dragDropItems(sourceItems, ontoParent, row);
+    return (true);
+}
+
+
+bool FilesModel::dropMimeData(const QMimeData *data, Qt::DropAction act,
+                              int row, int col, const QModelIndex &pnt)
+{
+    return (dropMimeDataInternal(true, data, row, pnt));
+}
+
+
+bool FilesModel::canDropMimeData(const QMimeData *data, Qt::DropAction act,
+                                 int row, int col, const QModelIndex &pnt) const
+{
+    // This is a const function, but it needs to call dropMimeDataInternal().
+    // That function cannot be const because when called from dropMimeData()
+    // it needs to be able to emit a (non-const) signal.  Doing this should
+    // be safe against undefined behaviour because dropMimeDataInternal() does
+    // not actually modify any members when called with 'doit' set to false.
+    return (const_cast<FilesModel *>(this)->dropMimeDataInternal(false, data, row, pnt));
 }
