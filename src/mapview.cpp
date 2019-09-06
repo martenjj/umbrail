@@ -33,7 +33,7 @@ MapView::MapView(QWidget *pnt)
 {
     qDebug();
 
-//    mRunnerManager = NULL;
+//    mRunnerManager = nullptr;
 
     setMapThemeId("earth/openstreetmap/openstreetmap.dgml");
 
@@ -45,7 +45,7 @@ MapView::MapView(QWidget *pnt)
 
     // Replace existing context menu with our own
     MarbleWidgetInputHandler *ih = inputHandler();
-    disconnect(ih, SIGNAL(rmbRequest(int,int)), NULL, NULL);
+    disconnect(ih, SIGNAL(rmbRequest(int,int)), nullptr, nullptr);
     connect(ih, SIGNAL(rmbRequest(int,int)), SLOT(slotRmbRequest(int,int)));
 
     installEventFilter(this);				// modify cursor shape
@@ -127,7 +127,7 @@ void MapView::slotRmbRequest(int mx, int my)
     QMenu *popup = static_cast<QMenu *>(
         mainWindow()->factory()->container("mapview_contextmenu",
                                            mainWindow()));
-    if (popup!=NULL) popup->exec(mapToGlobal(QPoint(mx, my)));
+    if (popup!=nullptr) popup->exec(mapToGlobal(QPoint(mx, my)));
 }
 
 
@@ -164,7 +164,7 @@ QStringList MapView::allOverlays(bool visibleOnly) const
          it!=items.constEnd(); ++it)
     {
         AbstractFloatItem *item = (*it);
-        if (item==NULL) continue;
+        if (item==nullptr) continue;
 
         if (!visibleOnly || item->visible()) result.append(item->nameId());
     }
@@ -182,7 +182,7 @@ QStringList MapView::allLayers(bool visibleOnly) const
     foreach (const QString &itemId, itemIds)
     {
         const LayerBase *layer = mLayers.value(itemId);
-        if (layer==NULL) continue;
+        if (layer==nullptr) continue;
 
         if (!visibleOnly || layer->isVisible()) result.append(itemId);
     }
@@ -199,7 +199,7 @@ void MapView::showOverlays(const QStringList &list)
          it!=items.constEnd(); ++it)
     {
         AbstractFloatItem *item = (*it);
-        if (item!=NULL) item->setVisible(list.contains(item->nameId()));
+        if (item!=nullptr) item->setVisible(list.contains(item->nameId()));
     }
 }
 
@@ -207,7 +207,7 @@ void MapView::showOverlays(const QStringList &list)
 QAction *MapView::actionForOverlay(const QString &id) const
 {
     const AbstractFloatItem *item = floatItem(id);
-    if (item==NULL) return (NULL);
+    if (item==nullptr) return (nullptr);
 
     QAction *a = new QAction(item->icon(),
                              i18n("%1 - %2", item->guiString(), item->description()),
@@ -221,10 +221,10 @@ QAction *MapView::actionForOverlay(const QString &id) const
 void MapView::slotShowOverlay()
 {
     QAction *a = static_cast<QAction*>(sender());	// action that was triggered
-    if (a==NULL) return;
+    if (a==nullptr) return;
 
     AbstractFloatItem *item = floatItem(a->data().toString());
-    if (item==NULL) return;				// item ID from user data
+    if (item==nullptr) return;				// item ID from user data
 
     bool nowVisible = !item->visible();
     item->setVisible(nowVisible);
@@ -236,7 +236,7 @@ void MapView::slotShowOverlay()
 QAction *MapView::actionForLayer(const QString &id) const
 {
     const LayerBase *layer = mLayers.value(id);
-    if (layer==NULL) return (NULL);
+    if (layer==nullptr) return (nullptr);
 
     QAction *a = new KToggleAction(layer->name(), mainWindow());
     a->setData(id);					// record ID for action
@@ -248,10 +248,10 @@ QAction *MapView::actionForLayer(const QString &id) const
 void MapView::slotShowLayer()
 {
     QAction *a = static_cast<QAction*>(sender());	// action that was triggered
-    if (a==NULL) return;
+    if (a==nullptr) return;
 
     LayerBase *layer = mLayers.value(a->data().toString());
-    if (layer==NULL) return;
+    if (layer==nullptr) return;
 
     bool nowVisible = !layer->isVisible();
     layer->setVisible(nowVisible);

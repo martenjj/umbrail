@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	30-Sep-18						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -55,7 +55,7 @@
 
 static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType expectedType)
 {
-    if (item==NULL) return (QUrl());
+    if (item==nullptr) return (QUrl());
     if (expectedType!=TrackData::WaypointAny && item->waypointType()!=expectedType)
     {
         qWarning() << "waypoint" << item->name() << "is not type" << expectedType;
@@ -74,7 +74,7 @@ static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType
     {
         if (!QFile::exists(file.path()))
         {
-            KMessageBox::error(NULL,
+            KMessageBox::error(nullptr,
                                i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
                                i18n("Cannot play media file"));
             return (QUrl());
@@ -103,7 +103,7 @@ void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
     Phonon::createPath(mediaObject, audioOutput);
     mediaObject->play();
 #else
-    KMessageBox::error(NULL, i18n("Phonon is not available"), i18n("Cannot play media file"));
+    KMessageBox::error(nullptr, i18n("Phonon is not available"), i18n("Cannot play media file"));
 #endif
 }
 
@@ -117,11 +117,11 @@ void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
     // see krepton//src/sounds.cpp
 
 #ifdef HAVE_PHONON
-    VideoViewer *v = new VideoViewer(file, NULL);
+    VideoViewer *v = new VideoViewer(file, nullptr);
     v->setWindowTitle(i18nc("@title:window", "Video %1", file.fileName()));
     v->show();
 #else
-    KMessageBox::error(NULL, i18n("Phonon is not available"), i18n("Cannot play media file"));
+    KMessageBox::error(nullptr, i18n("Phonon is not available"), i18n("Cannot play media file"));
 #endif
 }
 
@@ -132,7 +132,7 @@ void MediaPlayer::viewPhotoNote(const TrackDataWaypoint *item)
     QUrl file = findMediaFile(item, TrackData::WaypointPhoto);
     if (!file.isValid()) return;
 
-    PhotoViewer *v = new PhotoViewer(file, NULL);
+    PhotoViewer *v = new PhotoViewer(file, nullptr);
     v->setWindowTitle(i18nc("@title:window", "Photo %1", file.fileName()));
     v->show();
 }
@@ -145,7 +145,7 @@ void MediaPlayer::openMediaFile(const TrackDataWaypoint *item)
 
     QList<QUrl> urls;
     urls << file;
-    KRun::displayOpenWithDialog(urls, NULL);
+    KRun::displayOpenWithDialog(urls, nullptr);
 }
 
 
@@ -158,11 +158,11 @@ void MediaPlayer::saveMediaFile(const TrackDataWaypoint *item)
     QMimeType mime = db.mimeTypeForUrl(sourceUrl);
 
     RecentSaver saver("saveMedia");
-    QUrl destUrl = QFileDialog::getSaveFileUrl(NULL,					// parent
+    QUrl destUrl = QFileDialog::getSaveFileUrl(nullptr,					// parent
                                                i18n("Save Media As"),			// caption
                                                saver.recentUrl(sourceUrl.fileName()),	// dir
                                                mime.filterString(),  			// filter
-                                               NULL,					// selectedFilter,
+                                               nullptr,					// selectedFilter,
                                                QFileDialog::Options(),			// options
                                                QStringList("file"));			// supportedSchemes
 

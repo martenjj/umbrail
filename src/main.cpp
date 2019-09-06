@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	23-Apr-18						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -86,7 +86,7 @@ int main(int argc,char *argv[])
     parser.process(app);
     aboutData.processCommandLine(&parser);
 
-    MainWindow *w = NULL;
+    MainWindow *w = nullptr;
     QStringList args = parser.positionalArguments();
     for (int i = 0; i<args.count(); ++i)		// load project or data files
     {
@@ -99,15 +99,15 @@ int main(int argc,char *argv[])
             continue;
         }
 
-        w = new MainWindow(NULL);
+        w = new MainWindow(nullptr);
         const bool ok = w->loadProject(u);
         if (!ok) w->deleteLater();
         else w->show();
     }
 
-    if (w==NULL)					// no project or file loaded
+    if (w==nullptr)					// no project or file loaded
     {
-        w = new MainWindow(NULL);
+        w = new MainWindow(nullptr);
         w->filesController()->initNew();
         w->show();
     }

@@ -132,7 +132,7 @@ CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QW
 
 void CreatePointDialogue::setSourcePoint(const TrackDataAbstractPoint *point)
 {
-    Q_ASSERT(point!=NULL);
+    Q_ASSERT(point!=nullptr);
     qDebug() << point->name();
     mLatLongEdit->setLatLong(point->latitude(), point->longitude());
     slotSetButtonStates();
@@ -149,7 +149,7 @@ void CreatePointDialogue::setSourceLatLong(double lat, double lon)
 
 void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
 {
-    Q_ASSERT(item!=NULL);
+    Q_ASSERT(item!=nullptr);
     qDebug() << item->name();
     // nothing to do, it will be selected automatically via the source model
 }
@@ -171,7 +171,7 @@ void CreatePointDialogue::pointPosition(qreal *latp, qreal *lonp)
 TrackDataItem *CreatePointDialogue::selectedContainer() const
 {
     QModelIndexList selIndexes = mContainerList->selectionModel()->selectedIndexes();
-    if (selIndexes.count()!=1) return (NULL);
+    if (selIndexes.count()!=1) return (nullptr);
 
     TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mContainerList->model());
     FilesModel *filesModel = qobject_cast<FilesModel *>(trackModel->sourceModel());
@@ -184,5 +184,5 @@ void CreatePointDialogue::slotSetButtonStates()
 {
     setButtonEnabled(QDialogButtonBox::Ok, !mNameEdit->text().isEmpty() &&
                                            mLatLongEdit->hasAcceptableInput() &&
-                                           selectedContainer()!=NULL);
+                                           selectedContainer()!=nullptr);
 }

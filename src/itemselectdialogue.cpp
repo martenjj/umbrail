@@ -86,7 +86,7 @@ ItemSelectDialogue::~ItemSelectDialogue()
 
 void ItemSelectDialogue::setSelectedItem(const TrackDataItem *item)
 {
-    if (item==NULL)					// clear selection only
+    if (item==nullptr)					// clear selection only
     {
         mTrackList->selectionModel()->select(QModelIndex(), QItemSelectionModel::Clear);
         return;
@@ -101,7 +101,7 @@ void ItemSelectDialogue::setSelectedItem(const TrackDataItem *item)
 TrackDataItem *ItemSelectDialogue::selectedItem() const
 {
     QModelIndexList selIndexes = mTrackList->selectionModel()->selectedIndexes();
-    if (selIndexes.count()!=1) return (NULL);
+    if (selIndexes.count()!=1) return (nullptr);
 
     TrackDataItem *item = filesModel()->itemForIndex(trackModel()->mapToSource(selIndexes.first()));
     return (item);

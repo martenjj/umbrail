@@ -112,7 +112,7 @@ void MainWindow::init()
 
     readProperties(Settings::self()->config()->group(CONFIG_GROUP));
 
-    mSelectedContainer = NULL;
+    mSelectedContainer = nullptr;
 
     slotSetModified(false);
     slotUpdateActionState();
@@ -397,7 +397,7 @@ void MainWindow::setupActions()
     foreach (const QString &id, layerIds)
     {
         a = mapView->actionForLayer(id);
-        if (a==NULL) continue;
+        if (a==nullptr) continue;
 
         connect(a, SIGNAL(triggered()), mapView, SLOT(slotShowLayer()));
         itemsMenu->addAction(a);
@@ -414,7 +414,7 @@ void MainWindow::setupActions()
         if (notUseful.contains(itemId)) continue;
 
         a = mapView->actionForOverlay(itemId);
-        if (a==NULL) continue;
+        if (a==nullptr) continue;
 
         connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotShowOverlay()));
         itemsMenu->addAction(a);
@@ -538,7 +538,7 @@ bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
     if (!to.isValid()) return (false);			// should never happen
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
-    if (tdf==NULL) return (false);			// should never happen
+    if (tdf==nullptr) return (false);			// should never happen
 
     // metadata from map controller
     tdf->setMetadata(DataIndexer::self()->index("position"), mapController()->view()->currentPosition());
@@ -564,7 +564,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
-    if (tdf!=NULL)
+    if (tdf!=nullptr)
     {
         QVariant s = tdf->metadata("position");
         qDebug() << "pos metadata" << s;
@@ -593,7 +593,7 @@ void MainWindow::slotStatusMessage(const QString &text)
 
 void MainWindow::slotNewProject()
 {
-    MainWindow *w = new MainWindow(NULL);
+    MainWindow *w = new MainWindow(nullptr);
     w->filesController()->initNew();
     w->show();
 }
@@ -607,7 +607,7 @@ void MainWindow::slotOpenProject()
                                             i18n("Open Tracks File"),			// caption
                                             saver.recentUrl(),				// dir
                                             FilesController::allProjectFilters(true),	// filter
-                                            NULL,					// selectedFilter,
+                                            nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
                                             QStringList("file"));			// supportedSchemes
 
@@ -617,7 +617,7 @@ void MainWindow::slotOpenProject()
     if (filesController()->model()->isEmpty()) loadProject(file);
     else
     {
-        MainWindow *w = new MainWindow(NULL);
+        MainWindow *w = new MainWindow(nullptr);
         const bool ok = w->loadProject(file);
         if (ok) w->show();
         else w->deleteLater();
@@ -672,7 +672,7 @@ void MainWindow::slotSaveAs()
                                             i18n("Save Tracks File As"),		// caption
                                             saver.recentUrl("untitled"),		// dir
                                             FilesController::allProjectFilters(false),	// filter
-                                            NULL,					// selectedFilter,
+                                            nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
                                             QStringList("file"));			// supportedSchemes
 
@@ -691,7 +691,7 @@ void MainWindow::slotImportFile()
                                             i18n("Import File"),			// caption
                                             saver.recentUrl(),				// dir
                                             FilesController::allImportFilters(),	// filter
-                                            NULL,					// selectedFilter,
+                                            nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
                                             QStringList("file"));			// supportedSchemes
 
@@ -708,7 +708,7 @@ void MainWindow::slotExportFile()
                                             i18n("Export File As"),			// caption
                                             saver.recentUrl(mProject->name(true)),	// dir
                                             FilesController::allExportFilters(),	// filter
-                                            NULL,					// selectedFilter,
+                                            nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
                                             QStringList("file"));			// supportedSchemes
 
@@ -726,7 +726,7 @@ void MainWindow::slotImportPhoto()
                                                      i18n("Import Photo"),		// caption
                                                      saver.recentUrl(),			// dir
                                                      ImageFilter::qtFilterString(ImageFilter::Reading, ImageFilter::AllImages),
-                                                     NULL,				// selectedFilter,
+                                                     nullptr,				// selectedFilter,
                                                      QFileDialog::Options(),		// options
                                                      QStringList("file"));		// supportedSchemes
 
@@ -767,7 +767,7 @@ void MainWindow::slotUpdateActionState()
     bool statusEnabled = false;
     int statusValue = TrackData::StatusInvalid;
 
-    const TrackDataItem *selectedContainer = NULL;
+    const TrackDataItem *selectedContainer = nullptr;
     switch (selType)
     {
 case TrackData::File:
@@ -841,7 +841,7 @@ case TrackData::Waypoint:
         if (selCount==1)
         {
             const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
-            if (tdw!=NULL)
+            if (tdw!=nullptr)
             {
                 switch (tdw->waypointType())
                 {
@@ -931,7 +931,7 @@ default:
     // selected container, then move points mode can stay at the same state
     // as it currently is.  Otherwise, it is forced off.
 
-    if (selectedContainer!=NULL)
+    if (selectedContainer!=nullptr)
     {
         if (selectedContainer!=mSelectedContainer)
         {
@@ -1031,7 +1031,7 @@ void MainWindow::slotTrackStatistics()
 void MainWindow::slotPlayMedia()
 {
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
-    Q_ASSERT(tdw!=NULL);
+    Q_ASSERT(tdw!=nullptr);
     switch (tdw->waypointType())
     {
 case TrackData::WaypointAudioNote:	MediaPlayer::playAudioNote(tdw);
@@ -1051,7 +1051,7 @@ default:				break;
 void MainWindow::slotOpenMedia()
 {
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
-    Q_ASSERT(tdw!=NULL);
+    Q_ASSERT(tdw!=nullptr);
     if (tdw->isMediaType()) MediaPlayer::openMediaFile(tdw);
 }
 
@@ -1059,14 +1059,14 @@ void MainWindow::slotOpenMedia()
 void MainWindow::slotSaveMedia()
 {
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
-    Q_ASSERT(tdw!=NULL);
+    Q_ASSERT(tdw!=nullptr);
     if (tdw->isMediaType()) MediaPlayer::saveMediaFile(tdw);
 }
 
 
 void MainWindow::executeCommand(QUndoCommand *cmd)
 {
-    if (mUndoStack!=NULL) mUndoStack->push(cmd);	// do via undo system
+    if (mUndoStack!=nullptr) mUndoStack->push(cmd);	// do via undo system
     else { cmd->redo(); delete cmd; }			// do directly (fallback)
 }
 

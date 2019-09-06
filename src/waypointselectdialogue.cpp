@@ -97,7 +97,7 @@ void WaypointSelectDialogue::setSelection(WaypointSelectDialogue::SelectionSet s
 
 WaypointSelectDialogue::SelectionSet WaypointSelectDialogue::selection() const
 {
-    WaypointSelectDialogue::SelectionSet sel = 0;
+    WaypointSelectDialogue::SelectionSet sel = WaypointSelectDialogue::SelectionSet();
     const QList<QAbstractButton *> buts = mGroup->buttons();
     foreach (QAbstractButton *but, buts)
     {

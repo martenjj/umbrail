@@ -57,8 +57,8 @@ LayerBase::LayerBase(QWidget *pnt)
     qDebug();
 
     mVisible = true;
-    mClickedPoint = NULL;
-    mDraggingPoints = NULL;
+    mClickedPoint = nullptr;
+    mDraggingPoints = nullptr;
     mClickTimer = new QElapsedTimer;
     mMovePointsMode = false;
     mViewport = nullptr;
@@ -116,10 +116,10 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     mViewport = viewport;				// save for access by layers
 
     const FilesModel *filesModel = filesController()->model();
-    if (filesModel==NULL) return (false);		// no data to use!
+    if (filesModel==nullptr) return (false);		// no data to use!
 
     const FilesView *filesView = filesController()->view();
-    mSelectionId = (filesView!=NULL ? filesView->selectionId() : 0);
+    mSelectionId = (filesView!=nullptr ? filesView->selectionId() : 0);
 
     // Paint the data in two passes.  The first does all non-selected items,
     // the second selected ones.  This is so that selected items show up
@@ -129,7 +129,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     paintDataTree(filesModel->rootFileItem(), painter, false, false);
     paintDataTree(filesModel->rootFileItem(), painter, true, false);
 
-    if (mDraggingPoints!=NULL)
+    if (mDraggingPoints!=nullptr)
     {
 #ifdef DEBUG_DRAGGING
         qDebug() << className(this).constData() << "paint for drag";
@@ -150,7 +150,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
 void LayerBase::paintDataTree(const TrackDataItem *item, GeoPainter *painter, 
                               bool doSelected, bool parentSelected)
 {
-    if (item==NULL) return;				// nothing to paint
+    if (item==nullptr) return;				// nothing to paint
 
     bool isSelected = parentSelected || (item->selectionId()==mSelectionId);
 #ifdef DEBUG_PAINTING
@@ -186,12 +186,12 @@ void LayerBase::paintDataTree(const TrackDataItem *item, GeoPainter *painter,
 
 const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *item)
 {
-    if (item==NULL) return (NULL);			// nothing to do
+    if (item==nullptr) return (nullptr);		// nothing to do
 
     if (this->isApplicableItem(item))			// consider this item itself?
     {
         const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
-        if (tdp!=NULL)					// applicable type of point
+        if (tdp!=nullptr)					// applicable type of point
         {
             const double lat = tdp->latitude();
             const double lon = tdp->longitude();
@@ -205,7 +205,7 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
             }
         }
 
-        return (NULL);					// applicable but not clicked
+        return (nullptr);				// applicable but not clicked
     }
 
     if (this->isIndirectContainer(item))		// can contain applicable items?
@@ -214,11 +214,11 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
         {
             const TrackDataItem *childItem = item->childAt(i);
             const TrackDataAbstractPoint *childPoint = findClickedPoint(childItem);
-            if (childPoint!=NULL) return (childPoint);	// this point found
-        }
+            if (childPoint!=nullptr) return (childPoint);
+        }						// this point found
      }
 
-    return (NULL);					// nothing found
+    return (nullptr);					// nothing found
 }
 
 
@@ -235,7 +235,7 @@ bool LayerBase::testClickTolerance(const QMouseEvent *mev) const
 
 void LayerBase::findSelectionInTree(const TrackDataItem *item)
 {
-    if (item==NULL) return;				// nothing to search
+    if (item==nullptr) return;				// nothing to search
     int cnt = item->childCount();
 
     if (this->isDirectContainer(item))			// look at contained items?
@@ -250,7 +250,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
         for (int i = 0; i<cnt; ++i)
         {
             const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i));
-            if (tdp==NULL) continue;
+            if (tdp==nullptr) continue;
 
 #ifdef DEBUG_SELECTING
             qDebug() << "  " << i << tdp->name() << "selected?" << (tdp->selectionId()==mSelectionId);
@@ -265,7 +265,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
                     if (i>0)				// not first point in container
                     {
                         const TrackDataAbstractPoint *prev = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i-1));
-                        if (prev!=NULL)
+                        if (prev!=nullptr)
                         {
 #ifdef DEBUG_SELECTING
                             qDebug() << "    setting prev point" << prev->name();
@@ -373,7 +373,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
         qDebug() << "  tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
 #endif
         const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
-        if (tdp!=NULL)					// a point was found
+        if (tdp!=nullptr)				// a point was found
         {
             mClickedPoint = tdp;			// record for release event
 
@@ -385,22 +385,22 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
     }
     else if (ev->type()==QEvent::MouseButtonRelease)
     {
-        if (mClickedPoint==NULL) return (false);	// no point clicked to start
+        if (mClickedPoint==nullptr) return (false);	// no point clicked to start
 
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
 #ifdef DEBUG_DRAGGING
         qDebug() << className(this).constData() << "release at" << mouseEvent->pos();
 #endif
         const TrackDataAbstractPoint *clickedPoint = mClickedPoint;
-        mClickedPoint = NULL;
+        mClickedPoint = nullptr;
 
-        if (mDraggingPoints!=NULL)
+        if (mDraggingPoints!=nullptr)
         {
 #ifdef DEBUG_DRAGGING
             qDebug() << "  end drag, lat/lon off" << mLatOff << mLonOff;
 #endif
             emit draggedPoints(mLatOff, mLonOff);
-            delete mDraggingPoints; mDraggingPoints = NULL;
+            delete mDraggingPoints; mDraggingPoints = nullptr;
             mapView->update();
             return (true);
         }
@@ -423,9 +423,9 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 
         QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(ev);
         if (mouseEvent->buttons()!=Qt::LeftButton) return (false);
-        if (mClickedPoint==NULL) return (false);	// no point clicked to start
+        if (mClickedPoint==nullptr) return (false);	// no point clicked to start
 
-        if (mDraggingPoints==NULL)			// no drag in progress yet
+        if (mDraggingPoints==nullptr)			// no drag in progress yet
         {
             if (testClickTolerance(mouseEvent))		// check whether in same place
             {
@@ -435,7 +435,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
                 mClickTimer->invalidate();
 
                 const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
-                if (tdp!=NULL && tdp->selectionId()!=mSelectionId)
+                if (tdp!=nullptr && tdp->selectionId()!=mSelectionId)
                 {
 #ifdef DEBUG_DRAGGING
                     qDebug() << "  but not over a selected point";
@@ -489,11 +489,11 @@ void LayerBase::cancelDrag()
 #ifdef DEBUG_DRAGGING
         qDebug() << className(this).constData();
 #endif
-        if (mDraggingPoints!=NULL)
+        if (mDraggingPoints!=nullptr)
         {
-            delete mDraggingPoints; mDraggingPoints = NULL;
+            delete mDraggingPoints; mDraggingPoints = nullptr;
             mapController()->view()->update();
         }
 
-        mClickedPoint = NULL;
+        mClickedPoint = nullptr;
 }
