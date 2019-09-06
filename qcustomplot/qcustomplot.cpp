@@ -6698,11 +6698,12 @@ QVector<double> QCPAxisTickerText::createTickVector(double tickStep, const QCPRa
   if (mTicks.isEmpty())
     return result;
   
-  QMap<double, QString>::const_iterator start = mTicks.lowerBound(range.lower);
-  QMap<double, QString>::const_iterator end = mTicks.upperBound(range.upper);
+  const QMap<double, QString> &t = mTicks;
+  QMap<double, QString>::const_iterator start = t.lowerBound(range.lower);
+  QMap<double, QString>::const_iterator end = t.upperBound(range.upper);
   // this method should try to give one tick outside of range so proper subticks can be generated:
-  if (start != mTicks.constBegin()) --start;
-  if (end != mTicks.constEnd()) ++end;
+  if (start != t.constBegin()) --start;
+  if (end != t.constEnd()) ++end;
   for (QMap<double, QString>::const_iterator it = start; it != end; ++it)
     result.append(it.key());
   
@@ -16303,11 +16304,12 @@ void QCPColorGradient::updateColorBuffer()
   {
     double indexToPosFactor = 1.0/(double)(mLevelCount-1);
     const bool useAlpha = stopsUseAlpha();
+    const QMap<double, QColor> &cs = mColorStops;
     for (int i=0; i<mLevelCount; ++i)
     {
       double position = i*indexToPosFactor;
-      QMap<double, QColor>::const_iterator it = mColorStops.lowerBound(position);
-      if (it == mColorStops.constEnd()) // position is on or after last stop, use color of last stop
+      QMap<double, QColor>::const_iterator it = cs.lowerBound(position);
+      if (it == cs.constEnd()) // position is on or after last stop, use color of last stop
       {
         if (useAlpha)
         {
@@ -16316,7 +16318,7 @@ void QCPColorGradient::updateColorBuffer()
           mColorBuffer[i] = qRgba(col.red()*alphaPremultiplier, col.green()*alphaPremultiplier, col.blue()*alphaPremultiplier, col.alpha());
         } else
           mColorBuffer[i] = (it-1).value().rgba();
-      } else if (it == mColorStops.constBegin()) // position is on or before first stop, use color of first stop
+      } else if (it == cs.constBegin()) // position is on or before first stop, use color of first stop
       {
         if (useAlpha)
         {
