@@ -4454,7 +4454,7 @@ void QCPLayoutGrid::insertRow(int newIndex)
   mRowStretchFactors.insert(newIndex, 1);
   QList<QCPLayoutElement*> newRow;
   for (int col=0; col<columnCount(); ++col)
-    newRow.append((QCPLayoutElement*)nullptr);
+    newRow.append(nullptr);
   mElements.insert(newIndex, newRow);
 }
 
@@ -4480,7 +4480,7 @@ void QCPLayoutGrid::insertColumn(int newIndex)
   
   mColumnStretchFactors.insert(newIndex, 1);
   for (int row=0; row<rowCount(); ++row)
-    mElements[row].insert(newIndex, (QCPLayoutElement*)nullptr);
+    mElements[row].insert(newIndex, nullptr);
 }
 
 /*!
@@ -5410,8 +5410,8 @@ void QCPLineEnding::draw(QCPPainter *painter, const QCPVector2D &pos, const QCPV
       } else
       {
         // if drawing with thick (non-cosmetic) pen, shift bar a little in line direction to prevent line from sticking through bar slightly
-        painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0f, (float)painter->pen().widthF())*0.5f).toPointF(),
-                          (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0f, (float)painter->pen().widthF())*0.5f).toPointF());
+        painter->drawLine((pos+widthVec+lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, painter->pen().widthF())*0.5).toPointF(),
+                          (pos-widthVec-lengthVec*0.2*(mInverted?-1:1)+dir.normalized()*qMax(1.0, painter->pen().widthF())*0.5).toPointF());
       }
       break;
     }
@@ -5593,7 +5593,7 @@ void QCPAxisTicker::generate(const QCPRange &range, const QLocale &locale, QChar
 */
 double QCPAxisTicker::getTickStep(const QCPRange &range)
 {
-  double exactStep = range.size()/(double)(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
+  double exactStep = range.size()/static_cast<double>(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
   return cleanMantissa(exactStep);
 }
 
@@ -5690,7 +5690,7 @@ QVector<double> QCPAxisTicker::createSubTickVector(int subTickCount, const QVect
   result.reserve((ticks.size()-1)*subTickCount);
   for (int i=1; i<ticks.size(); ++i)
   {
-    double subTickStep = (ticks.at(i)-ticks.at(i-1))/(double)(subTickCount+1);
+    double subTickStep = (ticks.at(i)-ticks.at(i-1))/static_cast<double>(subTickCount+1);
     for (int k=1; k<=subTickCount; ++k)
       result.append(ticks.at(i-1) + k*subTickStep);
   }
@@ -5840,9 +5840,9 @@ double QCPAxisTicker::cleanMantissa(double input) const
     {
       // this gives effectively a mantissa of 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 8.0, 10.0
       if (mantissa <= 5.0)
-        return (int)(mantissa*2)/2.0*magnitude; // round digit after decimal point to 0.5
+        return static_cast<int>(mantissa*2)/2.0*magnitude; // round digit after decimal point to 0.5
       else
-        return (int)(mantissa/2.0)*2.0*magnitude; // round to first digit in multiples of 2
+        return static_cast<int>(mantissa/2.0)*2.0*magnitude; // round to first digit in multiples of 2
     }
   }
   return input;
@@ -5973,7 +5973,7 @@ void QCPAxisTickerDateTime::setTickOrigin(const QDateTime &origin)
 */
 double QCPAxisTickerDateTime::getTickStep(const QCPRange &range)
 {
-  double result = range.size()/(double)(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
+  double result = range.size()/static_cast<double>(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
   
   mDateStrategy = dsNone;
   if (result < 1) // ideal tick step is below 1 second -> use normal clean mantissa algorithm in units of seconds
@@ -6024,11 +6024,11 @@ int QCPAxisTickerDateTime::getSubTickCount(double tickStep)
     case 86400*5: result = 4; break;
     case 86400*7: result = 6; break;
     case 86400*14: result = 1; break;
-    case (int)(86400*30.4375+0.5): result = 3; break;
-    case (int)(86400*30.4375*2+0.5): result = 1; break;
-    case (int)(86400*30.4375*3+0.5): result = 2; break;
-    case (int)(86400*30.4375*6+0.5): result = 5; break;
-    case (int)(86400*30.4375*12+0.5): result = 3; break;
+    case static_cast<int>(86400*30.4375+0.5): result = 3; break;
+    case static_cast<int>(86400*30.4375*2+0.5): result = 1; break;
+    case static_cast<int>(86400*30.4375*3+0.5): result = 2; break;
+    case static_cast<int>(86400*30.4375*6+0.5): result = 5; break;
+    case static_cast<int>(86400*30.4375*12+0.5): result = 3; break;
   }
   return result;
 }
@@ -6277,7 +6277,7 @@ void QCPAxisTickerTime::setFieldWidth(QCPAxisTickerTime::TimeUnit unit, int widt
 */
 double QCPAxisTickerTime::getTickStep(const QCPRange &range)
 {
-  double result = range.size()/(double)(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
+  double result = range.size()/static_cast<double>(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
   
   if (result < 1) // ideal tick step is below 1 second -> use normal clean mantissa algorithm in units of seconds
   {
@@ -6481,16 +6481,16 @@ double QCPAxisTickerFixed::getTickStep(const QCPRange &range)
     }
     case ssMultiples:
     {
-      double exactStep = range.size()/(double)(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
+      double exactStep = range.size()/static_cast<double>(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
       if (exactStep < mTickStep)
         return mTickStep;
       else
-        return (qint64)(cleanMantissa(exactStep/mTickStep)+0.5)*mTickStep;
+        return static_cast<qint64>(cleanMantissa(exactStep/mTickStep)+0.5)*mTickStep;
     }
     case ssPowers:
     {
-      double exactStep = range.size()/(double)(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
-      return qPow(mTickStep, (int)(qLn(exactStep)/qLn(mTickStep)+0.5));
+      double exactStep = range.size()/static_cast<double>(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
+      return qPow(mTickStep, static_cast<int>(qLn(exactStep)/qLn(mTickStep)+0.5));
     }
   }
   return mTickStep;
@@ -6803,7 +6803,7 @@ void QCPAxisTickerPi::setFractionStyle(QCPAxisTickerPi::FractionStyle style)
 */
 double QCPAxisTickerPi::getTickStep(const QCPRange &range)
 {
-  mPiTickStep = range.size()/mPiValue/(double)(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
+  mPiTickStep = range.size()/mPiValue/static_cast<double>(mTickCount+1e-10); // mTickCount ticks on average, the small addition is to prevent jitter on exact integers
   mPiTickStep = cleanMantissa(mPiTickStep);
   return mPiTickStep*mPiValue;
 }
@@ -6901,7 +6901,7 @@ QString QCPAxisTickerPi::fractionToString(int numerator, int denominator) const
   if (mFractionStyle == fsFloatingPoint) // should never be the case when calling this function
   {
     qDebug() << Q_FUNC_INFO << "shouldn't be called with fraction style fsDecimal";
-    return QString::number(numerator/(double)denominator); // failsafe
+    return QString::number(numerator/static_cast<double>(denominator)); // failsafe
   }
   int sign = numerator*denominator < 0 ? -1 : 1;
   numerator = qAbs(numerator);
@@ -7110,8 +7110,8 @@ QVector<double> QCPAxisTickerLog::createTickVector(double tickStep, const QCPRan
   QVector<double> result;
   if (range.lower > 0 && range.upper > 0) // positive range
   {
-    double exactPowerStep =  qLn(range.upper/range.lower)*mLogBaseLnInv/(double)(mTickCount+1e-10);
-    double newLogBase = qPow(mLogBase, qMax((int)cleanMantissa(exactPowerStep), 1));
+    double exactPowerStep =  qLn(range.upper/range.lower)*mLogBaseLnInv/static_cast<double>(mTickCount+1e-10);
+    double newLogBase = qPow(mLogBase, qMax(static_cast<int>(cleanMantissa(exactPowerStep)), 1));
     double currentTick = qPow(newLogBase, qFloor(qLn(range.lower)/qLn(newLogBase)));
     result.append(currentTick);
     while (currentTick < range.upper && currentTick > 0) // currentMag might be zero for ranges ~1e-300, just cancel in that case
@@ -7121,8 +7121,8 @@ QVector<double> QCPAxisTickerLog::createTickVector(double tickStep, const QCPRan
     }
   } else if (range.lower < 0 && range.upper < 0) // negative range
   {
-    double exactPowerStep =  qLn(range.lower/range.upper)*mLogBaseLnInv/(double)(mTickCount+1e-10);
-    double newLogBase = qPow(mLogBase, qMax((int)cleanMantissa(exactPowerStep), 1));
+    double exactPowerStep =  qLn(range.lower/range.upper)*mLogBaseLnInv/static_cast<double>(mTickCount+1e-10);
+    double newLogBase = qPow(mLogBase, qMax(static_cast<int>(cleanMantissa(exactPowerStep)), 1));
     double currentTick = -qPow(newLogBase, qCeil(qLn(-range.lower)/qLn(newLogBase)));
     result.append(currentTick);
     while (currentTick < range.upper && currentTick < 0) // currentMag might be zero for ranges ~1e-300, just cancel in that case
@@ -8505,7 +8505,7 @@ void QCPAxis::setScaleRatio(const QCPAxis *otherAxis, double ratio)
   else
     ownPixelSize = axisRect()->height();
   
-  double newRangeSize = ratio*otherAxis->range().size()*ownPixelSize/(double)otherPixelSize;
+  double newRangeSize = ratio*otherAxis->range().size()*ownPixelSize/static_cast<double>(otherPixelSize);
   setRange(range().center(), newRangeSize, Qt::AlignCenter);
 }
 
@@ -8571,30 +8571,30 @@ double QCPAxis::pixelToCoord(double value) const
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (value-mAxisRect->left())/(double)mAxisRect->width()*mRange.size()+mRange.lower;
+        return (value-mAxisRect->left())/static_cast<double>(mAxisRect->width())*mRange.size()+mRange.lower;
       else
-        return -(value-mAxisRect->left())/(double)mAxisRect->width()*mRange.size()+mRange.upper;
+        return -(value-mAxisRect->left())/static_cast<double>(mAxisRect->width())*mRange.size()+mRange.upper;
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return qPow(mRange.upper/mRange.lower, (value-mAxisRect->left())/(double)mAxisRect->width())*mRange.lower;
+        return qPow(mRange.upper/mRange.lower, (value-mAxisRect->left())/static_cast<double>(mAxisRect->width()))*mRange.lower;
       else
-        return qPow(mRange.upper/mRange.lower, (mAxisRect->left()-value)/(double)mAxisRect->width())*mRange.upper;
+        return qPow(mRange.upper/mRange.lower, (mAxisRect->left()-value)/static_cast<double>(mAxisRect->width()))*mRange.upper;
     }
   } else // orientation() == Qt::Vertical
   {
     if (mScaleType == stLinear)
     {
       if (!mRangeReversed)
-        return (mAxisRect->bottom()-value)/(double)mAxisRect->height()*mRange.size()+mRange.lower;
+        return (mAxisRect->bottom()-value)/static_cast<double>(mAxisRect->height())*mRange.size()+mRange.lower;
       else
-        return -(mAxisRect->bottom()-value)/(double)mAxisRect->height()*mRange.size()+mRange.upper;
+        return -(mAxisRect->bottom()-value)/static_cast<double>(mAxisRect->height())*mRange.size()+mRange.upper;
     } else // mScaleType == stLogarithmic
     {
       if (!mRangeReversed)
-        return qPow(mRange.upper/mRange.lower, (mAxisRect->bottom()-value)/(double)mAxisRect->height())*mRange.lower;
+        return qPow(mRange.upper/mRange.lower, (mAxisRect->bottom()-value)/static_cast<double>(mAxisRect->height()))*mRange.lower;
       else
-        return qPow(mRange.upper/mRange.lower, (value-mAxisRect->bottom())/(double)mAxisRect->height())*mRange.upper;
+        return qPow(mRange.upper/mRange.lower, (value-mAxisRect->bottom())/static_cast<double>(mAxisRect->height()))*mRange.upper;
     }
   }
 }
@@ -8766,7 +8766,7 @@ QCPAxis::AxisType QCPAxis::marginSideToAxisType(QCP::MarginSide side)
     case QCP::msBottom: return atBottom;
     default: break;
   }
-  qDebug() << Q_FUNC_INFO << "Invalid margin side passed:" << (int)side;
+  qDebug() << Q_FUNC_INFO << "Invalid margin side passed:" << static_cast<int>(side);
   return atLeft;
 }
 
@@ -9470,9 +9470,9 @@ QByteArray QCPAxisPainterPrivate::generateLabelParameterHash() const
   QByteArray result;
   result.append(QByteArray::number(mParentPlot->bufferDevicePixelRatio()));
   result.append(QByteArray::number(tickLabelRotation));
-  result.append(QByteArray::number((int)tickLabelSide));
-  result.append(QByteArray::number((int)substituteExponent));
-  result.append(QByteArray::number((int)numberMultiplyCross));
+  result.append(QByteArray::number(static_cast<int>(tickLabelSide)));
+  result.append(QByteArray::number(static_cast<int>(substituteExponent)));
+  result.append(QByteArray::number(static_cast<int>(numberMultiplyCross)));
   result.append(tickLabelColor.name().toLatin1()+QByteArray::number(tickLabelColor.alpha(), 16));
   result.append(tickLabelFont.toString().toLatin1());
   return result;
@@ -11966,7 +11966,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
         x -= mParentAnchorX->pixelPosition().x();
       else
         x -= mParentPlot->viewport().left();
-      x /= (double)mParentPlot->viewport().width();
+      x /= static_cast<double>(mParentPlot->viewport().width());
       break;
     }
     case ptAxisRectRatio:
@@ -11977,7 +11977,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
           x -= mParentAnchorX->pixelPosition().x();
         else
           x -= mAxisRect.data()->left();
-        x /= (double)mAxisRect.data()->width();
+        x /= static_cast<double>(mAxisRect.data()->width());
       } else
         qDebug() << Q_FUNC_INFO << "Item position type x is ptAxisRectRatio, but no axis rect was defined";
       break;
@@ -12008,7 +12008,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
         y -= mParentAnchorY->pixelPosition().y();
       else
         y -= mParentPlot->viewport().top();
-      y /= (double)mParentPlot->viewport().height();
+      y /= static_cast<double>(mParentPlot->viewport().height());
       break;
     }
     case ptAxisRectRatio:
@@ -12019,7 +12019,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
           y -= mParentAnchorY->pixelPosition().y();
         else
           y -= mAxisRect.data()->top();
-        y /= (double)mAxisRect.data()->height();
+        y /= static_cast<double>(mAxisRect.data()->height());
       } else
         qDebug() << Q_FUNC_INFO << "Item position type y is ptAxisRectRatio, but no axis rect was defined";
       break;
@@ -15948,7 +15948,7 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
     {
       for (int i=0; i<n; ++i)
       {
-        int index = (int)((data[dataIndexFactor*i]-range.lower)*posToIndexFactor) % mLevelCount;
+        int index = static_cast<int>((data[dataIndexFactor*i]-range.lower)*posToIndexFactor) % mLevelCount;
         if (index < 0)
           index += mLevelCount;
         scanLine[i] = mColorBuffer.at(index);
@@ -15971,7 +15971,7 @@ void QCPColorGradient::colorize(const double *data, const QCPRange &range, QRgb 
     {
       for (int i=0; i<n; ++i)
       {
-        int index = (int)(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1)) % mLevelCount;
+        int index = static_cast<int>(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1)) % mLevelCount;
         if (index < 0)
           index += mLevelCount;
         scanLine[i] = mColorBuffer.at(index);
@@ -16027,7 +16027,7 @@ void QCPColorGradient::colorize(const double *data, const unsigned char *alpha, 
     {
       for (int i=0; i<n; ++i)
       {
-        int index = (int)((data[dataIndexFactor*i]-range.lower)*posToIndexFactor) % mLevelCount;
+        int index = static_cast<int>((data[dataIndexFactor*i]-range.lower)*posToIndexFactor) % mLevelCount;
         if (index < 0)
           index += mLevelCount;
         if (alpha[dataIndexFactor*i] == 255)
@@ -16066,7 +16066,7 @@ void QCPColorGradient::colorize(const double *data, const unsigned char *alpha, 
     {
       for (int i=0; i<n; ++i)
       {
-        int index = (int)(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1)) % mLevelCount;
+        int index = static_cast<int>(qLn(data[dataIndexFactor*i]/range.lower)/qLn(range.upper/range.lower)*(mLevelCount-1)) % mLevelCount;
         if (index < 0)
           index += mLevelCount;
         if (alpha[dataIndexFactor*i] == 255)
@@ -16302,7 +16302,7 @@ void QCPColorGradient::updateColorBuffer()
     mColorBuffer.resize(mLevelCount);
   if (mColorStops.size() > 1)
   {
-    double indexToPosFactor = 1.0/(double)(mLevelCount-1);
+    double indexToPosFactor = 1.0/static_cast<double>(mLevelCount-1);
     const bool useAlpha = stopsUseAlpha();
     const QMap<double, QColor> &cs = mColorStops;
     for (int i=0; i<mLevelCount; ++i)
@@ -16647,7 +16647,7 @@ double QCPSelectionDecoratorBracket::getTangentAngle(const QCPPlottableInterface
     pointsAverage += points[i];
     currentIndex += direction;
   }
-  pointsAverage /= (double)averageCount;
+  pointsAverage /= static_cast<double>(averageCount);
   
   // calculate slope of linear regression through points:
   double numSum = 0;
@@ -19448,7 +19448,7 @@ void QCPColorScale::setType(QCPAxis::AxisType type)
     QString labelTransfer;
     QSharedPointer<QCPAxisTicker> tickerTransfer;
     // transfer/revert some settings on old axis if it exists:
-    bool doTransfer = (bool)mColorAxis;
+    bool doTransfer = !mColorAxis.isNull();
     if (doTransfer)
     {
       rangeTransfer = mColorAxis.data()->range();
@@ -20930,7 +20930,7 @@ void QCPGraph::getOptimizedLineData(QVector<QCPGraphData> *lineData, const QCPGr
     QCPGraphDataContainer::const_iterator currentIntervalFirstPoint = it;
     int reversedFactor = keyAxis->pixelOrientation(); // is used to calculate keyEpsilon pixel into the correct direction
     int reversedRound = reversedFactor==-1 ? 1 : 0; // is used to switch between floor (normal) and ceil (reversed) rounding of currentIntervalStartKey
-    double currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(begin->key)+reversedRound));
+    double currentIntervalStartKey = keyAxis->pixelToCoord(static_cast<int>(keyAxis->coordToPixel(begin->key)+reversedRound));
     double lastIntervalEndKey = currentIntervalStartKey;
     double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor)); // interval of one pixel on screen when mapped to plot key coordinates
     bool keyEpsilonVariable = keyAxis->scaleType() == QCPAxis::stLogarithmic; // indicates whether keyEpsilon needs to be updated after every interval (for log axes)
@@ -20961,7 +20961,7 @@ void QCPGraph::getOptimizedLineData(QVector<QCPGraphData> *lineData, const QCPGr
         minValue = it->value;
         maxValue = it->value;
         currentIntervalFirstPoint = it;
-        currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(it->key)+reversedRound));
+        currentIntervalStartKey = keyAxis->pixelToCoord(static_cast<int>(keyAxis->coordToPixel(it->key)+reversedRound));
         if (keyEpsilonVariable)
           keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor));
         intervalDataCount = 1;
@@ -21035,7 +21035,7 @@ void QCPGraph::getOptimizedScatterData(QVector<QCPGraphData> *scatterData, QCPGr
     QCPGraphDataContainer::const_iterator currentIntervalStart = it;
     int reversedFactor = keyAxis->pixelOrientation(); // is used to calculate keyEpsilon pixel into the correct direction
     int reversedRound = reversedFactor==-1 ? 1 : 0; // is used to switch between floor (normal) and ceil (reversed) rounding of currentIntervalStartKey
-    double currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(begin->key)+reversedRound));
+    double currentIntervalStartKey = keyAxis->pixelToCoord(static_cast<int>(keyAxis->coordToPixel(begin->key)+reversedRound));
     double keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor)); // interval of one pixel on screen when mapped to plot key coordinates
     bool keyEpsilonVariable = keyAxis->scaleType() == QCPAxis::stLogarithmic; // indicates whether keyEpsilon needs to be updated after every interval (for log axes)
     int intervalDataCount = 1;
@@ -21092,7 +21092,7 @@ void QCPGraph::getOptimizedScatterData(QVector<QCPGraphData> *scatterData, QCPGr
         minValue = it->value;
         maxValue = it->value;
         currentIntervalStart = it;
-        currentIntervalStartKey = keyAxis->pixelToCoord((int)(keyAxis->coordToPixel(it->key)+reversedRound));
+        currentIntervalStartKey = keyAxis->pixelToCoord(static_cast<int>(keyAxis->coordToPixel(it->key)+reversedRound));
         if (keyEpsilonVariable)
           keyEpsilon = qAbs(currentIntervalStartKey-keyAxis->pixelToCoord(keyAxis->coordToPixel(currentIntervalStartKey)+1.0*reversedFactor));
         intervalDataCount = 1;
@@ -25483,9 +25483,9 @@ void QCPColorMapData::coordToCell(double key, double value, int *keyIndex, int *
 void QCPColorMapData::cellToCoord(int keyIndex, int valueIndex, double *key, double *value) const
 {
   if (key)
-    *key = keyIndex/(double)(mKeySize-1)*(mKeyRange.upper-mKeyRange.lower)+mKeyRange.lower;
+    *key = keyIndex/static_cast<double>(mKeySize-1)*(mKeyRange.upper-mKeyRange.lower)+mKeyRange.lower;
   if (value)
-    *value = valueIndex/(double)(mValueSize-1)*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
+    *value = valueIndex/static_cast<double>(mValueSize-1)*(mValueRange.upper-mValueRange.lower)+mValueRange.lower;
 }
 
 /*! \internal
@@ -25972,8 +25972,8 @@ void QCPColorMap::updateMapImage()
   const QImage::Format format = QImage::Format_ARGB32_Premultiplied;
   const int keySize = mMapData->keySize();
   const int valueSize = mMapData->valueSize();
-  int keyOversamplingFactor = mInterpolate ? 1 : (int)(1.0+100.0/(double)keySize); // make mMapImage have at least size 100, factor becomes 1 if size > 200 or interpolation is on
-  int valueOversamplingFactor = mInterpolate ? 1 : (int)(1.0+100.0/(double)valueSize); // make mMapImage have at least size 100, factor becomes 1 if size > 200 or interpolation is on
+  int keyOversamplingFactor = mInterpolate ? 1 : static_cast<int>(1.0+100.0/static_cast<double>(keySize)); // make mMapImage have at least size 100, factor becomes 1 if size > 200 or interpolation is on
+  int valueOversamplingFactor = mInterpolate ? 1 : static_cast<int>(1.0+100.0/static_cast<double>(valueSize)); // make mMapImage have at least size 100, factor becomes 1 if size > 200 or interpolation is on
   
   // resize mMapImage to correct dimensions including possible oversampling factors, according to key/value axes orientation:
   if (keyAxis->orientation() == Qt::Horizontal && (mMapImage.width() != keySize*keyOversamplingFactor || mMapImage.height() != valueSize*valueOversamplingFactor))
@@ -26074,15 +26074,15 @@ void QCPColorMap::draw(QCPPainter *painter)
   if (keyAxis()->orientation() == Qt::Horizontal)
   {
     if (mMapData->keySize() > 1)
-      halfCellWidth = 0.5*imageRect.width()/(double)(mMapData->keySize()-1);
+      halfCellWidth = 0.5*imageRect.width()/static_cast<double>(mMapData->keySize()-1);
     if (mMapData->valueSize() > 1)
-      halfCellHeight = 0.5*imageRect.height()/(double)(mMapData->valueSize()-1);
+      halfCellHeight = 0.5*imageRect.height()/static_cast<double>(mMapData->valueSize()-1);
   } else // keyAxis orientation is Qt::Vertical
   {
     if (mMapData->keySize() > 1)
-      halfCellHeight = 0.5*imageRect.height()/(double)(mMapData->keySize()-1);
+      halfCellHeight = 0.5*imageRect.height()/static_cast<double>(mMapData->keySize()-1);
     if (mMapData->valueSize() > 1)
-      halfCellWidth = 0.5*imageRect.width()/(double)(mMapData->valueSize()-1);
+      halfCellWidth = 0.5*imageRect.width()/static_cast<double>(mMapData->valueSize()-1);
   }
   imageRect.adjust(-halfCellWidth, -halfCellHeight, halfCellWidth, halfCellHeight);
   const bool mirrorX = (keyAxis()->orientation() == Qt::Horizontal ? keyAxis() : valueAxis())->rangeReversed();
@@ -28346,7 +28346,7 @@ void QCPItemLine::draw(QCPPainter *painter)
     return;
   // get visible segment of straight line inside clipRect:
   double clipPad = qMax(mHead.boundingDistance(), mTail.boundingDistance());
-  clipPad = qMax(clipPad, (double)mainPen().widthF());
+  clipPad = qMax(clipPad, static_cast<double>(mainPen().widthF()));
   QLineF line = getRectClippedLine(startVec, endVec, clipRect().adjusted(-clipPad, -clipPad, clipPad, clipPad));
   // paint visible segment, if existent:
   if (!line.isNull())
@@ -29927,7 +29927,7 @@ void QCPItemTracer::updatePosition()
             {
               // interpolate between iterators around mGraphKey:
               double slope = 0;
-              if (!qFuzzyCompare((double)it->key, (double)prevIt->key))
+              if (!qFuzzyCompare(static_cast<double>(it->key), static_cast<double>(prevIt->key)))
                 slope = (it->value-prevIt->value)/(it->key-prevIt->key);
               position->setCoords(mGraphKey, (mGraphKey-prevIt->key)*slope+prevIt->value);
             } else
