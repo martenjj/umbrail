@@ -705,7 +705,7 @@ class QCP_LIB_DECL QCPLayerable : public QObject
   Q_PROPERTY(bool antialiased READ antialiased WRITE setAntialiased)
   /// \endcond
 public:
-  QCPLayerable(QCustomPlot *plot, QString targetLayer=QString(), QCPLayerable *parentLayerable=0);
+  QCPLayerable(QCustomPlot *plot, QString targetLayer=QString(), QCPLayerable *parentLayerable=nullptr);
   virtual ~QCPLayerable();
   
   // getters:
@@ -722,7 +722,7 @@ public:
   void setAntialiased(bool enabled);
   
   // introduced virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const;
 
   // non-property methods:
   bool realVisibility() const;
@@ -1218,7 +1218,7 @@ public:
                           };
   Q_ENUMS(SizeConstraintRect)
 
-  explicit QCPLayoutElement(QCustomPlot *parentPlot=0);
+  explicit QCPLayoutElement(QCustomPlot *parentPlot=nullptr);
   virtual ~QCPLayoutElement();
   
   // getters:
@@ -1231,7 +1231,7 @@ public:
   QSize minimumSize() const { return mMinimumSize; }
   QSize maximumSize() const { return mMaximumSize; }
   SizeConstraintRect sizeConstraintRect() const { return mSizeConstraintRect; }
-  QCPMarginGroup *marginGroup(QCP::MarginSide side) const { return mMarginGroups.value(side, (QCPMarginGroup*)0); }
+  QCPMarginGroup *marginGroup(QCP::MarginSide side) const { return mMarginGroups.value(side, nullptr); }
   QHash<QCP::MarginSide, QCPMarginGroup*> marginGroups() const { return mMarginGroups; }
   
   // setters:
@@ -1253,7 +1253,7 @@ public:
   virtual QList<QCPLayoutElement*> elements(bool recursive) const;
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
 protected:
   // property members:
@@ -1447,7 +1447,7 @@ public:
   virtual QCPLayoutElement* takeAt(int index) Q_DECL_OVERRIDE;
   virtual bool take(QCPLayoutElement* element) Q_DECL_OVERRIDE;
   virtual void simplify() Q_DECL_OVERRIDE {}
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   // non-virtual methods:
   void addElement(QCPLayoutElement *element, Qt::Alignment alignment);
@@ -1584,7 +1584,7 @@ protected:
   // non-virtual methods:
   void trimTicks(const QCPRange &range, QVector<double> &ticks, bool keepOneOutlier) const;
   double pickClosest(double target, const QVector<double> &candidates) const;
-  double getMantissa(double input, double *magnitude=0) const;
+  double getMantissa(double input, double *magnitude=nullptr) const;
   double cleanMantissa(double input) const;
   
 private:
@@ -2102,7 +2102,7 @@ public:
   void setUpperEnding(const QCPLineEnding &ending);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   // non-property methods:
   Qt::Orientation orientation() const { return mOrientation; }
@@ -3195,10 +3195,10 @@ void QCPDataContainer<DataType>::preallocateGrow(int minimumPreallocSize)
   newPreallocSize += (1u<<qBound(4, mPreallocIteration+4, 15)) - 12; // do 4 up to 32768-12 preallocation, doubling in each intermediate iteration
   ++mPreallocIteration;
   
-  int sizeDifference = newPreallocSize-mPreallocSize;
+  int sizeDifference=newPreallocSize-mPreallocSize;
   mData.resize(mData.size()+sizeDifference);
   std::copy_backward(mData.begin()+mPreallocSize, mData.end()-sizeDifference, mData.end());
-  mPreallocSize = newPreallocSize;
+  mPreallocSize=newPreallocSize;
 }
 
 /*! \internal
@@ -3337,8 +3337,8 @@ public:
   void setSelectionDecorator(QCPSelectionDecorator *decorator);
 
   // introduced virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE = 0; // actually introduced in QCPLayerable as non-pure, but we want to force reimplementation for plottables
-  virtual QCPPlottableInterface1D *interface1D() { return 0; }
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE = 0; // actually introduced in QCPLayerable as non-pure, but we want to force reimplementation for plottables
+  virtual QCPPlottableInterface1D *interface1D() { return nullptr; }
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const = 0;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const = 0;
   
@@ -3424,7 +3424,7 @@ protected:
   QSet<QCPItemPosition*> mChildrenX, mChildrenY;
   
   // introduced virtual methods:
-  virtual QCPItemPosition *toQCPItemPosition() { return 0; }
+  virtual QCPItemPosition *toQCPItemPosition() { return nullptr; }
   
   // non-virtual methods:
   void addChildX(QCPItemPosition* pos); // called from pos when this anchor is set as parent
@@ -3536,7 +3536,7 @@ public:
   Q_SLOT void setSelected(bool selected);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE = 0;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE = 0;
   
   // non-virtual methods:
   QList<QCPItemPosition*> positions() const { return mPositions; }
@@ -3625,7 +3625,7 @@ public:
                        };
   Q_ENUMS(RefreshPriority)
   
-  explicit QCustomPlot(QWidget *parent = 0);
+  explicit QCustomPlot(QWidget *parent = nullptr);
   virtual ~QCustomPlot();
   
   // getters:
@@ -3686,7 +3686,7 @@ public:
   // specialized interface for QCPGraph:
   QCPGraph *graph(int index) const;
   QCPGraph *graph() const;
-  QCPGraph *addGraph(QCPAxis *keyAxis=0, QCPAxis *valueAxis=0);
+  QCPGraph *addGraph(QCPAxis *keyAxis=nullptr, QCPAxis *valueAxis=nullptr);
   bool removeGraph(QCPGraph *graph);
   bool removeGraph(int index);
   int clearGraphs();
@@ -3711,7 +3711,7 @@ public:
   bool setCurrentLayer(const QString &name);
   bool setCurrentLayer(QCPLayer *layer);
   int layerCount() const;
-  bool addLayer(const QString &name, QCPLayer *otherLayer=0, LayerInsertMode insertMode=limAbove);
+  bool addLayer(const QString &name, QCPLayer *otherLayer=nullptr, LayerInsertMode insertMode=limAbove);
   bool removeLayer(QCPLayer *layer);
   bool moveLayer(QCPLayer *layer, QCPLayer *otherLayer, LayerInsertMode insertMode=limAbove);
   
@@ -3829,8 +3829,8 @@ protected:
   bool registerGraph(QCPGraph *graph);
   bool registerItem(QCPAbstractItem* item);
   void updateLayerIndices() const;
-  QCPLayerable *layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails=0) const;
-  QList<QCPLayerable*> layerableListAt(const QPointF &pos, bool onlySelectable, QList<QVariant> *selectionDetails=0) const;
+  QCPLayerable *layerableAt(const QPointF &pos, bool onlySelectable, QVariant *selectionDetails=nullptr) const;
+  QList<QCPLayerable*> layerableListAt(const QPointF &pos, bool onlySelectable, QList<QVariant> *selectionDetails=nullptr) const;
   void drawBackground(QCPPainter *painter);
   void setupPaintBuffers();
   QCPAbstractPaintBuffer *createPaintBuffer();
@@ -3894,7 +3894,7 @@ public:
   virtual int findEnd(double sortKey, bool expandedRange=true) const Q_DECL_OVERRIDE;
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPPlottableInterface1D *interface1D() Q_DECL_OVERRIDE { return this; }
   
 protected:
@@ -4639,7 +4639,7 @@ public:
   QCPAxis *axis(QCPAxis::AxisType type, int index=0) const;
   QList<QCPAxis*> axes(QCPAxis::AxisTypes types) const;
   QList<QCPAxis*> axes() const;
-  QCPAxis *addAxis(QCPAxis::AxisType type, QCPAxis *axis=0);
+  QCPAxis *addAxis(QCPAxis::AxisType type, QCPAxis *axis=nullptr);
   QList<QCPAxis*> addAxes(QCPAxis::AxisTypes types);
   bool removeAxis(QCPAxis *axis);
   QCPLayoutInset *insetLayout() const { return mInsetLayout; }
@@ -4749,7 +4749,7 @@ public:
   Q_SLOT void setSelected(bool selected);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
 signals:
   void selectionChanged(bool selected);
@@ -4874,7 +4874,7 @@ public:
   void setSelectedTextColor(const QColor &color);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   // non-virtual methods:
   QCPAbstractLegendItem *item(int index) const;
@@ -4974,7 +4974,7 @@ public:
   Q_SLOT void setSelected(bool selected);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual void mousePressEvent(QMouseEvent *event, const QVariant &details) Q_DECL_OVERRIDE;
   virtual void mouseReleaseEvent(QMouseEvent *event, const QPointF &startPos) Q_DECL_OVERRIDE;
   virtual void mouseDoubleClickEvent(QMouseEvent *event, const QVariant &details) Q_DECL_OVERRIDE;
@@ -5211,7 +5211,7 @@ public:
   void addData(double key, double value);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const Q_DECL_OVERRIDE;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const Q_DECL_OVERRIDE;
   
@@ -5343,7 +5343,7 @@ public:
   void addData(double key, double value);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const Q_DECL_OVERRIDE;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const Q_DECL_OVERRIDE;
   
@@ -5534,7 +5534,7 @@ public:
   
   // reimplemented virtual methods:
   virtual QCPDataSelection selectTestRect(const QRectF &rect, bool onlySelectable) const Q_DECL_OVERRIDE;
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const Q_DECL_OVERRIDE;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const Q_DECL_OVERRIDE;
   virtual QPointF dataPixelPosition(int index) const Q_DECL_OVERRIDE;
@@ -5652,7 +5652,7 @@ public:
   
   // reimplemented virtual methods:
   virtual QCPDataSelection selectTestRect(const QRectF &rect, bool onlySelectable) const Q_DECL_OVERRIDE;
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const Q_DECL_OVERRIDE;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const Q_DECL_OVERRIDE;
   
@@ -5783,7 +5783,7 @@ public:
   Q_SLOT void updateLegendIcon(Qt::TransformationMode transformMode=Qt::SmoothTransformation, const QSize &thumbSize=QSize(32, 18));
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const Q_DECL_OVERRIDE;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const Q_DECL_OVERRIDE;
   
@@ -5923,7 +5923,7 @@ public:
   
   // reimplemented virtual methods:
   virtual QCPDataSelection selectTestRect(const QRectF &rect, bool onlySelectable) const Q_DECL_OVERRIDE;
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth) const Q_DECL_OVERRIDE;
   virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain=QCP::sdBoth, const QCPRange &inKeyRange=QCPRange()) const Q_DECL_OVERRIDE;
   
@@ -6052,7 +6052,7 @@ public:
   virtual int findEnd(double sortKey, bool expandedRange=true) const Q_DECL_OVERRIDE;
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   virtual QCPPlottableInterface1D *interface1D() Q_DECL_OVERRIDE { return this; }
   
 protected:
@@ -6108,7 +6108,7 @@ public:
   void setSelectedPen(const QPen &pen);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const point1;
   QCPItemPosition * const point2;
@@ -6157,7 +6157,7 @@ public:
   void setTail(const QCPLineEnding &tail);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const start;
   QCPItemPosition * const end;
@@ -6207,7 +6207,7 @@ public:
   void setTail(const QCPLineEnding &tail);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const start;
   QCPItemPosition * const startDir;
@@ -6258,7 +6258,7 @@ public:
   void setSelectedBrush(const QBrush &brush);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const topLeft;
   QCPItemPosition * const bottomRight;
@@ -6344,7 +6344,7 @@ public:
   void setPadding(const QMargins &padding);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const position;
   QCPItemAnchor * const topLeft;
@@ -6414,7 +6414,7 @@ public:
   void setSelectedBrush(const QBrush &brush);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const topLeft;
   QCPItemPosition * const bottomRight;
@@ -6480,7 +6480,7 @@ public:
   void setSelectedPen(const QPen &pen);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const topLeft;
   QCPItemPosition * const bottomRight;
@@ -6509,7 +6509,7 @@ protected:
   
   // non-virtual methods:
   void updateScaledPixmap(QRect finalRect=QRect(), bool flipHorz=false, bool flipVert=false);
-  QRect getFinalRect(bool *flippedHorz=0, bool *flippedVert=0) const;
+  QRect getFinalRect(bool *flippedHorz=nullptr, bool *flippedVert=nullptr) const;
   QPen mainPen() const;
 };
 
@@ -6573,7 +6573,7 @@ public:
   void setInterpolating(bool enabled);
 
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   // non-virtual methods:
   void updatePosition();
@@ -6644,7 +6644,7 @@ public:
   void setStyle(BracketStyle style);
   
   // reimplemented virtual methods:
-  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=0) const Q_DECL_OVERRIDE;
+  virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details=nullptr) const Q_DECL_OVERRIDE;
   
   QCPItemPosition * const left;
   QCPItemPosition * const right;
