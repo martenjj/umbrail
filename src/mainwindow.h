@@ -63,6 +63,7 @@ protected slots:
     void slotOpenProject();
     void slotSaveProject();
     void slotSaveAs();
+    void slotSaveCopy();
     void slotExportFile();
     void slotImportFile();
     void slotPreferences();
@@ -112,6 +113,7 @@ private:
 
     QAction *mSaveProjectAction;
     QAction *mSaveProjectAsAction;
+    QAction *mSaveProjectCopyAction;
     QAction *mExportAction;
     QAction *mImportAction;
 

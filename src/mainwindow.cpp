@@ -144,6 +144,11 @@ void MainWindow::setupActions()
     mSaveProjectAction = KStandardAction::save(this, SLOT(slotSaveProject()), ac);
     mSaveProjectAsAction = KStandardAction::saveAs(this, SLOT(slotSaveAs()), ac);
 
+    mSaveProjectCopyAction = ac->addAction("file_save_copy");
+    mSaveProjectCopyAction->setText(i18n("Save Copy As..."));
+    mSaveProjectCopyAction->setIcon(QIcon::fromTheme("folder-new"));
+    connect(mSaveProjectCopyAction, SIGNAL(triggered()), SLOT(slotSaveCopy()));
+
     mImportAction = ac->addAction("file_import");
     mImportAction->setText(i18n("Import File..."));
     mImportAction->setIcon(QIcon::fromTheme("document-import"));
@@ -664,7 +669,6 @@ void MainWindow::slotSaveProject()
 }
 
 
-
 void MainWindow::slotSaveAs()
 {
     RecentSaver saver("project");
@@ -681,6 +685,25 @@ void MainWindow::slotSaveAs()
 
     mProject->setFileName(file);
     slotSaveProject();
+}
+
+
+void MainWindow::slotSaveCopy()
+{
+    RecentSaver saver("projectcopy");
+    QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
+                                            i18n("Save Copy of Tracks File As"),	// caption
+                                            saver.recentUrl("untitled"),		// dir
+                                            FilesController::allProjectFilters(false),	// filter
+                                            nullptr,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList("file"));			// supportedSchemes
+
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
+
+    qDebug() << "to" << file;
+    save(file, ImporterExporterBase::NoOption);
 }
 
 
@@ -745,6 +768,7 @@ void MainWindow::slotSetModified(bool mod)
     setWindowModified(mod);
 
     mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
+    mSaveProjectCopyAction->setEnabled(!filesController()->model()->isEmpty());
 }
 
 
