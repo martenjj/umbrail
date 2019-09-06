@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Jun-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -43,7 +43,7 @@ class PhotoViewer : public KParts::MainWindow
     Q_OBJECT
 
 public:
-    PhotoViewer(const QUrl &url, QWidget *pnt = NULL);
+    PhotoViewer(const QUrl &url, QWidget *pnt = nullptr);
     virtual ~PhotoViewer();
 
 protected:

@@ -146,7 +146,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
 
 StopDetectDialogue::~StopDetectDialogue()
 {
-    mapController()->view()->setStopLayerData(NULL);
+    mapController()->view()->setStopLayerData(nullptr);
     qDeleteAll(mResultPoints);
     qDebug() << "done";
 }
@@ -194,7 +194,7 @@ void StopDetectDialogue::slotDetectStops()
 
     setCursor(Qt::BusyCursor);
 
-    mapController()->view()->setStopLayerData(NULL);
+    mapController()->view()->setStopLayerData(nullptr);
 
     // Clear the result array but do not delete the points it contains,
     // previously committed points are now part of the main data tree.
@@ -423,7 +423,7 @@ void StopDetectDialogue::slotCommitResults()
 
     // The destination folder must exist at this point
     TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, filesController()->model()->rootFileItem());
-    Q_ASSERT(destFolder!=NULL);
+    Q_ASSERT(destFolder!=nullptr);
 
     // Create the waypoints
     for (int i = 0; i<mResultsList->count(); ++i)

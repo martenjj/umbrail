@@ -110,7 +110,7 @@ void FilesController::saveProperties()
 
 void FilesController::initNew()
 {
-    Q_ASSERT(model()->rootFileItem()==NULL);
+    Q_ASSERT(model()->rootFileItem()==nullptr);
 
     TrackDataFile *fileItem = new TrackDataFile;
     model()->setRootFileItem(fileItem);
@@ -297,7 +297,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
         return (FilesController::StatusFailed);
     }
 
-    Q_ASSERT(tdf!=NULL);
+    Q_ASSERT(tdf!=nullptr);
     ImportFileCommand *cmd = new ImportFileCommand(this);
     cmd->setText(i18n("Import"));
     cmd->setData(tdf);					// takes ownership of tree
@@ -413,7 +413,7 @@ static const TrackDataTrackpoint *closestPoint;
 static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
 {
     const TrackDataTrackpoint *p = dynamic_cast<const TrackDataTrackpoint *>(pnt);
-    if (p!=NULL)
+    if (p!=nullptr)
     {
         QDateTime pt = p->time();
         const int diff = abs(dt.secsTo(pt));
@@ -516,7 +516,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
         double alt = 0;
         double lat, lon;
-        const TrackDataAbstractPoint *sourcePoint = NULL;
+        const TrackDataAbstractPoint *sourcePoint = nullptr;
 
 #ifdef HAVE_KEXIV2
         KExiv2 exi(importFrom.toLocalFile());
@@ -547,10 +547,10 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             if (dt.isValid() && Settings::photoUseTime())
             {
                 closestDiff = INT_MAX;
-                closestPoint = NULL;
+                closestPoint = nullptr;
                 findChildWithTime(model()->rootFileItem(), dt);
 
-                if (closestPoint!=NULL && closestDiff<=Settings::photoTimeThreshold())
+                if (closestPoint!=nullptr && closestDiff<=Settings::photoTimeThreshold())
                 {
                     messageText = xi18ncp("@info", "The image <filename>%3</filename> date/time matched point '%2' within %1 second.<nl/>The waypoint will be created at that point position.",
                                           "The image <filename>%3</filename> date/time matched point '%2' within %1 seconds.<nl/>The waypoint will be created at that point position.",
@@ -607,7 +607,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
         // Find or create a folder to place the resulting waypoint in
         TrackDataFolder *foundFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, model()->rootFileItem());
-        if (foundFolder==NULL)				// find where to store point
+        if (foundFolder==nullptr)			// find where to store point
         {
             if (containerCreated) qDebug() << "new folder already added";
             else
@@ -707,7 +707,7 @@ default:                    break;
 void FilesController::slotCheckTimeZone()
 {
     TrackDataFile *tdf = model()->rootFileItem();
-    if (tdf==NULL) return;				// check model not empty
+    if (tdf==nullptr) return;				// check model not empty
 
     QString zone = tdf->timeZone();			// get current file time zone
     if (!zone.isEmpty()) return;			// time zone is already set
@@ -736,7 +736,7 @@ void FilesController::slotCheckTimeZone()
     TrackPropertiesDialogue::setNextPageIndex(0);	// open at "General" page
     // Trigger the action, so that the dialogue can get its text for the window caption.
     QAction *act = mainWindow()->actionCollection()->action("track_properties");
-    Q_ASSERT(act!=NULL);
+    Q_ASSERT(act!=nullptr);
     QTimer::singleShot(0, act, SLOT(trigger()));
 }
 
@@ -835,7 +835,7 @@ void FilesController::slotTrackProperties()
 void FilesController::slotSetWaypointStatus()
 {
     QAction *act = qobject_cast<QAction *>(sender());
-    if (act==NULL) return;
+    if (act==nullptr) return;
     int newStatus = act->data().toInt();
 
     ChangeItemDataCommand *cmd = new ChangeItemDataCommand(this);
@@ -853,7 +853,7 @@ void FilesController::slotSplitSegment()
     const TrackDataItem *item = items.first();
 
     TrackDataSegment *pnt = dynamic_cast<TrackDataSegment *>(item->parent());
-    if (pnt==NULL) return;
+    if (pnt==nullptr) return;
     qDebug() << "split" << pnt->name() << "at" << item->name();
 
     int idx = pnt->childIndex(item);
@@ -879,9 +879,9 @@ static bool compareSegmentTimes(const TrackDataItem *item1, const TrackDataItem 
     if (item2->childCount()==0) return (false);
 
     const TrackDataAbstractPoint *pnt1 = dynamic_cast<TrackDataAbstractPoint *>(item1->childAt(0));
-    Q_ASSERT(pnt1!=NULL);
+    Q_ASSERT(pnt1!=nullptr);
     const TrackDataAbstractPoint *pnt2 = dynamic_cast<TrackDataAbstractPoint *>(item2->childAt(0));
-    Q_ASSERT(pnt2!=NULL);
+    Q_ASSERT(pnt2!=nullptr);
 
     return (pnt1->time()<pnt2->time());
 }
@@ -938,9 +938,9 @@ void FilesController::slotMoveItem()
     d.setSource(&items);
 
     QString capt;
-    if (dynamic_cast<const TrackDataSegment *>(item)!=NULL) capt = i18nc("@title:window", "Move Segment");
-    else if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) capt = i18nc("@title:window", "Move Folder");
-    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL) capt = i18nc("@title:window", "Move Waypoint");
+    if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr) capt = i18nc("@title:window", "Move Segment");
+    else if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr) capt = i18nc("@title:window", "Move Folder");
+    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr) capt = i18nc("@title:window", "Move Waypoint");
     if (!capt.isEmpty()) d.setWindowTitle(capt);
 
     if (!d.exec()) return;
@@ -958,7 +958,7 @@ void FilesController::slotAddTrack()
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()!=1) return;
     TrackDataItem *pnt = items.first();			// parent item (must be file)
-    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL);
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr);
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
@@ -972,7 +972,7 @@ void FilesController::slotAddRoute()
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()!=1) return;
     TrackDataItem *pnt = items.first();			// parent item (must be file)
-    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL);
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr);
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
@@ -986,7 +986,7 @@ void FilesController::slotAddFolder()
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()!=1) return;
     TrackDataItem *pnt = items.first();			// parent item (file or folder)
-    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=NULL || dynamic_cast<TrackDataFolder *>(pnt)!=NULL);
+    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr || dynamic_cast<TrackDataFolder *>(pnt)!=nullptr);
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
@@ -1067,16 +1067,16 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     }
 
     QList<TrackDataItem *> items = view()->selectedItems();
-    const TrackDataAbstractPoint *selPoint = NULL;
+    const TrackDataAbstractPoint *selPoint = nullptr;
 
     if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
     else if (items.count()==1)				// there is a selected item
     {							// a source point?
         selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
-        if (selPoint!=NULL) d.setSourcePoint(selPoint);
+        if (selPoint!=nullptr) d.setSourcePoint(selPoint);
 							// the destination folder?
         const TrackDataFolder *selFolder = dynamic_cast<const TrackDataFolder *>(items.first());
-        if (selFolder!=NULL) d.setDestinationContainer(selFolder);
+        if (selFolder!=nullptr) d.setDestinationContainer(selFolder);
     }
 
     if (!d.exec()) return;
@@ -1084,14 +1084,14 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     d.pointPosition(&lat, &lon);
     const QString name = d.pointName();
     TrackDataFolder *destFolder = dynamic_cast<TrackDataFolder *>(d.selectedContainer());
-    Q_ASSERT(destFolder!=NULL);
+    Q_ASSERT(destFolder!=nullptr);
 
     qDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
 
     AddWaypointCommand *cmd = new AddWaypointCommand(this);
 
     QObject *sdr = sender();				// may be called directly
-    if (qobject_cast<MapView *>(sdr)!=NULL) cmd->setText(i18n("Create Waypoint on Map"));
+    if (qobject_cast<MapView *>(sdr)!=nullptr) cmd->setText(i18n("Create Waypoint on Map"));
     else cmd->setSenderText(sdr);
 
     cmd->setData(name, lat, lon, destFolder, selPoint);
@@ -1111,16 +1111,16 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     }
 
     QList<TrackDataItem *> items = view()->selectedItems();
-    const TrackDataAbstractPoint *selPoint = NULL;
+    const TrackDataAbstractPoint *selPoint = nullptr;
 
     if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
     else if (items.count()==1)				// there is a selected item
     {							// a source point?
         selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
-        if (selPoint!=NULL) d.setSourcePoint(selPoint);
+        if (selPoint!=nullptr) d.setSourcePoint(selPoint);
 							// the destination route?
         const TrackDataRoute *selRoute = dynamic_cast<const TrackDataRoute *>(items.first());
-        if (selRoute!=NULL) d.setDestinationContainer(selRoute);
+        if (selRoute!=nullptr) d.setDestinationContainer(selRoute);
     }
 
     if (!d.exec()) return;
@@ -1128,14 +1128,14 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     d.pointPosition(&lat, &lon);
     const QString name = d.pointName();
     TrackDataRoute *destRoute = dynamic_cast<TrackDataRoute *>(d.selectedContainer());
-    Q_ASSERT(destRoute!=NULL);
+    Q_ASSERT(destRoute!=nullptr);
 
     qDebug() << "create" << name << "in" << destRoute->name() << "at" << lat << lon;
 
     AddRoutepointCommand *cmd = new AddRoutepointCommand(this);
 
     QObject *sdr = sender();				// may be called directly
-    if (qobject_cast<MapView *>(sdr)!=NULL) cmd->setText(i18n("Create Route Point on Map"));
+    if (qobject_cast<MapView *>(sdr)!=nullptr) cmd->setText(i18n("Create Route Point on Map"));
     else cmd->setSenderText(sdr);
 
     cmd->setData(name, lat, lon, destRoute, selPoint);

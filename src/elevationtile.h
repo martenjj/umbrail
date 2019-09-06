@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	14-Mar-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -58,7 +58,7 @@ public:
 
     ElevationTile::State state() const			{ return (mState); }
     ElevationTile::TileId id() const			{ return (mTileId); }
-    bool isValid() const				{ return (mData!=NULL); }
+    bool isValid() const				{ return (mData!=nullptr); }
     bool isValidFor(double lat, double lon) const;
 
     QString cacheFile() const;

@@ -16,7 +16,7 @@ class TrackFilterModel : public QSortFilterProxyModel
     Q_OBJECT
 
 public:
-    TrackFilterModel(QObject *pnt = NULL);
+    TrackFilterModel(QObject *pnt = nullptr);
     virtual ~TrackFilterModel()				{}
 
     virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const override;

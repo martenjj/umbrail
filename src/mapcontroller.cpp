@@ -38,7 +38,7 @@ MapController::MapController(QObject *pnt)
     mHomeLong = -0.352764;
     mHomeZoom = 2300;
 
-    mThemeManager = NULL;				// created on demand
+    mThemeManager = nullptr;				// created on demand
 }
 
 
@@ -164,7 +164,7 @@ void MapController::slotSaveImage()
                                             i18n("Save Map As Image"),		// caption
                                             saver.recentUrl("untitled"),	// dir
                                             ImageFilter::qtFilterString(ImageFilter::Writing),
-                                            NULL,				// selectedFilter,
+                                            nullptr,				// selectedFilter,
                                             QFileDialog::Options(),		// options
                                             QStringList("file"));		// supportedSchemes
 
@@ -213,7 +213,7 @@ void MapController::slotZoomChanged(int zoom)
 
 void MapController::slotSelectTheme()
 {
-    if (mThemeManager==NULL)
+    if (mThemeManager==nullptr)
     {
         qDebug() << "creating theme manager";
         mThemeManager = new MapThemeManager(this);

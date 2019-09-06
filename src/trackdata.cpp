@@ -109,7 +109,7 @@ BoundingArea BoundingArea::united(const BoundingArea &other) const
 
 TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> *items)
 {
-    if (items==NULL) return (TimeRange::null);
+    if (items==nullptr) return (TimeRange::null);
     int num = items->count();
     if (num==0) return (TimeRange::null);
 
@@ -128,7 +128,7 @@ TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> *items)
 
 BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 {
-    if (items==NULL) return (BoundingArea::null);
+    if (items==nullptr) return (BoundingArea::null);
     int num = items->count();
     if (num==0) return (BoundingArea::null);
 
@@ -147,7 +147,7 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 
 unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> *items)
 {
-    if (items==NULL) return (0);
+    if (items==nullptr) return (0);
     int num = 0;
     for (int i = 0; i<items->count(); ++i) num += items->at(i)->childCount();
     return (num);
@@ -209,7 +209,7 @@ QString TrackData::formattedDuration(unsigned t, bool blankIfZero)
 QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 {
     if (!dt.isValid()) return (i18nc("an unknown quantity", "unknown"));
-    if (tz==NULL) return (QLocale().toString(dt, QLocale::ShortFormat));
+    if (tz==nullptr) return (QLocale().toString(dt, QLocale::ShortFormat));
 
     QDateTime tzdt = dt.toUTC().toTimeZone(*tz);
     // QDateTime tzdt = tz->toZoneTime(dt.toUTC());
@@ -265,9 +265,9 @@ TrackDataItem::TrackDataItem(const char *format, int *counter)
 
 void TrackDataItem::init()
 {
-    mChildren = NULL;					// no children yet
-    mParent = NULL;					// not attached to parent
-    mMetadata = NULL;					// no metadata yet
+    mChildren = nullptr;				// no children yet
+    mParent = nullptr;					// not attached to parent
+    mMetadata = nullptr;				// no metadata yet
     mSelectionId = 1;					// nothing selected yet
     mExplicitName = false;
 }
@@ -275,7 +275,7 @@ void TrackDataItem::init()
 
 TrackDataItem::~TrackDataItem()
 {
-    if (mChildren!=NULL) qDeleteAll(*mChildren);
+    if (mChildren!=nullptr) qDeleteAll(*mChildren);
     delete mChildren;
     delete mMetadata;
 }
@@ -290,10 +290,10 @@ void TrackDataItem::setName(const QString &newName, bool explicitName)
 
 void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 {
-    if (data->parent()!=NULL) qWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
-    Q_ASSERT(data->parent()==NULL);
+    if (data->parent()!=nullptr) qWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
+    Q_ASSERT(data->parent()==nullptr);
 
-    if (mChildren==NULL)
+    if (mChildren==nullptr)
     {
 #ifdef MEMORY_TRACKING
         ++allocChildren;
@@ -310,37 +310,37 @@ void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
 
 TrackDataItem *TrackDataItem::takeLastChildItem()
 {
-    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(mChildren!=nullptr);
     Q_ASSERT(!mChildren->isEmpty());
     TrackDataItem *data = mChildren->takeLast();
-    data->mParent = NULL;				// now no longer has parent
+    data->mParent = nullptr;				// now no longer has parent
     return (data);
 }
 
 
 TrackDataItem *TrackDataItem::takeFirstChildItem()
 {
-    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(mChildren!=nullptr);
     Q_ASSERT(!mChildren->isEmpty());
     TrackDataItem *data = mChildren->takeFirst();
-    data->mParent = NULL;				// now no longer has parent
+    data->mParent = nullptr;				// now no longer has parent
     return (data);
 }
 
 
 TrackDataItem *TrackDataItem::takeChildItem(int idx)
 {
-    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(mChildren!=nullptr);
     Q_ASSERT(idx>=0 && idx<mChildren->count());
     TrackDataItem *data = mChildren->takeAt(idx);
-    data->mParent = NULL;				// now no longer has parent
+    data->mParent = nullptr;				// now no longer has parent
     return (data);
 }
 
 
 void TrackDataItem::removeChildItem(TrackDataItem *item)
 {
-    Q_ASSERT(mChildren!=NULL);
+    Q_ASSERT(mChildren!=nullptr);
     takeChildItem(mChildren->indexOf(item));
 }
 
@@ -512,11 +512,11 @@ TimeRange TrackDataSegment::timeSpan() const
     if (num==0) return (TimeRange::null);
 
     const TrackDataTrackpoint *firstPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(0));
-    Q_ASSERT(firstPoint!=NULL);
+    Q_ASSERT(firstPoint!=nullptr);
     if (num==1) return (TimeRange(firstPoint->time(), firstPoint->time()));
 
     const TrackDataTrackpoint *lastPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(num-1));
-    Q_ASSERT(lastPoint!=NULL);
+    Q_ASSERT(lastPoint!=nullptr);
     return (TimeRange(firstPoint->time(), lastPoint->time()));
 }
 
@@ -666,7 +666,7 @@ QString TrackDataFolder::path() const
     QStringList p(name());
     const TrackDataItem *pnt = parent();
 
-    while (pnt!=NULL && dynamic_cast<const TrackDataFile *>(pnt)==NULL)
+    while (pnt!=nullptr && dynamic_cast<const TrackDataFile *>(pnt)==nullptr)
     {
         p.prepend(pnt->name());
         pnt = pnt->parent();

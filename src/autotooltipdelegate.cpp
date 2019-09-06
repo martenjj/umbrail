@@ -12,7 +12,7 @@ bool AutoToolTipDelegate::helpEvent(QHelpEvent *e,
                                     const QStyleOptionViewItem &option,
                                     const QModelIndex &index)
 {
-    if (e==NULL || view==NULL) return (false);
+    if (e==nullptr || view==nullptr) return (false);
 
     if (e->type()==QEvent::ToolTip)
     {

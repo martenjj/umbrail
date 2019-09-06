@@ -28,7 +28,7 @@ class SettingsMapStylePage : public KPageWidgetItem
     Q_OBJECT
 
 public:
-    SettingsMapStylePage(QWidget *pnt = NULL);
+    SettingsMapStylePage(QWidget *pnt = nullptr);
     virtual ~SettingsMapStylePage()				{}
 
 public slots:
@@ -53,7 +53,7 @@ class SettingsFilesPage : public KPageWidgetItem
     Q_OBJECT
 
 public:
-    SettingsFilesPage(QWidget *pnt = NULL);
+    SettingsFilesPage(QWidget *pnt = nullptr);
     virtual ~SettingsFilesPage()				{}
 
 public slots:
@@ -75,7 +75,7 @@ class SettingsMediaPage : public KPageWidgetItem
     Q_OBJECT
 
 public:
-    SettingsMediaPage(QWidget *pnt = NULL);
+    SettingsMediaPage(QWidget *pnt = nullptr);
     virtual ~SettingsMediaPage()				{}
 
 public slots:

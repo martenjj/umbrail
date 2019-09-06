@@ -25,7 +25,7 @@ public:
     void setSenderText(const QObject *sdr);
 
 protected:
-    CommandBase(QUndoCommand *parent = NULL) : QUndoCommand(parent)	{};
+    CommandBase(QUndoCommand *parent = nullptr) : QUndoCommand(parent)	{};
 };
 
 
@@ -39,7 +39,7 @@ public:
     virtual ~FilesCommandBase()				{}
 
 protected:
-    FilesCommandBase(FilesController *fc, QUndoCommand *parent = NULL)
+    FilesCommandBase(FilesController *fc, QUndoCommand *parent = nullptr)
         : CommandBase(parent),
           mController(fc)				{}
 
@@ -59,7 +59,7 @@ private:
 class ImportFileCommand : public FilesCommandBase
 {
 public:
-    ImportFileCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    ImportFileCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~ImportFileCommand();
 
     void setData(TrackDataFile *tdf)			{ mImportData = tdf; }
@@ -85,7 +85,7 @@ public:
     void setDataItems(const QList<TrackDataItem *> &items)	{ mDataItems = items; }
 
 protected:
-    ChangeItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    ChangeItemCommand(FilesController *fc, QUndoCommand *parent = nullptr);
 
 protected:
     QList<TrackDataItem *> mDataItems;
@@ -101,7 +101,7 @@ protected:
 class ChangeItemNameCommand : public ChangeItemCommand
 {
 public:
-    ChangeItemNameCommand(FilesController *fc, QUndoCommand *parent = NULL)
+    ChangeItemNameCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : ChangeItemCommand(fc, parent)			{}
     virtual ~ChangeItemNameCommand()			{}
 
@@ -122,7 +122,7 @@ private:
 class ChangeItemDataCommand : public ChangeItemCommand
 {
 public:
-    ChangeItemDataCommand(FilesController *fc, QUndoCommand *parent = NULL)
+    ChangeItemDataCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : ChangeItemCommand(fc, parent)			{}
     virtual ~ChangeItemDataCommand()			{}
 
@@ -145,7 +145,7 @@ private:
 class SplitSegmentCommand : public FilesCommandBase
 {
 public:
-    SplitSegmentCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    SplitSegmentCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~SplitSegmentCommand();
 
     void setData(TrackDataSegment *pnt, int idx);
@@ -164,7 +164,7 @@ private:
 class MergeSegmentsCommand : public FilesCommandBase
 {
 public:
-    MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~MergeSegmentsCommand();
 
     void setData(TrackDataSegment *master, const QList<TrackDataItem *> &others);
@@ -186,13 +186,13 @@ private:
 class AddContainerCommand : public FilesCommandBase
 {
 public:
-    AddContainerCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    AddContainerCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~AddContainerCommand();
 
     void redo() override;
     void undo() override;
 
-    void setData(TrackData::Type type, TrackDataItem *pnt = NULL);
+    void setData(TrackData::Type type, TrackDataItem *pnt = nullptr);
     void setName(const QString &name)			{ mAddName = name; }
 
 private:
@@ -207,7 +207,7 @@ private:
 class AddPointCommand : public FilesCommandBase
 {
 public:
-    AddPointCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    AddPointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~AddPointCommand();
 
     void redo() override;
@@ -225,7 +225,7 @@ private:
 class MoveItemCommand : public FilesCommandBase
 {
 public:
-    MoveItemCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    MoveItemCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~MoveItemCommand();
 
     void setData(const QList<TrackDataItem *> &items, TrackDataItem *dest);
@@ -245,7 +245,7 @@ private:
 class DeleteItemsCommand : public FilesCommandBase
 {
 public:
-    DeleteItemsCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    DeleteItemsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~DeleteItemsCommand();
 
     void setData(const QList<TrackDataItem *> &items);
@@ -266,7 +266,7 @@ private:
 class MovePointsCommand : public FilesCommandBase
 {
 public:
-    MovePointsCommand(FilesController *fc, QUndoCommand *parent = NULL)
+    MovePointsCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : FilesCommandBase(fc, parent)			{}
     virtual ~MovePointsCommand()			{}
 
@@ -287,11 +287,11 @@ private:
 class AddWaypointCommand : public FilesCommandBase
 {
 public:
-    AddWaypointCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    AddWaypointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~AddWaypointCommand();
 
     void setData(const QString &name, qreal lat, qreal lon,
-                 TrackDataFolder *folder, const TrackDataAbstractPoint *sourcePoint = NULL);
+                 TrackDataFolder *folder, const TrackDataAbstractPoint *sourcePoint = nullptr);
 
     void redo() override;
     void undo() override;
@@ -312,11 +312,11 @@ private:
 class AddRoutepointCommand : public FilesCommandBase
 {
 public:
-    AddRoutepointCommand(FilesController *fc, QUndoCommand *parent = NULL);
+    AddRoutepointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~AddRoutepointCommand();
 
     void setData(const QString &name, qreal lat, qreal lon,
-                 TrackDataRoute *route, const TrackDataAbstractPoint *sourcePoint = NULL);
+                 TrackDataRoute *route, const TrackDataAbstractPoint *sourcePoint = nullptr);
 
     void redo() override;
     void undo() override;
@@ -337,7 +337,7 @@ private:
 class AddPhotoCommand : public AddWaypointCommand
 {
 public:
-    AddPhotoCommand(FilesController *fc, QUndoCommand *parent = NULL)
+    AddPhotoCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : AddWaypointCommand(fc, parent)		{}
     virtual ~AddPhotoCommand()				{}
 

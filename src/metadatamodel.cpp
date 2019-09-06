@@ -42,7 +42,7 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     // and in isInternalTag() in gpxexporter.cpp
     mItemData[DataIndexer::self()->index("name")] = item->name();
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
-    if (tdp!=NULL)
+    if (tdp!=nullptr)
     {
         mItemData[DataIndexer::self()->index("latitude")] = tdp->latitude();
         mItemData[DataIndexer::self()->index("longitude")] = tdp->longitude();

@@ -11,7 +11,7 @@ class WaypointsLayer : public LayerBase
     Q_OBJECT
 
 public:
-    explicit WaypointsLayer(QWidget *pnt = NULL);
+    explicit WaypointsLayer(QWidget *pnt = nullptr);
     virtual ~WaypointsLayer();
 
     qreal zValue() const override		{ return (4.0); }

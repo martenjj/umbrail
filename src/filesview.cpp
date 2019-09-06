@@ -47,7 +47,7 @@ FilesView::FilesView(QWidget *pnt)
 
     mSelectedCount = 0;
     mSelectedType = TrackData::None;
-    mSelectedItem = NULL;
+    mSelectedItem = nullptr;
 
     // The selection ID is a value which is incremented each time the selection
     // changes.  Selected items have the current selection ID stored within them,
@@ -126,19 +126,19 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     if (selIndexes.isEmpty())				// quick test for no selection
     {
         mSelectedType = TrackData::None;
-        mSelectedItem = NULL;
+        mSelectedItem = nullptr;
     }
     else
     {
         mSelectedItem = FilesModel::itemForIndex(selIndexes.first());
-        Q_ASSERT(mSelectedItem!=NULL);
+        Q_ASSERT(mSelectedItem!=nullptr);
         mSelectedType = mSelectedItem->type();
 
         QModelIndex firstParent = selIndexes.first().parent();
         for (int i = 1; i<mSelectedCount; ++i)
         {
             const TrackDataItem *item = FilesModel::itemForIndex(selIndexes[i]);
-            Q_ASSERT(item!=NULL);
+            Q_ASSERT(item!=nullptr);
             if (selIndexes[i].parent()!=firstParent || item->type()!=mSelectedType)
             {
                 mSelectedType = TrackData::Mixed;
@@ -151,7 +151,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     for (int i = 0; i<mSelectedCount; ++i)
     {
         TrackDataItem *tdi = static_cast<FilesModel *>(model())->itemForIndex(selIndexes[i]);
-        Q_ASSERT(tdi!=NULL);
+        Q_ASSERT(tdi!=nullptr);
         tdi->setSelectionId(mSelectionId);
 
         // Selecting a point automatically sets its parent container
@@ -159,10 +159,10 @@ void FilesView::selectionChanged(const QItemSelection &sel,
         // this is not enforced) to be selected also.  Only for drawing
         // purposes, not for any user operations.
         TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(tdi);
-        if (tdp!=NULL)					// this is a point
+        if (tdp!=nullptr)				// this is a point
         {
             TrackDataItem *par = tdp->parent();
-            Q_ASSERT(par!=NULL);
+            Q_ASSERT(par!=nullptr);
             par->setSelectionId(mSelectionId);		// select its parent
         }
     }
@@ -178,9 +178,9 @@ void FilesView::selectionChanged(const QItemSelection &sel,
 static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
 {
     const TrackDataItem *parentA = a->parent();
-    Q_ASSERT(parentA!=NULL);
+    Q_ASSERT(parentA!=nullptr);
     const TrackDataItem *parentB = b->parent();
-    Q_ASSERT(parentB!=NULL);
+    Q_ASSERT(parentB!=nullptr);
 
     int indexA = parentA->childIndex(a);
     int indexB = parentB->childIndex(b);
@@ -209,7 +209,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstractPoint *> *points)
 {
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
-    if (tdp!=NULL)					// is this a point?
+    if (tdp!=nullptr)					// is this a point?
     {
         if (ISNAN(tdp->latitude())) return;		// check position is valid
         if (ISNAN(tdp->longitude())) return;
@@ -247,7 +247,7 @@ void FilesView::contextMenuEvent(QContextMenuEvent *ev)
     QMenu *popup = static_cast<QMenu *>(
         mainWindow()->factory()->container("filesview_contextmenu",
                                            mainWindow()));
-    if (popup!=NULL) popup->exec(ev->globalPos());
+    if (popup!=nullptr) popup->exec(ev->globalPos());
 }
 
 
@@ -284,7 +284,7 @@ void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
     // its parent segment is expanded.  This avoids a long list of points
     // suddenly appearing in the view for a stray map click.
     const TrackDataItem *item = static_cast<FilesModel *>(model())->itemForIndex(index);
-    if (dynamic_cast<const TrackDataTrackpoint *>(item)!=NULL)
+    if (dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr)
     {
         QModelIndex pnt = index.parent();
         if (!isExpanded(pnt)) return;

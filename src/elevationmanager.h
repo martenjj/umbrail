@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	22-Mar-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -56,7 +56,7 @@ signals:
     void tileReadyInternal(ElevationTile *tile);
 
 private:
-    explicit ElevationManager(QObject *pnt = NULL);
+    explicit ElevationManager(QObject *pnt = nullptr);
     virtual ~ElevationManager();
 
     void startDownload(ElevationTile *tile);
@@ -82,7 +82,7 @@ class LoaderThread : public QThread
     Q_OBJECT
 
 public:
-    LoaderThread(ElevationTile *tileToLoad, const QString &cacheFile, QObject *pnt = NULL);
+    LoaderThread(ElevationTile *tileToLoad, const QString &cacheFile, QObject *pnt = nullptr);
     virtual ~LoaderThread();
 
     ElevationTile *tile() const				{ return (mTile); }

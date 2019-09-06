@@ -23,8 +23,8 @@ ImporterBase::ImporterBase()
     : ImporterExporterBase()
 {
     qDebug();
-    mDataRoot = NULL;
-    mFile = NULL;
+    mDataRoot = nullptr;
+    mFile = nullptr;
 }
 
 
@@ -81,7 +81,7 @@ static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
 bool ImporterBase::finaliseLoadFile(const QUrl &file)
 {
     mFile->close();					// finished with reading file
-    if (mDataRoot==NULL) return (false);		// problem reading, no data
+    if (mDataRoot==nullptr) return (false);		// problem reading, no data
 
     // The metadata as read from the file is currently stored in mDataRoot.
     // This data is merged with the metadata of each child track, as a record
@@ -95,7 +95,7 @@ bool ImporterBase::finaliseLoadFile(const QUrl &file)
     for (int i = 0; i<mDataRoot->childCount(); ++i)
     {
         TrackDataTrack *tdt = dynamic_cast<TrackDataTrack *>(mDataRoot->childAt(i));
-        if (tdt==NULL) continue;
+        if (tdt==nullptr) continue;
 #ifdef DEBUG_IMPORT
         dumpMetadata(tdt, QString("original metadata of track %1:").arg(i));
 #endif

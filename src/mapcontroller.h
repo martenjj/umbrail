@@ -21,7 +21,7 @@ class MapController : public QObject, public MainWindowInterface
     Q_OBJECT
 
 public:
-    MapController(QObject *pnt = NULL);
+    MapController(QObject *pnt = nullptr);
     ~MapController();
 
     MapView *view() const			{ return (mView); }

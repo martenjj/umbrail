@@ -22,7 +22,7 @@ class TrackPropertiesDialogue : public DialogBase, public DialogStateSaver
     Q_OBJECT
 
 public:
-    TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt = NULL);
+    TrackPropertiesDialogue(const QList<TrackDataItem *> *items, QWidget *pnt = nullptr);
     virtual ~TrackPropertiesDialogue() = default;
 
     MetadataModel *dataModel() const			{ return (mDataModel); }

@@ -48,7 +48,7 @@ public:
         StatusCancelled
     };
 
-    FilesController(QObject *pnt = NULL);
+    FilesController(QObject *pnt = nullptr);
     virtual ~FilesController();
 
     FilesView *view() const			{ return (mView); }

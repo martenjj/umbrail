@@ -52,7 +52,7 @@ void FolderSelectDialogue::slotNewFolder()
 
     TrackDataItem *item = selectedItem();
     TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, item);
-    if (foundFolder!=NULL)
+    if (foundFolder!=nullptr)
     {
         KMessageBox::sorry(this,
                            i18n("A folder named <resource>%1</resource> already exists here.", name),
@@ -68,7 +68,7 @@ void FolderSelectDialogue::slotNewFolder()
 
     // select the added folder
     TrackDataFolder *newFolder = TrackData::findFolderByPath(name, item);
-    Q_ASSERT(newFolder!=NULL);
+    Q_ASSERT(newFolder!=nullptr);
     setSelectedItem(newFolder);
 
     buttonBox()->button(QDialogButtonBox::Ok)->setFocus(Qt::OtherFocusReason);
@@ -78,8 +78,8 @@ void FolderSelectDialogue::slotNewFolder()
 void FolderSelectDialogue::slotUpdateButtonStates()
 {
     const TrackDataItem *item = selectedItem();
-    const bool isFolder = (dynamic_cast<const TrackDataFolder *>(item)!=NULL);
-    const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=NULL);
+    const bool isFolder = (dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
+    const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=nullptr);
 
     setButtonEnabled(QDialogButtonBox::Ok, isFolder);
     setButtonEnabled(QDialogButtonBox::Yes, (isFolder || isFile));

@@ -97,8 +97,8 @@ WaypointImageProvider::~WaypointImageProvider()
 
 WaypointImageProvider *WaypointImageProvider::self()
 {
-    static WaypointImageProvider *instance = NULL;
-    if (instance==NULL) instance = new WaypointImageProvider();
+    static WaypointImageProvider *instance = nullptr;
+    if (instance==nullptr) instance = new WaypointImageProvider();
     return (instance);
 }
 

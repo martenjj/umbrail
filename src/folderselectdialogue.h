@@ -11,7 +11,7 @@ class FolderSelectDialogue : public ItemSelectDialogue
     Q_OBJECT
 
 public:
-    explicit FolderSelectDialogue(QWidget *pnt = NULL);
+    explicit FolderSelectDialogue(QWidget *pnt = nullptr);
     virtual ~FolderSelectDialogue()			{}
 
     void setPath(const QString &path);

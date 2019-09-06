@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Jun-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -43,7 +43,7 @@ class VariableUnitDisplay : public QFrame
     Q_OBJECT
 
 public:
-    explicit VariableUnitDisplay(VariableUnitCombo::DisplayType displayType, QWidget *pnt = NULL);
+    explicit VariableUnitDisplay(VariableUnitCombo::DisplayType displayType, QWidget *pnt = nullptr);
     virtual ~VariableUnitDisplay();
 
     void setValue(double v);

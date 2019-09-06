@@ -13,7 +13,7 @@ class MoveItemDialogue : public ItemSelectDialogue
     Q_OBJECT
 
 public:
-    explicit MoveItemDialogue(QWidget *pnt = NULL);
+    explicit MoveItemDialogue(QWidget *pnt = nullptr);
     virtual ~MoveItemDialogue()				{}
 
     void setSource(const QList<TrackDataItem *> *items);

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	13-May-16						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -30,7 +30,7 @@
 #include <qdebug.h>
 
 
-static DataIndexer *sInstance = NULL;
+static DataIndexer *sInstance = nullptr;
 
 
 DataIndexer::DataIndexer()
@@ -41,7 +41,7 @@ DataIndexer::DataIndexer()
 
 DataIndexer *DataIndexer::self()
 {
-    if (sInstance==NULL)
+    if (sInstance==nullptr)
     {
         sInstance = new DataIndexer();
         qDebug() << "allocated global instance";

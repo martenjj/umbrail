@@ -18,7 +18,7 @@ ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int s
     mLayout->setMargin(0);
 
     mValue = mStdValue = stdValue;
-    mStdButt = NULL;
+    mStdButt = nullptr;
 
 // TODO: scale steps and slider value so that dragging with mouse moves in SingleStep
 // instead of 1
@@ -49,7 +49,7 @@ ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int s
 
     connect(mSlider, SIGNAL(valueChanged(int)), SLOT(slotSliderSpinboxChange(int)));
     connect(mSpinbox, SIGNAL(valueChanged(int)), SLOT(slotSliderSpinboxChange(int)));
-    if (mStdButt!=NULL) connect(mStdButt, SIGNAL(clicked()), SLOT(slotRevertValue()));
+    if (mStdButt!=nullptr) connect(mStdButt, SIGNAL(clicked()), SLOT(slotRevertValue()));
 
     setFocusProxy(mSlider);
     setFocusPolicy(Qt::StrongFocus);

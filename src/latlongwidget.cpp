@@ -107,7 +107,7 @@ void LatLongWidget::setLatLong(double lat, double lon)
 void LatLongWidget::slotValueChanged()
 {
     AbstractCoordinateHandler *changedHandler = qobject_cast<AbstractCoordinateHandler *>(sender());
-    if (changedHandler==NULL || !mHandlers.contains(changedHandler))
+    if (changedHandler==nullptr || !mHandlers.contains(changedHandler))
     {
         qWarning() << "called by unknown handler" << sender();
         return;

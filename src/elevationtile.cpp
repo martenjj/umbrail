@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Jun-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -46,7 +46,7 @@ ElevationTile::ElevationTile(const ElevationTile::TileId tid)
     mLongitudeBase = tid.second;
     mTileId = tid;
     mState = ElevationTile::Empty;
-    mData = NULL;
+    mData = nullptr;
 
     qDebug() << "from" << tid << "-> lat" << mLatitudeBase << "lon" << mLongitudeBase;
 }
@@ -75,7 +75,7 @@ void ElevationTile::setState(ElevationTile::State newState)
 
 void ElevationTile::setData(int ncols, int nrows, ElevationTile::TileData *data)
 {
-    if (mData!=NULL)
+    if (mData!=nullptr)
     {
         qWarning() << "data already loaded";
         delete mData;
@@ -131,7 +131,7 @@ static const char DEM_FORMAT[] = "AAIGrid";		// file format for download
 int ElevationTile::elevation(double lat, double lon) const
 {
     if (mState!=ElevationTile::Loaded) return (0);
-    Q_ASSERT(mData!=NULL);
+    Q_ASSERT(mData!=nullptr);
 
     const double latOff = lat-double(mLatitudeBase);	// offset within this tile
     const double lonOff = lon-double(mLongitudeBase);
@@ -196,7 +196,7 @@ bool ElevationTile::loadInternal(QFile &f)
     int row = -1;					// current row number
     int nrows = -1;					// row count from header
     int ncols = -1;					// column count from header
-    ElevationTile::TileData *v = NULL;			// allocated file data
+    ElevationTile::TileData *v = nullptr;		// allocated file data
 
     while (true)
     {
@@ -232,7 +232,7 @@ bool ElevationTile::loadInternal(QFile &f)
             continue;
         }
 
-        if (v==NULL)
+        if (v==nullptr)
         {
             // Assume that now we are after the header, at the first data line.
             if (ncols<=0 || nrows<=0)
@@ -246,7 +246,7 @@ bool ElevationTile::loadInternal(QFile &f)
             row = 0;					// set first row number
         }
 
-        Q_ASSERT(v!=NULL);				// must have array by now
+        Q_ASSERT(v!=nullptr);				// must have array by now
         if (row>=nrows)					// check number of rows
         {
             qWarning() << "Too many rows at line" << lineno;
@@ -265,7 +265,7 @@ bool ElevationTile::loadInternal(QFile &f)
         ++row;						// count up this row
     }
 
-    const bool ok = (v!=NULL);				// check completed state
+    const bool ok = (v!=nullptr);			// check completed state
     qDebug() << "read" << lineno << "lines, status" << ok;
 
     if (ok) setData(ncols, nrows, v);			// save tile data

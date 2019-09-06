@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Jan-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -42,7 +42,7 @@ class TimeZoneSelector : public QFrame
     Q_OBJECT
 
 public:
-    explicit TimeZoneSelector(QWidget *pnt = NULL);
+    explicit TimeZoneSelector(QWidget *pnt = nullptr);
     virtual ~TimeZoneSelector() = default;
 
     void setTimeZone(const QString &zone);

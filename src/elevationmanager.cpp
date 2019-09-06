@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	22-Mar-17						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -105,7 +105,7 @@ ElevationManager::~ElevationManager()
 
 const ElevationTile *ElevationManager::requestTile(double lat, double lon, bool wantImmediateSignal)
 {
-    ElevationTile *tile = NULL;
+    ElevationTile *tile = nullptr;
 
     ElevationTile::TileId id = ElevationTile::makeTileId(lat, lon);
     if (mTiles.contains(id))				// do we have tile alredy?
@@ -193,12 +193,12 @@ QString ElevationManager::cacheFile(const ElevationTile *tile)
 void ElevationManager::slotDownloadResult(KJob *job)
 {
     KIO::FileCopyJob *copyJob = qobject_cast<KIO::FileCopyJob *>(job);
-    Q_ASSERT(copyJob!=NULL);
+    Q_ASSERT(copyJob!=nullptr);
     --mRunningJobs;
 
     // get tile pointer from job
     ElevationTile *tile = static_cast<ElevationTile *>(copyJob->property("tile").value<void *>());
-    Q_ASSERT(tile!=NULL);
+    Q_ASSERT(tile!=nullptr);
 
     if (!job->error())					// check download success
     {
@@ -208,7 +208,7 @@ void ElevationManager::slotDownloadResult(KJob *job)
     else						// error downloading
     {
         // report error
-        KMessageBox::error(NULL,
+        KMessageBox::error(nullptr,
                            xi18nc("@info", "Error downloading tile <link>%1</link><nl/>to cache file <link>%2</link>%3",
                                   copyJob->srcUrl().toDisplayString(),
                                   copyJob->destUrl().toDisplayString(),
@@ -278,9 +278,9 @@ void ElevationManager::slotLoaderThreadFinished()
     qDebug();
 
     LoaderThread *thr = qobject_cast<LoaderThread *>(sender());
-    Q_ASSERT(thr!=NULL);
+    Q_ASSERT(thr!=nullptr);
     ElevationTile *tile = thr->tile();
-    Q_ASSERT(tile!=NULL);
+    Q_ASSERT(tile!=nullptr);
 
     if (tile->state()==ElevationTile::Loaded) emit tileReadyInternal(tile);
     thr->deleteLater();

@@ -183,13 +183,13 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     QFormLayout *fl = new QFormLayout(w);
 
     const KConfigSkeletonItem *ski = Settings::self()->generalGroupTitleItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     QGroupBox *g = new QGroupBox(ski->label(), w);
     g->setFlat(true);
     fl->addRow(g);
 
     ski = Settings::self()->fileCheckTimezoneItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
 
     mTimezoneCheck = new QCheckBox(ski->label(), w);
     mTimezoneCheck->setToolTip(ski->toolTip());
@@ -211,13 +211,13 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     fl->addItem(DialogBase::verticalSpacerItem());
 
     ski = Settings::self()->pathsGroupTitleItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     g = new QGroupBox(ski->label(), w);
     g->setFlat(true);
     fl->addRow(g);
 
     ski = Settings::self()->audioNotesDirectoryItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     mAudioNotesRequester = new KUrlRequester(w);
     mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly);
     mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
@@ -262,7 +262,7 @@ void SettingsFilesPage::slotClearFileWarnings()
     FilesController::resetAllFileWarnings();
 
     QPushButton *but = qobject_cast<QPushButton *>(sender());
-    if (but!=NULL) but->setEnabled(false);
+    if (but!=nullptr) but->setEnabled(false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     QFormLayout *fl = new QFormLayout(w);
 
     const KConfigSkeletonItem *ski = Settings::self()->photoViewModeItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     mPhotoViewerCombo = new QComboBox(w);
     mPhotoViewerCombo->setToolTip(ski->toolTip());
     fl->addRow(ski->label(), mPhotoViewerCombo);
@@ -304,20 +304,20 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     fl->addItem(DialogBase::verticalSpacerItem());
 
     ski = Settings::self()->photoGroupTitleItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     QGroupBox *g = new QGroupBox(ski->label(), w);
     g->setFlat(true);
     fl->addRow(g);
 
     ski = Settings::self()->photoUseGpsItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     mUseGpsCheck = new QCheckBox(ski->label(), w);
     mUseGpsCheck->setToolTip(ski->toolTip());
     mUseGpsCheck->setChecked(Settings::photoUseGps());
     fl->addRow(mUseGpsCheck);
 
     ski = Settings::self()->photoUseTimeItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     mUseTimeCheck = new QCheckBox(ski->label(), w);
     mUseTimeCheck->setToolTip(ski->toolTip());
     mUseTimeCheck->setChecked(Settings::photoUseTime());
@@ -325,7 +325,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     fl->addRow(mUseTimeCheck);
 
     ski = Settings::self()->photoTimeThresholdItem();
-    Q_ASSERT(ski!=NULL);
+    Q_ASSERT(ski!=nullptr);
     mTimeThresholdSpinbox = new QSpinBox(w);
     mTimeThresholdSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
     mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());

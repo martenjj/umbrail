@@ -35,7 +35,7 @@ class MainWindow : public KXmlGuiWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *pnt = NULL);
+    MainWindow(QWidget *pnt = nullptr);
     ~MainWindow();
 
     MapController *mapController() const	{ return (mMapController); }

@@ -21,7 +21,7 @@ class MapView : public MarbleWidget, public MainWindowInterface
     Q_OBJECT
 
 public:
-    MapView(QWidget *pnt = NULL);
+    MapView(QWidget *pnt = nullptr);
     virtual ~MapView();
 
     void readProperties();

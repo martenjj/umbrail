@@ -16,7 +16,7 @@ class LatLongWidget : public QFrame
     Q_OBJECT
 
 public:
-    explicit LatLongWidget(QWidget *pnt = NULL);
+    explicit LatLongWidget(QWidget *pnt = nullptr);
     virtual ~LatLongWidget();
 
     void setLatLong(double lat, double lon);

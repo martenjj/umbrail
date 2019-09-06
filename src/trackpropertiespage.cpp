@@ -24,7 +24,7 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QW
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
     if (mIsEmpty && !items->isEmpty())
     {
-        if (dynamic_cast<const TrackDataAbstractPoint *>(items->first())!=NULL) mIsEmpty = false;
+        if (dynamic_cast<const TrackDataAbstractPoint *>(items->first())!=nullptr) mIsEmpty = false;
     }
 }
 
@@ -49,6 +49,6 @@ void TrackPropertiesPage::disableIfEmpty(QWidget *field, bool always)
     if (!isEmpty() && !always) return;
 
     QWidget *l = mFormLayout->labelForField(field);
-    if (l!=NULL) l->setEnabled(false);
+    if (l!=nullptr) l->setEnabled(false);
     field->setEnabled(false);
 }

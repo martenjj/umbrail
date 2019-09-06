@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	16-May-16						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -85,8 +85,8 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
     qDebug() << "  service" << service->name() << "id" << service->storageId();
 
     // from https://techbase.kde.org/Development/Tutorials/Using_KParts
-    mPart = service->createInstance<KParts::ReadOnlyPart>(NULL);
-    if (mPart==NULL)
+    mPart = service->createInstance<KParts::ReadOnlyPart>(nullptr);
+    if (mPart==nullptr)
     {
         qWarning() << "Unable to create viewer part";
         return;
@@ -139,16 +139,16 @@ void PhotoViewer::fixupMenuBar(QMenuBar *bar)
 {
     qDebug();
 
-    QAction *sepAct = NULL;
-    QAction *helpAct = NULL;
-    QAction *settAct = NULL;
+    QAction *sepAct = nullptr;
+    QAction *helpAct = nullptr;
+    QAction *settAct = nullptr;
 
     QList<QAction *> acts = bar->actions();
     for (int i = 0; i<acts.count(); ++i)
     {
         QAction *act = acts[i];
-        //qDebug() << "act" << i << act->text() << "menu?" << (act->menu()!=NULL);
-        if (sepAct==NULL && act->text().isEmpty())			// the separator?
+        //qDebug() << "act" << i << act->text() << "menu?" << (act->menu()!=nullptr);
+        if (sepAct==nullptr && act->text().isEmpty())			// the separator?
         {
             qDebug() << "separator found at" << i;
             sepAct = act;
@@ -156,7 +156,7 @@ void PhotoViewer::fixupMenuBar(QMenuBar *bar)
             continue;
         }
 
-        if (sepAct!=NULL && helpAct==NULL)
+        if (sepAct!=nullptr && helpAct==nullptr)
         {
             qDebug() << "help" << act->text() << "found at" << i;
             helpAct = act;
@@ -164,21 +164,21 @@ void PhotoViewer::fixupMenuBar(QMenuBar *bar)
         }
     }
 
-    if (settAct!=NULL)
+    if (settAct!=nullptr)
     {
         qDebug() << "moving settings to end";
         bar->removeAction(settAct);
         bar->addAction(settAct);
     }
 
-    if (sepAct!=NULL)
+    if (sepAct!=nullptr)
     {
         qDebug() << "moving separator to end";
         bar->removeAction(sepAct);
         bar->addAction(sepAct);
     }
 
-    if (helpAct!=NULL)
+    if (helpAct!=nullptr)
     {
         qDebug() << "moving help to end";
         bar->removeAction(helpAct);

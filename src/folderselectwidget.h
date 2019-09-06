@@ -14,7 +14,7 @@ class FolderSelectWidget : public QFrame, public MainWindowInterface
     Q_OBJECT
 
 public:
-    explicit FolderSelectWidget(QWidget *pnt = NULL);
+    explicit FolderSelectWidget(QWidget *pnt = nullptr);
     virtual ~FolderSelectWidget()			{}
 
     QString folderPath() const;

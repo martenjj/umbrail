@@ -620,9 +620,9 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
-            if (dynamic_cast<const TrackDataTrack *>(childItem)!=NULL) ++nTracks;
-            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=NULL) ++nFolders;
-            else if (dynamic_cast<const TrackDataRoute *>(childItem)!=NULL) ++nRoutes;
+            if (dynamic_cast<const TrackDataTrack *>(childItem)!=nullptr) ++nTracks;
+            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=nullptr) ++nFolders;
+            else if (dynamic_cast<const TrackDataRoute *>(childItem)!=nullptr) ++nRoutes;
         }
     }
 
@@ -751,8 +751,8 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
-            if (dynamic_cast<const TrackDataWaypoint *>(childItem)!=NULL) ++nWaypoints;
-            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=NULL) ++nFolders;
+            if (dynamic_cast<const TrackDataWaypoint *>(childItem)!=nullptr) ++nWaypoints;
+            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=nullptr) ++nFolders;
         }
     }
 
@@ -803,7 +803,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     if (items->count()==1)				// single selection
     {
         const TrackDataWaypoint *tdp = dynamic_cast<const TrackDataWaypoint *>(items->first());
-        Q_ASSERT(tdp!=NULL);
+        Q_ASSERT(tdp!=nullptr);
 
         addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
         addSeparatorField();

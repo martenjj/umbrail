@@ -17,7 +17,7 @@ class FilesModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    FilesModel(QObject *pnt = NULL);
+    FilesModel(QObject *pnt = nullptr);
     virtual ~FilesModel();
 
     virtual QModelIndex index(int row, int col, const QModelIndex &parent = QModelIndex()) const override;
@@ -28,7 +28,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
     TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
-    bool isEmpty() const				{ return (mRootFileItem==NULL); }
+    bool isEmpty() const				{ return (mRootFileItem==nullptr); }
     TrackDataFile *takeRootFileItem();
     void setRootFileItem(TrackDataFile *root);
 

@@ -56,7 +56,7 @@ class LayerBase : public QObject, public MainWindowInterface, public Marble::Lay
     Q_OBJECT
 
 public:
-    explicit LayerBase(QWidget *pnt = NULL);
+    explicit LayerBase(QWidget *pnt = nullptr);
     virtual ~LayerBase();
 
     QStringList renderPosition() const override;
@@ -65,7 +65,7 @@ public:
     virtual QString name() const = 0;
 
     bool render(GeoPainter *painter, ViewportParams *viewport,
-                const QString &renderPos = "NONE", GeoSceneLayer *layer = NULL) override;
+                const QString &renderPos = "NONE", GeoSceneLayer *layer = nullptr) override;
 
     bool eventFilter(QObject *obj, QEvent *ev) override;
 

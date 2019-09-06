@@ -152,7 +152,7 @@ int ErrorReporter::messageCount() const
     for (QList<ErrorRecord *>::const_iterator it = mList.constBegin(); it!=mList.constEnd(); ++it)
     {
         const ErrorRecord *record = (*it);
-        if (dynamic_cast<const ErrorRecordMessage *>(record)!=NULL) ++count;
+        if (dynamic_cast<const ErrorRecordMessage *>(record)!=nullptr) ++count;
     }
 
     return (count);

@@ -11,7 +11,7 @@ class ItemTypeCombo : public KComboBox
     Q_OBJECT
 
 public:
-    explicit ItemTypeCombo(QWidget *pnt = NULL);
+    explicit ItemTypeCombo(QWidget *pnt = nullptr);
     virtual ~ItemTypeCombo();
 
     void setType(const QString &type);

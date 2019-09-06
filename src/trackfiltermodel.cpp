@@ -13,7 +13,7 @@
 TrackFilterModel::TrackFilterModel(QObject *pnt)
     : QSortFilterProxyModel(pnt)
 {
-    mSourceItems = NULL;
+    mSourceItems = nullptr;
     mMode = TrackData::None;
 }
 
@@ -25,9 +25,9 @@ void TrackFilterModel::setSource(const QList<TrackDataItem *> *items)
     Q_ASSERT(!items->isEmpty());
     const TrackDataItem *item = items->first();
 
-    if (dynamic_cast<const TrackDataSegment *>(item)!=NULL) mMode = TrackData::Segment;
-    else if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) mMode = TrackData::Folder;
-    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL) mMode = TrackData::Waypoint;
+    if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr) mMode = TrackData::Segment;
+    else if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr) mMode = TrackData::Folder;
+    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr) mMode = TrackData::Waypoint;
     Q_ASSERT(mMode!=TrackData::None);
 }
 
@@ -44,25 +44,25 @@ bool TrackFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
     QModelIndex idx = filesModel->index(row, 0, pnt);
     const TrackDataItem *item = filesModel->itemForIndex(idx);
 
-    if (dynamic_cast<const TrackDataFile *>(item)!=NULL) return (true);
+    if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (true);
     switch (mMode)
     {
 case TrackData::Segment:
-        if (dynamic_cast<const TrackDataTrack *>(item)!=NULL) return (true);
-        if (dynamic_cast<const TrackDataSegment *>(item)!=NULL) return (true);
+        if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr) return (true);
+        if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr) return (true);
         break;
 
 case TrackData::Folder:
-        if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) return (true);
+        if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr) return (true);
         break;
 
 case TrackData::Route:
-        if (dynamic_cast<const TrackDataRoute *>(item)!=NULL) return (true);
+        if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr) return (true);
         break;
 
 case TrackData::Waypoint:
-        if (dynamic_cast<const TrackDataFolder *>(item)!=NULL) return (true);
-        if (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL) return (true);
+        if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr) return (true);
+        if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr) return (true);
         break;
 
 default:
@@ -86,13 +86,13 @@ case TrackData::Segment:
         // of a source can be selected.  Files are enabled but cannot be
         // selected.
 
-        if (dynamic_cast<const TrackDataFile *>(item)!=NULL)
+        if (dynamic_cast<const TrackDataFile *>(item)!=nullptr)
         {
             return (Qt::ItemIsEnabled);
         }
-        else if (dynamic_cast<const TrackDataTrack *>(item)!=NULL)
+        else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
         {
-            if (mSourceItems!=NULL)
+            if (mSourceItems!=nullptr)
             {
                 for (int i = 0; i<mSourceItems->count(); ++i)
                 {
@@ -115,9 +115,9 @@ case TrackData::Folder:
         // be selected unless they are a source folder, or an immediate
         // parent or any child of one.
 
-        if (dynamic_cast<const TrackDataFile *>(item)!=NULL)
+        if (dynamic_cast<const TrackDataFile *>(item)!=nullptr)
         {
-            if (mSourceItems!=NULL)
+            if (mSourceItems!=nullptr)
             {
                 for (int i = 0; i<mSourceItems->count(); ++i)
                 {
@@ -130,9 +130,9 @@ case TrackData::Folder:
                 }
             }
         }
-        else if (dynamic_cast<const TrackDataFolder *>(item)!=NULL)
+        else if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr)
         {
-            if (mSourceItems!=NULL)
+            if (mSourceItems!=nullptr)
             {
                 for (int i = 0; i<mSourceItems->count(); ++i)
                 {
@@ -142,7 +142,7 @@ case TrackData::Folder:
                     else
                     {
                         const TrackDataItem *pnt = item->parent();
-                        while (pnt!=NULL)
+                        while (pnt!=nullptr)
                         {
                             if (pnt==srcItem)
                             {
@@ -164,9 +164,9 @@ case TrackData::Waypoint:
         // In waypoint mode, any folder can be selected unless it
         // it the immediate parent of a source waypoint.
 
-        if (dynamic_cast<const TrackDataFolder *>(item)!=NULL)
+        if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr)
         {
-            if (mSourceItems!=NULL)
+            if (mSourceItems!=nullptr)
             {
                 for (int i = 0; i<mSourceItems->count(); ++i)
                 {
@@ -188,9 +188,9 @@ case TrackData::Route:
         // In route mode, any route can be selected unless it
         // it the immediate parent of a source point.
 
-        if (dynamic_cast<const TrackDataRoute *>(item)!=NULL)
+        if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
         {
-            if (mSourceItems!=NULL)
+            if (mSourceItems!=nullptr)
             {
                 for (int i = 0; i<mSourceItems->count(); ++i)
                 {
@@ -224,7 +224,7 @@ QVariant TrackFilterModel::data(const QModelIndex &idx, int role) const
     TrackDataItem *item = filesModel->itemForIndex(mapToSource(idx));
 
     // Everything apart from source items is left unchanged
-    if (mSourceItems==NULL || !mSourceItems->contains(item)) return (QSortFilterProxyModel::data(idx, role));
+    if (mSourceItems==nullptr || !mSourceItems->contains(item)) return (QSortFilterProxyModel::data(idx, role));
 
     // Source items are shown in bold
     QFont f = QSortFilterProxyModel::data(idx,role).value<QFont>();

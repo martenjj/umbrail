@@ -6,15 +6,15 @@
 MainWindowInterface::MainWindowInterface(QObject *pnt)
 {
     QObject *obj = pnt;
-    mMainWindow = NULL;
-    while (obj!=NULL)
+    mMainWindow = nullptr;
+    while (obj!=nullptr)
     {
         mMainWindow = qobject_cast<MainWindow *>(obj);
-        if (mMainWindow!=NULL) break;
+        if (mMainWindow!=nullptr) break;
         obj = obj->parent();
     }
 
-    if (mMainWindow==NULL)
+    if (mMainWindow==nullptr)
     {
         qFatal("MainWindowInterface: Parent '%s' must be a descendent of MainWindow", qPrintable(pnt->objectName()));
     }

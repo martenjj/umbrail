@@ -52,11 +52,11 @@ public:
     DEFINE_PROPERTIES_PAGE_INTERFACE(Style)
     DEFINE_PROPERTIES_PAGE_INTERFACE(Plot)
     DEFINE_PROPERTIES_PAGE_INTERFACE(Metadata)
-    // virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = NULL) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = NULL) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = NULL) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = NULL) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = NULL) const = 0;
+    // virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
+    // virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
+    // virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
+    // virtual TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
+    // virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -204,9 +204,9 @@ public:
 
     virtual QIcon icon() const;
 
-    int childCount() const				{ return (mChildren==NULL ? 0 : mChildren->count()); }
-    TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=NULL); return (mChildren->at(idx)); }
-    int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=NULL); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
+    int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
+    TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
+    int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=nullptr); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
     TrackDataItem *parent() const			{ return (mParent); }
 
     void addChildItem(TrackDataItem *data, int idx = -1);
@@ -230,7 +230,7 @@ public:
     QString timeZone() const;
 
 protected:
-    TrackDataItem(const char *format = NULL, int *counter = NULL);
+    TrackDataItem(const char *format = nullptr, int *counter = nullptr);
 
     virtual QString iconName() const = 0;
 

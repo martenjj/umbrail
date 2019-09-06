@@ -11,7 +11,7 @@ class RoutesLayer : public LayerBase
     Q_OBJECT
 
 public:
-    explicit RoutesLayer(QWidget *pnt = NULL);
+    explicit RoutesLayer(QWidget *pnt = nullptr);
     virtual ~RoutesLayer();
 
     qreal zValue() const override		{ return (3.0); }

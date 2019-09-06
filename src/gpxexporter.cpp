@@ -210,7 +210,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     if (isSel)
     {
         // start tag
-        if (tdt!=NULL)					// element TRK
+        if (tdt!=nullptr)				// element TRK
         {
             str.writeCharacters("\n\n  ");
             str.writeStartElement("trk");
@@ -221,7 +221,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             writeMetadata(tdt, str, false);
             // <cmt> xsd:string </cmt>
         }
-        else if (tdr!=NULL)				// element RTE
+        else if (tdr!=nullptr)				// element RTE
         {
             str.writeCharacters("\n\n  ");
             str.writeStartElement("rte");
@@ -232,20 +232,20 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             writeMetadata(tdr, str, false);
             // <cmt> xsd:string </cmt>
         }
-        else if (tds!=NULL)				// element TRKSEG
+        else if (tds!=nullptr)				// element TRKSEG
         {
             str.writeStartElement("trkseg");
             writeMetadata(tds, str, false);
         }
-        else if (tdp!=NULL || tdw!=NULL || tdm!=NULL)	// element TRKPT, WPT or RTEPT
-        {
+        else if (tdp!=nullptr || tdw!=nullptr || tdm!=nullptr)
+        {						// element TRKPT, WPT or RTEPT
             const TrackDataAbstractPoint *p;
-            if (tdp!=NULL)				// element TRKPT
+            if (tdp!=nullptr)				// element TRKPT
             {
                 p = tdp;
                 str.writeStartElement("trkpt");
             }
-            else if (tdw!=NULL)				// element WPT
+            else if (tdw!=nullptr)			// element WPT
             {
                 p = tdw;
                 str.writeCharacters("\n\n  ");
@@ -272,7 +272,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             // <hdop> xsd:decimal </hdop>
             writeMetadata(p, str, false);
         }
-        else if (tdf!=NULL)				// Folder
+        else if (tdf!=nullptr)				// Folder
         {						// write nothing, but recurse for children
         }
         else						// anything else
@@ -289,30 +289,30 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     if (isSel)
     {
         // <extensions> extensionsType </extensions>
-        if (tdt!=NULL)					// extensions for TRK
+        if (tdt!=nullptr)				// extensions for TRK
         {
             writeMetadata(tdt, str, true);
         }
-        else if (tdr!=NULL)				// extensions for RTE
+        else if (tdr!=nullptr)				// extensions for RTE
         {
             writeMetadata(tdr, str, true);
         }
-        else if (tds!=NULL)				// extensions for TRKSEG
+        else if (tds!=nullptr)				// extensions for TRKSEG
         {
             // <name> xsd:string </name>
             startExtensions(str);
             if (item->hasExplicitName()) str.writeTextElement("name", tds->name());
             writeMetadata(tds, str, true);
         }
-        else if (tdp!=NULL)				// extensions for TRKPT
+        else if (tdp!=nullptr)				// extensions for TRKPT
         {
             writeMetadata(tdp, str, true);
         }
-        else if (tdw!=NULL)				// extensions for WPT
+        else if (tdw!=nullptr)				// extensions for WPT
         {
             writeMetadata(tdw, str, true);
             const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
-            if (fold!=NULL)				// within a folder?
+            if (fold!=nullptr)				// within a folder?
             {						// save the folder path
                 startExtensions(str);
                 str.writeTextElement("navtracks:folder", fold->path());
@@ -329,7 +329,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     if (isSel)
     {
         // end tag
-        if (tdf==NULL) str.writeEndElement();		// nothing was started for this
+        if (tdf==nullptr) str.writeEndElement();	// nothing was started for this
     }
 
     return (status);

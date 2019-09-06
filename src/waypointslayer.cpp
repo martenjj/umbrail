@@ -64,7 +64,7 @@ WaypointsLayer::~WaypointsLayer()
 bool WaypointsLayer::isApplicableItem(const TrackDataItem *item) const
 {
     // We are only interested in waypoints
-    return (dynamic_cast<const TrackDataWaypoint *>(item)!=NULL);
+    return (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr);
 }
 
 
@@ -72,7 +72,7 @@ bool WaypointsLayer::isApplicableItem(const TrackDataItem *item) const
 bool WaypointsLayer::isDirectContainer(const TrackDataItem *item) const
 {
     // Only folders contain waypoints to be drawn
-    return (dynamic_cast<const TrackDataFolder *>(item)!=NULL);
+    return (dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
 }
 
 
@@ -80,8 +80,8 @@ bool WaypointsLayer::isDirectContainer(const TrackDataItem *item) const
 bool WaypointsLayer::isIndirectContainer(const TrackDataItem *item) const
 {
     // Files or folders can include waypoints
-    return (dynamic_cast<const TrackDataFile *>(item)!=NULL ||
-            dynamic_cast<const TrackDataFolder *>(item)!=NULL);
+    return (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
+            dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
 }
 
 
@@ -96,7 +96,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
     for (int i = 0; i<cnt; ++i)
     {
         const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item->childAt(i));
-        if (tdw==NULL) continue;
+        if (tdw==nullptr) continue;
 
 #ifdef DEBUG_PAINTING
         qDebug() << "draw waypoint" << tdw->name();

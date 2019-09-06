@@ -50,7 +50,7 @@ private:
     QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString());
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
-    TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = NULL);
+    TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
     void getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName);
 
     bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }

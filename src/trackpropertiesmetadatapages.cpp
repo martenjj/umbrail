@@ -39,7 +39,7 @@ TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items
     // some sort of row height limit and it doesn't stretch the table view all
     // the way to the bottom.  There are no labels and nothing else to display
     // on this page, so the form layout is not needed.
-    delete mFormLayout; mFormLayout = NULL;
+    delete mFormLayout; mFormLayout = nullptr;
     QVBoxLayout *vboxLayout = new QVBoxLayout(this);
     vboxLayout->addWidget(mView);
 

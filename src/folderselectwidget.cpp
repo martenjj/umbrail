@@ -41,7 +41,7 @@ void FolderSelectWidget::slotSelectFolder()
     if (!d.exec()) return;
 
     const TrackDataFolder *selectedFolder = dynamic_cast<const TrackDataFolder *>(d.selectedItem());
-    if (selectedFolder==NULL) mDestFolder->clear();
+    if (selectedFolder==nullptr) mDestFolder->clear();
     else mDestFolder->setText(selectedFolder->path());
 
     emit folderChanged(folderPath());

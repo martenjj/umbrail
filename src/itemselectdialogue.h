@@ -28,7 +28,7 @@ signals:
     void selectionChanged();
 
 protected:
-    explicit ItemSelectDialogue(QWidget *pnt = NULL);
+    explicit ItemSelectDialogue(QWidget *pnt = nullptr);
     virtual ~ItemSelectDialogue();
 
     TrackFilterModel *trackModel() const;

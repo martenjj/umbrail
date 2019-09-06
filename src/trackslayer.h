@@ -11,7 +11,7 @@ class TracksLayer : public LayerBase
     Q_OBJECT
 
 public:
-    explicit TracksLayer(QWidget *pnt = NULL);
+    explicit TracksLayer(QWidget *pnt = nullptr);
     virtual ~TracksLayer();
 
     qreal zValue() const override		{ return (2.0); }

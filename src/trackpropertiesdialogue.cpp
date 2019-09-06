@@ -41,7 +41,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 
     Q_ASSERT(!items->isEmpty());
     const TrackDataItem *item = items->first();
-    Q_ASSERT(item!=NULL);
+    Q_ASSERT(item!=nullptr);
     mItemType = item->type();
 
     mDataModel = new MetadataModel(item, this);

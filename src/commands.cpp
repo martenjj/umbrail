@@ -91,7 +91,7 @@ ItemContainer::~ItemContainer()
 QString CommandBase::senderText(const QObject *sdr)
 {
     const QAction *act = qobject_cast<const QAction *>(sdr);
-    if (act==NULL) return (i18n("Action"));		// not called by action
+    if (act==nullptr) return (i18n("Action"));		// not called by action
     QString t = act->text();				// GUI text of action
 
     // the "..." is I18N'ed so that translations can change it to something that
@@ -121,7 +121,7 @@ void CommandBase::setSenderText(const QObject *sdr)
 ImportFileCommand::ImportFileCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mImportData = NULL;					// nothing held at present
+    mImportData = nullptr;				// nothing held at present
     mSavedCount = 0;
 }
 
@@ -134,16 +134,16 @@ ImportFileCommand::~ImportFileCommand()
 
 void ImportFileCommand::redo()
 {
-    Q_ASSERT(mImportData!=NULL);
+    Q_ASSERT(mImportData!=nullptr);
     mSavedCount = mImportData->childCount();		// how many tracks contained
     qDebug() << "from" << mImportData->name() << "count" << mSavedCount;
 
     TrackDataFile *root = model()->rootFileItem();
-    if (root==NULL)					// no data in model yet
+    if (root==nullptr)					// no data in model yet
     {
         // Set the top level imported file item as the model file root.
         model()->setRootFileItem(mImportData);		// use this as root item
-        mImportData = NULL;				// now owned by model
+        mImportData = nullptr;				// now owned by model
     }
     else
     {
@@ -154,7 +154,7 @@ void ImportFileCommand::redo()
         while (mImportData->childCount()>0)
         {
             TrackDataItem *tdi = mImportData->takeFirstChildItem();
-            if (tdi!=NULL) root->addChildItem(tdi);
+            if (tdi!=nullptr) root->addChildItem(tdi);
         }
 
         model()->endLayoutChange();
@@ -169,9 +169,9 @@ void ImportFileCommand::redo()
 void ImportFileCommand::undo()
 {
     TrackDataFile *root = model()->rootFileItem();
-    Q_ASSERT(root!=NULL);
+    Q_ASSERT(root!=nullptr);
 
-    if (mImportData==NULL)				// was set as file root
+    if (mImportData==nullptr)				// was set as file root
     {
         mImportData = model()->takeRootFileItem();
     }
@@ -183,7 +183,7 @@ void ImportFileCommand::undo()
         for (int i = 0; i<mSavedCount; ++i)		// how many added last time
         {						// remove each from model
             TrackDataItem *item = root->takeLastChildItem();
-            if (item==NULL) continue;			// and re-add to saved file item
+            if (item==nullptr) continue;		// and re-add to saved file item
             mImportData->addChildItem(item, 0);		// in the original order
         }
 
@@ -217,7 +217,7 @@ void ChangeItemNameCommand::redo()
 {
     Q_ASSERT(mDataItems.count()==1);
     TrackDataItem *item = mDataItems.first();
-    Q_ASSERT(item!=NULL);
+    Q_ASSERT(item!=nullptr);
     mSavedName = item->name();
     mSavedExplicit = item->hasExplicitName();
     qDebug() << "item" << mSavedName << "explicit?" << mSavedExplicit << "->" << mNewName;
@@ -232,7 +232,7 @@ void ChangeItemNameCommand::undo()
 {
     Q_ASSERT(mDataItems.count()==1);
     TrackDataItem *item = mDataItems.first();
-    Q_ASSERT(item!=NULL);
+    Q_ASSERT(item!=nullptr);
     qDebug() << "item" << item->name() << "back to" << mSavedName << "explicit?" << mSavedExplicit;
 
     item->setName(mSavedName, mSavedExplicit);
@@ -249,7 +249,7 @@ void ChangeItemDataCommand::redo()
     for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
     {
         TrackDataItem *item = (*it);
-        Q_ASSERT(item!=NULL);
+        Q_ASSERT(item!=nullptr);
         qDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
 
         mSavedValues.append(item->metadata(idx));
@@ -269,7 +269,7 @@ void ChangeItemDataCommand::undo()
     for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
     {
         TrackDataItem *item = (*it);
-        Q_ASSERT(item!=NULL);
+        Q_ASSERT(item!=nullptr);
         QVariant savedValue = mSavedValues.takeFirst();
         qDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
         item->setMetadata(idx, savedValue);
@@ -293,9 +293,9 @@ void ChangeItemDataCommand::undo()
 SplitSegmentCommand::SplitSegmentCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mParentSegment = NULL;				// nothing set at present
+    mParentSegment = nullptr;				// nothing set at present
     mSplitIndex = -1;
-    mNewSegmentContainer = NULL;
+    mNewSegmentContainer = nullptr;
 }
 
 
@@ -323,16 +323,16 @@ static QString makeSplitName(const QString &orig)
 
 void SplitSegmentCommand::redo()
 {
-    Q_ASSERT(mParentSegment!=NULL);
+    Q_ASSERT(mParentSegment!=nullptr);
     Q_ASSERT(mSplitIndex>0 && mSplitIndex<(mParentSegment->childCount()-1));
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataTrackpoint *splitPoint = dynamic_cast<TrackDataTrackpoint *>(mParentSegment->childAt(mSplitIndex));
-    Q_ASSERT(splitPoint!=NULL);
+    Q_ASSERT(splitPoint!=nullptr);
 
-    if (mNewSegmentContainer==NULL)
+    if (mNewSegmentContainer==nullptr)
     {
         mNewSegmentContainer = new ItemContainer;
 
@@ -351,7 +351,7 @@ void SplitSegmentCommand::redo()
 
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
     TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(mNewSegmentContainer->takeFirstChildItem());
-    Q_ASSERT(newSegment!=NULL);
+    Q_ASSERT(newSegment!=nullptr);
 
     int takeFrom = mSplitIndex+1;
     qDebug() << "from" << mParentSegment->name() << "start" << takeFrom << "->" << newSegment->name();
@@ -366,7 +366,7 @@ void SplitSegmentCommand::redo()
     // Adopt the receiving item as the next sibling of the split item
     TrackDataItem *parentItem = mParentSegment->parent();
     int parentIndex = (parentItem->childIndex(mParentSegment)+1);
-    Q_ASSERT(parentItem!=NULL);
+    Q_ASSERT(parentItem!=nullptr);
     qDebug() << "add" << newSegment->name() << "to" << parentItem->name() << "as index" << parentIndex;
     parentItem->addChildItem(newSegment, parentIndex);
 
@@ -379,7 +379,7 @@ void SplitSegmentCommand::redo()
 
 void SplitSegmentCommand::undo()
 {
-    Q_ASSERT(mParentSegment!=NULL);
+    Q_ASSERT(mParentSegment!=nullptr);
     Q_ASSERT(mNewSegmentContainer->childCount()==0);
 
     controller()->view()->clearSelection();
@@ -389,7 +389,7 @@ void SplitSegmentCommand::undo()
     // merged back in to.  The added segment will be its next sibling.
 
     TrackDataItem *parentItem = mParentSegment->parent();
-    Q_ASSERT(parentItem!=NULL);
+    Q_ASSERT(parentItem!=nullptr);
     const int parentIndex = parentItem->childIndex(mParentSegment);
     TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(parentItem->childAt(parentIndex+1));
 
@@ -434,8 +434,8 @@ void SplitSegmentCommand::undo()
 MergeSegmentsCommand::MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mMasterSegment = NULL;
-    mSavedSegmentContainer = NULL;
+    mMasterSegment = nullptr;
+    mSavedSegmentContainer = nullptr;
 }
 
 
@@ -454,13 +454,13 @@ void MergeSegmentsCommand::setData(TrackDataSegment *master, const QList<TrackDa
 
 void MergeSegmentsCommand::redo()
 {
-    Q_ASSERT(mMasterSegment!=NULL);
+    Q_ASSERT(mMasterSegment!=nullptr);
     Q_ASSERT(!mSourceSegments.isEmpty());
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mSavedSegmentContainer==NULL) mSavedSegmentContainer = new ItemContainer;
+    if (mSavedSegmentContainer==nullptr) mSavedSegmentContainer = new ItemContainer;
     Q_ASSERT(mSavedSegmentContainer->childCount()==0);
 
     const int num = mSourceSegments.count();
@@ -474,7 +474,7 @@ void MergeSegmentsCommand::redo()
         mSourceCounts[i] = item->childCount();
 
         TrackDataItem *parent = item->parent();
-        Q_ASSERT(parent!=NULL);
+        Q_ASSERT(parent!=nullptr);
         mSourceParents[i] = parent;
         mSourceIndexes[i] = parent->childIndex(item);
 
@@ -490,7 +490,7 @@ void MergeSegmentsCommand::redo()
 
         // Remove and adopt the now empty source segment
         TrackDataItem *parentItem = item->parent();
-        Q_ASSERT(parentItem!=NULL);
+        Q_ASSERT(parentItem!=nullptr);
         qDebug() << "remove" << item->name() << "from" << parentItem->name();
         parentItem->removeChildItem(item);
         mSavedSegmentContainer->addChildItem(item);
@@ -505,8 +505,8 @@ void MergeSegmentsCommand::redo()
 
 void MergeSegmentsCommand::undo()
 {
-    Q_ASSERT(mMasterSegment!=NULL);
-    Q_ASSERT(mSavedSegmentContainer!=NULL);
+    Q_ASSERT(mMasterSegment!=nullptr);
+    Q_ASSERT(mSavedSegmentContainer!=nullptr);
 
     const int segCount = mSavedSegmentContainer->childCount();
     Q_ASSERT(segCount>0);
@@ -540,7 +540,7 @@ void MergeSegmentsCommand::undo()
         // under parent 'parent', back in its original place.
         const int idx = mSourceIndexes[i];
         TrackDataItem *parent = mSourceParents[i];
-        Q_ASSERT(parent!=NULL);
+        Q_ASSERT(parent!=nullptr);
         qDebug() << "add to" << parent->name() << "as index" << idx;
         parent->addChildItem(item, idx);
     }
@@ -564,20 +564,20 @@ void MergeSegmentsCommand::undo()
 //  Add Container (track, route or folder)				//
 //									//
 //  We create the new container, and store it when required.  The	//
-//  parent container is only referred to, and can be NULL meaning	//
+//  parent container is only referred to, and can be nullptr meaning	//
 //  the top level.							//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 // TODO: not thread safe!
-static TrackDataFolder *lastCreatedFolder = NULL;
+static TrackDataFolder *lastCreatedFolder = nullptr;
 
 
 AddContainerCommand::AddContainerCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mNewItemContainer = NULL;
-    mParent = NULL;
+    mNewItemContainer = nullptr;
+    mParent = nullptr;
     mType = TrackData::None;
 }
 
@@ -600,11 +600,11 @@ void AddContainerCommand::redo()
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mNewItemContainer==NULL)			// need to create new container
+    if (mNewItemContainer==nullptr)			// need to create new container
     {
         mNewItemContainer = new ItemContainer;
 
-        TrackDataItem *addedItem = NULL;
+        TrackDataItem *addedItem = nullptr;
         if (mType==TrackData::Track) addedItem = new TrackDataTrack;
         else if (mType==TrackData::Route) addedItem = new TrackDataRoute;
         else if (mType==TrackData::Folder)
@@ -613,7 +613,7 @@ void AddContainerCommand::redo()
             addedItem = lastCreatedFolder;
         }
 
-        Q_ASSERT(addedItem!=NULL);
+        Q_ASSERT(addedItem!=nullptr);
         if (!mAddName.isEmpty()) addedItem->setName(mAddName, true);
         addedItem->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
 
@@ -624,8 +624,8 @@ void AddContainerCommand::redo()
     Q_ASSERT(mNewItemContainer->childCount()==1);
     TrackDataItem *newItem = mNewItemContainer->takeFirstChildItem();
 
-    if (mParent==NULL) mParent = model()->rootFileItem();
-    Q_ASSERT(mParent!=NULL);
+    if (mParent==nullptr) mParent = model()->rootFileItem();
+    Q_ASSERT(mParent!=nullptr);
     mParent->addChildItem(newItem);
 
     model()->endLayoutChange();
@@ -635,9 +635,9 @@ void AddContainerCommand::redo()
 
 void AddContainerCommand::undo()
 {
-    Q_ASSERT(mNewItemContainer!=NULL);
+    Q_ASSERT(mNewItemContainer!=nullptr);
     Q_ASSERT(mNewItemContainer->childCount()==0);
-    Q_ASSERT(mParent!=NULL);
+    Q_ASSERT(mParent!=nullptr);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
@@ -660,8 +660,8 @@ void AddContainerCommand::undo()
 AddPointCommand::AddPointCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mNewPointContainer = NULL;
-    mAtPoint = NULL;
+    mNewPointContainer = nullptr;
+    mAtPoint = nullptr;
 }
 
 
@@ -674,21 +674,21 @@ AddPointCommand::~AddPointCommand()
 void AddPointCommand::setData(TrackDataItem *item)
 {
     mAtPoint = dynamic_cast<TrackDataTrackpoint *>(item);
-    Q_ASSERT(mAtPoint!=NULL);
+    Q_ASSERT(mAtPoint!=nullptr);
 }
 
 
 void AddPointCommand::redo()
 {
-    Q_ASSERT(mAtPoint!=NULL);
+    Q_ASSERT(mAtPoint!=nullptr);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *parent = mAtPoint->parent();
-    Q_ASSERT(parent!=NULL);
+    Q_ASSERT(parent!=nullptr);
 
-    if (mNewPointContainer==NULL)			// need to create new point
+    if (mNewPointContainer==nullptr)			// need to create new point
     {
         mNewPointContainer = new ItemContainer;
 
@@ -697,7 +697,7 @@ void AddPointCommand::redo()
         const int idx = parent->childIndex(mAtPoint);
         Q_ASSERT(idx>0);				// not allowed at first point
         const TrackDataTrackpoint *prevPoint = dynamic_cast<const TrackDataTrackpoint *>(parent->childAt(idx-1));
-        Q_ASSERT(prevPoint!=NULL);
+        Q_ASSERT(prevPoint!=nullptr);
 
         double lat = (mAtPoint->latitude()+prevPoint->latitude())/2;
         double lon = (mAtPoint->longitude()+prevPoint->longitude())/2;
@@ -719,14 +719,14 @@ void AddPointCommand::redo()
 
 void AddPointCommand::undo()
 {
-    Q_ASSERT(mAtPoint!=NULL);
+    Q_ASSERT(mAtPoint!=nullptr);
     Q_ASSERT(mNewPointContainer->childCount()==0);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *parent = mAtPoint->parent();
-    Q_ASSERT(parent!=NULL);
+    Q_ASSERT(parent!=nullptr);
     const int idx = parent->childIndex(mAtPoint);
     Q_ASSERT(idx>0);
 
@@ -752,7 +752,7 @@ void AddPointCommand::undo()
 MoveItemCommand::MoveItemCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mDestination = NULL;
+    mDestination = nullptr;
 }
 
 
@@ -770,7 +770,7 @@ void MoveItemCommand::setData(const QList<TrackDataItem *> &items, TrackDataItem
 
 void MoveItemCommand::redo()
 {
-    Q_ASSERT(mDestination!=NULL);
+    Q_ASSERT(mDestination!=nullptr);
     Q_ASSERT(!mItems.isEmpty());
 
     controller()->view()->clearSelection();
@@ -784,7 +784,7 @@ void MoveItemCommand::redo()
     {
         TrackDataItem *item = mItems[i];
         TrackDataItem *par = item->parent();
-        Q_ASSERT(par!=NULL);
+        Q_ASSERT(par!=nullptr);
         mParentItems[i] = par;
         int idx = par->childIndex(item);
         mParentIndexes[i] = idx;
@@ -805,7 +805,7 @@ void MoveItemCommand::redo()
 
 void MoveItemCommand::undo()
 {
-    Q_ASSERT(mDestination!=NULL);
+    Q_ASSERT(mDestination!=nullptr);
     Q_ASSERT(!mItems.isEmpty());
     const int cnt = mItems.count();
     Q_ASSERT(mParentItems.count()==cnt);
@@ -846,7 +846,7 @@ void MoveItemCommand::undo()
 DeleteItemsCommand::DeleteItemsCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mDeletedItemsContainer = NULL;
+    mDeletedItemsContainer = nullptr;
 }
 
 
@@ -869,7 +869,7 @@ void DeleteItemsCommand::redo()
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mDeletedItemsContainer==NULL) mDeletedItemsContainer = new ItemContainer;
+    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new ItemContainer;
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
     const int num = mItems.count();
@@ -880,7 +880,7 @@ void DeleteItemsCommand::redo()
     {
         TrackDataItem *item = mItems[i];
         TrackDataItem *parent = item->parent();
-        Q_ASSERT(parent!=NULL);
+        Q_ASSERT(parent!=nullptr);
         mParentItems[i] = parent;
         mParentIndexes[i] = parent->childIndex(item);
 
@@ -941,7 +941,7 @@ void MovePointsCommand::redo()
     for (int i = 0; i<mItems.count(); ++i)
     {
         TrackDataAbstractPoint *item = dynamic_cast<TrackDataAbstractPoint *>(mItems[i]);
-        if (item==NULL) continue;
+        if (item==nullptr) continue;
         item->setLatLong(item->latitude()+mLatOff, item->longitude()+mLonOff);
         model()->changedItem(item);
     }
@@ -956,7 +956,7 @@ void MovePointsCommand::undo()
     for (int i = 0; i<mItems.count(); ++i)
     {
         TrackDataAbstractPoint *item = dynamic_cast<TrackDataAbstractPoint *>(mItems[i]);
-        if (item==NULL) continue;
+        if (item==nullptr) continue;
         item->setLatLong(item->latitude()-mLatOff, item->longitude()-mLonOff);
         model()->changedItem(item);
     }
@@ -976,9 +976,9 @@ void MovePointsCommand::undo()
 AddWaypointCommand::AddWaypointCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mWaypointFolder = NULL;
-    mSourcePoint = NULL;
-    mNewWaypointContainer = NULL;
+    mWaypointFolder = nullptr;
+    mSourcePoint = nullptr;
+    mNewWaypointContainer = nullptr;
 }
 
 
@@ -1002,19 +1002,19 @@ void AddWaypointCommand::setData(const QString &name, qreal lat, qreal lon,
 
 void AddWaypointCommand::redo()
 {
-    Q_ASSERT(mWaypointFolder!=NULL);
+    Q_ASSERT(mWaypointFolder!=nullptr);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mNewWaypointContainer==NULL)			// need to create new waypoint
+    if (mNewWaypointContainer==nullptr)			// need to create new waypoint
     {
         mNewWaypointContainer = new ItemContainer;
 
         TrackDataWaypoint *newWaypoint = new TrackDataWaypoint;
         newWaypoint->setName(mWaypointName, true);
         newWaypoint->setLatLong(mLatitude, mLongitude);
-        if (mSourcePoint!=NULL)
+        if (mSourcePoint!=nullptr)
         {
             int idx = DataIndexer::self()->index("ele");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
@@ -1040,9 +1040,9 @@ void AddWaypointCommand::redo()
 
 void AddWaypointCommand::undo()
 {
-    Q_ASSERT(mNewWaypointContainer!=NULL);
+    Q_ASSERT(mNewWaypointContainer!=nullptr);
     Q_ASSERT(mNewWaypointContainer->childCount()==0);
-    Q_ASSERT(mWaypointFolder!=NULL);
+    Q_ASSERT(mWaypointFolder!=nullptr);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
@@ -1068,9 +1068,9 @@ void AddWaypointCommand::undo()
 AddRoutepointCommand::AddRoutepointCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mRoutepointRoute = NULL;
-    mSourcePoint = NULL;
-    mNewRoutepointContainer = NULL;
+    mRoutepointRoute = nullptr;
+    mSourcePoint = nullptr;
+    mNewRoutepointContainer = nullptr;
 }
 
 
@@ -1094,12 +1094,12 @@ void AddRoutepointCommand::setData(const QString &name, qreal lat, qreal lon,
 
 void AddRoutepointCommand::redo()
 {
-    Q_ASSERT(mRoutepointRoute!=NULL);
+    Q_ASSERT(mRoutepointRoute!=nullptr);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mNewRoutepointContainer==NULL)			// need to create new routepoint
+    if (mNewRoutepointContainer==nullptr)		// need to create new routepoint
     {
         mNewRoutepointContainer = new ItemContainer;
 
@@ -1123,9 +1123,9 @@ void AddRoutepointCommand::redo()
 
 void AddRoutepointCommand::undo()
 {
-    Q_ASSERT(mNewRoutepointContainer!=NULL);
+    Q_ASSERT(mNewRoutepointContainer!=nullptr);
     Q_ASSERT(mNewRoutepointContainer->childCount()==0);
-    Q_ASSERT(mRoutepointRoute!=NULL);
+    Q_ASSERT(mRoutepointRoute!=nullptr);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
@@ -1150,16 +1150,16 @@ void AddRoutepointCommand::undo()
 
 void AddPhotoCommand::redo()
 {
-    if (mWaypointFolder==NULL)				// no destination folder set
+    if (mWaypointFolder==nullptr)			// no destination folder set
     {
         mWaypointFolder = lastCreatedFolder;		// use the one just created
-        Q_ASSERT(mWaypointFolder!=NULL);
+        Q_ASSERT(mWaypointFolder!=nullptr);
     }
 
     AddWaypointCommand::redo();				// add the basic waypoint
 
     TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
-    Q_ASSERT(tdw!=NULL);				// retrieve the just added point
+    Q_ASSERT(tdw!=nullptr);				// retrieve the just added point
     if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.toDisplayString());
     if (mDateTime.isValid()) tdw->setMetadata(DataIndexer::self()->index("time"), mDateTime);
 }

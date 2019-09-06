@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	07-Oct-18						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -159,7 +159,7 @@ void VariableUnitDisplay::showEvent(QShowEvent *ev)
     QFrame::showEvent(ev);
 
     QObject *pnt = parent();				// no GUI parent?
-    if (pnt==NULL) return;				// should never happen
+    if (pnt==nullptr) return;				// should never happen
 
     QList<VariableUnitDisplay *> siblings = pnt->findChildren<VariableUnitDisplay *>();
     if (siblings.isEmpty()) return;			// should never happen

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Apr-18						//
+//  Edit:	06-Sep-19						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -45,7 +45,7 @@ class VideoViewer : public QWidget
     Q_OBJECT
 
 public:
-    VideoViewer(const QUrl &url, QWidget *pnt = NULL);
+    VideoViewer(const QUrl &url, QWidget *pnt = nullptr);
     virtual ~VideoViewer();
 
 protected slots:

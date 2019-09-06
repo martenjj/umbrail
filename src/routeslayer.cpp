@@ -56,7 +56,7 @@ RoutesLayer::~RoutesLayer()
 bool RoutesLayer::isApplicableItem(const TrackDataItem *item) const
 {
     // We are only interested in routepoints
-    return (dynamic_cast<const TrackDataRoutepoint *>(item)!=NULL);
+    return (dynamic_cast<const TrackDataRoutepoint *>(item)!=nullptr);
 }
 
 
@@ -64,7 +64,7 @@ bool RoutesLayer::isApplicableItem(const TrackDataItem *item) const
 bool RoutesLayer::isDirectContainer(const TrackDataItem *item) const
 {
     // Only routes contain routepoints to be drawn
-    return (dynamic_cast<const TrackDataRoute *>(item)!=NULL);
+    return (dynamic_cast<const TrackDataRoute *>(item)!=nullptr);
 }
 
 
@@ -72,8 +72,8 @@ bool RoutesLayer::isDirectContainer(const TrackDataItem *item) const
 bool RoutesLayer::isIndirectContainer(const TrackDataItem *item) const
 {
     // Files or routes can include routepoints
-    return (dynamic_cast<const TrackDataFile *>(item)!=NULL ||
-            dynamic_cast<const TrackDataRoute *>(item)!=NULL);
+    return (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
+            dynamic_cast<const TrackDataRoute *>(item)!=nullptr);
 }
 
 
@@ -186,7 +186,7 @@ void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
 
         // Then the routepoint icon image
         const QPixmap img = KIconLoader::global()->loadIcon(tdp->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
-                                                            KIconLoader::DefaultState, QStringList(), NULL, true);
+                                                            KIconLoader::DefaultState, QStringList(), nullptr, true);
         if (!img.isNull())				// icon image available
         {
             painter->drawPixmap(coord, img);

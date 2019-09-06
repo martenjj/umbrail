@@ -33,7 +33,7 @@ FilesModel::FilesModel(QObject *pnt)
     : QAbstractItemModel(pnt)
 {
     qDebug();
-    mRootFileItem = NULL;
+    mRootFileItem = nullptr;
 }
 
 
@@ -52,9 +52,9 @@ FilesModel::~FilesModel()
 
 QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 {
-    Q_ASSERT(tdi!=NULL);
+    Q_ASSERT(tdi!=nullptr);
     const TrackDataItem *pnt = tdi->parent();
-    int row = (pnt==NULL ? 0 : pnt->childIndex(tdi));
+    int row = (pnt==nullptr ? 0 : pnt->childIndex(tdi));
     // static_cast will not work here due to const'ness
     return (row==-1 ? QModelIndex() : createIndex(row, 0, (void *) tdi));
 }
@@ -63,7 +63,7 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 {
     const TrackDataItem *tdi = itemForIndex(pnt);
-    if (tdi==NULL)
+    if (tdi==nullptr)
     {
         if (isEmpty()) return (QModelIndex());
         if (row>0) return (QModelIndex());
@@ -83,7 +83,7 @@ QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 QModelIndex FilesModel::parent(const QModelIndex &idx) const
 {
     const TrackDataItem *tdi = itemForIndex(idx);
-    if (tdi->parent()==NULL) return (QModelIndex());
+    if (tdi->parent()==nullptr) return (QModelIndex());
     return (indexForItem(tdi->parent()));
 }
 
@@ -92,7 +92,7 @@ int FilesModel::rowCount(const QModelIndex &pnt) const
 {
    if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
    const TrackDataItem *tdi = itemForIndex(pnt);
-   Q_ASSERT(tdi!=NULL);
+   Q_ASSERT(tdi!=nullptr);
    return (tdi->childCount());
 }
 
@@ -153,36 +153,36 @@ case Qt::ToolTipRole:
 case COL_NAME:
             {
                 const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                if (tdf!=NULL) return (i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString()));
+                if (tdf!=nullptr) return (i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString()));
             }
             {
                 const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(tdi);
-                if (tdt!=NULL) return (i18np("Track with %1 segment", "Track with %1 segments", tdt->childCount()));
+                if (tdt!=nullptr) return (i18np("Track with %1 segment", "Track with %1 segments", tdt->childCount()));
             }
             {
                 const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(tdi);
-                if (tds!=NULL) return (i18np("Segment with %1 point", "Segment with %1 points", tds->childCount()));
+                if (tds!=nullptr) return (i18np("Segment with %1 point", "Segment with %1 points", tds->childCount()));
             }
             {
                 const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(tdi);
-                if (tdp!=NULL) return (i18n("Point at %1, elevation %2",
+                if (tdp!=nullptr) return (i18n("Point at %1, elevation %2",
                                             tdp->formattedTime(true), tdp->formattedElevation()));
             }
             {
                 const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(tdi);
-                if (tdf!=NULL) return (i18np("Folder with %1 item", "Folder with %1 items", tdf->childCount()));
+                if (tdf!=nullptr) return (i18np("Folder with %1 item", "Folder with %1 items", tdf->childCount()));
             }
             {
                 const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi);
-                if (tdw!=NULL) return (i18n("Waypoint, elevation %1", tdw->formattedElevation()));
+                if (tdw!=nullptr) return (i18n("Waypoint, elevation %1", tdw->formattedElevation()));
             }
             {
                 const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(tdi);
-                if (tdr!=NULL) return (i18np("Route with %1 point", "Route with %1 points", tdr->childCount()));
+                if (tdr!=nullptr) return (i18np("Route with %1 point", "Route with %1 points", tdr->childCount()));
             }
             {
                 const TrackDataRoutepoint *tdp = dynamic_cast<const TrackDataRoutepoint *>(tdi);
-                if (tdp!=NULL) return (i18n("Routepoint, elevation %1", tdp->formattedElevation()));
+                if (tdp!=nullptr) return (i18n("Routepoint, elevation %1", tdp->formattedElevation()));
             }
             break;
         }
@@ -216,9 +216,9 @@ default:		return (QVariant());
 TrackDataFile *FilesModel::takeRootFileItem()
 {
     TrackDataFile *root = mRootFileItem;
-    Q_ASSERT(root!=NULL);
+    Q_ASSERT(root!=nullptr);
     beginResetModel();
-    mRootFileItem = NULL;
+    mRootFileItem = nullptr;
     endResetModel();
     qDebug() << "removing root" << root->name();
     return (root);
@@ -227,7 +227,7 @@ TrackDataFile *FilesModel::takeRootFileItem()
 
 void FilesModel::setRootFileItem(TrackDataFile *root)
 {
-    Q_ASSERT(mRootFileItem==NULL);
+    Q_ASSERT(mRootFileItem==nullptr);
     beginResetModel();
     qDebug() << "setting root" << root->name();
     mRootFileItem = root;

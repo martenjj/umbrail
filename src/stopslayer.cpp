@@ -29,7 +29,7 @@
 StopsLayer::StopsLayer(QWidget *pnt)
 {
     qDebug();
-    mStopsData = NULL;
+    mStopsData = nullptr;
 }
 
 
@@ -48,7 +48,7 @@ QStringList StopsLayer::renderPosition() const
 bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
                         const QString &renderPos, GeoSceneLayer *layer)
 {
-    if (mStopsData==NULL) return (true);		// nothing to draw
+    if (mStopsData==nullptr) return (true);		// nothing to draw
 
     for (int i = 0; i<mStopsData->count(); ++i)
     {
@@ -92,6 +92,6 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
 void StopsLayer::setStopsData(const QList<const TrackDataWaypoint *> *data)
 {
     mStopsData = data;
-    if (mStopsData==NULL) qDebug() << "data cleared";
+    if (mStopsData==nullptr) qDebug() << "data cleared";
     else qDebug() << "data set" << mStopsData->count() << "points";
 }

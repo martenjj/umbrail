@@ -55,7 +55,7 @@ void MapThemeDialogue::setThemeId(const QString &id)
     for (int i = 0; i<mListBox->count(); ++i)
     {
         QListWidgetItem *item = mListBox->item(i);
-        if (item==NULL) continue;
+        if (item==nullptr) continue;
 
         QString itemId = item->data(Qt::UserRole).toString();
         if (itemId==id)
@@ -86,7 +86,7 @@ void MapThemeDialogue::createDisplay()
     for (int i = 0; i<mModel->rowCount(); ++i)
     {
         QStandardItem *themeData = mModel->item(i);
-        if (themeData==NULL) continue;
+        if (themeData==nullptr) continue;
 
         QString id = themeData->data(Qt::UserRole+1).toString();
         if (!id.startsWith("earth/")) continue;		// only this planet!

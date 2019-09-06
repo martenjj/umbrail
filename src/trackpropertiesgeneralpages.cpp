@@ -149,7 +149,7 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
     if (items->count()==1)
     {
         const TrackDataItem *tdi = items->first();
-        Q_ASSERT(tdi!=NULL);
+        Q_ASSERT(tdi!=nullptr);
 
         // TODO: are both needed?
         connect(mTypeCombo, &QComboBox::currentTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
@@ -231,7 +231,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
     if (items->count()==1)				// a single item
     {
         TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items->first());
-        Q_ASSERT(fileItem!=NULL);
+        Q_ASSERT(fileItem!=nullptr);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
         mTimeZoneSel->setItems(items);			// use these to get timezone
     }
@@ -377,8 +377,8 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
 {
     setObjectName("TrackWaypointGeneralPage");
 
-    mWaypoint = NULL;
-    mStatusCombo = NULL;
+    mWaypoint = nullptr;
+    mStatusCombo = nullptr;
 
     if (items->count()==1)
     {
@@ -408,7 +408,7 @@ default:				typeName = i18n("(Unknown)");	break;
         hlay->addWidget(l);
         hlay->addStretch(1);
 
-        QPushButton *actionButton = NULL;
+        QPushButton *actionButton = nullptr;
         switch (mWaypoint->waypointType())
         {
 case TrackData::WaypointAudioNote:
@@ -432,7 +432,7 @@ case TrackData::WaypointPhoto:
 default:    break;
         }
 
-        if (actionButton!=NULL)				// action button is present
+        if (actionButton!=nullptr)			// action button is present
         {
             hb->setFocusProxy(actionButton);
             hb->setFocusPolicy(Qt::StrongFocus);
@@ -446,7 +446,7 @@ default:    break;
 
     addPositionFields(items);
     addTimeField(items);
-    if (mWaypoint==NULL) addTimeSpanFields(items);
+    if (mWaypoint==nullptr) addTimeSpanFields(items);
     addSeparatorField();
 
     addStatusField(items);

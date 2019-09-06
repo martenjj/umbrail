@@ -34,7 +34,7 @@ PositionInfoDialogue::PositionInfoDialogue(int posX, int posY, QWidget *pnt)
     stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
 
     MapView *view = qobject_cast<MapView *>(pnt);
-    Q_ASSERT(view!=NULL);
+    Q_ASSERT(view!=nullptr);
 
     // Position
     QLabel *l = new QLabel(i18nc("@title:row", "Position:"), this);
