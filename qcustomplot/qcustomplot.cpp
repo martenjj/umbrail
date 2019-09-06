@@ -1909,9 +1909,9 @@ QCPRange::QCPRange() :
   The resulting range will be normalized (see \ref normalize), so if \a lower is not numerically
   smaller than \a upper, they will be swapped.
 */
-QCPRange::QCPRange(double lower, double upper) :
-  lower(lower),
-  upper(upper)
+QCPRange::QCPRange(double l, double u) :
+  lower(l),
+  upper(u)
 {
   normalize();
 }
@@ -15274,9 +15274,9 @@ void QCustomPlot::axisRemoved(QCPAxis *axis)
   This method is used by the QCPLegend destructor to report legend removal to the QCustomPlot so
   it may clear its QCustomPlot::legend member accordingly.
 */
-void QCustomPlot::legendRemoved(QCPLegend *legend)
+void QCustomPlot::legendRemoved(QCPLegend *l)
 {
-  if (this->legend == legend)
+  if (this->legend == l)
     this->legend = nullptr;
 }
 
@@ -20035,9 +20035,9 @@ QCPGraphData::QCPGraphData() :
 /*!
   Constructs a data point with the specified \a key and \a value.
 */
-QCPGraphData::QCPGraphData(double key, double value) :
-  key(key),
-  value(value)
+QCPGraphData::QCPGraphData(double k, double v) :
+  key(k),
+  value(v)
 {
 }
 
@@ -21793,10 +21793,10 @@ QCPCurveData::QCPCurveData() :
 /*!
   Constructs a curve data point with the specified \a t, \a key and \a value.
 */
-QCPCurveData::QCPCurveData(double t, double key, double value) :
-  t(t),
-  key(key),
-  value(value)
+QCPCurveData::QCPCurveData(double tt, double k, double v) :
+  t(tt),
+  key(k),
+  value(v)
 {
 }
 
@@ -23568,9 +23568,9 @@ QCPBarsData::QCPBarsData() :
 /*!
   Constructs a bar data point with the specified \a key and \a value.
 */
-QCPBarsData::QCPBarsData(double key, double value) :
-  key(key),
-  value(value)
+QCPBarsData::QCPBarsData(double k, double v) :
+  key(k),
+  value(v)
 {
 }
 
@@ -24448,14 +24448,14 @@ QCPStatisticalBoxData::QCPStatisticalBoxData() :
   Constructs a data point with the specified \a key, \a minimum, \a lowerQuartile, \a median, \a
   upperQuartile, \a maximum and optionally a number of \a outliers.
 */
-QCPStatisticalBoxData::QCPStatisticalBoxData(double key, double minimum, double lowerQuartile, double median, double upperQuartile, double maximum, const QVector<double> &outliers) :
-  key(key),
-  minimum(minimum),
-  lowerQuartile(lowerQuartile),
-  median(median),
-  upperQuartile(upperQuartile),
-  maximum(maximum),
-  outliers(outliers)
+QCPStatisticalBoxData::QCPStatisticalBoxData(double k, double min, double lowerQ, double med, double upperQ, double max, const QVector<double> &outs) :
+  key(k),
+  minimum(min),
+  lowerQuartile(lowerQ),
+  median(med),
+  upperQuartile(upperQ),
+  maximum(max),
+  outliers(outs)
 {
 }
 
@@ -26223,12 +26223,12 @@ QCPFinancialData::QCPFinancialData() :
 /*!
   Constructs a data point with the specified \a key and OHLC values.
 */
-QCPFinancialData::QCPFinancialData(double key, double open, double high, double low, double close) :
-  key(key),
-  open(open),
-  high(high),
-  low(low),
-  close(close)
+QCPFinancialData::QCPFinancialData(double k, double o, double h, double l, double c) :
+  key(k),
+  open(o),
+  high(h),
+  low(l),
+  close(c)
 {
 }
 
@@ -27137,9 +27137,9 @@ QCPErrorBarsData::QCPErrorBarsData(double error) :
   Constructs an error bar with negative and positive errors set to \a errorMinus and \a errorPlus,
   respectively.
 */
-QCPErrorBarsData::QCPErrorBarsData(double errorMinus, double errorPlus) :
-  errorMinus(errorMinus),
-  errorPlus(errorPlus)
+QCPErrorBarsData::QCPErrorBarsData(double errorM, double errorP) :
+  errorMinus(errorM),
+  errorPlus(errorP)
 {
 }
 
@@ -28368,15 +28368,15 @@ void QCPItemLine::draw(QCPPainter *painter)
   
   This is a helper function for \ref draw.
 */
-QLineF QCPItemLine::getRectClippedLine(const QCPVector2D &start, const QCPVector2D &end, const QRect &rect) const
+QLineF QCPItemLine::getRectClippedLine(const QCPVector2D &lineStart, const QCPVector2D &lineEnd, const QRect &rect) const
 {
-  bool containsStart = rect.contains(start.x(), start.y());
-  bool containsEnd = rect.contains(end.x(), end.y());
+  bool containsStart = rect.contains(lineStart.x(), lineStart.y());
+  bool containsEnd = rect.contains(lineEnd.x(), lineEnd.y());
   if (containsStart && containsEnd)
-    return QLineF(start.toPointF(), end.toPointF());
+    return QLineF(lineStart.toPointF(), lineEnd.toPointF());
   
-  QCPVector2D base = start;
-  QCPVector2D vec = end-start;
+  QCPVector2D base = lineStart;
+  QCPVector2D vec = lineEnd-lineStart;
   double bx, by;
   double gamma, mu;
   QLineF result;
@@ -28430,9 +28430,9 @@ QLineF QCPItemLine::getRectClippedLine(const QCPVector2D &start, const QCPVector
   }
   
   if (containsStart)
-    pointVectors.append(start);
+    pointVectors.append(lineStart);
   if (containsEnd)
-    pointVectors.append(end);
+    pointVectors.append(lineEnd);
   
   // evaluate points:
   if (pointVectors.size() == 2)
@@ -29245,11 +29245,11 @@ double QCPItemEllipse::selectTest(const QPointF &pos, bool onlySelectable, QVari
   
   QPointF p1 = topLeft->pixelPosition();
   QPointF p2 = bottomRight->pixelPosition();
-  QPointF center((p1+p2)/2.0);
+  QPointF cent((p1+p2)/2.0);
   double a = qAbs(p1.x()-p2.x())/2.0;
   double b = qAbs(p1.y()-p2.y())/2.0;
-  double x = pos.x()-center.x();
-  double y = pos.y()-center.y();
+  double x = pos.x()-cent.x();
+  double y = pos.y()-cent.y();
   
   // distance to border:
   double c = 1.0/qSqrt(x*x/(a*a)+y*y/(b*b));
@@ -29556,18 +29556,18 @@ QRect QCPItemPixmap::getFinalRect(bool *flippedHorz, bool *flippedVert) const
   if (mScaled)
   {
     QSize newSize = QSize(p2.x()-p1.x(), p2.y()-p1.y());
-    QPoint topLeft = p1;
+    QPoint tl = p1;
     if (newSize.width() < 0)
     {
       flipHorz = true;
       newSize.rwidth() *= -1;
-      topLeft.setX(p2.x());
+      tl.setX(p2.x());
     }
     if (newSize.height() < 0)
     {
       flipVert = true;
       newSize.rheight() *= -1;
-      topLeft.setY(p2.y());
+      tl.setY(p2.y());
     }
     QSize scaledSize = mPixmap.size();
 #ifdef QCP_DEVICEPIXELRATIO_SUPPORTED
@@ -29576,7 +29576,7 @@ QRect QCPItemPixmap::getFinalRect(bool *flippedHorz, bool *flippedVert) const
 #else
     scaledSize.scale(newSize, mAspectRatioMode);
 #endif
-    result = QRect(topLeft, scaledSize);
+    result = QRect(tl, scaledSize);
   } else
   {
 #ifdef QCP_DEVICEPIXELRATIO_SUPPORTED
