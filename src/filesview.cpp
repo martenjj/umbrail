@@ -31,6 +31,7 @@ FilesView::FilesView(QWidget *pnt)
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setAllColumnsShowFocus(true);
+    setDropIndicatorShown(true);
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -174,21 +175,6 @@ void FilesView::selectionChanged(const QItemSelection &sel,
 }
 
 
-
-static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
-{
-    const TrackDataItem *parentA = a->parent();
-    Q_ASSERT(parentA!=nullptr);
-    const TrackDataItem *parentB = b->parent();
-    Q_ASSERT(parentB!=nullptr);
-
-    int indexA = parentA->childIndex(a);
-    int indexB = parentB->childIndex(b);
-    return (indexA<indexB);
-}
-
-
-
 QList<TrackDataItem *> FilesView::selectedItems() const
 {
     QModelIndexList selIndexes = selectionModel()->selectedIndexes();
@@ -201,7 +187,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
         list.append(tdi);
     }
 
-    std::stable_sort(list.begin(), list.end(), &lessThanByIndexRow);
+    FilesModel::sortByIndexRow(&list);			// ensure in predictable order
     return (list);
 }
 
@@ -337,4 +323,10 @@ void FilesView::slotExpandAll()
     // Again not directly calling expandAll(), because that is also not a
     // useful operation.  Expand everything apart from segments and routes.
     expandItem(rootIndex());
+}
+
+
+void FilesView::setMovePointsMode(bool on)
+{
+    setDragDropMode(on ? QAbstractItemView::InternalMove : QAbstractItemView::NoDragDrop);
 }

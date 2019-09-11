@@ -83,9 +83,10 @@ FilesController::FilesController(QObject *pnt)
 #else
     mView->setModel(mDataModel);
 #endif
-    connect(mView, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
-    connect(mDataModel, SIGNAL(clickedItem(const QModelIndex &,unsigned int)),
-            mView, SLOT(slotClickedItem(const QModelIndex &,unsigned int)));
+    connect(mView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
+
+    connect(mDataModel, &FilesModel::clickedItem, mView, &FilesView::slotClickedItem);
+    connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
     mWarnedNoTimezone = false;
 }
@@ -1142,7 +1143,27 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     mainWindow()->executeCommand(cmd);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Drag and Drop							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
+void FilesController::slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row)
+{
+    qDebug() << "items" << sourceItems.count() << "parent" << ontoParent->name() << "row" << row;
+
+    MoveItemCommand *cmd = new MoveItemCommand(this);
+    cmd->setText(i18n("Drag/Drop"));
+
+    cmd->setData(sourceItems, ontoParent, row);
+    mainWindow()->executeCommand(cmd);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  File type filters							//
+//									//
 //////////////////////////////////////////////////////////////////////////
 
 static const char allFilter[] = "All Files (*)";
@@ -1156,7 +1177,6 @@ QString FilesController::allExportFilters()
 }
 
 
-
 QString FilesController::allImportFilters()
 {
     QStringList filters;
@@ -1164,7 +1184,6 @@ QString FilesController::allImportFilters()
     filters << allFilter;
     return (filters.join(";;"));
 }
-
 
 
 QString FilesController::allProjectFilters(bool includeAllFiles)

@@ -23,8 +23,8 @@
 //  The rules to be followed are:
 //
 //   - If the command only refers to, or changes existing items in place,
-//     and does not copy, delete or move them around in memory any way,
-//     then it may retain a pointer (or any structure or list of pointers)
+//     and does not copy, delete or move them around in the file tree in any
+//     way, then it may retain a pointer (or any structure or list of pointers)
 //     to them.  In this case, it must not delete the items on destruction;
 //     it is sufficient to just throw away the pointer.
 //
@@ -742,17 +742,17 @@ void AddPointCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Move Segment							//
+//  Move Item(s)							//
 //									//
-//  The source and destination are only referred to, and so can be	//
-//  simple pointers.							//
+//  The source items and destination are only referred to, and so	//
+//  can be simple pointers.						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 MoveItemCommand::MoveItemCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
-    mDestination = nullptr;
+    mDestinationParent = nullptr;
 }
 
 
@@ -761,16 +761,17 @@ MoveItemCommand::~MoveItemCommand()
 }
 
 
-void MoveItemCommand::setData(const QList<TrackDataItem *> &items, TrackDataItem *dest)
+void MoveItemCommand::setData(const QList<TrackDataItem *> &items, TrackDataItem *dest, int row)
 {
     mItems = items;
-    mDestination = dest;
+    mDestinationParent = dest;
+    mDestinationRow = row;
 }
 
 
 void MoveItemCommand::redo()
 {
-    Q_ASSERT(mDestination!=nullptr);
+    Q_ASSERT(mDestinationParent!=nullptr);
     Q_ASSERT(!mItems.isEmpty());
 
     controller()->view()->clearSelection();
@@ -780,21 +781,70 @@ void MoveItemCommand::redo()
     mParentItems.resize(num);
     mParentIndexes.resize(num);
 
+    // The 'mDestinationRow' (if it is not the default) specifies where the
+    // destination items are to be inserted.  However, if the move is within
+    // the same container the row will change as the items to be moved are
+    // removed.  To account for this we find the item that the moved items
+    // are to be inserted at (before), then remove all of the items to be
+    // moved, then recalculate the destination row as that of the insertion
+    // point item.
+
+    TrackDataItem *destItem = nullptr;
+    int destRow = mDestinationRow;
+
+    // If the insertion point is at the end, this is the same as the "default"
+    // case.
+    if (destRow>=mDestinationParent->childCount()) destRow = -1;
+
+    // Find the 'destItem' that corresponds to the insertion point.
+    if (destRow!=-1) destItem = mDestinationParent->childAt(destRow);
+
+    // First pass:  Calculate the indexes within their parent item of all of
+    // the source items.  Do this before anything is removed fom the source
+    // parent.
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
         TrackDataItem *par = item->parent();
         Q_ASSERT(par!=nullptr);
         mParentItems[i] = par;
-        int idx = par->childIndex(item);
+        const int idx = par->childIndex(item);
         mParentIndexes[i] = idx;
+        qDebug() << "move" << item->name() << "from" << par->name() << "index" << idx;
+    }
 
-        qDebug() << "move" << item->name()
-                 << "from" << par->name() << "index" << idx
-                 << "->" << mDestination->name();
-
+    // Second pass:  Remove all of the source items from their current parent,
+    // in reverse order so that the previously calculated 'mParentIndexes' will
+    // still be correct.  There is no need to keep a list of what is removed,
+    // because it will be the same as 'mItems'.
+    for (int i = num-1; i>=0; --i)
+    {
+        TrackDataItem *par = mParentItems[i];
+        const int idx = mParentIndexes[i];
         par->takeChildItem(idx);
-        mDestination->addChildItem(item);
+    }
+
+    // Recalculate the insertion point within the destination parent.
+    // If that parent (at this stage unchanged) is not the same as the
+    // source parent, then this will of course produce the same 'destRow'
+    // as before.
+    if (destItem!=nullptr)
+    {
+        Q_ASSERT(destRow!=-1);
+        const int row = mDestinationParent->childIndex(destItem);
+        if (row!=-1) destRow = row;
+    }
+
+    // Third pass:  Add all of the items to the destination parent.  If
+    // the insertion point is not the default (at the end), then increment
+    // the 'destRow' after each one so as to preserve the original order.
+    // Select each item as it is added.
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mItems[i];
+        qDebug() << "  ->" << mDestinationParent->name() << "index" << destRow;
+        mDestinationParent->addChildItem(item, destRow);
+        if (destRow!=-1) ++destRow;
         controller()->view()->selectItem(item, true);
     }
 
@@ -805,27 +855,46 @@ void MoveItemCommand::redo()
 
 void MoveItemCommand::undo()
 {
-    Q_ASSERT(mDestination!=nullptr);
+    Q_ASSERT(mDestinationParent!=nullptr);
     Q_ASSERT(!mItems.isEmpty());
-    const int cnt = mItems.count();
-    Q_ASSERT(mParentItems.count()==cnt);
-    Q_ASSERT(mParentIndexes.count()==cnt);
+    const int num = mItems.count();
+    Q_ASSERT(mParentItems.count()==num);
+    Q_ASSERT(mParentIndexes.count()==num);
+
+    // As with redo(), moving the items back to their original locations
+    // is done in three passes so as to handle the case where they are being
+    // moved within a single parent correctly.
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    for (int i = cnt-1; i>=0; --i)
+    // First pass:  Remove all of the items from their current parent.
+    for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
-        Q_ASSERT(item->parent()==mDestination);
+        Q_ASSERT(item->parent()==mDestinationParent);
+        qDebug() << "move" << item->name() << "from" << mDestinationParent->name();
+        mDestinationParent->removeChildItem(item);
+    }
+
+    // Second pass:  Put all of the items back to where they originally came
+    // from, under their original 'mParentItems' at their 'mParentIndexes'
+    // position.  Do this in forward order so that the previously calculated
+    // indexes will be correct.
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mItems[i];
         TrackDataItem *par = mParentItems[i];
-        int idx = mParentIndexes[i];
-
-        qDebug() << "move" << item->name() << "from" << mDestination->name()
-                 << "->" << par->name() << "index" << idx;
-
-        mDestination->removeChildItem(item);
+        const int idx = mParentIndexes[i];
+        qDebug() << "  ->" << par->name() << "index" << idx;
         par->addChildItem(item, idx);
+    }
+
+    // Third pass:  Select all of them.  This avoids the selection not being
+    // correct if any subsequently inserted items then reorder the earlier ones.
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mItems[i];
         controller()->view()->selectItem(item, true);
     }
 
@@ -896,14 +965,14 @@ void DeleteItemsCommand::redo()
 void DeleteItemsCommand::undo()
 {
     Q_ASSERT(!mItems.isEmpty());
-    const int cnt = mItems.count();
-    Q_ASSERT(mParentItems.count()==cnt);
-    Q_ASSERT(mParentIndexes.count()==cnt);
+    const int num = mItems.count();
+    Q_ASSERT(mParentItems.count()==num);
+    Q_ASSERT(mParentIndexes.count()==num);
 
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    for (int i = cnt-1; i>=0; --i)
+    for (int i = num-1; i>=0; --i)
     {
         TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
         TrackDataItem *parent = mParentItems[i];

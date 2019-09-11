@@ -30,6 +30,7 @@ public:
     QVector<const TrackDataAbstractPoint *> selectedPoints() const;
 
     void selectItem(const TrackDataItem *item, bool combine = false);
+    void setMovePointsMode(bool on);
 
     unsigned long selectionId() const		{ return (mSelectionId); }
 

@@ -27,6 +27,13 @@ public:
     virtual QVariant data(const QModelIndex &idx, int role) const override;
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
+    virtual Qt::ItemFlags flags(const QModelIndex &idx) const override;
+    virtual Qt::DropActions supportedDropActions() const override;
+    virtual bool dropMimeData(const QMimeData *data, Qt::DropAction act, int row, int col, const QModelIndex &pnt) override;
+    virtual bool canDropMimeData(const QMimeData *data, Qt::DropAction act, int row, int col, const QModelIndex &pnt) const override;
+    virtual QStringList mimeTypes() const override;
+    virtual QMimeData *mimeData(const QModelIndexList &idxs) const override;
+
     TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
     bool isEmpty() const				{ return (mRootFileItem==nullptr); }
     TrackDataFile *takeRootFileItem();
@@ -41,9 +48,14 @@ public:
 
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
     static TrackDataItem *itemForIndex(const QModelIndex &idx);
+    static void sortByIndexRow(QList<TrackDataItem *> *list);
 
 signals:
     void clickedItem(const QModelIndex &index, unsigned int flags);
+    void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
+
+private:
+    bool dropMimeDataInternal(bool doit, const QMimeData *data, int row, const QModelIndex &pnt);
 
 private:
     TrackDataFile *mRootFileItem;

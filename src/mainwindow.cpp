@@ -428,7 +428,7 @@ void MainWindow::setupActions()
     a->setText(i18n("Show Overlays"));
     a->setIcon(QIcon::fromTheme("flag-black"));
 
-    mMapDragAction = new KToggleAction(QIcon::fromTheme("transform-move"), i18n("Move Points"), this);
+    mMapDragAction = new KToggleAction(QIcon::fromTheme("transform-move"), i18n("Move Mode"), this);
     ac->setDefaultShortcut(mMapDragAction, Qt::CTRL+Qt::Key_M);
     connect(mMapDragAction, SIGNAL(triggered()), SLOT(slotMapMovePoints()));
     ac->addAction("map_move_points", mMapDragAction);
@@ -805,6 +805,7 @@ case TrackData::Track:
         propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
+        selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
 
@@ -812,6 +813,7 @@ case TrackData::Route:
         propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
+        selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
 
@@ -821,7 +823,7 @@ case TrackData::Segment:
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Segment...");
-        selectedContainer = filesController()->view()->selectedItem();
+        //selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
 
@@ -847,9 +849,9 @@ case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
+        selectedContainer = filesController()->view()->selectedItem();
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Folder...");
-        selectedContainer = filesController()->view()->selectedItem();
         break;
 
 case TrackData::Waypoint:
@@ -1028,7 +1030,9 @@ void MainWindow::slotPreferences()
 
 void MainWindow::slotMapMovePoints()
 {
-    mapController()->view()->setMovePointsMode(mMapDragAction->isChecked());
+    const bool on = mMapDragAction->isChecked();
+    mapController()->view()->setMovePointsMode(on);
+    filesController()->view()->setMovePointsMode(on);
 }
 
 
