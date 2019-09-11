@@ -268,6 +268,9 @@ void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardMod
 //									//
 //////////////////////////////////////////////////////////////////////////
 
+static const QString itemMimeType = QStringLiteral("application/x-navtracks-internal");
+
+
 Qt::ItemFlags FilesModel::flags(const QModelIndex &idx) const
 {
     Qt::ItemFlags f = QAbstractItemModel::flags(idx);
@@ -288,15 +291,9 @@ Qt::DropActions FilesModel::supportedDropActions() const
 }
 
 
-static QString itemMimeType()
-{
-    return ("application/x-navtracks-internal");
-}
-
-
 QStringList FilesModel::mimeTypes() const
 {
-    return (QStringList() << itemMimeType());
+    return (QStringList() << itemMimeType);
 }
 
 
@@ -320,7 +317,7 @@ QMimeData *FilesModel::mimeData(const QModelIndexList &idxs) const
 
     //qDebug() << "encoded size" << encoded.size() << "=" << encoded;
     QMimeData *data = new QMimeData;
-    data->setData(mimeTypes().first(), encoded);
+    data->setData(itemMimeType, encoded);
     return (data);
 }
 
@@ -348,8 +345,8 @@ static QList<TrackDataItem *> decodeItemData(const QMimeData *data)
 {
     QList<TrackDataItem *> list;
 
-    const QByteArray encoded = data->data(itemMimeType());
-    qDebug() << "decoding" << encoded;
+    const QByteArray encoded = data->data(itemMimeType);
+    //qDebug() << "decoding" << encoded;
     const QList<QByteArray> ptrs = encoded.split(',');
 
     for (const QByteArray &b : qAsConst(ptrs))
@@ -357,7 +354,7 @@ static QList<TrackDataItem *> decodeItemData(const QMimeData *data)
         if (b.isEmpty()) continue;
         qulonglong ptrval = b.toULongLong(nullptr, 16);
         TrackDataItem *item = reinterpret_cast<TrackDataItem *>(ptrval);
-        qDebug() << "  ->" << item->name();
+        //qDebug() << "  ->" << item->name();
         list.append(item);
     }
 
@@ -369,27 +366,86 @@ static QList<TrackDataItem *> decodeItemData(const QMimeData *data)
 bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row, const QModelIndex &pnt)
 {
     // Drops are not accepted over an item, only between them.
-    if (row==-1) return (false);
+    //if (row==-1) return (false);
 
     qDebug() << "doit" << doit << "row" << row << "pnt" << pnt;
 
     // Get the parent item of the drop location.
     TrackDataItem *ontoParent = itemForIndex(pnt);
     if (ontoParent==nullptr) return (false);
-
     qDebug() << "  onto parent" << ontoParent->name();
+
+    // To avoid confusion as to where the drop will end up, if the drop is
+    // over an item then it must be an empty container.  The checks below
+    // will ensure that the container is of the appropriate type.
+    //
+    // It is necessary to enable the drop by doing this test, instead of simply
+    // checking that 'row' is not -1 as before, because Qt will not otherwise
+    // allow a drop into an item with no children.
+    if (row==-1)
+    {
+        if (ontoParent->childCount()>0) return (false);
+    }
 
     // Get the first drag source item.  The GUI will ensure that move mode
     // cannot be entered unless the selection is consistent;  that is, any
     // additionally selected items will have the same parent.
     QList<TrackDataItem *> sourceItems = decodeItemData(data);
     if (sourceItems.isEmpty()) return (false);
-
-    // TEMP TODO: Ensure that the source item is being dropped
-    // within the same parent container.
     const TrackDataItem *sourceItem = sourceItems.first();
     qDebug() << "  src item" << sourceItem->name();
-    if (sourceItem->parent()!=ontoParent) return (false);
+
+    // See what sort of item is being dragged, and then whether it
+    // is allowed to be dropped at the destination location.
+    const bool toTopLevel = (dynamic_cast<const TrackDataFile *>(ontoParent)!=nullptr);
+    const bool toFolder = (dynamic_cast<const TrackDataFolder *>(ontoParent)!=nullptr);
+
+    // A folder can only be dropped at the top level or inside another folder.
+    if (dynamic_cast<const TrackDataFolder *>(sourceItem)!=nullptr)
+    {
+        if (!toTopLevel && !toFolder) return (false);
+    }
+
+    // A track or route can only be dropped at the top level.
+    else if (dynamic_cast<const TrackDataTrack *>(sourceItem)!=nullptr ||
+             dynamic_cast<const TrackDataRoute *>(sourceItem)!=nullptr)
+    {
+        if (!toTopLevel) return (false);
+    }
+
+    // A segment is not allowed to be dragged.  This should be enforced by the
+    // "Move Mode" action not being enabled in MainWindow::slotUpdateActionState().
+    else if (dynamic_cast<const TrackDataSegment *>(sourceItem)!=nullptr)
+    {
+        return (false);
+    }
+
+    // A track point is not allowed to be dragged.  But unlike a segment as
+    // above, "Move Mode" is allowed for track points so that they can be
+    // moved on the map.
+    //
+    // The reason for not allowing segments or track points to be moved around,
+    // which would reorder them in time, is that the data analysis operations
+    // (Profile, Stop Detect etc) assume that track points will always be
+    // in time order within the file.  Allowing tracks to be moved around
+    // breaks this, but it is unusual to want to perform those operations
+    // over multiple tracks and so it is allowed for presentation purposes.
+    else if (dynamic_cast<const TrackDataTrackpoint *>(sourceItem)!=nullptr)
+    {
+        return (false);
+    }
+
+    // A waypoint can only be dropped into a folder.
+    else if (dynamic_cast<const TrackDataWaypoint *>(sourceItem)!=nullptr)
+    {
+        if (!toFolder) return (false);
+    }
+
+    // A route point can only be dropped into a route.
+    else if (dynamic_cast<const TrackDataRoutepoint *>(sourceItem)!=nullptr)
+    {
+        if (dynamic_cast<const TrackDataRoute *>(ontoParent)==nullptr) return (false);
+    }
 
     // If the drag and drop is within the same parent container, check that
     // an item is not being dropped onto itself.
@@ -399,9 +455,9 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
         // is confusing, and would be a no-op anyway unless the selection is
         // not contiguous.  It is not allowed, even in this unusual case,
         // to avoid a pointless no-op in the undo history.
-        for (const TrackDataItem *sourceItem : qAsConst(sourceItems))
+        for (const TrackDataItem *item : qAsConst(sourceItems))
         {
-            const int sourceRow = ontoParent->childIndex(sourceItem);
+            const int sourceRow = ontoParent->childIndex(item);
             if (row==sourceRow || row==(sourceRow+1)) return (false);
         }
     }

@@ -781,6 +781,7 @@ case TrackData::Track:
         propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
+        selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
 
@@ -798,7 +799,7 @@ case TrackData::Segment:
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Segment...");
-        selectedContainer = filesController()->view()->selectedItem();
+        //selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
         break;
 
@@ -824,6 +825,7 @@ case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
+        selectedContainer = filesController()->view()->selectedItem();
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Folder...");
         break;
