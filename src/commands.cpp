@@ -288,6 +288,8 @@ void ChangeItemDataCommand::undo()
 //  therefore just keep a pointer.  The new segment is created when	//
 //  required and needs to be stored in a container.			//
 //									//
+//  Despite the historical naming, this works on routes also.		//
+//									//
 //////////////////////////////////////////////////////////////////////////
 
 SplitSegmentCommand::SplitSegmentCommand(FilesController *fc, QUndoCommand *parent)
@@ -305,7 +307,7 @@ SplitSegmentCommand::~SplitSegmentCommand()
 }
 
 
-void SplitSegmentCommand::setData(TrackDataSegment *pnt, int idx)
+void SplitSegmentCommand::setData(TrackDataItem *pnt, int idx)
 {
     mParentSegment = pnt;
     mSplitIndex = idx;
@@ -329,28 +331,40 @@ void SplitSegmentCommand::redo()
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    TrackDataTrackpoint *splitPoint = dynamic_cast<TrackDataTrackpoint *>(mParentSegment->childAt(mSplitIndex));
+    TrackDataAbstractPoint *splitPoint = dynamic_cast<TrackDataAbstractPoint *>(mParentSegment->childAt(mSplitIndex));
     Q_ASSERT(splitPoint!=nullptr);
 
     if (mNewSegmentContainer==nullptr)
     {
         mNewSegmentContainer = new ItemContainer;
 
-        TrackDataSegment *copySegment = new TrackDataSegment;
+        TrackDataItem *copySegment;
+        TrackDataAbstractPoint *copyPoint;
+
+        if (dynamic_cast<TrackDataTrackpoint *>(splitPoint)!=nullptr)
+        {
+            copySegment = new TrackDataSegment;
+            copyPoint = new TrackDataTrackpoint;
+        }
+        else if (dynamic_cast<TrackDataRoutepoint *>(splitPoint)!=nullptr)
+        {
+            copySegment = new TrackDataRoute;
+            copyPoint = new TrackDataRoutepoint;
+        }
+        else Q_ASSERT(false);
+
         copySegment->setName(makeSplitName(mParentSegment->name()), false);
         copySegment->copyMetadata(mParentSegment);
         mNewSegmentContainer->addChildItem(copySegment);
 
-        TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
         copyPoint->setName(makeSplitName(splitPoint->name()), false);
         copyPoint->setLatLong(splitPoint->latitude(), splitPoint->longitude());
         copyPoint->copyMetadata(splitPoint);
-        // TODO: copy style
         copySegment->addChildItem(copyPoint);
     }
 
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
-    TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(mNewSegmentContainer->takeFirstChildItem());
+    TrackDataItem *newSegment = mNewSegmentContainer->takeFirstChildItem();
     Q_ASSERT(newSegment!=nullptr);
 
     int takeFrom = mSplitIndex+1;
@@ -391,7 +405,7 @@ void SplitSegmentCommand::undo()
     TrackDataItem *parentItem = mParentSegment->parent();
     Q_ASSERT(parentItem!=nullptr);
     const int parentIndex = parentItem->childIndex(mParentSegment);
-    TrackDataSegment *newSegment = static_cast<TrackDataSegment *>(parentItem->childAt(parentIndex+1));
+    TrackDataItem *newSegment = parentItem->childAt(parentIndex+1);
 
     const int startIndex = 1;				// all apart from first point
     qDebug() << "from" << newSegment->name() << "count" << newSegment->childCount()
@@ -429,6 +443,8 @@ void SplitSegmentCommand::undo()
 //  The GUI enforces that the master and all the source segments must	//
 //  have the same parent, but this is not mandated here.		//
 //									//
+//  Again, despite the historical naming, this works on routes also.	//
+//									//
 //////////////////////////////////////////////////////////////////////////
 
 MergeSegmentsCommand::MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent)
@@ -445,7 +461,7 @@ MergeSegmentsCommand::~MergeSegmentsCommand()
 }
 
 
-void MergeSegmentsCommand::setData(TrackDataSegment *master, const QList<TrackDataItem *> &others)
+void MergeSegmentsCommand::setData(TrackDataItem *master, const QList<TrackDataItem *> &others)
 {
     mMasterSegment = master;
     mSourceSegments = others;

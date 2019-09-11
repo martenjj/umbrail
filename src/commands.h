@@ -148,13 +148,13 @@ public:
     SplitSegmentCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~SplitSegmentCommand();
 
-    void setData(TrackDataSegment *pnt, int idx);
+    void setData(TrackDataItem *pnt, int idx);
 
     void redo() override;
     void undo() override;
 
 private:
-    TrackDataSegment *mParentSegment;
+    TrackDataItem *mParentSegment;
     int mSplitIndex;
     ItemContainer *mNewSegmentContainer;
 };
@@ -167,13 +167,13 @@ public:
     MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~MergeSegmentsCommand();
 
-    void setData(TrackDataSegment *master, const QList<TrackDataItem *> &others);
+    void setData(TrackDataItem *master, const QList<TrackDataItem *> &others);
 
     void redo() override;
     void undo() override;
 
 private:
-    TrackDataSegment *mMasterSegment;
+    TrackDataItem *mMasterSegment;
     QList<TrackDataItem *> mSourceSegments;
     QVector<TrackDataItem *> mSourceParents;
     QVector<int> mSourceCounts;

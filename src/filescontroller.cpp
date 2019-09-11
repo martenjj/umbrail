@@ -853,7 +853,7 @@ void FilesController::slotSplitSegment()
     if (items.count()!=1) return;
     const TrackDataItem *item = items.first();
 
-    TrackDataSegment *pnt = dynamic_cast<TrackDataSegment *>(item->parent());
+    TrackDataItem *pnt = item->parent();
     if (pnt==nullptr) return;
     qDebug() << "split" << pnt->name() << "at" << item->name();
 
@@ -861,7 +861,7 @@ void FilesController::slotSplitSegment()
     if (idx==0 || idx>=(pnt->childCount()-1))
     {
         KMessageBox::sorry(mainWindow(),
-                           xi18nc("@info", "Cannot split the segment here<nl/>(at its start or end point)"),
+                           xi18nc("@info", "Cannot split the segment or route here<nl/>(at its start or end point)"),
                            i18n("Cannot split segment"));
         return;
     }
@@ -895,32 +895,39 @@ void FilesController::slotMergeSegments()
     // of the segment points.  In other words, the master segment will be the
     // one with the earliest start time and each segment merged into it in turn
     // must have a start time after the current end of the master.
+    //
+    // Routes and route points do not have associated times.  In this case,
+    // they are simply merged in file order.
 
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()<2) return;
-    std::sort(items.begin(), items.end(), &compareSegmentTimes);
 
-    qDebug() << "sorted segments:";
-    QDateTime prevEnd;
-    for (int i = 0; i<items.count(); ++i)
-    {
-        const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
-        const TrackDataTrackpoint *pnt1 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(0));
-        const TrackDataTrackpoint *pnt2 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(tds->childCount()-1));
-        qDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
+    if (dynamic_cast<const TrackDataSegment *>(items.first())!=nullptr)
+    {							// operating on segments
+        std::sort(items.begin(), items.end(), &compareSegmentTimes);
 
-        if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
-        {						// all apart from first
-            KMessageBox::sorry(mainWindow(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
-                                                  tds->name(), items[i-1]->name()),
-                               i18n("Cannot merge segments"));
-            return;
+        qDebug() << "sorted segments:";
+        QDateTime prevEnd;
+        for (int i = 0; i<items.count(); ++i)
+        {
+            const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
+            const TrackDataTrackpoint *pnt1 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(0));
+            const TrackDataTrackpoint *pnt2 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(tds->childCount()-1));
+            qDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
+
+            if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
+            {						// all apart from first
+                KMessageBox::sorry(mainWindow(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
+                                                        tds->name(), items[i-1]->name()),
+                                   i18n("Cannot merge segments"));
+                return;
+            }
+
+            prevEnd = pnt2->time();				// note end for next time
         }
-
-        prevEnd = pnt2->time();				// note end for next time
     }
 
-    TrackDataSegment *masterSeg = dynamic_cast<TrackDataSegment *>(items.takeFirst());
+    TrackDataItem *masterSeg = items.takeFirst();
 
     MergeSegmentsCommand *cmd = new MergeSegmentsCommand(this);
     cmd->setSenderText(sender());

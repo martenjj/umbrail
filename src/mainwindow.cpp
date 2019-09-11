@@ -790,6 +790,10 @@ void MainWindow::slotUpdateActionState()
     QString playText = i18nc("@action:inmenu", "View Media");
     bool statusEnabled = false;
     int statusValue = TrackData::StatusInvalid;
+    bool splitEnabled = false;
+    QString splitText =  i18nc("@action:inmenu", "Split");
+    bool mergeEnabled = false;
+    QString mergeText =  i18nc("@action:inmenu", "Merge");
 
     const TrackDataItem *selectedContainer = nullptr;
     switch (selType)
@@ -815,6 +819,8 @@ case TrackData::Route:
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
         selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
+        mergeEnabled = (selCount>1);
+        mergeText = i18nc("@action:inmenu", "Merge Routes");
         break;
 
 case TrackData::Segment:
@@ -823,8 +829,9 @@ case TrackData::Segment:
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Segment...");
-        //selectedContainer = filesController()->view()->selectedItem();
         profileEnabled = true;
+        mergeEnabled = (selCount>1);
+        mergeText = i18nc("@action:inmenu", "Merge Segments");
         break;
 
 case TrackData::Point:
@@ -834,6 +841,8 @@ case TrackData::Point:
         selectedContainer = filesController()->view()->selectedItem()->parent();
         profileEnabled = (selCount>1);
         copyEnabled = true;
+        splitEnabled = (selCount==1);
+        splitText = i18nc("@action:inmenu", "Split Segment");
         break;
 
 case TrackData::Routepoint:
@@ -843,6 +852,8 @@ case TrackData::Routepoint:
         selectedContainer = filesController()->view()->selectedItem()->parent();
         profileEnabled = (selCount>1);
         copyEnabled = true;
+        splitEnabled = (selCount==1);
+        splitText = i18nc("@action:inmenu", "Split Route");
         break;
 
 case TrackData::Folder:
@@ -920,10 +931,13 @@ default:
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mCopyAction->setEnabled(copyEnabled);
 
-    mSplitTrackAction->setEnabled(selCount==1 && selType==TrackData::Point);
+    mSplitTrackAction->setEnabled(splitEnabled);
+    if (splitEnabled) mSplitTrackAction->setText(splitText);
+    mMergeTrackAction->setEnabled(mergeEnabled);
+    if (mergeEnabled) mMergeTrackAction->setText(mergeText);
+
     mMoveItemAction->setEnabled(moveEnabled);
     mMoveItemAction->setText(moveText);
-    mMergeTrackAction->setEnabled(selCount>1 && selType==TrackData::Segment);
     mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
     mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
