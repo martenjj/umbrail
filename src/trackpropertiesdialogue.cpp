@@ -190,7 +190,10 @@ void TrackPropertiesDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) con
     // regardless of whether it says "Close" or "Cancel".  So we use
     // the flag to check what the button says, and only save state
     // if it is still "Close".
-    if (!mCloseButtonShown) return;			// button is actually "Cancel"
+    if (result()==QDialog::Rejected)			// "Close" or "Cancel" button
+    {
+        if (!mCloseButtonShown) return;			// button is currently "Cancel"
+    }
 
     grp.writeEntry(QString("Index%1").arg(mItemType), mTabWidget->currentIndex());
     DialogStateSaver::saveConfig(dialog, grp);
