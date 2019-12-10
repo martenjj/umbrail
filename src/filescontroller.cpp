@@ -68,6 +68,7 @@ FilesController::FilesController(QObject *pnt)
     qDebug();
 
     mDataModel = new FilesModel(this);
+    connect(mDataModel, &FilesModel::dataChanged, this, [=](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
 
 #ifdef SORTABLE_VIEW
     mProxyModel = new QSortFilterProxyModel(this);
@@ -683,7 +684,23 @@ case TrackData::Point:      if (selCount==1) msg = i18n("Selected point '%1'", n
                             else msg = i18np("Selected %1 point", "Selected %1 points", selCount);
                             break;
 
-case TrackData::Waypoint:   if (selCount==1) msg = i18n("Selected waypoint '%1'", name);
+case TrackData::Waypoint:   if (selCount==1)
+                            {
+                                QString wptStatus;
+                                // TODO: common with TrackWaypointGeneralPage::addStatusField()
+                                switch (static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()))
+                                {
+case TrackData::StatusNone:						break;
+case TrackData::StatusTodo:         wptStatus = i18n("To Do");		break;
+case TrackData::StatusDone:         wptStatus = i18n("Done");		break;
+case TrackData::StatusQuestion:     wptStatus =  i18n("Uncertain");	break;
+case TrackData::StatusUnwanted:     wptStatus = i18n("Unwanted");	break;
+case TrackData::StatusInvalid:      wptStatus = i18n("Invalid");	break;
+                                }
+
+                                if (!wptStatus.isEmpty()) msg = i18n("Selected waypoint '%1' (%2)", name, wptStatus);
+                                else msg = i18n("Selected waypoint '%1'", name);
+                            }
                             else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", selCount);
                             break;
 
