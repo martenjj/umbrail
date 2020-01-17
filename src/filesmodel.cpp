@@ -156,38 +156,37 @@ case Qt::ToolTipRole:
         {
 case COL_NAME:
             {
-                const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                if (tdf!=nullptr) return (i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString()));
-            }
-            {
-                const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(tdi);
-                if (tdt!=nullptr) return (i18np("Track with %1 segment", "Track with %1 segments", tdt->childCount()));
-            }
-            {
-                const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(tdi);
-                if (tds!=nullptr) return (i18np("Segment with %1 point", "Segment with %1 points", tds->childCount()));
-            }
-            {
-                const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(tdi);
-                if (tdp!=nullptr) return (i18n("Point at %1, elevation %2",
-                                            tdp->formattedTime(true), tdp->formattedElevation()));
-            }
-            {
-                const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(tdi);
-                if (tdf!=nullptr) return (i18np("Folder with %1 item", "Folder with %1 items", tdf->childCount()));
-            }
-            {
-                const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi);
-                if (tdw!=nullptr) return (i18n("Waypoint at %1, elevation %2",
-                                               tdw->formattedTime(true), tdw->formattedElevation()));
-            }
-            {
-                const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(tdi);
-                if (tdr!=nullptr) return (i18np("Route with %1 point", "Route with %1 points", tdr->childCount()));
-            }
-            {
-                const TrackDataRoutepoint *tdp = dynamic_cast<const TrackDataRoutepoint *>(tdi);
-                if (tdp!=nullptr) return (i18n("Routepoint, elevation %1", tdp->formattedElevation()));
+                QString tip;
+
+                if (dynamic_cast<const TrackDataFolder *>(tdi)!=nullptr) tip = i18np("Folder with %1 item", "Folder with %1 items", tdi->childCount());
+                else if (dynamic_cast<const TrackDataTrack *>(tdi)!=nullptr) tip = i18np("Track with %1 segment", "Track with %1 segments", tdi->childCount());
+                else if (dynamic_cast<const TrackDataSegment *>(tdi)!=nullptr) tip = i18np("Segment with %1 point", "Segment with %1 points", tdi->childCount());
+                else if (dynamic_cast<const TrackDataRoute *>(tdi)!=nullptr) tip = i18np("Route with %1 point", "Route with %1 points", tdi->childCount());
+                else
+                {
+                    const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
+                    if (tdf!=nullptr) tip = i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString());
+                    else
+                    {
+                        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(tdi);
+                        if (dynamic_cast<const TrackDataTrackpoint *>(tdp)!=nullptr) tip = i18n("Point at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
+                        else if (dynamic_cast<const TrackDataWaypoint *>(tdp)!=nullptr) tip = i18n("Waypoint at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
+                        else if (dynamic_cast<const TrackDataRoutepoint *>(tdp)!=nullptr) tip = i18n("Routepoint, elevation %1", tdp->formattedElevation());
+                    }
+                }
+
+                if (!tip.isEmpty())
+                {
+                    QString desc = tdi->metadata("desc").toString();
+                    if (!desc.isEmpty())
+                    {
+                        desc.replace('\n', ";&nbsp;");
+                        tip = i18n("<div style=\"white-space:nowrap\">%1</div><div>\"%2\"</div>", tip, desc);
+                    }
+
+                    return (tip);
+                }
+
             }
             break;
         }
