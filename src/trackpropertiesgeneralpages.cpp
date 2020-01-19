@@ -434,6 +434,9 @@ default:    break;
 
         if (actionButton!=nullptr)			// action button is present
         {
+            // Synchronise with shortcut for "track_play_media" in MainWindow::setupActions()
+            actionButton->setShortcut(Qt::CTRL+Qt::Key_P);
+
             hb->setFocusProxy(actionButton);
             hb->setFocusPolicy(Qt::StrongFocus);
             hlay->addWidget(actionButton);
