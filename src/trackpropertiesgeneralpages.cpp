@@ -65,7 +65,7 @@ void TrackItemGeneralPage::refreshData()
     mNameEdit->setText(dataModel()->data("name").toString());
     if (mTypeCombo!=nullptr) mTypeCombo->setType(dataModel()->data("type").toString());
 
-    if (mDescEdit!=nullptr)
+    if (mDescEdit!=nullptr && mDescEdit->isEnabled())
     {
         QString desc = dataModel()->data("desc").toString();
         if (!desc.isEmpty() && !desc.endsWith('\n')) desc += '\n';
