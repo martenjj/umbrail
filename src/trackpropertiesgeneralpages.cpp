@@ -174,6 +174,11 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
     }
     else mDescEdit->setEnabled(false);
 
+    // This is necessary in order that the other data fields (e.g. time or time span)
+    // do not get stretched vertically, which puts the labels out of line with
+    // their corresponding data fields.
+    mDescEdit->setSizePolicy(mDescEdit->sizePolicy().horizontalPolicy(), QSizePolicy::Minimum);
+
     mFormLayout->addRow(i18nc("@label:listbox", "Description:"), mDescEdit);
 }
 
