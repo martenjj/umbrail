@@ -164,7 +164,7 @@ namespace TrackData
         StatusTodo,
         StatusDone,
         StatusQuestion,
-        StatusUnwanted
+        StatusUnwanted,
     };
 
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);
@@ -174,6 +174,7 @@ namespace TrackData
     QString formattedLatLong(double lat, double lon, bool blankIfUnknown = false);
     QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const QTimeZone *tz = nullptr);
+    QString formattedWaypointStatus(TrackData::WaypointStatus status, bool blankForNone = false);
 
     /**
      * Find a folder by name or path.

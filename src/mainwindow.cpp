@@ -287,23 +287,23 @@ void MainWindow::setupActions()
     mWaypointStatusAction->setToolBarMode(KSelectAction::MenuMode);
     ac->addAction("waypoint_status", mWaypointStatusAction);
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("unknown"), i18n("(None)"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("unknown"), TrackData::formattedWaypointStatus(TrackData::StatusNone));
     a->setData(TrackData::StatusNone);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-ongoing"), i18n("To Do"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-ongoing"), TrackData::formattedWaypointStatus(TrackData::StatusTodo));
     a->setData(TrackData::StatusTodo);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-complete"), i18n("Done"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-complete"), TrackData::formattedWaypointStatus(TrackData::StatusDone));
     a->setData(TrackData::StatusDone);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-attempt"), i18n("Uncertain"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-attempt"), TrackData::formattedWaypointStatus(TrackData::StatusQuestion));
     a->setData(TrackData::StatusQuestion);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 
-    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-reject"), i18n("Unwanted"));
+    a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-reject"), TrackData::formattedWaypointStatus(TrackData::StatusUnwanted));
     a->setData(TrackData::StatusUnwanted);
     connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
 

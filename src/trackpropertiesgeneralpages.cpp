@@ -476,11 +476,11 @@ void TrackWaypointGeneralPage::addStatusField(const QList<TrackDataItem *> *item
     mStatusCombo = new QComboBox(this);
     mStatusCombo->setSizePolicy(QSizePolicy::Expanding, mStatusCombo->sizePolicy().verticalPolicy());
 
-    mStatusCombo->addItem(QIcon::fromTheme("unknown"), i18n("(None)"), TrackData::StatusNone);
-    mStatusCombo->addItem(QIcon::fromTheme("task-ongoing"), i18n("To Do"), TrackData::StatusTodo);
-    mStatusCombo->addItem(QIcon::fromTheme("task-complete"), i18n("Done"), TrackData::StatusDone);
-    mStatusCombo->addItem(QIcon::fromTheme("dialog-warning"), i18n("Uncertain"), TrackData::StatusQuestion);
-    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), i18n("Unwanted"), TrackData::StatusUnwanted);
+    mStatusCombo->addItem(QIcon::fromTheme("unknown"), TrackData::formattedWaypointStatus(TrackData::StatusNone), TrackData::StatusNone);
+    mStatusCombo->addItem(QIcon::fromTheme("task-ongoing"), TrackData::formattedWaypointStatus(TrackData::StatusTodo), TrackData::StatusTodo);
+    mStatusCombo->addItem(QIcon::fromTheme("task-complete"), TrackData::formattedWaypointStatus(TrackData::StatusDone), TrackData::StatusDone);
+    mStatusCombo->addItem(QIcon::fromTheme("task-attempt"), TrackData::formattedWaypointStatus(TrackData::StatusQuestion), TrackData::StatusQuestion);
+    mStatusCombo->addItem(QIcon::fromTheme("task-reject"), TrackData::formattedWaypointStatus(TrackData::StatusUnwanted), TrackData::StatusUnwanted);
 
     if (items->count()>1)
     {

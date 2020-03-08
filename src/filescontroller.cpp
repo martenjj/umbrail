@@ -686,18 +686,8 @@ case TrackData::Point:      if (selCount==1) msg = i18n("Selected point '%1'", n
 
 case TrackData::Waypoint:   if (selCount==1)
                             {
-                                QString wptStatus;
-                                // TODO: common with TrackWaypointGeneralPage::addStatusField()
-                                switch (static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()))
-                                {
-case TrackData::StatusNone:						break;
-case TrackData::StatusTodo:         wptStatus = i18n("To Do");		break;
-case TrackData::StatusDone:         wptStatus = i18n("Done");		break;
-case TrackData::StatusQuestion:     wptStatus =  i18n("Uncertain");	break;
-case TrackData::StatusUnwanted:     wptStatus = i18n("Unwanted");	break;
-case TrackData::StatusInvalid:      wptStatus = i18n("Invalid");	break;
-                                }
-
+                                const QString wptStatus = TrackData::formattedWaypointStatus(
+                                    static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
                                 if (!wptStatus.isEmpty()) msg = i18n("Selected waypoint '%1' (%2)", name, wptStatus);
                                 else msg = i18n("Selected waypoint '%1'", name);
                             }

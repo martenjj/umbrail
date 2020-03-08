@@ -250,6 +250,21 @@ TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDat
     return (const_cast<TrackDataFolder *>(dynamic_cast<const TrackDataFolder *>(item)));
 }
 
+
+QString TrackData::formattedWaypointStatus(TrackData::WaypointStatus status, bool blankForNone)
+{
+    switch (status)
+    {
+case TrackData::StatusNone:		return (blankForNone ? QString() : i18n("(None)"));
+case TrackData::StatusTodo:		return (i18n("To Do"));
+case TrackData::StatusDone:		return (i18n("Done"));
+case TrackData::StatusQuestion:		return (i18n("Uncertain"));
+case TrackData::StatusUnwanted:		return (i18n("Unwanted"));
+case TrackData::StatusInvalid:		return (i18n("(Invalid)"));
+default:				return (i18n("(Unknown %1)", status));
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataItem							//

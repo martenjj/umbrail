@@ -170,7 +170,13 @@ case COL_NAME:
                     {
                         const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(tdi);
                         if (dynamic_cast<const TrackDataTrackpoint *>(tdp)!=nullptr) tip = i18n("Point at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                        else if (dynamic_cast<const TrackDataWaypoint *>(tdp)!=nullptr) tip = i18n("Waypoint at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
+                        else if (dynamic_cast<const TrackDataWaypoint *>(tdp)!=nullptr)
+                        {
+                            const QString wptStatus = TrackData::formattedWaypointStatus(
+                                static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
+                            if (!wptStatus.isEmpty()) tip = i18n("Waypoint at %1, elevation %2 (%3)", tdp->formattedTime(true), tdp->formattedElevation(), wptStatus);
+                            else tip = i18n("Waypoint at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
+                        }
                         else if (dynamic_cast<const TrackDataRoutepoint *>(tdp)!=nullptr) tip = i18n("Routepoint, elevation %1", tdp->formattedElevation());
                     }
                 }
