@@ -15,9 +15,10 @@ class FolderSelectWidget : public QFrame, public MainWindowInterface
 
 public:
     explicit FolderSelectWidget(QWidget *pnt = nullptr);
-    virtual ~FolderSelectWidget()			{}
+    virtual ~FolderSelectWidget() = default;
 
     QString folderPath() const;
+    void setFolderPath(const QString &path, bool asDefault);
 
 signals:
     void folderChanged(const QString &path);
@@ -27,6 +28,7 @@ protected slots:
 
 private:
     QLineEdit *mDestFolder;
+    QString mDefaultFolder;
 };
 
 #endif							// FOLDERSELECTWIDGET_H

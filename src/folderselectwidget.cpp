@@ -27,6 +27,7 @@ FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
     hb->addWidget(mDestFolder);
 
     QPushButton *reqButton = new QPushButton(QIcon::fromTheme("folder"), "", this);
+    reqButton->setToolTip(i18n("Select or create a folder"));
     connect(reqButton, SIGNAL(clicked(bool)), SLOT(slotSelectFolder()));
     hb->addWidget(reqButton);
 
@@ -50,5 +51,21 @@ void FolderSelectWidget::slotSelectFolder()
 
 QString FolderSelectWidget::folderPath() const
 {
-    return (mDestFolder->text());
+    const QString entry = mDestFolder->text();
+    return (!entry.isEmpty() ? entry : mDefaultFolder);
+}
+
+
+void FolderSelectWidget::setFolderPath(const QString &path, bool asDefault)
+{
+    if (asDefault)
+    {
+        mDefaultFolder = path;				// remember if no entry made
+        mDestFolder->clear();
+        mDestFolder->setPlaceholderText(path);
+    }
+    else
+    {
+        mDestFolder->setText(path);
+    }
 }

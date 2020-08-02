@@ -101,6 +101,11 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     fl->addRow(new QLabel("", this));
 
     mFolderSelect = new FolderSelectWidget(this);
+    mFolderSelect->setToolTip(i18n("The folder where the located stops will be saved"));
+    const QString folderName = i18nc("Name of the default folder for stops", "Stops");
+    const bool folderExists = (TrackData::findFolderByPath(folderName, filesController()->model()->rootFileItem())!=nullptr);
+							// either existing or placeholder
+    mFolderSelect->setFolderPath(folderName, !folderExists);
     connect(mFolderSelect, SIGNAL(folderChanged(const QString &)), SLOT(slotSetButtonStates()));
     fl->addRow(i18n("Destination folder:"), mFolderSelect);
 
@@ -130,13 +135,13 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     l->setBuddy(mResultsList);
 
     mShowOnMapButton = new QPushButton(QIcon::fromTheme("marble"), i18n("Show on Map"), w);
+    mShowOnMapButton->setToolTip(i18n("Show the selected stop point on the map"));
     connect(mShowOnMapButton, SIGNAL(clicked(bool)), SLOT(slotShowOnMap()));
     gl->addWidget(mShowOnMapButton, 2, 0, Qt::AlignRight);
 
     connect(this, SIGNAL(accepted()), SLOT(slotCommitResults()));
 
     hb->addLayout(gl);
-
     setMainWidget(w);
     stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
     setMinimumSize(460, 280);
@@ -421,9 +426,32 @@ void StopDetectDialogue::slotCommitResults()
     const QString folderPath = mFolderSelect->folderPath();
     Q_ASSERT(!folderPath.isEmpty());
 
-    // The destination folder must exist at this point
-    TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, filesController()->model()->rootFileItem());
-    Q_ASSERT(destFolder!=nullptr);
+    TrackDataItem *root = filesController()->model()->rootFileItem();
+    // The destination folder may not exist at this point,
+    // if the default entry has been accepted.
+    TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, root);
+    if (destFolder==nullptr)				// does not yet exist
+    {
+        AddContainerCommand *cmd1 = new AddContainerCommand(filesController());
+
+        // This assumes that the folder to be created is at the top level.
+        // It is safe to assume this, because the FolderSelectWidget line edit
+        // is read only so it is not possible to enter an arbitrary string.
+        // The folderPath will be either the default "Stops", or another which
+        // will have been selected via the FolderSelectDialogue (which must
+        // already exist or have been created).  So it is not possible to
+        // enter an arbitrary folder path which does not yet exist.
+        cmd1->setData(TrackData::Folder, root);
+        cmd1->setName(folderPath);
+        cmd1->setText(i18n("Create Stops Folder"));
+
+        // This will end up with two operations in the undo history,
+        // but unfortunately it is necessary because we need to
+        // specify the destination folder for adding the waypoints.
+        mainWindow()->executeCommand(cmd1);
+        destFolder = TrackData::findFolderByPath(folderPath, root);
+        Q_ASSERT(destFolder!=nullptr);			// should now have been created
+    }
 
     // Create the waypoints
     for (int i = 0; i<mResultsList->count(); ++i)
