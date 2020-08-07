@@ -16,6 +16,7 @@
 
 #include <klocalizedstring.h>
 #include <kseparator.h>
+#include <kmessagebox.h>
 
 #include <dialogstatewatcher.h>
 
@@ -36,6 +37,10 @@
 
 static const int minInputPoints = 10;			// minimum points for detection
 static const int minStopPoints = 3;			// minimum points for valid stop
+
+static const int mergeMaxDistance = 200;		// ask about merge this distance (metres)
+static const int mergeMaxTime = 3*60;			// ask about merge this time gap (seconds)
+
 
 // TODO: debugging switches
 
@@ -63,6 +68,14 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Commit"));
 
     filesController()->view()->selectedPoints().swap(mInputPoints);
+
+    mTimeZone = QTimeZone::utc();			// a sensible default
+    QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone").toString();
+    if (!zoneName.isEmpty())				// resolve from file time zone
+    {
+        QTimeZone tz(zoneName.toLatin1());
+        if (tz.isValid()) mTimeZone = tz;
+    }
 
     mIdleTimer = new QTimer(this);
     mIdleTimer->setInterval(2000);
@@ -119,25 +132,31 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     QGridLayout *gl = new QGridLayout;
 
     l = new QLabel(i18n("Stops found:"), w);
-    gl->addWidget(l, 0, 0, Qt::AlignLeft);
+    gl->addWidget(l, 0, 0, 1, -1, Qt::AlignLeft);
 
     mResultsList = new QListWidget(w);
     mResultsList->setAlternatingRowColors(true);
     mResultsList->setSelectionBehavior(QAbstractItemView::SelectRows);
-    mResultsList->setSelectionMode(QAbstractItemView::SingleSelection);
+    mResultsList->setSelectionMode(QAbstractItemView::ContiguousSelection);
     mResultsList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mResultsList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     connect(mResultsList, SIGNAL(itemSelectionChanged()), SLOT(slotSetButtonStates()));
     connect(mResultsList, SIGNAL(itemChanged(QListWidgetItem *)), SLOT(slotSetButtonStates()));
 
-    gl->addWidget(mResultsList, 1, 0);
+    gl->addWidget(mResultsList, 1, 0, 1, -1);
     gl->setRowStretch(1, 1);
+    gl->setColumnStretch(1, 1);
     l->setBuddy(mResultsList);
 
     mShowOnMapButton = new QPushButton(QIcon::fromTheme("marble"), i18n("Show on Map"), w);
     mShowOnMapButton->setToolTip(i18n("Show the selected stop point on the map"));
     connect(mShowOnMapButton, SIGNAL(clicked(bool)), SLOT(slotShowOnMap()));
-    gl->addWidget(mShowOnMapButton, 2, 0, Qt::AlignRight);
+    gl->addWidget(mShowOnMapButton, 2, 2, Qt::AlignRight);
+
+    mMergeStopsButton = new QPushButton(QIcon::fromTheme("merge"), i18n("Merge Stops"), w);
+    mMergeStopsButton->setToolTip(i18n("Merge the selected stop points into one"));
+    connect(mMergeStopsButton, SIGNAL(clicked(bool)), SLOT(slotMergeStops()));
+    gl->addWidget(mMergeStopsButton, 2, 0, Qt::AlignLeft);
 
     connect(this, SIGNAL(accepted()), SLOT(slotCommitResults()));
 
@@ -169,7 +188,7 @@ void StopDetectDialogue::slotShowOnMap()
 {
     QList<QListWidgetItem *> items = mResultsList->selectedItems();
     if (items.count()!=1) return;
-    int idx = items.first()->data(Qt::UserRole).toInt();
+    const int idx = items.first()->data(Qt::UserRole).toInt();
 
     TrackDataWaypoint *tdw = const_cast<TrackDataWaypoint *>(mResultPoints[idx]);
 
@@ -185,6 +204,18 @@ static bool withinDistance(const TrackDataAbstractPoint *tdp, double lat, double
 {
     double distance = qAbs(Units::internalToLength(tdp->distanceTo(lat, lon), Units::LengthMetres));
     return (distance<=double(maxDist));			// convert to metres and check
+}
+
+
+static void setStopData(TrackDataWaypoint *tdw, const QDateTime &dt, int dur)
+{
+    QString text1 = dt.toString("hh:mm:ss");
+    QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));
+
+    tdw->setName(i18n("Stop at %1 for %2", text1, text2), true);
+    tdw->setMetadata(DataIndexer::self()->index("time"), dt);
+    tdw->setMetadata(DataIndexer::self()->index("duration"), QVariant(dur));
+    tdw->setMetadata(DataIndexer::self()->index("stop"), QString(text1+' '+text2));
 }
 
 
@@ -218,11 +249,6 @@ void StopDetectDialogue::slotDetectStops()
     }
 
 // may need sorting for time here
-
-    // Resolve the file time zone
-    QTimeZone tz;
-    QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone").toString();
-    if (!zoneName.isEmpty()) tz = QTimeZone(zoneName.toLatin1());
 
 // Detect stops 
 //
@@ -349,18 +375,11 @@ void StopDetectDialogue::slotDetectStops()
             {
                 qDebug() << "@@@@@@@@@@@ valid stop found";
 							// do time zone conversion
-                if (tz.isValid()) dt1 = dt1.toUTC().toTimeZone(tz);
-
-                QString text1 = dt1.toString("hh:mm:ss");
-                QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));
+                dt1 = dt1.toUTC().toTimeZone(mTimeZone);
 
                 TrackDataWaypoint *tdw = new TrackDataWaypoint;
-                tdw->setName(i18n("Stop at %1 for %2", text1, text2), true);
+                setStopData(tdw, dt1, dur);
                 tdw->setLatLong(runLat, runLon);	// want explicit name here
-
-                tdw->setMetadata(DataIndexer::self()->index("time"), dt1);
-                tdw->setMetadata(DataIndexer::self()->index("stop"), QString(text1+' '+text2));
-
                 mResultPoints.append(tdw);
 
                 startIndex = currentIndex;		// start search again after stop
@@ -372,16 +391,107 @@ void StopDetectDialogue::slotDetectStops()
         ++startIndex;					// start search again from next
     } // loop2
 
-    const int num = mResultPoints.count();
-    qDebug() << "###### found" << num << "stops";
+    updateResults();
+    unsetCursor();
 
-    QSignalBlocker block(mResultsList);			// block individual slotSetButtonStates()
-    while (mResultsList->count()>0)			// clear existing results
+    qDebug() << "done";
+}
+
+
+void StopDetectDialogue::slotMergeStops()
+{
+    QList<QListWidgetItem *> items = mResultsList->selectedItems();
+    const int num = items.count();
+    qDebug() << num << "points";
+    if (num<2) return;
+
+    const int idx1 = items.first()->data(Qt::UserRole).toInt();
+    const int idx2 = items.last()->data(Qt::UserRole).toInt();
+
+    TrackDataWaypoint *firstPoint = const_cast<TrackDataWaypoint *>(mResultPoints[idx1]);
+    qDebug() << "first point" << firstPoint->name();	// data for first point
+
+    double avgLat = firstPoint->latitude();
+    double avgLon = firstPoint->longitude();
+    qint64 startTime = firstPoint->metadata("time").toDateTime().toSecsSinceEpoch();
+    qint64 endTime = startTime+firstPoint->metadata("duration").toInt();
+
+    for (int i = idx1+1; i<=idx2; ++i)
+    {							// data for current point
+        const TrackDataWaypoint *thisPoint = mResultPoints[i];
+        qDebug() << "+ next point" << thisPoint->name();
+
+        double thisLat = thisPoint->latitude();
+        double thisLon = thisPoint->longitude();
+        qint64 thisStartTime = thisPoint->metadata("time").toDateTime().toSecsSinceEpoch();
+        qint64 thisEndTime = thisStartTime+thisPoint->metadata("duration").toInt();
+
+        // Check that the stops to be merged are not too far apart in distance.
+        if (!withinDistance(firstPoint, thisLat, thisLon, mergeMaxDistance))
+        {
+            if (KMessageBox::questionYesNo(this,
+                                           xi18nc("@info", "The stops <emphasis strong=\"1\">%1</emphasis> and <emphasis strong=\"1\">%2</emphasis><nl/> are %3&nbsp;metres apart.<nl/><nl/>Really merge the stops?",
+                                                  firstPoint->name(), thisPoint->name(),
+                                                  qRound(Units::internalToLength(firstPoint->distanceTo(thisPoint), Units::LengthMetres))),
+                                           i18n("Merge Distance"),
+                                           KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")),
+                                           KStandardGuiItem::cancel())!=KMessageBox::Yes) return;
+        }
+
+        // Check that there is not too long a gap between the stops to be merged.
+        if ((thisStartTime-endTime)>mergeMaxTime)
+        {
+            if (KMessageBox::questionYesNo(this,
+                                           xi18nc("@info", "The stops <emphasis strong=\"1\">%1</emphasis> and <emphasis strong=\"1\">%2</emphasis><nl/> are separated by %3&nbsp;seconds.<nl/><nl/>Really merge the stops?",
+                                                  firstPoint->name(), thisPoint->name(),
+                                                  thisStartTime-endTime),
+                                           i18n("Merge Time"),
+                                           KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")),
+                                           KStandardGuiItem::cancel())!=KMessageBox::Yes) return;
+        }
+
+        avgLat += thisLat;				// sum for averaging later
+        avgLon += thisLon;
+        endTime = thisEndTime;				// end time of this point
+    }
+
+    // Update the first point item with the results, and delete all the others.
+    // The start time of the merged point is the same as the start time of the
+    // original first point.
+    const int dur = endTime-startTime;
+    setStopData(firstPoint, firstPoint->metadata("time").toDateTime(), dur);
+    firstPoint->setLatLong((avgLat/num), (avgLon/num));
+
+    // Remove the other points that were merged into the first one.
+    for (int i = idx2; i>=idx1+1; --i)
+    {
+        const TrackDataWaypoint *tdw = mResultPoints.takeAt(i);
+        delete tdw;
+    }
+
+    updateResults();
+    // Select the merged point in the results list.
+    QListWidgetItem *resultItem = mResultsList->item(idx1);
+    mResultsList->setCurrentItem(resultItem);
+    mResultsList->scrollToItem(resultItem);
+}
+
+
+void StopDetectDialogue::updateResults()
+{
+    const int num = mResultPoints.count();
+    qDebug() << "have" << num << "stops";
+
+    mapController()->view()->setStopLayerData(nullptr);	// clear any existing stops overlay
+
+    QSignalBlocker block(mResultsList);			// block slotSetButtonStates() each time
+    while (mResultsList->count()>0)			// clear existing results items
     {
         QListWidgetItem *item = mResultsList->takeItem(0);
         delete item;
     }
-    for (int i = 0; i<num; ++i)				// generate new results
+
+    for (int i = 0; i<num; ++i)				// generate items for new results
     {
         const TrackDataWaypoint *tdw = mResultPoints[i];
 
@@ -392,12 +502,8 @@ void StopDetectDialogue::slotDetectStops()
         mResultsList->addItem(item);
     }
 
-    slotSetButtonStates();
-
+    slotSetButtonStates();				// now that all is finished
     mapController()->view()->setStopLayerData(&mResultPoints);
-    unsetCursor();
-
-    qDebug() << "done";
 }
 
 
@@ -413,6 +519,7 @@ void StopDetectDialogue::slotSetButtonStates()
 
     setButtonEnabled(QDialogButtonBox::Ok, numChecked>0 && !mFolderSelect->folderPath().isEmpty());
     mShowOnMapButton->setEnabled(mResultsList->selectedItems().count()==1);
+    mMergeStopsButton->setEnabled(mResultsList->selectedItems().count()>1);
 }
 
 

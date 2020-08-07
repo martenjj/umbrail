@@ -6,6 +6,8 @@
 #include <dialogbase.h>
 #include "mainwindowinterface.h"
 
+#include <qtimezone.h>
+
 
 class QTimer;
 class QListWidget;
@@ -33,6 +35,7 @@ protected:
 
 protected slots:
     void slotShowOnMap();
+    void slotMergeStops();
     void slotCommitResults();
 
 private slots:
@@ -40,14 +43,20 @@ private slots:
     void slotSetButtonStates();
 
 private:
+    void updateResults();
+
+private:
     QListWidget *mResultsList;
     ValueSlider *mTimeSlider;
     ValueSlider *mDistanceSlider;
     ValueSlider *mNoiseSlider;
     QPushButton *mShowOnMapButton;
+    QPushButton *mMergeStopsButton;
     FolderSelectWidget *mFolderSelect;
 
     QTimer *mIdleTimer;
+
+    QTimeZone mTimeZone;
 
     QVector<const TrackDataAbstractPoint *> mInputPoints;
     QList<const TrackDataWaypoint *> mResultPoints;
