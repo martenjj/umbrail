@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Sep-19						//
+//  Edit:	08-Aug-20						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,6 +32,7 @@
 #include <qstandardpaths.h>
 #include <qurl.h>
 #include <qdir.h>
+#include <qguiapplication.h>
 
 #include <kmessagebox.h>
 #include <klocalizedstring.h>
@@ -267,6 +268,8 @@ void ElevationManager::slotTileReady(ElevationTile *tile)
 
 void ElevationManager::loadTile(ElevationTile *tile, const QString &file)
 {
+    QGuiApplication::setOverrideCursor(Qt::BusyCursor);
+
     LoaderThread *thr = new LoaderThread(tile, file, this);
     connect(thr, &QThread::finished, this, &ElevationManager::slotLoaderThreadFinished);
     thr->start(QThread::LowPriority);
@@ -284,6 +287,8 @@ void ElevationManager::slotLoaderThreadFinished()
 
     if (tile->state()==ElevationTile::Loaded) emit tileReadyInternal(tile);
     thr->deleteLater();
+
+    QGuiApplication::restoreOverrideCursor();
 }
 
 
