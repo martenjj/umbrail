@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	08-Aug-20						//
+//  Edit:	01-Apr-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -210,7 +210,7 @@ void ElevationManager::slotDownloadResult(KJob *job)
     {
         // report error
         KMessageBox::error(nullptr,
-                           xi18nc("@info", "Error downloading tile <link>%1</link><nl/>to cache file <link>%2</link>%3",
+                           xi18nc("@info", "Error downloading tile <link>%1</link><nl/>to cache file <link>%2</link><nl/>%3",
                                   copyJob->srcUrl().toDisplayString(),
                                   copyJob->destUrl().toDisplayString(),
                                   copyJob->errorString()),
