@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	16-May-16						//
+//  Edit:	02-Apr-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -95,7 +95,7 @@ VideoViewer::VideoViewer(const QUrl &url, QWidget *pnt)
     setMinimumSize(400, 300);
     DialogStateSaver::restoreWindowState(this);
 
-    mPlayer->play(url.path());
+    mPlayer->play(url);
     mTickTimer->start();
 }
 

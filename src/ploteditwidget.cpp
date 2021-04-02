@@ -74,7 +74,7 @@ void PlotEditWidget::setPlotData(const QString &newData)
     qDeleteAll(mFields);				// remove all existing fields
     mFields.clear();
 
-    const QStringList items = newData.split(';', QString::SkipEmptyParts);
+    const QStringList items = newData.split(';', Qt::SkipEmptyParts);
     int row = 0;
     foreach (const QString &item, items)
     {							// get existing spin box

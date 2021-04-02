@@ -274,7 +274,7 @@ default:				return (i18n("(Unknown %1)", status));
 TrackDataItem::TrackDataItem(const char *format, int *counter)
 {
     init();
-    if (format!=nullptr) mName.sprintf(format, ++(*counter));
+    if (format!=nullptr) mName = QString::asprintf(format, ++(*counter));
 }
 
 

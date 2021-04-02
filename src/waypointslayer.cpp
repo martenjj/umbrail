@@ -112,7 +112,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         const QString brg = tdw->metadata("bearingline").toString();
         if (!brg.isEmpty())
         {
-            const QStringList brgs = brg.split(';', QString::SkipEmptyParts);
+            const QStringList brgs = brg.split(';', Qt::SkipEmptyParts);
             foreach (const QString &brgVal, brgs)
             {
                 GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brgVal.toDouble()),
@@ -133,7 +133,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         const QString rng = tdw->metadata("rangering").toString();
         if (!rng.isEmpty())
         {
-            const QStringList rngs = rng.split(';', QString::SkipEmptyParts);
+            const QStringList rngs = rng.split(';', Qt::SkipEmptyParts);
             foreach (const QString &rngVal, rngs)
             {
                 // To draw the range ring we convert all of the coordinates to screen

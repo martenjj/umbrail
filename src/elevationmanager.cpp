@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	01-Apr-21						//
+//  Edit:	02-Apr-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -253,7 +253,7 @@ void ElevationManager::slotNextFromQueue()
 
     // Save the tile pointer as a property of the job (which is a QVariant),
     // see http://blog.bigpixel.ro/2010/04/storing-pointer-in-qvariant
-    job->setProperty("tile", qVariantFromValue(static_cast<void *>(tile)));
+    job->setProperty("tile", QVariant::fromValue(static_cast<void *>(tile)));
     // start job
     job->start();
     ++mRunningJobs;

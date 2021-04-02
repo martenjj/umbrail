@@ -571,7 +571,7 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
         p += 3;
     }
 
-    connect(mLetterCombo, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
+    connect(mLetterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &OSGBCoordinateHandler::slotReferenceChanged);
     gl->addWidget(mLetterCombo, 0, 2);
     l->setBuddy(mLetterCombo);

@@ -219,7 +219,7 @@ bool ElevationTile::loadInternal(QFile &f)
 
         line.resize(len-1);				// remove terminators
 
-        QStringList fields = QString::fromLatin1(line).split(QRegExp("\\s+"), QString::SkipEmptyParts);
+        QStringList fields = QString::fromLatin1(line).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
 							// split into fields
         if (fields.size()==2)				// fields for a header
         {
