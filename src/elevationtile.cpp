@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Sep-19						//
+//  Edit:	02-Apr-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -163,8 +163,7 @@ QString ElevationTile::cacheFile() const
 
 QUrl ElevationTile::sourceUrl() const
 {
-    // see http://www.opentopography.org/developers
-    // section "RESTful Web service for global raster data access"
+    // see https://portal.opentopography.org/apidocs/#/Public/getGlobalDem
 
     QUrlQuery query("demtype=SRTMGL3");			// SRTM GL3 (90m)
 
@@ -175,7 +174,7 @@ QUrl ElevationTile::sourceUrl() const
 
     query.addQueryItem("outputFormat", DEM_FORMAT);
 
-    QUrl u("http://opentopo.sdsc.edu/otr/getdem", QUrl::StrictMode);
+    QUrl u("http://portal.opentopography.org/API/globaldem", QUrl::StrictMode);
     u.setQuery(query);
     return (u);
 }
