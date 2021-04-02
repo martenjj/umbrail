@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Sep-19						//
+//  Edit:	02-Apr-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -34,10 +34,11 @@
 #include <qfiledialog.h>
 
 #include <kmessagebox.h>
-#include <krun.h>
 #include <klocalizedstring.h>
 
 #include <kio/job.h>
+#include <kio/applicationlauncherjob.h>
+#include <kio/jobuidelegate.h>
 
 #ifdef HAVE_PHONON
 #include <Phonon/MediaObject>
@@ -143,9 +144,14 @@ void MediaPlayer::openMediaFile(const TrackDataWaypoint *item)
     QUrl file = findMediaFile(item, TrackData::WaypointAny);
     if (file.isEmpty()) return;
 
+    auto *job = new KIO::ApplicationLauncherJob(nullptr);
+    job->setUiDelegate(new KIO::JobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
+
     QList<QUrl> urls;
     urls << file;
-    KRun::displayOpenWithDialog(urls, nullptr);
+    job->setUrls(urls);
+
+    job->start();
 }
 
 
