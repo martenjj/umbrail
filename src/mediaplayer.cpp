@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Apr-21						//
+//  Edit:	03-Jun-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -45,8 +45,8 @@
 #include <Phonon/AudioOutput>
 #endif
 
-#include <dialogbase.h>
-#include <recentsaver.h>
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/recentsaver.h>
 
 #include "trackdata.h"
 #include "settings.h"

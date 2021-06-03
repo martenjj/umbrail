@@ -3,8 +3,8 @@
 #ifndef PROFILEWIDGET_H
 #define PROFILEWIDGET_H
  
-#include <dialogbase.h>
-#include <dialogstatesaver.h>
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
 
 #include <qvector.h>
 #include <qmap.h>

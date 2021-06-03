@@ -3,7 +3,7 @@
 #define WAYPOINTSELECTDIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 
 class QButtonGroup;

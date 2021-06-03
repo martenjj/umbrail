@@ -3,7 +3,7 @@
 #define STOPDETECTDIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 #include "mainwindowinterface.h"
 
 #include <qtimezone.h>

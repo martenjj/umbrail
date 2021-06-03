@@ -4,7 +4,7 @@
 #define LATLONGDIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 
 class LatLongWidget;

@@ -12,7 +12,7 @@
 #include <kconfiggroup.h>
 #include <kstandardguiitem.h>
 
-#include <dialogstatewatcher.h>
+#include <kfdialog/dialogstatewatcher.h>
 
 #include "trackdata.h"
 #include "metadatamodel.h"

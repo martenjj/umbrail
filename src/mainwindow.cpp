@@ -31,8 +31,8 @@
 #include <ksqueezedtextlabel.h>
 #include <kactionmenu.h>
 
-#include <recentsaver.h>
-#include <imagefilter.h>
+#include <kfdialog/recentsaver.h>
+#include <kfdialog/imagefilter.h>
 
 #include "filescontroller.h"
 #include "filesview.h"

@@ -3,7 +3,7 @@
 #ifndef STATISTICSWIDGET_H
 #define STATISTICSWIDGET_H
  
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 #include "mainwindowinterface.h"
 
 

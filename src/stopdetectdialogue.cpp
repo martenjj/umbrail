@@ -18,7 +18,7 @@
 #include <kseparator.h>
 #include <kmessagebox.h>
 
-#include <dialogstatewatcher.h>
+#include <kfdialog/dialogstatewatcher.h>
 
 #include "filescontroller.h"
 #include "filesview.h"

@@ -20,7 +20,7 @@
 #include <kiconloader.h>
 #include <kcolorscheme.h>
 
-#include <dialogstatewatcher.h>
+#include <kfdialog/dialogstatewatcher.h>
 
 #include "qcustomplot.h"
 #include "mainwindow.h"

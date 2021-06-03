@@ -10,8 +10,8 @@
 #include <marble/MarbleAboutDialog.h>
 #include <marble/GeoDataLatLonBox.h>
 
-#include <recentsaver.h>
-#include <imagefilter.h>
+#include <kfdialog/recentsaver.h>
+#include <kfdialog/imagefilter.h>
 
 #include "mapview.h"
 #include "trackdata.h"

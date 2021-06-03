@@ -17,8 +17,8 @@
 #include <kservice.h>
 #include <kmimetypetrader.h>
 
-#include <dialogbase.h>
-#include <dialogstatesaver.h>
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
 
 #include "settings.h"
 #include "filescontroller.h"

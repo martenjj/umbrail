@@ -3,7 +3,7 @@
 #define CREATEPOINTDIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 
 class QTreeView;

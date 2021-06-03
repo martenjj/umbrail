@@ -3,8 +3,8 @@
 #define TIMEZONEDIALOGUE_H
 
 
-#include <dialogbase.h>
-#include <dialogstatesaver.h>
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
 
 
 class TimeZoneWidget;

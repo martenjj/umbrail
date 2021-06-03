@@ -3,7 +3,7 @@
 #define MAPTHEMEDIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 
 class QListWidget;

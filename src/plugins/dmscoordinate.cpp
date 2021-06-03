@@ -12,7 +12,7 @@
 
 #include <klocalizedstring.h>
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 #include "trackdata.h"
 

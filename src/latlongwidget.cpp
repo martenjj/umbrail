@@ -18,7 +18,7 @@
 #include <kmessagebox.h>
 #include <kcolorscheme.h>
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 #include "pluginmanager.h"
 #include "abstractcoordinatehandler.h"

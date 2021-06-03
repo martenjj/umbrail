@@ -8,7 +8,7 @@
 
 #include <klocalizedstring.h>
 
-#include <dialogstatewatcher.h>
+#include <kfdialog/dialogstatewatcher.h>
 
 #include "mapview.h"
 #include "elevationmanager.h"

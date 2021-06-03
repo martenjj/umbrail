@@ -11,7 +11,7 @@
 #include <kiconloader.h>
 #include <ktextedit.h>
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 #include "trackdata.h"
 #include "trackdatalabel.h"

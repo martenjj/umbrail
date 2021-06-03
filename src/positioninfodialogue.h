@@ -3,7 +3,7 @@
 #define POSITIONINFODIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 #include <marble/GeoDataPlacemark.h>
 
 using Marble::GeoDataCoordinates;

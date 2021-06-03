@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	02-Apr-21						//
+//  Edit:	03-Jun-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -38,7 +38,7 @@
 #include <klocalizedstring.h>
 #include <kstandardguiitem.h>
 
-#include <dialogstatesaver.h>
+#include <kfdialog/dialogstatesaver.h>
 
 #ifdef HAVE_PHONON
 #include <Phonon/VideoPlayer>

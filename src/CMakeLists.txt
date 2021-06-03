@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		16-Jun-20					#
+#  Edit:		03-Jun-21					#
 #########################################################################
 
 project(navtracks)
@@ -28,12 +28,12 @@ find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts
 find_package(Marble REQUIRED NO_POLICY_SCOPE)
 find_package(Phonon4Qt5 NO_POLICY_SCOPE)
 find_package(KF5KExiv2 NO_POLICY_SCOPE)
-find_package(DialogUtil REQUIRED NO_POLICY_SCOPE)
+find_package(LibKFDialog REQUIRED NO_POLICY_SCOPE)
 
 set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
 set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
 set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://quickgit.kde.org/?p=libkexiv2.git" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
-set_package_properties("DialogUtil" PROPERTIES DESCRIPTION "Dialogue utility library" TYPE REQUIRED PURPOSE "Required to build the project")
+set_package_properties("LibKFDialog" PROPERTIES DESCRIPTION "KDE Frameworks dialogue utility library" URL "https://github.com/martenjj/libkfdialog" TYPE REQUIRED PURPOSE "Required to build the project")
 
 #########################################################################
 #									#
@@ -163,7 +163,7 @@ target_link_libraries(navtracks
   KF5::Crash
   abstractcoordinate
   qcustomplot
-  ${DIALOGUTIL_LIBRARIES}
+  kfdialog
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
   target_link_libraries(navtracks Phonon::phonon4qt5)
@@ -176,7 +176,6 @@ add_dependencies(navtracks vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/plugins)
 include_directories(${QCUSTOMPLOT_DIR})
-include_directories(${HDRDIALOGUTIL_DIR})
 
 #########################################################################
 #									#

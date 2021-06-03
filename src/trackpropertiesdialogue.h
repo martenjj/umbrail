@@ -5,8 +5,8 @@
 
 #include <qlist.h>
 
-#include <dialogbase.h>
-#include <dialogstatesaver.h>
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
 
 #include "trackdata.h"
 

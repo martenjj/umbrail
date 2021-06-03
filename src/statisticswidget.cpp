@@ -11,7 +11,7 @@
 #include <kcolorscheme.h>
 #endif
 
-#include <dialogstatewatcher.h>
+#include <kfdialog/dialogstatewatcher.h>
 
 #include "mainwindow.h"
 #include "filescontroller.h"
