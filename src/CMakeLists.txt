@@ -163,7 +163,7 @@ target_link_libraries(navtracks
   KF5::Crash
   abstractcoordinate
   qcustomplot
-  kfdialog
+  ${LIBKFDIALOG_LIBRARIES}
   ${MARBLE_LIBRARIES})
 if (Phonon4Qt5_FOUND)
   target_link_libraries(navtracks Phonon::phonon4qt5)

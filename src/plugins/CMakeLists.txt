@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Apr-19					#
+#  Edit:		03-Jun-21					#
 #########################################################################
 
 project(navtracks)
@@ -53,7 +53,7 @@ target_link_libraries(dmscoordinate
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
-  ${DIALOGUTIL_LIBRARIES}
+  ${LIBKFDIALOG_LIBRARIES}
 )
 if (INSTALL_BINARIES)
   install(TARGETS dmscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
@@ -76,7 +76,7 @@ target_link_libraries(osgbcoordinate
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
-  ${DIALOGUTIL_LIBRARIES}
+  ${LIBKFDIALOG_LIBRARIES}
 )
 if (INSTALL_BINARIES)
   install(TARGETS osgbcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
