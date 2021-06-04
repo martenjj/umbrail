@@ -82,7 +82,7 @@ void FolderSelectDialogue::slotUpdateButtonStates()
     const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=nullptr);
 
     setButtonEnabled(QDialogButtonBox::Ok, isFolder);
-    setButtonEnabled(QDialogButtonBox::Yes, (isFolder || isFile));
+    setButtonEnabled(QDialogButtonBox::Yes, (isFolder || isFile) && !isReadOnly());
 }
 
 
