@@ -517,7 +517,7 @@ void StopDetectDialogue::slotSetButtonStates()
         if (check==Qt::Checked) ++numChecked;
     }
 
-    setButtonEnabled(QDialogButtonBox::Ok, numChecked>0 && !mFolderSelect->folderPath().isEmpty());
+    setButtonEnabled(QDialogButtonBox::Ok, numChecked>0 && !mFolderSelect->folderPath().isEmpty() && !isReadOnly());
     mShowOnMapButton->setEnabled(mResultsList->selectedItems().count()==1);
     mMergeStopsButton->setEnabled(mResultsList->selectedItems().count()>1);
 }
