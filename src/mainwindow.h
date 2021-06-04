@@ -88,6 +88,7 @@ protected slots:
     void slotSaveMedia();
 
     void slotResetAndCancel();
+    void slotReadOnly(bool on);
 
 private:
     void init();
@@ -107,6 +108,7 @@ private:
     Project *mProject;
     FilesController *mFilesController;
     MapController *mMapController;
+    bool mReadOnly;
 
     KSqueezedTextLabel *mStatusMessage;
     QLabel *mModifiedIndicator;
@@ -116,6 +118,7 @@ private:
     QAction *mSaveProjectCopyAction;
     QAction *mExportAction;
     QAction *mImportAction;
+    QAction *mPhotoAction;
 
     QAction *mCopyAction;
     QAction *mPasteAction;

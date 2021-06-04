@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="navmarks"
-     version="9"
+     version="10"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -62,6 +62,10 @@
       <Action name="map_show_overlays"/>
       <Action name="map_select_theme"/>
       <Action name="map_save"/>
+    </Menu>
+
+    <Menu name="settings">
+      <Action name="settings_read_only"/>
     </Menu>
 
     <Menu name="help">
