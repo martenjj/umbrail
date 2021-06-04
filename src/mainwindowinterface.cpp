@@ -31,3 +31,9 @@ MapController *MainWindowInterface::mapController() const
 {
     return (mMainWindow->mapController());
 }
+
+
+bool MainWindowInterface::isReadOnly() const
+{
+    return (mMainWindow->isReadOnly());
+}

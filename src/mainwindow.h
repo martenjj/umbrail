@@ -40,6 +40,7 @@ public:
 
     MapController *mapController() const	{ return (mMapController); }
     FilesController *filesController() const	{ return (mFilesController); }
+    bool isReadOnly() const			{ return (mReadOnly); }
 
     bool loadProject(const QUrl &loadFrom);
 
