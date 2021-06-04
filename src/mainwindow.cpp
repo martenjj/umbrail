@@ -282,7 +282,6 @@ void MainWindow::setupActions()
     cuts.append(QKeySequence(Qt::CTRL+Qt::Key_Enter));
     ac->setDefaultShortcuts(mPropertiesAction, cuts);
     mPropertiesAction->setIcon(QIcon::fromTheme("document-properties"));
-    // TODO: pass mReadOnly
     connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
 
     mWaypointStatusAction = new KSelectAction(QIcon::fromTheme("favorites"), i18nc("@action:inmenu", "Waypoint Status"), this);
@@ -1163,6 +1162,12 @@ bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 
 void MainWindow::dropEvent(QDropEvent *ev)
 {
+    if (isReadOnly())
+    {
+        ev->ignore();
+        return;
+    }
+
     if (ev->dropAction()!=Qt::CopyAction) return;
     const QMimeData *mimeData = ev->mimeData();
     if (acceptMimeData(mimeData)) ev->accept();
@@ -1205,7 +1210,6 @@ void MainWindow::slotUpdatePasteState()
 
 void MainWindow::slotTrackStopDetect()
 {
-    // TODO: pass mReadOnly
     StopDetectDialogue *d = new StopDetectDialogue(this);
     d->show();
 }
