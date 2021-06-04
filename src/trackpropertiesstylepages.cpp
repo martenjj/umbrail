@@ -70,10 +70,12 @@ void TrackItemStylePage::addLineColourButton(const QString &text)
 {
     mLineColourButton = new KColorButton(this);
     mLineColourButton->setAlphaChannelEnabled(false);
+    mLineColourButton->setEnabled(!isReadOnly());
     connect(mLineColourButton, &KColorButton::changed, this, &TrackItemStylePage::slotColourChanged);
     mFormLayout->addRow(i18n("Line colour:"), mLineColourButton);
 
     mLineInheritCheck = new QCheckBox(checkText(text, mIsTopLevel), this);
+    mLineInheritCheck->setEnabled(!isReadOnly());
     connect(mLineInheritCheck, &QCheckBox::toggled, this, &TrackItemStylePage::slotInheritChanged);
     mFormLayout->addRow("", mLineInheritCheck);
 
@@ -86,10 +88,12 @@ void TrackItemStylePage::addPointColourButton(const QString &text)
 {
     mPointColourButton = new KColorButton(this);
     mPointColourButton->setAlphaChannelEnabled(false);
+    mPointColourButton->setEnabled(!isReadOnly());
     connect(mPointColourButton, &KColorButton::changed, this, &TrackItemStylePage::slotColourChanged);
     mFormLayout->addRow(i18n("Point colour:"), mPointColourButton);
 
     mPointInheritCheck = new QCheckBox(checkText(text, mIsTopLevel), this);
+    mPointInheritCheck->setEnabled(!isReadOnly());
     connect(mPointInheritCheck, &QCheckBox::toggled, this, &TrackItemStylePage::slotInheritChanged);
     mFormLayout->addRow("", mPointInheritCheck);
 
