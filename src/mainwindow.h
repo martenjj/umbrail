@@ -42,7 +42,7 @@ public:
     FilesController *filesController() const	{ return (mFilesController); }
     bool isReadOnly() const			{ return (mReadOnly); }
 
-    bool loadProject(const QUrl &loadFrom);
+    bool loadProject(const QUrl &loadFrom, bool readOnly = false);
 
     void executeCommand(QUndoCommand *cmd);
 
@@ -156,6 +156,7 @@ private:
     QAction *mMapZoomInAction;
     QAction *mMapZoomOutAction;
     QAction *mMapGoToAction;
+    QAction *mReadOnlyAction;
     KToggleAction *mMapDragAction;
 
     QSplitter *mSplitter;

@@ -390,10 +390,10 @@ void MainWindow::setupActions()
     a->setIcon(QIcon::fromTheme("view-pim-mail"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
 
-    a = ac->addAction("settings_read_only");
-    a->setText(i18n("Read Only"));
-    a->setCheckable(true);
-    connect(a, SIGNAL(toggled(bool)), this, SLOT(slotReadOnly(bool)));
+    mReadOnlyAction = ac->addAction("settings_read_only");
+    mReadOnlyAction->setText(i18n("Read Only"));
+    mReadOnlyAction->setCheckable(true);
+    connect(mReadOnlyAction, SIGNAL(toggled(bool)), this, SLOT(slotReadOnly(bool)));
 
     a = ac->addAction("reset_cancel");
     a->setText(i18n("Reset/Cancel"));			// only seen in "Configure Shortcuts"
@@ -636,18 +636,20 @@ void MainWindow::slotOpenProject()
 }
 
 
-bool MainWindow::loadProject(const QUrl &loadFrom)
+bool MainWindow::loadProject(const QUrl &loadFrom, bool readOnly)
 {
     if (!loadFrom.isValid()) return (false);
-    qDebug() << "from" << loadFrom;
+    qDebug() << "from" << loadFrom << "readonly?" << readOnly;
 
     FilesController::Status status = load(loadFrom);	// load in data file
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (false);
 
-    mProject->setFileName(loadFrom);
+    mProject->setFileName(loadFrom);			// record file name
     mUndoStack->clear();				// clear undo history
-							// ensure window title updated
     slotSetModified(status==FilesController::StatusResave);
+							// ensure window title updated
+    mReadOnly = readOnly;				// record read-only state
+    mReadOnlyAction->setChecked(mReadOnly);		// set state in GUI
     return (true);
 }
 
