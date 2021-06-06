@@ -282,6 +282,12 @@ void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
 
 void FilesView::selectItem(const TrackDataItem *item, bool combine)
 {
+    if (item==nullptr)					// clearing selection
+    {
+        selectionModel()->clear();
+        return;						// no more to do
+    }
+
     QModelIndex idx = qobject_cast<FilesModel *>(model())->indexForItem(item);
     qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;

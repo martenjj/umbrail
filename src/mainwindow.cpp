@@ -239,6 +239,7 @@ void MainWindow::setupActions()
     mAddRoutepointAction->setIcon(QIcon::fromTheme("list-add"));
     connect(mAddRoutepointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoutepoint()));
 
+    // TODO: could these actions be combined with corresponding 2 above?
     a = ac->addAction("map_add_waypoint");
     a->setText(i18n("Create Waypoint..."));
     a->setIcon(QIcon::fromTheme("list-add"));
@@ -336,6 +337,11 @@ void MainWindow::setupActions()
     a->setIcon(QIcon::fromTheme("folder-video"));
     connect(a, SIGNAL(triggered()), SLOT(slotSaveMedia()));
     mSaveMediaAction = a;
+
+    a = ac->addAction("track_time_zone");
+    a->setText(i18nc("@action:inmenu", "Set Time Zone..."));
+    a->setIcon(QIcon::fromTheme("preferences-system-time"));
+    connect(a, SIGNAL(triggered()), filesController(), SLOT(slotSetTimeZone()));
 
     a = ac->addAction("map_save");
     a->setText(i18n("Save As Image..."));

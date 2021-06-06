@@ -242,7 +242,10 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
         Q_ASSERT(fileItem!=nullptr);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
         mTimeZoneSel->setItems(items);			// use these to get timezone
-        mTimeZoneSel->setEnabled(!isReadOnly());
+
+        // The time zone is allowed to be changed even if the file
+        // is read only.  This case is handled specially in FilesController.
+        mTimeZoneSel->setEnabled(!isReadOnly() || filesController()->isSettingTimeZone());
     }
     else						// may be mixed MIME types
     {
