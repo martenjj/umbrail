@@ -1008,24 +1008,22 @@ default:
 void MainWindow::slotCanUndoChanged(bool can)
 {
     qDebug() << can;
-    mUndoAction->setEnabled(can);
+    mUndoAction->setEnabled(can && !mReadOnly);
 }
 
 void MainWindow::slotCanRedoChanged(bool can)
 {
     qDebug() << can;
-    mRedoAction->setEnabled(can);
+    mRedoAction->setEnabled(can && !mReadOnly);
 }
 
 void MainWindow::slotUndoTextChanged(const QString &text)
 {
-    qDebug() << text;
     mUndoAction->setText(text.isEmpty() ? mUndoText : i18n("%2: %1", text, mUndoText));
 }
 
 void MainWindow::slotRedoTextChanged(const QString &text)
 {
-    qDebug() << text;
     mRedoAction->setText(text.isEmpty() ? mRedoText : i18n("%2: %1", text, mRedoText));
 }
 
@@ -1238,4 +1236,9 @@ void MainWindow::slotReadOnly(bool on)
     slotUpdateActionState();
     mPhotoAction->setEnabled(!on);
     mImportAction->setEnabled(!on);
+
+    // Update these to reflect the current state,
+    // overriden if the file is read only.
+    slotCanUndoChanged(mUndoStack->canUndo());
+    slotCanRedoChanged(mUndoStack->canRedo());
 }
