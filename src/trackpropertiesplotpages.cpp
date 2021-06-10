@@ -39,13 +39,14 @@ TrackWaypointPlotPage::TrackWaypointPlotPage(const QList<TrackDataItem *> *items
     // TODO: maybe for routepoints too
 
     mBearingEdit = new PlotEditWidget(PlotEditWidget::Bearing, this);
+    mBearingEdit->setEnabled(!isReadOnly());
     connect(mBearingEdit, &PlotEditWidget::dataChanged, this, &TrackWaypointPlotPage::slotPlotDataChanged);
     mFormLayout->addRow(QString(), mBearingEdit);
 
     mRangeEdit = new PlotEditWidget(PlotEditWidget::Range, this);
+    mRangeEdit->setEnabled(!isReadOnly());
     connect(mRangeEdit, &PlotEditWidget::dataChanged, this, &TrackWaypointPlotPage::slotPlotDataChanged);
     mFormLayout->addRow(QString(), mRangeEdit);
-
 }
 
 

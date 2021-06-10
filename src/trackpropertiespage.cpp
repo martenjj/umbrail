@@ -14,7 +14,8 @@
 
 
 TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt)
-    : QWidget(pnt)
+    : QWidget(pnt),
+      MainWindowInterface(pnt)
 {
     Q_ASSERT(items!=nullptr);
     Q_ASSERT(!items->isEmpty());

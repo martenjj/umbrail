@@ -37,6 +37,7 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
 
     mNameEdit = new QLineEdit(this);
     if (items->count()>1) mNameEdit->setEnabled(false);
+    else mNameEdit->setReadOnly(isReadOnly());
     connect(mNameEdit, &QLineEdit::textChanged, this, &TrackItemGeneralPage::slotNameChanged);
 
     addSeparatorField();
@@ -92,7 +93,6 @@ void TrackItemGeneralPage::refreshData()
 
 void TrackItemGeneralPage::slotNameChanged(const QString &text)
 {
-
     if (!mNameEdit->isEnabled()) return;		// name is read only
     dataModel()->setData(DataIndexer::self()->index("name"), text);
 }
@@ -151,6 +151,7 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
         const TrackDataItem *tdi = items->first();
         Q_ASSERT(tdi!=nullptr);
 
+        mTypeCombo->setEnabled(!isReadOnly());
         // TODO: are both needed?
         connect(mTypeCombo, &QComboBox::currentTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
         connect(mTypeCombo, &QComboBox::editTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
@@ -170,6 +171,7 @@ void TrackItemGeneralPage::addDescField(const QList<TrackDataItem *> *items)
     {
         mDescEdit->setAcceptRichText(false);
         mDescEdit->setTabChangesFocus(true);
+        mDescEdit->setReadOnly(isReadOnly());
         connect(mDescEdit, &KTextEdit::textChanged, this, &TrackItemGeneralPage::slotDescChanged);
     }
     else mDescEdit->setEnabled(false);
@@ -197,6 +199,7 @@ void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items
 
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
     b->setToolTip(i18nc("@info:tooltip", "Change the latitude/longitude position"));
+    b->setEnabled(!isReadOnly());
     connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
     hb->setFocusProxy(b);
     hb->setFocusPolicy(Qt::StrongFocus);
@@ -239,6 +242,10 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
         Q_ASSERT(fileItem!=nullptr);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
         mTimeZoneSel->setItems(items);			// use these to get timezone
+
+        // The time zone is allowed to be changed even if the file
+        // is read only.  This case is handled specially in FilesController.
+        mTimeZoneSel->setEnabled(!isReadOnly() || filesController()->isSettingTimeZone());
     }
     else						// may be mixed MIME types
     {
@@ -492,6 +499,7 @@ void TrackWaypointGeneralPage::addStatusField(const QList<TrackDataItem *> *item
         mStatusCombo->addItem(QIcon::fromTheme("task-delegate"), i18n("(No change)"), TrackData::StatusInvalid);
         mStatusCombo->setCurrentIndex(mStatusCombo->count()-1);
     }
+    mStatusCombo->setEnabled(!isReadOnly());
 
     connect(mStatusCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotStatusChanged(int)));
     mFormLayout->addRow(i18nc("@label:listbox", "Status:"), mStatusCombo);

@@ -90,6 +90,7 @@ FilesController::FilesController(QObject *pnt)
     connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
     mWarnedNoTimezone = false;
+    mSettingTimeZone = false;
 }
 
 
@@ -737,15 +738,7 @@ void FilesController::slotCheckTimeZone()
     if (but==KMessageBox::No) setFileWarningIgnored(file, "timezone");
     if (but!=KMessageBox::Yes) return;
 
-    // Select the top-level file item.
-    view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
-                            QItemSelectionModel::ClearAndSelect);
-
-    TrackPropertiesDialogue::setNextPageIndex(0);	// open at "General" page
-    // Trigger the action, so that the dialogue can get its text for the window caption.
-    QAction *act = mainWindow()->actionCollection()->action("track_properties");
-    Q_ASSERT(act!=nullptr);
-    QTimer::singleShot(0, act, SLOT(trigger()));
+    slotSetTimeZone();					// set via file properties
 }
 
 
@@ -760,11 +753,42 @@ void FilesController::slotTrackProperties()
     QString actText = CommandBase::senderText(sender());
     d.setWindowTitle(actText);
 
-    if (!d.exec()) return;
+    const bool wasSettingTimeZone = mSettingTimeZone;	// note current setting
+    const bool status = d.exec();			// execute the dialogue
+
+    // If setting the time zone, which automatically selected the
+    // root file item before getting here, then clear the selection
+    // even if the dialogue was cancelled.
+    if (wasSettingTimeZone) view()->selectItem(nullptr);
+
+    mSettingTimeZone = false;				// reset for next time
+    if (!status) return;				// finish now if cancelled
 
     TrackDataItem *item = items.first();		// the item to change
     QUndoCommand *cmd = new QUndoCommand();		// parent command
     const MetadataModel *model = d.dataModel();		// model for new data
+
+    // Hopefully this is the right thing to do.  If the properties dialogue
+    // has been summoned via the "Set Time Zone" action and the file is
+    // read only then only allow the time zone to be changed (which is
+    // enforced in the properties dialogue) and implement the change
+    // immediately without involving the undo system or marking the file
+    // as modified.  If the file is not read only then, whether summoned
+    // via "Set Time Zone" or "Properties", implement the change in the
+    // usual way.
+    if (wasSettingTimeZone && isReadOnly())		// setting time zone only
+    {
+        const int idx = DataIndexer::self()->index("timezone");
+        const QVariant oldData = item->metadata(idx);
+        const QVariant newData = model->data(idx);
+        if (newData==oldData) return;			// time zone has not changed
+
+        qDebug() << "timezone for" << item->name() << "=" << oldData.toString() << "->" << newData.toString();
+
+        item->setMetadata(idx, newData);		// set directly, no undo
+        if (!isReadOnly()) emit modified();		// modifies file if possible
+        return;						// no more to do
+    }
 
     // Item name
     const QString newItemName = model->data(DataIndexer::self()->index("name")).toString();
@@ -1206,4 +1230,33 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
     filters << GpxImporter::filter();
     if (includeAllFiles) filters << allFilter;
     return (filters.join(";;"));
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  File time zone							//
+//									//
+//  Setting the time zone this way has the same effect as setting the	//
+//  "timezone" data on the root file item, except that it is allowed	//
+//  to be done on a read-only file and does not affect the modified	//
+//  state of the file.							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+void FilesController::slotSetTimeZone()
+{
+    // Select the top-level file item.
+    view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
+                            QItemSelectionModel::ClearAndSelect);
+
+    // Set for this one shot operation, so that the selection
+    // can be cleared afterwards.
+    mSettingTimeZone = true;
+
+    TrackPropertiesDialogue::setNextPageIndex(0);	// open at "General" page
+    // Open the dialogue by triggering the action, so that the dialogue
+    // can access the sender() action to get its text for the window caption.
+    QAction *act = mainWindow()->actionCollection()->action("track_properties");
+    Q_ASSERT(act!=nullptr);
+    QTimer::singleShot(0, act, &QAction::trigger);
 }

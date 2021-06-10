@@ -40,8 +40,9 @@ public:
 
     MapController *mapController() const	{ return (mMapController); }
     FilesController *filesController() const	{ return (mFilesController); }
+    bool isReadOnly() const			{ return (mReadOnly); }
 
-    bool loadProject(const QUrl &loadFrom);
+    bool loadProject(const QUrl &loadFrom, bool readOnly = false);
 
     void executeCommand(QUndoCommand *cmd);
 
@@ -88,6 +89,7 @@ protected slots:
     void slotSaveMedia();
 
     void slotResetAndCancel();
+    void slotReadOnly(bool on);
 
 private:
     void init();
@@ -107,6 +109,7 @@ private:
     Project *mProject;
     FilesController *mFilesController;
     MapController *mMapController;
+    bool mReadOnly;
 
     KSqueezedTextLabel *mStatusMessage;
     QLabel *mModifiedIndicator;
@@ -116,6 +119,7 @@ private:
     QAction *mSaveProjectCopyAction;
     QAction *mExportAction;
     QAction *mImportAction;
+    QAction *mPhotoAction;
 
     QAction *mCopyAction;
     QAction *mPasteAction;
@@ -152,6 +156,7 @@ private:
     QAction *mMapZoomInAction;
     QAction *mMapZoomOutAction;
     QAction *mMapGoToAction;
+    QAction *mReadOnlyAction;
     KToggleAction *mMapDragAction;
 
     QSplitter *mSplitter;

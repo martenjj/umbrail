@@ -54,6 +54,7 @@ public:
 
     FilesView *view() const			{ return (mView); }
     FilesModel *model() const			{ return (mDataModel); }
+    bool isSettingTimeZone() const		{ return (mSettingTimeZone); }
 
     void readProperties();
     void saveProperties();
@@ -85,6 +86,7 @@ public slots:
     void slotAddRoutepoint(qreal lat = NAN, qreal lon = NAN);
     void slotSetWaypointStatus();
     void slotCheckTimeZone();
+    void slotSetTimeZone();
 
 signals:
     void statusMessage(const QString &text);
@@ -113,6 +115,7 @@ private:
     QSortFilterProxyModel *mProxyModel;
 #endif
     bool mWarnedNoTimezone;
+    bool mSettingTimeZone;
 };
  
 #endif							// FILESCONTROLLER_H

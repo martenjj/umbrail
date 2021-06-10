@@ -37,6 +37,7 @@ protected:
     MainWindow *mainWindow() const		{ return (mMainWindow); }
     FilesController *filesController() const;
     MapController *mapController() const;
+    bool isReadOnly() const;
 
 private:
     MainWindow *mMainWindow;

@@ -111,6 +111,7 @@ void MainWindow::init()
     setupActions();
 
     readProperties(Settings::self()->config()->group(CONFIG_GROUP));
+    mReadOnly = false;
 
     mSelectedContainer = nullptr;
 
@@ -162,10 +163,10 @@ void MainWindow::setupActions()
     connect(mExportAction, SIGNAL(triggered()), SLOT(slotExportFile()));
     mExportAction->setEnabled(false);
 
-    a = ac->addAction("file_add_photo");
-    a->setText("Import Photo...");
-    a->setIcon(QIcon::fromTheme("image-loading"));
-    connect(a, SIGNAL(triggered()), SLOT(slotImportPhoto()));
+    mPhotoAction = ac->addAction("file_add_photo");
+    mPhotoAction->setText("Import Photo...");
+    mPhotoAction->setIcon(QIcon::fromTheme("image-loading"));
+    connect(mPhotoAction, SIGNAL(triggered()), SLOT(slotImportPhoto()));
 
     mSelectAllAction = KStandardAction::selectAll(filesController()->view(), SLOT(slotSelectAllSiblings()), ac);
     mClearSelectAction = KStandardAction::deselect(filesController()->view(), SLOT(clearSelection()), ac);
@@ -238,6 +239,7 @@ void MainWindow::setupActions()
     mAddRoutepointAction->setIcon(QIcon::fromTheme("list-add"));
     connect(mAddRoutepointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoutepoint()));
 
+    // TODO: could these actions be combined with corresponding 2 above?
     a = ac->addAction("map_add_waypoint");
     a->setText(i18n("Create Waypoint..."));
     a->setIcon(QIcon::fromTheme("list-add"));
@@ -336,6 +338,11 @@ void MainWindow::setupActions()
     connect(a, SIGNAL(triggered()), SLOT(slotSaveMedia()));
     mSaveMediaAction = a;
 
+    a = ac->addAction("track_time_zone");
+    a->setText(i18nc("@action:inmenu", "Set Time Zone..."));
+    a->setIcon(QIcon::fromTheme("preferences-system-time"));
+    connect(a, SIGNAL(triggered()), filesController(), SLOT(slotSetTimeZone()));
+
     a = ac->addAction("map_save");
     a->setText(i18n("Save As Image..."));
     a->setIcon(QIcon::fromTheme("folder-picture"));
@@ -388,6 +395,11 @@ void MainWindow::setupActions()
     a->setText(i18n("Position Information..."));
     a->setIcon(QIcon::fromTheme("view-pim-mail"));
     connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
+
+    mReadOnlyAction = ac->addAction("settings_read_only");
+    mReadOnlyAction->setText(i18n("Read Only"));
+    mReadOnlyAction->setCheckable(true);
+    connect(mReadOnlyAction, SIGNAL(toggled(bool)), this, SLOT(slotReadOnly(bool)));
 
     a = ac->addAction("reset_cancel");
     a->setText(i18n("Reset/Cancel"));			// only seen in "Configure Shortcuts"
@@ -630,18 +642,20 @@ void MainWindow::slotOpenProject()
 }
 
 
-bool MainWindow::loadProject(const QUrl &loadFrom)
+bool MainWindow::loadProject(const QUrl &loadFrom, bool readOnly)
 {
     if (!loadFrom.isValid()) return (false);
-    qDebug() << "from" << loadFrom;
+    qDebug() << "from" << loadFrom << "readonly?" << readOnly;
 
     FilesController::Status status = load(loadFrom);	// load in data file
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (false);
 
-    mProject->setFileName(loadFrom);
+    mProject->setFileName(loadFrom);			// record file name
     mUndoStack->clear();				// clear undo history
-							// ensure window title updated
     slotSetModified(status==FilesController::StatusResave);
+							// ensure window title updated
+    mReadOnly = readOnly;				// record read-only state
+    mReadOnlyAction->setChecked(mReadOnly);		// set state in GUI
     return (true);
 }
 
@@ -915,7 +929,7 @@ default:
 
     mPropertiesAction->setEnabled(propsEnabled);
     mPropertiesAction->setText(propsText);
-    mDeleteItemsAction->setEnabled(delEnabled);
+    mDeleteItemsAction->setEnabled(delEnabled && !mReadOnly);
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
     mStatisticsAction->setEnabled(profileEnabled);
@@ -931,25 +945,25 @@ default:
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mCopyAction->setEnabled(copyEnabled);
 
-    mSplitTrackAction->setEnabled(splitEnabled);
+    mSplitTrackAction->setEnabled(splitEnabled && !mReadOnly);
     if (splitEnabled) mSplitTrackAction->setText(splitText);
-    mMergeTrackAction->setEnabled(mergeEnabled);
+    mMergeTrackAction->setEnabled(mergeEnabled && !mReadOnly);
     if (mergeEnabled) mMergeTrackAction->setText(mergeText);
 
-    mMoveItemAction->setEnabled(moveEnabled);
+    mMoveItemAction->setEnabled(moveEnabled && !mReadOnly);
     mMoveItemAction->setText(moveText);
-    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
-    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File && !mReadOnly);
+    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File && !mReadOnly);
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
-                                                 selType==TrackData::Folder));
+                                                 selType==TrackData::Folder) && !mReadOnly);
     mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
                                                    selType==TrackData::Point ||
-                                                   selType==TrackData::Waypoint));
+                                                   selType==TrackData::Waypoint) && !mReadOnly);
     mAddRoutepointAction->setEnabled(selCount==1 && (selType==TrackData::Route ||
                                                      selType==TrackData::Point ||
-                                                     selType==TrackData::Waypoint));
+                                                     selType==TrackData::Waypoint) && !mReadOnly);
 
-    mWaypointStatusAction->setEnabled(statusEnabled);
+    mWaypointStatusAction->setEnabled(statusEnabled && !mReadOnly);
     QList<QAction *> acts = mWaypointStatusAction->actions();
     for (QList<QAction *>::const_iterator it = acts.constBegin(); it!=acts.constEnd(); ++it)
     {
@@ -958,9 +972,9 @@ default:
     }
 
     if (selCount==1 && selType==TrackData::Point)
-    {
+    {							// not first point in segment
         const QModelIndex idx = filesController()->model()->indexForItem(filesController()->view()->selectedItem());
-        mAddPointAction->setEnabled(idx.row()>0);	// not first point in segment
+        mAddPointAction->setEnabled(idx.row()>0 && !mReadOnly);
     }
     else mAddPointAction->setEnabled(false);
 
@@ -978,7 +992,7 @@ default:
             mMapDragAction->setChecked(false);
             slotMapMovePoints();
         }
-        mMapDragAction->setEnabled(true);
+        mMapDragAction->setEnabled(true && !mReadOnly);
     }
     else
     {
@@ -994,24 +1008,22 @@ default:
 void MainWindow::slotCanUndoChanged(bool can)
 {
     qDebug() << can;
-    mUndoAction->setEnabled(can);
+    mUndoAction->setEnabled(can && !mReadOnly);
 }
 
 void MainWindow::slotCanRedoChanged(bool can)
 {
     qDebug() << can;
-    mRedoAction->setEnabled(can);
+    mRedoAction->setEnabled(can && !mReadOnly);
 }
 
 void MainWindow::slotUndoTextChanged(const QString &text)
 {
-    qDebug() << text;
     mUndoAction->setText(text.isEmpty() ? mUndoText : i18n("%2: %1", text, mUndoText));
 }
 
 void MainWindow::slotRedoTextChanged(const QString &text)
 {
-    qDebug() << text;
     mRedoAction->setText(text.isEmpty() ? mRedoText : i18n("%2: %1", text, mRedoText));
 }
 
@@ -1156,6 +1168,12 @@ bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 
 void MainWindow::dropEvent(QDropEvent *ev)
 {
+    if (isReadOnly())
+    {
+        ev->ignore();
+        return;
+    }
+
     if (ev->dropAction()!=Qt::CopyAction) return;
     const QMimeData *mimeData = ev->mimeData();
     if (acceptMimeData(mimeData)) ev->accept();
@@ -1192,7 +1210,7 @@ void MainWindow::slotUpdatePasteState()
         if (mimeData->hasUrls()) enable = true;		// one or more URLs
     }
 
-    mPasteAction->setEnabled(enable);
+    mPasteAction->setEnabled(enable && !mReadOnly);
 }
 
 
@@ -1207,4 +1225,20 @@ void MainWindow::slotResetAndCancel()
 {
     mapController()->view()->cancelDrag();
     filesController()->view()->clearSelection();
+}
+
+
+void MainWindow::slotReadOnly(bool on)
+{
+    qDebug() << on;
+    mReadOnly = on;
+
+    slotUpdateActionState();
+    mPhotoAction->setEnabled(!on);
+    mImportAction->setEnabled(!on);
+
+    // Update these to reflect the current state,
+    // overriden if the file is read only.
+    slotCanUndoChanged(mUndoStack->canUndo());
+    slotCanRedoChanged(mUndoStack->canRedo());
 }

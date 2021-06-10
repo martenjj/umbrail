@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	06-Sep-19						//
+//  Edit:	05-Jun-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -81,6 +81,7 @@ int main(int argc,char *argv[])
     parser.setApplicationDescription(aboutData.shortDescription());
 
     parser.addPositionalArgument("file", i18n("File to load"), i18n("[file...]"));
+    parser.addOption(QCommandLineOption((QStringList() << "r" << "readonly"), i18n("Open files as read-only")));
 
     aboutData.setupCommandLine(&parser);
     parser.process(app);
@@ -100,7 +101,7 @@ int main(int argc,char *argv[])
         }
 
         w = new MainWindow(nullptr);
-        const bool ok = w->loadProject(u);
+        const bool ok = w->loadProject(u, parser.isSet("readonly"));
         if (!ok) w->deleteLater();
         else w->show();
     }

@@ -11,6 +11,7 @@
 #include <kxmlguifactory.h>
 #include <kcolorscheme.h>
 #include <ktoggleaction.h>
+#include <kactioncollection.h>
 
 #include <marble/MarbleWidgetInputHandler.h>
 #include <marble/AbstractFloatItem.h>
@@ -127,7 +128,14 @@ void MapView::slotRmbRequest(int mx, int my)
     QMenu *popup = static_cast<QMenu *>(
         mainWindow()->factory()->container("mapview_contextmenu",
                                            mainWindow()));
-    if (popup!=nullptr) popup->exec(mapToGlobal(QPoint(mx, my)));
+    if (popup==nullptr) return;
+
+    QAction *act = mainWindow()->actionCollection()->action("map_add_waypoint");
+    if(act!=nullptr) act->setEnabled(!isReadOnly());
+    act = mainWindow()->actionCollection()->action("map_add_routepoint");
+    if(act!=nullptr) act->setEnabled(!isReadOnly());
+
+    popup->exec(mapToGlobal(QPoint(mx, my)));
 }
 
 
