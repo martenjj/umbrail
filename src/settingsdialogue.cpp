@@ -14,8 +14,7 @@
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
 #include <kconfigskeleton.h>
-#include <kservice.h>
-#include <kmimetypetrader.h>
+#include <kparts/partloader.h>
 
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>
@@ -288,14 +287,12 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     fl->addRow(ski->label(), mPhotoViewerCombo);
 
     int selectIndex = -1;
-    KService::List services = KMimeTypeTrader::self()->query("image/jpeg", "KParts/ReadOnlyPart");
-    if (services.isEmpty()) qWarning() << "No viewer part available";
-    for (KService::List::const_iterator it = services.constBegin(); it!=services.constEnd(); ++it)
+    const QVector<KPluginMetaData> plugins = KParts::PartLoader::partsForMimeType("image/jpeg");
+    if (plugins.isEmpty()) qWarning() << "No viewer part available";
+    for (const KPluginMetaData &plugin : plugins)
     {
-        const KService::Ptr service = (*it);
-
-        mPhotoViewerCombo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
-        if (service->storageId()==Settings::photoViewMode()) selectIndex = mPhotoViewerCombo->count()-1;
+        mPhotoViewerCombo->addItem(QIcon::fromTheme(plugin.iconName()), plugin.name(), plugin.pluginId());
+        if (plugin.pluginId()==Settings::photoViewMode()) selectIndex = mPhotoViewerCombo->count()-1;
     }
 
     if (selectIndex!=-1) mPhotoViewerCombo->setCurrentIndex(selectIndex);

@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Apr-19					#
+#  Edit:		08-Jun-21					#
 #########################################################################
 #									#
 #									#
@@ -16,9 +16,9 @@ message(STATUS "Configuring for NavTracks version ${VERSION}")
 #									#
 #########################################################################
 
-set(QT_MIN_VERSION "5.4.0")
-set(KF5_MIN_VERSION "5.7.0")
-set(ECM_MIN_VERSION "1.6.0")
+set(QT_MIN_VERSION "5.10.0")
+set(KF5_MIN_VERSION "5.69.0")
+set(ECM_MIN_VERSION "5.69.0")
 set(EXIV2_MIN_VERSION "0.24")
 
 find_package(ECM ${ECM_MIN_VERSION} REQUIRED NO_MODULE)

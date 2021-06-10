@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Sep-19						//
+//  Edit:	10-Jun-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,11 +33,15 @@
 #include <qmimedatabase.h>
 #include <qmenubar.h>
 
-#include <kservice.h>
-#include <kmimetypetrader.h>
 #include <kactioncollection.h>
 #include <kstandardaction.h>
 #include <klocalizedstring.h>
+#include <kpluginloader.h>
+#include <kpluginfactory.h>
+#ifdef USE_KSERVICE
+#include <kservice.h>
+#endif
+#include <kparts/partloader.h>
 
 #include "settings.h"
 
@@ -52,43 +56,45 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
     setAttribute(Qt::WA_DeleteOnClose);
     setXMLFile("viewerui.rc");
 
-    KService::Ptr service;
+    mPart = nullptr;
+    QString errorString;
 
     QString viewMode = Settings::photoViewMode();	// selected view mode from settings
     qDebug() << "view mode from settings" << viewMode;
     if (!viewMode.isEmpty())				// if there is one,
     {							// get the service from that
         if (viewMode.endsWith(".desktop")) viewMode.chop(8);
-        service = KService::serviceByDesktopName(viewMode);
+#ifdef USE_KSERVICE
+        KService::Ptr service = KService::serviceByDesktopName(viewMode);
         if (service==nullptr)
         {
             qWarning() << "Viewer part" << viewMode << "not available";
             return;
         }
+
+        qDebug() << "  service" << service->name() << "id" << service->storageId();
+        // from https://techbase.kde.org/Development/Tutorials/Using_KParts
+        mPart = service->createInstance<KParts::ReadOnlyPart>(this, nullptr, QVariantList(), &errorString);
+#else
+        KPluginLoader loader("kf5/parts/"+viewMode);
+        KPluginFactory *factory = loader.factory();
+        if (factory!=nullptr) mPart = factory->create<KParts::ReadOnlyPart>();
+#endif
     }
     else
     {
         QMimeDatabase db;
         QMimeType mimeType = db.mimeTypeForUrl(url);
-        qDebug() << "mime type" << mimeType.name();	// get services for MIME type
-        KService::List services = KMimeTypeTrader::self()->query(mimeType.name(), "KParts/ReadOnlyPart");
-        if (services.isEmpty())
-        {
-            qWarning() << "No viewer parts available for" << mimeType.name();
-            return;
-        }
+        qDebug() << "mime type" << mimeType.name();	// create part for MIME type
 
-        service = services.first();			// take the first preference
+        mPart = KParts::PartLoader::createPartInstanceForMimeType<KParts::ReadOnlyPart>(mimeType.name(),
+                                                                                        this, this, &errorString);
     }
 
-    Q_ASSERT(service!=nullptr);
-    qDebug() << "  service" << service->name() << "id" << service->storageId();
-
-    // from https://techbase.kde.org/Development/Tutorials/Using_KParts
-    mPart = service->createInstance<KParts::ReadOnlyPart>(nullptr);
     if (mPart==nullptr)
     {
-        qWarning() << "Unable to create viewer part";
+
+        qWarning() << "Unable to create viewer part," << errorString;
         return;
     }
 
