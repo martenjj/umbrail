@@ -13,10 +13,12 @@
 #include <qlineedit.h>
 #include <qdebug.h>
 #include <qtimezone.h>
+#include <qaction.h>
 
 #include <klocalizedstring.h>
 #include <kseparator.h>
 #include <kmessagebox.h>
+#include <kactioncollection.h>
 
 #include <kfdialog/dialogstatewatcher.h>
 
@@ -148,12 +150,20 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     gl->setColumnStretch(1, 1);
     l->setBuddy(mResultsList);
 
-    mShowOnMapButton = new QPushButton(QIcon::fromTheme("marble"), i18n("Show on Map"), w);
+    QAction *act = mainWindow()->actionCollection()->action("map_go_selection");
+    Q_ASSERT(act!=nullptr);
+
+    mShowOnMapButton = new QPushButton(act->icon(), act->text(), w);
+    mShowOnMapButton->setShortcut(act->shortcut());
     mShowOnMapButton->setToolTip(i18n("Show the selected stop point on the map"));
     connect(mShowOnMapButton, SIGNAL(clicked(bool)), SLOT(slotShowOnMap()));
     gl->addWidget(mShowOnMapButton, 2, 2, Qt::AlignRight);
 
-    mMergeStopsButton = new QPushButton(QIcon::fromTheme("merge"), i18n("Merge Stops"), w);
+    act = mainWindow()->actionCollection()->action("track_merge");
+    Q_ASSERT(act!=nullptr);
+
+    mMergeStopsButton = new QPushButton(act->icon(), i18n("Merge Stops"), w);
+    mMergeStopsButton->setShortcut(act->shortcut());
     mMergeStopsButton->setToolTip(i18n("Merge the selected stop points into one"));
     connect(mMergeStopsButton, SIGNAL(clicked(bool)), SLOT(slotMergeStops()));
     gl->addWidget(mMergeStopsButton, 2, 0, Qt::AlignLeft);
