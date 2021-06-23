@@ -836,8 +836,8 @@ void FilesController::slotTrackProperties()
 
         if (name=="status")				// changing waypoint status
         {						// ignore if "No change"
-            const TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(newData.toInt());
-            if (status==TrackData::StatusInvalid) continue;
+            const TrackData::WaypointStatus wptstatus = static_cast<TrackData::WaypointStatus>(newData.toInt());
+            if (wptstatus==TrackData::StatusInvalid) continue;
         }
         else if (name=="linecolor" || name=="pointcolor")
         {						// changing item colour
