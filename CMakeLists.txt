@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		08-Jun-21					#
+#  Edit:		23-Jun-21					#
 #########################################################################
 #									#
 #									#
@@ -60,9 +60,6 @@ add_custom_target(vcsversion
 #									#
 #########################################################################
 
-set(QCUSTOMPLOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-
-add_subdirectory(qcustomplot)
 add_subdirectory(src)
 add_subdirectory(desktop)
 add_subdirectory(pics)

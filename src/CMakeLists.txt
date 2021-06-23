@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		03-Jun-21					#
+#  Edit:		23-Jun-21					#
 #########################################################################
 
 project(navtracks)
@@ -54,128 +54,16 @@ remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
 
 #########################################################################
 #									#
-#  Building the target							#
+#  Global settings							#
 #									#
 #########################################################################
 
-set(navtracks_SRCS
-  main.cpp
-  autotooltipdelegate.cpp
-  commands.cpp
-  createpointdialogue.cpp
-  dataindexer.cpp
-  elevationmanager.cpp
-  elevationtile.cpp
-  errorreporter.cpp
-  exporterbase.cpp
-  filescontroller.cpp
-  filesmodel.cpp
-  filesview.cpp
-  folderselectdialogue.cpp
-  folderselectwidget.cpp
-  gpxexporter.cpp
-  gpximporter.cpp
-  importerexporterbase.cpp
-  importerbase.cpp
-  itemselectdialogue.cpp
-  itemtypecombo.cpp
-  latlongdialogue.cpp
-  latlongwidget.cpp
-  layerbase.cpp
-  mainwindow.cpp
-  mainwindowinterface.cpp
-  mapcontroller.cpp
-  mapthemedialogue.cpp
-  mapview.cpp
-  mediaplayer.cpp
-  metadatamodel.cpp
-  moveitemdialogue.cpp
-  photoviewer.cpp
-  ploteditwidget.cpp
-  pluginmanager.cpp
-  positioninfodialogue.cpp
-  profilewidget.cpp
-  project.cpp
-  routeslayer.cpp
-  settingsdialogue.cpp
-  statisticswidget.cpp
-  stopdetectdialogue.cpp
-  stopslayer.cpp
-  timezonedialogue.cpp
-  timezoneprovider.cpp
-  timezoneselector.cpp
-  timezonewidget.cpp
-  trackdata.cpp
-  trackdatalabel.cpp
-  trackfiltermodel.cpp
-  trackpropertiesdialogue.cpp
-  trackpropertiespage.cpp
-  trackpropertiesdetailpages.cpp
-  trackpropertiesgeneralpages.cpp
-  trackpropertiesmetadatapages.cpp
-  trackpropertiesplotpages.cpp
-  trackpropertiesstylepages.cpp
-  trackslayer.cpp
-  units.cpp
-  valueslider.cpp
-  variableunitdisplay.cpp
-  variableunitcombo.cpp
-  waypointimageprovider.cpp
-  waypointselectdialogue.cpp
-  waypointslayer.cpp
-)
-
-if (Phonon4Qt5_FOUND)
-  set(navtracks_SRCS ${navtracks_SRCS} videoviewer.cpp)
-endif (Phonon4Qt5_FOUND)
-
-kconfig_add_kcfg_files(navtracks_SRCS settings.kcfgc)
-
-add_definitions("-DVERSION=\\\"${VERSION}\\\"")
-if (SORTABLE_VIEW)
-  add_definitions("-DSORTABLE_VIEW=1")
-endif (SORTABLE_VIEW)
-if (Phonon4Qt5_FOUND)
-  add_definitions("-DHAVE_PHONON=1")
-  include_directories(${PHONON_INCLUDES})
-endif (Phonon4Qt5_FOUND)
-if (KF5KExiv2_FOUND)
-  add_definitions("-DHAVE_KEXIV2=1")
-  include_directories(${KF5KExiv2_INCLUDE_DIR})
-endif (KF5KExiv2_FOUND)
-
-# see https://cgit.kde.org/marble.git/tree/examples/cpp/hello-marble/CMakeLists.txt.external
-set(MARBLE_LIBRARIES "Marble")
-
-add_executable(navtracks ${navtracks_SRCS})
-target_link_libraries(navtracks
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Widgets
-  Qt5::PrintSupport
-  KF5::I18n
+kconfig_add_kcfg_files(navtrackssettings_SRCS settings.kcfgc)
+add_library(navtrackssettings STATIC ${navtrackssettings_SRCS})
+target_link_libraries(navtrackssettings
   KF5::ConfigCore
-  KF5::XmlGui
-  KF5::KIOCore KF5::KIOWidgets
-  KF5::IconThemes
-  KF5::ItemViews
-  KF5::Parts
-  KF5::Crash
-  abstractcoordinate
-  qcustomplot
-  ${LIBKFDIALOG_LIBRARIES}
-  ${MARBLE_LIBRARIES})
-if (Phonon4Qt5_FOUND)
-  target_link_libraries(navtracks Phonon::phonon4qt5)
-endif (Phonon4Qt5_FOUND)
-if (KF5KExiv2_FOUND)
-  target_link_libraries(navtracks KF5::KExiv2)
-endif (KF5KExiv2_FOUND)
-
-add_dependencies(navtracks vcsversion)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/plugins)
-include_directories(${QCUSTOMPLOT_DIR})
+  KF5::ConfigGui
+)
 
 #########################################################################
 #									#
@@ -183,6 +71,13 @@ include_directories(${QCUSTOMPLOT_DIR})
 #									#
 #########################################################################
 
+add_subdirectory(qcustomplot)
+add_subdirectory(core)
+add_subdirectory(services)
+add_subdirectory(media)
+add_subdirectory(gui)
+add_subdirectory(io)
+add_subdirectory(app)
 add_subdirectory(plugins)
 
 #########################################################################

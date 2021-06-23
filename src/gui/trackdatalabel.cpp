@@ -7,7 +7,6 @@
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
-#include "trackpropertiespage.h"
 
 
 TrackDataLabel::TrackDataLabel(const QString &str, QWidget *pnt)

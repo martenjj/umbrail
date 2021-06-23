@@ -1,0 +1,42 @@
+#########################################################################
+#  Project:		Track Editor					#
+#  Edit:		23-Jun-21					#
+#########################################################################
+
+project(navtracks)
+
+#########################################################################
+#									#
+#  GUI widgets								#
+#									#
+#########################################################################
+
+set(navtracksgui_SRCS
+  autotooltipdelegate.cpp
+  itemtypecombo.cpp
+  latlongdialogue.cpp
+  latlongwidget.cpp
+  mapthemedialogue.cpp
+  timezonedialogue.cpp
+  timezoneselector.cpp
+  timezonewidget.cpp
+  trackdatalabel.cpp
+  valueslider.cpp
+  variableunitdisplay.cpp
+  variableunitcombo.cpp
+)
+
+add_library(navtracksgui STATIC ${navtracksgui_SRCS})
+target_link_libraries(navtracksgui
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Widgets
+  KF5::I18n
+  KF5::Completion
+  KF5::ConfigCore
+  KF5::ConfigWidgets
+  KF5::ItemViews
+  navtrackscore
+  navtracksservices
+  abstractcoordinate
+)

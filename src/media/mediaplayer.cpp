@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	03-Jun-21						//
+//  Edit:	23-Jun-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -41,8 +41,8 @@
 #include <kio/jobuidelegate.h>
 
 #ifdef HAVE_PHONON
-#include <Phonon/MediaObject>
-#include <Phonon/AudioOutput>
+#include <phonon/mediaobject.h>
+#include <phonon/audiooutput.h>
 #endif
 
 #include <kfdialog/dialogbase.h>

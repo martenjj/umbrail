@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	03-Jun-21						//
+//  Edit:	23-Jun-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -41,7 +41,7 @@
 #include <kfdialog/dialogstatesaver.h>
 
 #ifdef HAVE_PHONON
-#include <Phonon/VideoPlayer>
+#include <phonon/videoplayer.h>
 #endif
 
 
