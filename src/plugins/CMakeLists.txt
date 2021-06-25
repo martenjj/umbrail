@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		24-Jun-21					#
 #########################################################################
 
 project(navtracks)
@@ -36,6 +36,7 @@ endif (INSTALL_BINARIES)
 #									#
 #########################################################################
 
+# Decimal
 add_library(decimalcoordinate MODULE decimalcoordinate.cpp)
 target_link_libraries(decimalcoordinate
   abstractcoordinate
@@ -49,6 +50,7 @@ if (INSTALL_BINARIES)
   install(TARGETS decimalcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
 endif (INSTALL_BINARIES)
 
+# DMS
 add_library(dmscoordinate MODULE dmscoordinate.cpp)
 target_link_libraries(dmscoordinate
   abstractcoordinate
@@ -62,6 +64,7 @@ if (INSTALL_BINARIES)
   install(TARGETS dmscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
 endif (INSTALL_BINARIES)
 
+# Swiss
 add_library(swisscoordinate MODULE swisscoordinate.cpp)
 target_link_libraries(swisscoordinate
   abstractcoordinate
@@ -75,15 +78,21 @@ if (INSTALL_BINARIES)
   install(TARGETS swisscoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
 endif (INSTALL_BINARIES)
 
+# OSGB
 add_library(osgbcoordinate MODULE osgbcoordinate.cpp)
 target_link_libraries(osgbcoordinate
   abstractcoordinate
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
+  KF5::ConfigWidgets
   navtrackscore
   ${LIBKFDIALOG_LIBRARIES}
 )
 if (INSTALL_BINARIES)
   install(TARGETS osgbcoordinate DESTINATION ${KDE_INSTALL_PLUGINDIR}/navtracks)
 endif (INSTALL_BINARIES)
+
+# The OSGB map image is as downloaded from
+# https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/British_National_Grid.svg/324px-British_National_Grid.svg.png
+install(FILES 324px-British_National_Grid.svg.png RENAME osgbgrid.png DESTINATION ${KDE_INSTALL_DATADIR}/navtracks/pics)

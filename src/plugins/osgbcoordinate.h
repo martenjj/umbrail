@@ -4,6 +4,8 @@
 #define OSGBCOORDINATE_H
 
 
+#include <qlabel.h>
+
 #include "abstractcoordinatehandler.h"
 
 
@@ -33,6 +35,8 @@ protected:
 private slots:
     void slotReferenceChanged();
     void slotCoordinateChanged();
+    void slotSelectSquare();
+    void slotReferencePicked(const QByteArray &ref);
 
 private:
     void setOSGB(double lat, double lon) const;
@@ -45,6 +49,41 @@ private:
     QLineEdit *mReferenceEdit;
     QLineEdit *mNorthEdit;
     QLineEdit *mEastEdit;
+};
+
+
+class OSGBCoordinatePicker : public QLabel
+{
+    Q_OBJECT
+
+public:
+    OSGBCoordinatePicker(QWidget *pnt = nullptr);
+    virtual ~OSGBCoordinatePicker() = default;
+
+protected:
+    void keyPressEvent(QKeyEvent *ev) override;
+    void mousePressEvent(QMouseEvent *ev) override;
+    void mouseMoveEvent(QMouseEvent *ev) override;
+    void paintEvent(QPaintEvent *ev) override;
+    void hideEvent(QHideEvent *ev) override;
+
+signals:
+    void referenceSelected(const QByteArray &ref);
+
+private:
+    QByteArray posToGridRef(const QPoint &pos) const;
+    QByteArray squareToGridRef(int sqx, int sqy) const;
+
+    void moveHighlightBy(int dx, int dy);
+    void moveHighlightStep(int d);
+
+private:
+    int mSquaresWidth;
+    int mSquaresHeight;
+
+    int mHighlightSquareX;
+    int mHighlightSquareY;
+
 };
 
 #endif							// OSGBCOORDINATE_H

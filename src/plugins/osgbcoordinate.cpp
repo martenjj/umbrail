@@ -9,10 +9,16 @@
 #include <qgridlayout.h>
 #include <qregexp.h>
 #include <qdebug.h>
+#include <qpushbutton.h>
+#include <qstandardpaths.h>
+#include <qevent.h>
+#include <qpainter.h>
+#include <qscreen.h>
 
 #include <QIntValidator>
 
 #include <klocalizedstring.h>
+#include <kcolorscheme.h>
 
 #include <kfdialog/dialogbase.h>
 
@@ -52,6 +58,10 @@ static const char validSquares[] = "HP HT HU HW HX HY HZ "
                                    "OV "
                                    "SC SD SE SH SJ SK SM SN SO SP SR SS ST SU SV SW SX SY SZ "
                                    "TA TF TG TL TM TQ TR TV ";
+
+#define PICKER_WIDTH		7			// size of picker image in grid squares
+#define PICKER_HEIGHT		13
+
 
 // Structures for coordinate passing
 
@@ -553,16 +563,16 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
 
     Qt::AlignmentFlag labelAlign = static_cast<Qt::AlignmentFlag>(w->style()->styleHint(QStyle::SH_FormLayoutLabelAlignment));
 
-    // columns: 0     1     2     3
-    //          label space combo ref
+    // columns: 0     1     2     3      4
+    //          label space combo button ref
     //          label space value
 
     // row 0: grid reference
     QLabel *l = new QLabel(i18n("Reference:"), w);
     gl->addWidget(l, 0, 0, labelAlign);
 
-    // TODO: use a picker from image https://en.wikipedia.org/wiki/File:British_National_Grid.svg
     mLetterCombo = new QComboBox(w);
+    mLetterCombo->setToolTip(i18n("Select the grid square letters from a list"));
     const char *p = validSquares;
     while (*p!='\0')
     {
@@ -576,12 +586,18 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(mLetterCombo, 0, 2);
     l->setBuddy(mLetterCombo);
 
+    QPushButton *but = new QPushButton(i18n("..."), w);
+    but->setToolTip(i18n("Select the grid square letters from a map"));
+    but->setMaximumWidth(40);
+    connect(but, &QAbstractButton::clicked, this, &OSGBCoordinateHandler::slotSelectSquare);
+    gl->addWidget(but, 0, 3);
+
     mReferenceEdit = new QLineEdit(w);
     // validator which accepts 2, 4, 6, 8 or 10 digits
     QRegExpValidator *rv = new QRegExpValidator(QRegExp("(\\d\\d){1,5}"), w);
     mReferenceEdit->setValidator(rv);
     connect(mReferenceEdit, &QLineEdit::textEdited, this, &OSGBCoordinateHandler::slotReferenceChanged);
-    gl->addWidget(mReferenceEdit, 0, 3);
+    gl->addWidget(mReferenceEdit, 0, 4);
 
     // row 1: easting
     l = new QLabel(i18n("Easting:"), w);
@@ -609,7 +625,7 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
 
     // layout adjustment
     gl->setColumnMinimumWidth(1, DialogBase::horizontalSpacing());
-    gl->setColumnStretch(3, 1);
+    gl->setColumnStretch(4, 1);
 
     return (w);
 }
@@ -700,4 +716,300 @@ void OSGBCoordinateHandler::slotCoordinateChanged()
 QString OSGBCoordinateHandler::tabName() const
 {
     return (i18nc("@title:tab", "OSGB"));
+}
+
+
+void OSGBCoordinateHandler::slotSelectSquare()
+{
+    QWidget *but = qobject_cast<QWidget *>(sender());
+    if (but==nullptr) return;
+
+    OSGBCoordinatePicker *picker = new OSGBCoordinatePicker();
+    connect(picker, &OSGBCoordinatePicker::referenceSelected,
+            this, &OSGBCoordinateHandler::slotReferencePicked);
+
+    picker->move(but->mapToGlobal(QPoint(10, 10)));	// initially near button position
+
+    // The most likely scenario, given the layout of the parent widget
+    // and the initial position and size of the picker, is that it extends
+    // off the bottom of the screen.  Check whether this is the case, and
+    // force it onto the screen if so.
+    const QRect screenArea = but->screen()->availableGeometry();
+    const QRect ourArea = picker->frameGeometry();
+    int off = ourArea.bottom()-screenArea.bottom();
+    if (off>0) picker->move(picker->x(), picker->y()-off);
+
+    picker->show();
+}
+
+
+void OSGBCoordinateHandler::slotReferencePicked(const QByteArray &ref)
+{
+    int idx = mLetterCombo->findData(ref);
+    if (idx!=-1) mLetterCombo->setCurrentIndex(idx);
+}
+
+
+//  A graphical picker for the grid square.  Uses the 324x600 image
+//  from https://en.wikipedia.org/wiki/File:British_National_Grid.svg,
+//  although it should automatically adapt to any size of image.
+
+OSGBCoordinatePicker::OSGBCoordinatePicker(QWidget *pnt)
+    : QLabel(pnt)
+{
+    const QString picFile = "pics/osgbgrid.png";
+    const QString imgFile = QStandardPaths::locate(QStandardPaths::AppDataLocation, picFile);
+    if (imgFile.isEmpty())				// look for grid image file
+    {
+        qWarning() << "cannot locate image file" << picFile;
+        deleteLater();
+        return;
+    }
+
+    QImage gridImg(imgFile);				// load grid image
+    if (gridImg.isNull())
+    {
+        qWarning() << "cannot load image file" << imgFile;
+        deleteLater();
+        return;
+    }
+
+    mSquaresWidth = gridImg.width()/PICKER_WIDTH;
+    mSquaresHeight = gridImg.height()/PICKER_HEIGHT;
+
+    setPixmap(QPixmap::fromImage(gridImg));
+    adjustSize();					// to fit the map image
+
+    // Using 'Popup' means that the picker automatically grabs
+    // mouse button and keyboard events.
+    setWindowFlags(Qt::Popup|Qt::WindowStaysOnTopHint|Qt::FramelessWindowHint);
+    // This must be set so that the picker window appears above
+    // its parent window (which is also WindowModal).
+    setWindowModality(Qt::WindowModal);
+    // Receive mouse position events for highlighting.
+    setMouseTracking(true);
+
+    mHighlightSquareX = -1;				// nothing highlighted yet
+    mHighlightSquareY = -1;
+}
+
+
+// Translate pixel coordinates on the image, which is divided into
+// cells 'mSquaresWidth' by 'mSquaresHeight' with (0,0) at the
+// top left corner, into OSGB grid letters.  If the square is valid
+// then its reference is returned, or a null string if not.
+
+QByteArray OSGBCoordinatePicker::posToGridRef(const QPoint &pos) const
+{
+    QByteArray ref;
+
+    if (rect().contains(pos))			// must be within map bounds
+    {
+        int sqx = pos.x()/mSquaresWidth;
+        int sqy = pos.y()/mSquaresHeight;
+        ref = squareToGridRef(sqx, sqy);
+    }
+
+    return (ref);
+}
+
+
+// Translate grid square coordinates on the image into OSGB grid
+// letters.  If the square is valid then its reference is returned,
+// or a null string if not.
+
+QByteArray OSGBCoordinatePicker::squareToGridRef(int sqx, int sqy) const
+{
+    QByteArray ref;
+
+    // Get the 100km-grid indices
+    const int sqy1 = 19-(PICKER_HEIGHT-sqy-1);
+    // Translate those into numeric equivalents of the grid letters
+    int l1 = sqy1 - (sqy1 % 5) + qRound(floor((sqx+10)/5.0));
+    int l2 = ((sqy1 * 5) % 25) + (sqx % 5);
+
+    // Compensate for skipped 'I' and build grid letter-pairs
+    if (l1>7) ++l1;
+    if (l2>7) ++l2;
+    char ch1 = l1+'A';
+    char ch2 = l2+'A';
+
+    // Then check that it is a valid grid square
+    for (const char *p = &validSquares[0]; *p!='\0'; p += 3)
+    {
+        if (p[0]==ch1 && p[1]==ch2)
+        {
+            ref.append(ch1);
+            ref.append(ch2);
+            break;
+        }
+    }
+
+    return (ref);
+}
+
+
+void OSGBCoordinatePicker::moveHighlightBy(int dx, int dy)
+{
+    if (mHighlightSquareX==-1 || mHighlightSquareY==-1) return;
+							// nothing highlighted
+    const QByteArray ref = squareToGridRef(mHighlightSquareX+dx, mHighlightSquareY+dy);
+    if (!ref.isEmpty())					// see if move is valid
+    {
+        mHighlightSquareX += dx;			// update the highlight
+        mHighlightSquareY += dy;
+        update();
+    }
+}
+
+
+void OSGBCoordinatePicker::moveHighlightStep(int d)
+{
+    int newSquareX = mHighlightSquareX;
+    int newSquareY = mHighlightSquareY;
+    if (newSquareX==-1) newSquareX = 0;			// top left if nothing yet highlighted
+    if (newSquareY==-1) newSquareY = 0;
+
+    // Don't want to loop forever in case of a problem,
+    // especially as it will lock out window system input!
+    bool aroundOnce = false;
+
+    // Move squares in the indicated direction until a valid
+    // grid square has been found.
+    for (;;)
+    {
+        newSquareX += d;
+
+        if (newSquareX<0)
+        {
+            --newSquareY;
+            newSquareX = PICKER_WIDTH-1;
+        }
+        else if (newSquareX>=PICKER_WIDTH)
+        {
+            ++newSquareY;
+            newSquareX = 0;
+        }
+
+        if (newSquareY<0)
+        {
+            if (aroundOnce) break;
+            aroundOnce = true;
+            newSquareX = PICKER_WIDTH-1;
+            newSquareY = PICKER_HEIGHT-1;
+        }
+        else if (newSquareY>=PICKER_HEIGHT)
+        {
+            if (aroundOnce) break;
+            aroundOnce = true;
+            newSquareX = 0;
+            newSquareY = 0;
+        }
+
+        const QByteArray ref = squareToGridRef(newSquareX, newSquareY);
+        if (!ref.isEmpty())				// found a valid grid square
+        {
+            mHighlightSquareX = newSquareX;
+            mHighlightSquareY = newSquareY;
+            update();
+            break;
+        }
+    }
+}
+
+
+void OSGBCoordinatePicker::keyPressEvent(QKeyEvent *ev)
+{
+    const int key = ev->key();
+    if (key==Qt::Key_Escape || key==Qt::Key_Cancel || key==Qt::Key_Stop)
+    {
+        hide();						// cancel the picker
+    }
+    else if (key==Qt::Key_Return || key==Qt::Key_Enter || key==Qt::Key_Space)
+    {
+        if (mHighlightSquareX!=-1 && mHighlightSquareY!=-1)
+        {
+            // Get the grid reference for the currently highlighted square
+            const QByteArray ref = squareToGridRef(mHighlightSquareX, mHighlightSquareY);
+            if (!ref.isEmpty())				// valid grid square
+            {
+                emit referenceSelected(ref);		// tell the caller
+                hide();					// finished with the picker
+            }
+        }
+    }
+    else if (key==Qt::Key_Up) moveHighlightBy(0, -1);
+    else if (key==Qt::Key_Down) moveHighlightBy(0, +1);
+    else if (key==Qt::Key_Left) moveHighlightBy(-1, 0);
+    else if (key==Qt::Key_Right) moveHighlightBy(+1, 0);
+    else if (key==Qt::Key_Tab) moveHighlightStep(+1);
+    else if (key==Qt::Key_Backtab) moveHighlightStep(-1);
+}
+
+
+void OSGBCoordinatePicker::hideEvent(QHideEvent *ev)
+{
+    deleteLater();					// destroy when hidden
+    QLabel::hideEvent(ev);
+}
+
+
+void OSGBCoordinatePicker::mousePressEvent(QMouseEvent *ev)
+{
+    const QPoint pos = ev->pos();			// click position relative to us
+
+    if (!rect().contains(pos)) hide();			// outside of map bounds,
+    else						// cancel the picker
+    {							// within map bounds,
+        const QByteArray ref = posToGridRef(pos);	// convert to grid reference
+        if (!ref.isEmpty())				// valid grid square
+        {
+            emit referenceSelected(ref);		// tell the caller
+            hide();					// finished with the picker
+        }
+    }
+}
+
+
+void OSGBCoordinatePicker::mouseMoveEvent(QMouseEvent *ev)
+{
+    const QPoint pos = ev->pos();			// mouse position relative to us
+
+    int newSquareX = -1;
+    int newSquareY = -1;
+    if (rect().contains(pos))				// if inside map bounds
+    {
+        int sqx = pos.x()/mSquaresWidth;
+        int sqy = pos.y()/mSquaresHeight;
+        if (!squareToGridRef(sqx, sqy).isEmpty())	// and a valid grid square
+        {
+            newSquareX = sqx;
+            newSquareY = sqy;
+        }
+    }
+
+    if (newSquareX!=mHighlightSquareX || newSquareY!=mHighlightSquareY)
+    {
+        update();					// schedule a paint event
+        mHighlightSquareX = newSquareX;
+        mHighlightSquareY = newSquareY;
+    }
+}
+
+
+void OSGBCoordinatePicker::paintEvent(QPaintEvent *ev)
+{
+    QLabel::paintEvent(ev);				// first do default painting
+
+    // The hovered grid square is highlighted with the user's configured
+    // selection background colour.  It is possible that they could have
+    // the colour configured to not give very good contrast with the image,
+    // but the picker will still work.
+    KColorScheme sch(QPalette::Normal, KColorScheme::Selection);
+
+    QPainter p(this);
+    p.setPen(QPen(sch.background(), 5));
+    // Draw the highlight inside the grid square.
+    p.drawRect(mHighlightSquareX*mSquaresWidth+2, mHighlightSquareY*mSquaresHeight+2,
+               mSquaresWidth-4, mSquaresHeight-4);
 }
