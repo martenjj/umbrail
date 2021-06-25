@@ -679,7 +679,8 @@ void OSGBCoordinateHandler::slotReferenceChanged()
 {
     if (!mReferenceEdit->hasAcceptableInput())
     {
-        // TODO: signal a syntax error displayed by parent widget
+        if (mReferenceEdit->text().isEmpty()) setError("");
+        else setError(i18n("Reference must have an even number of digits"));
         return;
     }
 
