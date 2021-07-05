@@ -64,6 +64,7 @@ CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QW
     QFormLayout *fl = new QFormLayout(w);
 
     mNameEdit = new QLineEdit(w);
+    mNameEdit->setPlaceholderText(i18n("(Default name)"));
     connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotSetButtonStates()));
     fl->addRow(i18nc("@title:row", "Name:"), mNameEdit);
 
@@ -182,7 +183,6 @@ TrackDataItem *CreatePointDialogue::selectedContainer() const
 
 void CreatePointDialogue::slotSetButtonStates()
 {
-    setButtonEnabled(QDialogButtonBox::Ok, !mNameEdit->text().isEmpty() &&
-                                           mLatLongEdit->hasAcceptableInput() &&
+    setButtonEnabled(QDialogButtonBox::Ok, mLatLongEdit->hasAcceptableInput() &&
                                            selectedContainer()!=nullptr);
 }

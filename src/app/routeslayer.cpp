@@ -198,7 +198,9 @@ void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
             painter->drawEllipse(coord, 12, 12);
         }
 
-        // Finally the routepoint text
+        // Finally the routepoint text, if a name is explicitly set
+        if (!tdp->hasExplicitName()) continue;
+
         painter->save();
         painter->translate(15, 3);			// offset text from point
         painter->setPen(Qt::gray);			// draw with drop shadow

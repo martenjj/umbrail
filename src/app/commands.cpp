@@ -1097,7 +1097,7 @@ void AddWaypointCommand::redo()
         mNewWaypointContainer = new ItemContainer;
 
         TrackDataWaypoint *newWaypoint = new TrackDataWaypoint;
-        newWaypoint->setName(mWaypointName, true);
+        if (!mWaypointName.isEmpty()) newWaypoint->setName(mWaypointName, true);
         newWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=nullptr)
         {
@@ -1189,7 +1189,7 @@ void AddRoutepointCommand::redo()
         mNewRoutepointContainer = new ItemContainer;
 
         TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
-        newRoutepoint->setName(mRoutepointName, true);
+        if (!mRoutepointName.isEmpty()) newRoutepoint->setName(mRoutepointName, true);
         newRoutepoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=nullptr) newRoutepoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
 
