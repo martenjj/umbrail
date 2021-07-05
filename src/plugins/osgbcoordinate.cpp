@@ -67,15 +67,15 @@ static const char validSquares[] = "HP HT HU HW HX HY HZ "
 
 struct Vector3D						// 3D Cartesian coordinates
 {
-    double x;
-    double y;
-    double z;
+    long double x;
+    long double y;
+    long double z;
 };
 
 struct LatLon						// Latitude/longitude
 {
-    double lat;
-    double lon;
+    long double lat;
+    long double lon;
 };
 
 struct OSGBRef						// OSGB eastings/northings
@@ -86,7 +86,7 @@ struct OSGBRef						// OSGB eastings/northings
 
 struct Transform					// Helmert transform matrix
 {
-    double t[7];
+    long double t[7];
 };
 
 
@@ -98,22 +98,22 @@ struct Transform					// Helmert transform matrix
 //
 // from MM LatLon.prototype.toCartesian()
 
-static Vector3D toCartesian(double lat, double lon)
+static Vector3D toCartesian(long double lat, long double lon)
 {
-    const double phi = DEGREES_TO_RADIANS(lat);
-    const double lambda = DEGREES_TO_RADIANS(lon);
+    const long double phi = DEGREES_TO_RADIANS(lat);
+    const long double lambda = DEGREES_TO_RADIANS(lon);
 
     // from MM LatLon.ellipsoid for WGS84
-    const double a = 6378137;
-    const double f = 1.0/298.257223563;
+    const long double a = 6378137;
+    const long double f = 1.0/298.257223563;
 
-    const double sinphi = sin(phi);
-    const double cosphi = cos(phi);
-    const double sinlambda = sin(lambda);
-    const double coslambda = cos(lambda);
+    const long double sinphi = sinl(phi);
+    const long double cosphi = cosl(phi);
+    const long double sinlambda = sinl(lambda);
+    const long double coslambda = cosl(lambda);
 
-    const double eSq = 2*f - f*f;			// 1st eccentricity squared = (a²-b²)/a²
-    const double v = a/sqrt(1 - eSq*sinphi*sinphi);	// radius of curvature in prime vertical
+    const long double eSq = 2*f - f*f;				// 1st eccentricity squared = (a²-b²)/a²
+    const long double v = a/sqrtl(1 - eSq*sinphi*sinphi);	// radius of curvature in prime vertical
 
     Vector3D point;
     point.x = v*cosphi*coslambda;
@@ -147,18 +147,18 @@ static Transform getOSGB36Transform()
 static Vector3D applyTransform(const Vector3D &point, const Transform &t)
 {
     // this point
-    const double x1 = point.x;
-    const double y1 = point.y;
-    const double z1 = point.z;
+    const long double x1 = point.x;
+    const long double y1 = point.y;
+    const long double z1 = point.z;
 
     // transform parameters
-    const double tx = t.t[0];				// x-shift
-    const double ty = t.t[1];				// y-shift
-    const double tz = t.t[2];				// z-shift
-    const double s1 = t.t[3]/1e6 + 1;			// scale: normalise parts-per-million to (s+1)
-    const double rx = DEGREES_TO_RADIANS(t.t[4]/3600);	// x-rotation: normalise arcseconds to radians
-    const double ry = DEGREES_TO_RADIANS(t.t[5]/3600);	// y-rotation: normalise arcseconds to radians
-    const double rz = DEGREES_TO_RADIANS(t.t[6]/3600);	// z-rotation: normalise arcseconds to radians
+    const long double tx = t.t[0];				// x-shift
+    const long double ty = t.t[1];				// y-shift
+    const long double tz = t.t[2];				// z-shift
+    const long double s1 = t.t[3]/1e6 + 1;			// scale: normalise parts-per-million to (s+1)
+    const long double rx = DEGREES_TO_RADIANS(t.t[4]/3600);	// x-rotation: normalise arcseconds to radians
+    const long double ry = DEGREES_TO_RADIANS(t.t[5]/3600);	// y-rotation: normalise arcseconds to radians
+    const long double rz = DEGREES_TO_RADIANS(t.t[6]/3600);	// z-rotation: normalise arcseconds to radians
 
     // apply transform
     Vector3D result;
@@ -178,30 +178,30 @@ static Vector3D applyTransform(const Vector3D &point, const Transform &t)
 
 static LatLon toLatLonE(const Vector3D &point)
 {
-    const double x = point.x;
-    const double y = point.y;
-    const double z = point.z;
+    const long double x = point.x;
+    const long double y = point.y;
+    const long double z = point.z;
 
     // from MM LatLon.ellipsoid for OSGB36 (Airy1830)
-    const double a = 6377563.396;
-    const double b = 6356256.909;
-    const double f = 1/299.3249646;
+    const long double a = 6377563.396;
+    const long double b = 6356256.909;
+    const long double f = 1/299.3249646;
 
-    const double e2 = 2*f - f*f;			// 1st eccentricity squared = (a²-b²)/a²
-    const double eps2 = e2/(1-e2);			// 2nd eccentricity squared = (a²-b²)/b²
-    const double p = sqrt(x*x + y*y);			// distance from minor axis
-    const double R = sqrt(p*p + z*z);			// polar radius
+    const long double e2 = 2*f - f*f;			// 1st eccentricity squared = (a²-b²)/a²
+    const long double eps2 = e2/(1-e2);			// 2nd eccentricity squared = (a²-b²)/b²
+    const long double p = sqrtl(x*x + y*y);		// distance from minor axis
+    const long double R = sqrtl(p*p + z*z);		// polar radius
 
     // parametric latitude (Bowring eqn 17, replacing tanβ = z·a / p·b)
-    const double tanbeta = (b*z)/(a*p)*(1+eps2*b/R);
-    const double sinbeta = tanbeta/sqrt(1+tanbeta*tanbeta);
-    const double cosbeta = sinbeta/tanbeta;
+    const long double tanbeta = (b*z)/(a*p)*(1+eps2*b/R);
+    const long double sinbeta = tanbeta/sqrtl(1+tanbeta*tanbeta);
+    const long double cosbeta = sinbeta/tanbeta;
 
     // geodetic latitude (Bowring eqn 18: tanφ = z+ε²bsin³β / p−e²cos³β)
-    const double phi = ISNAN(cosbeta) ? 0 : atan2(z+eps2*b*sinbeta*sinbeta*sinbeta, p-e2*a*cosbeta*cosbeta*cosbeta);
+    const long double phi = ISNAN(cosbeta) ? 0 : atan2l(z+eps2*b*sinbeta*sinbeta*sinbeta, p-e2*a*cosbeta*cosbeta*cosbeta);
 
     // longitude
-    const double lambda = atan2(y, x);
+    const long double lambda = atan2l(y, x);
 
     LatLon result;
     result.lat = RADIANS_TO_DEGREES(phi);
@@ -218,10 +218,18 @@ static LatLon toLatLonE(const Vector3D &point)
 //
 // from MM OsGridRef.latLonToOsGrid()
 
-static OSGBRef latLonToOSGrid(double lat, double lon)
+static OSGBRef latLonToOSGrid(long double lat, long double lon)
 {
 #ifdef DEBUG_OSGB
-    qDebug() << "lat" << lat << "lon" << lon;
+    // No qDebug() operators are defined for 'long double', therefore the
+    // overload cannot be resolved:
+    //
+    // error: ambiguous overload for 'operator<<' in
+    // 'QMessageLogger::debug() const().QDebug::operator<<(((const char*)"lat")) << lat'
+    // (operand types are 'QDebug' and 'long double')
+    // note: candidate 'QDebug& QDebug::operator<<(float)'
+    // note: candidate 'QDebug& QDebug::operator<<(double)'
+    qDebug() << "lat" << static_cast<double>(lat) << "lon" << static_cast<double>(lon);
 #endif
     // Input is in WGS84.  Needs to be converted to OSGB36.
     //
@@ -239,59 +247,64 @@ static OSGBRef latLonToOSGrid(double lat, double lon)
 
     // continuing MM OsGridRef.latLonToOsGrid()
 
-    const double phi = DEGREES_TO_RADIANS(newLatLon.lat);
-    const double lambda = DEGREES_TO_RADIANS(newLatLon.lon);
+    const long double phi = DEGREES_TO_RADIANS(newLatLon.lat);
+    const long double lambda = DEGREES_TO_RADIANS(newLatLon.lon);
 
     // from MM LatLon.ellipsoid for OSGB36 (Airy1830)
-    const double a = 6377563.396;			// major semi-axis
-    const double b = 6356256.909;			// minor semi-axis
-    const double F0 = 0.9996012717;			// NatGrid scale factor on central meridian
+    const long double a = 6377563.396;			// major semi-axis
+    const long double b = 6356256.909;			// minor semi-axis
+    const long double F0 = 0.9996012717;		// NatGrid scale factor on central meridian
 
-    const double phi0 = DEGREES_TO_RADIANS(49);		// NatGrid true origin is 49°N 2°W
-    const double lambda0 = DEGREES_TO_RADIANS(-2);
+    const long double phi0 = DEGREES_TO_RADIANS(49);	// NatGrid true origin is 49°N 2°W
+    const long double lambda0 = DEGREES_TO_RADIANS(-2);
 
-    const double N0 = -100000;				// northing & easting of true origin, metres
-    const double E0 = 400000;
-    const double e2 = 1 - (b*b)/(a*a);			// eccentricity squared
-    const double n = (a-b)/(a+b);			// n, n², n³
-    const double n2 = n*n;
-    const double n3 = n*n*n;
+    const long double N0 = -100000;			// northing & easting of true origin, metres
+    const long double E0 = 400000;
+    const long double e2 = 1 - (b*b)/(a*a);		// eccentricity squared
+    const long double n = (a-b)/(a+b);			// n, n², n³
+    const long double n2 = n*n;
+    const long double n3 = n*n*n;
 
-    const double cosphi = cos(phi);
-    const double sinphi = sin(phi);
-    const double v = a*F0/sqrt(1-e2*sinphi*sinphi);		// transverse radius of curvature
-    const double p = a*F0*(1-e2)/pow(1-e2*sinphi*sinphi, 1.5);	// meridional radius of curvature
-    const double eta2 = v/p-1;
+    const long double cosphi = cosl(phi);
+    const long double sinphi = sinl(phi);
+    const long double v = a*F0/sqrtl(1-e2*sinphi*sinphi);		// transverse radius of curvature
+    const long double p = a*F0*(1-e2)/powl(1-e2*sinphi*sinphi, 1.5);	// meridional radius of curvature
+    const long double eta2 = v/p-1;
 
-    const double Ma = (1 + n + (5/4)*n2 + (5/4)*n3) * (phi-phi0);
-    const double Mb = (3*n + 3*n*n + (21/8)*n3) * sin(phi-phi0) * cos(phi+phi0);
-    const double Mc = ((15/8)*n2 + (15/8)*n3) * sin(2*(phi-phi0)) * cos(2*(phi+phi0));
-    const double Md = (35/24)*n3 * sin(3*(phi-phi0)) * cos(3*(phi+phi0));
-    const double M = b * F0 * (Ma - Mb + Mc - Md);	// meridional arc
+    const long double Ma = (1 + n + (5/4)*n2 + (5/4)*n3) * (phi-phi0);
+    const long double Mb = (3*n + 3*n*n + (21/8)*n3) * sinl(phi-phi0) * cosl(phi+phi0);
+    const long double Mc = ((15/8)*n2 + (15/8)*n3) * sinl(2*(phi-phi0)) * cosl(2*(phi+phi0));
+    const long double Md = (35/24)*n3 * sinl(3*(phi-phi0)) * cosl(3*(phi+phi0));
+    const long double M = b * F0 * (Ma - Mb + Mc - Md);	// meridional arc
 
-    const double cos3phi = cosphi*cosphi*cosphi;
-    const double cos5phi = cos3phi*cosphi*cosphi;
-    const double tan2phi = tan(phi)*tan(phi);
-    const double tan4phi = tan2phi*tan2phi;
+    const long double cos3phi = cosphi*cosphi*cosphi;
+    const long double cos5phi = cos3phi*cosphi*cosphi;
+    const long double tan2phi = tanl(phi)*tanl(phi);
+    const long double tan4phi = tan2phi*tan2phi;
 
-    const double I = M + N0;
-    const double II = (v/2)*sinphi*cosphi;
-    const double III = (v/24)*sinphi*cos3phi*(5-tan2phi+9*eta2);
-    const double IIIA = (v/720)*sinphi*cos5phi*(61-58*tan2phi+tan4phi);
-    const double IV = v*cosphi;
-    const double V = (v/6)*cos3phi*(v/p-tan2phi);
-    const double VI = (v/120) * cos5phi * (5 - 18*tan2phi + tan4phi + 14*eta2 - 58*tan2phi*eta2);
+    const long double I = M + N0;
+    const long double II = (v/2)*sinphi*cosphi;
+    const long double III = (v/24)*sinphi*cos3phi*(5-tan2phi+9*eta2);
+    const long double IIIA = (v/720)*sinphi*cos5phi*(61-58*tan2phi+tan4phi);
+    const long double IV = v*cosphi;
+    const long double V = (v/6)*cos3phi*(v/p-tan2phi);
+    const long double VI = (v/120) * cos5phi * (5 - 18*tan2phi + tan4phi + 14*eta2 - 58*tan2phi*eta2);
 
-    const double deltalambda = lambda-lambda0;
-    const double deltalambda2 = deltalambda*deltalambda;
-    const double deltalambda3 = deltalambda2*deltalambda;
-    const double deltalambda4 = deltalambda3*deltalambda;
-    const double deltalambda5 = deltalambda4*deltalambda;
-    const double deltalambda6 = deltalambda5*deltalambda;
+    const long double deltalambda = lambda-lambda0;
+    const long double deltalambda2 = deltalambda*deltalambda;
+    const long double deltalambda3 = deltalambda2*deltalambda;
+    const long double deltalambda4 = deltalambda3*deltalambda;
+    const long double deltalambda5 = deltalambda4*deltalambda;
+    const long double deltalambda6 = deltalambda5*deltalambda;
 
     OSGBRef ref;
-    ref.E = qRound(E0 + IV*deltalambda + V*deltalambda3 + VI*deltalambda5);
-    ref.N = qRound(I + II*deltalambda2 + III*deltalambda4 + IIIA*deltalambda6);
+    // Similarly qRound() only works with 'double' values:
+    //
+    // error: call of overloaded 'qRound(long double)' is ambiguous
+    // note: candidate 'constexpr int qRound(double)'
+    // note: candidate 'constexpr int qRound(float)'
+    ref.E = qRound(static_cast<double>(E0 + IV*deltalambda + V*deltalambda3 + VI*deltalambda5));
+    ref.N = qRound(static_cast<double>(I + II*deltalambda2 + III*deltalambda4 + IIIA*deltalambda6));
 #ifdef DEBUG_OSGB
     qDebug() << "-> E" << ref.E << "N" << ref.N;
 #endif
@@ -315,30 +328,30 @@ static LatLon getOSGBFromEN(const OSGBRef &ref)
     qDebug() << "E" << ref.E << "N" << ref.N;
 #endif
 
-    const double a = 6377563.396;			// Airy 1830 major & minor semi-axes
-    const double b = 6356256.909;
-    const double F0 = 0.9996012717;			// NatGrid scale factor on central meridian
-    const double phi0 = DEGREES_TO_RADIANS(49);		// NatGrid true origin is 49°N 2°W
-    const double lambda0 = DEGREES_TO_RADIANS(-2);
-    const double N0 = -100000;				// northing & easting of true origin, metres
-    const double E0 = 400000;
-    const double e2 = 1 - (b*b)/(a*a);			 // eccentricity squared
-    const double n = (a-b)/(a+b);			 // n, n², n³
-    const double n2 = n*n;
-    const double n3 = n*n*n;
+    const long double a = 6377563.396;			// Airy 1830 major & minor semi-axes
+    const long double b = 6356256.909;
+    const long double F0 = 0.9996012717;		// NatGrid scale factor on central meridian
+    const long double phi0 = DEGREES_TO_RADIANS(49);	// NatGrid true origin is 49°N 2°W
+    const long double lambda0 = DEGREES_TO_RADIANS(-2);
+    const long double N0 = -100000;			// northing & easting of true origin, metres
+    const long double E0 = 400000;
+    const long double e2 = 1 - (b*b)/(a*a);		// eccentricity squared
+    const long double n = (a-b)/(a+b);			// n, n², n³
+    const long double n2 = n*n;
+    const long double n3 = n*n*n;
 
-    double phi = phi0;
-    double M = 0;
+    long double phi = phi0;
+    long double M = 0;
 #ifdef DEBUG_OSGB
     int iterCount = 0;
 #endif
     do {
         phi = (N-N0-M)/(a*F0) + phi;
 
-        const double Ma = (1 + n + (5/4)*n2 + (5/4)*n3) * (phi-phi0);
-        const double Mb = (3*n + 3*n*n + (21/8)*n3) * sin(phi-phi0) * cos(phi+phi0);
-        const double Mc = ((15/8)*n2 + (15/8)*n3) * sin(2*(phi-phi0)) * cos(2*(phi+phi0));
-        const double Md = (35/24)*n3 * sin(3*(phi-phi0)) * cos(3*(phi+phi0));
+        const long double Ma = (1 + n + (5/4)*n2 + (5/4)*n3) * (phi-phi0);
+        const long double Mb = (3*n + 3*n*n + (21/8)*n3) * sinl(phi-phi0) * cosl(phi+phi0);
+        const long double Mc = ((15/8)*n2 + (15/8)*n3) * sinl(2*(phi-phi0)) * cosl(2*(phi+phi0));
+        const long double Md = (35/24)*n3 * sinl(3*(phi-phi0)) * cosl(3*(phi+phi0));
         M = b * F0 * (Ma - Mb + Mc - Md);		// meridional arc
 #ifdef DEBUG_OSGB
         ++iterCount;
@@ -348,38 +361,38 @@ static LatLon getOSGBFromEN(const OSGBRef &ref)
     qDebug() << "took" << iterCount << "iterations";
 #endif
 
-    const double cosphi = cos(phi);
-    const double sinphi = sin(phi);
-    const double v = a*F0/sqrt(1-e2*sinphi*sinphi);		// transverse radius of curvature
-    const double p = a*F0*(1-e2)/pow(1-e2*sinphi*sinphi, 1.5);	// meridional radius of curvature
-    const double eta2 = v/p-1;
+    const long double cosphi = cosl(phi);
+    const long double sinphi = sinl(phi);
+    const long double v = a*F0/sqrtl(1-e2*sinphi*sinphi);		// transverse radius of curvature
+    const long double p = a*F0*(1-e2)/powl(1-e2*sinphi*sinphi, 1.5);	// meridional radius of curvature
+    const long double eta2 = v/p-1;
 
-    const double tanphi = tan(phi);
-    const double tan2phi = tanphi*tanphi;
-    const double tan4phi = tan2phi*tan2phi;
-    const double tan6phi = tan4phi*tan2phi;
-    const double secphi = 1/cosphi;
-    const double v3 = v*v*v;
-    const double v5 = v3*v*v;
-    const double v7 = v5*v*v;
+    const long double tanphi = tanl(phi);
+    const long double tan2phi = tanphi*tanphi;
+    const long double tan4phi = tan2phi*tan2phi;
+    const long double tan6phi = tan4phi*tan2phi;
+    const long double secphi = 1/cosphi;
+    const long double v3 = v*v*v;
+    const long double v5 = v3*v*v;
+    const long double v7 = v5*v*v;
 
-    const double VII = tanphi/(2*p*v);
-    const double VIII = tanphi/(24*p*v3)*(5+3*tan2phi+eta2-9*tan2phi*eta2);
-    const double IX = tanphi/(720*p*v5)*(61+90*tan2phi+45*tan4phi);
-    const double X = secphi/v;
-    const double XI = secphi/(6*v3)*(v/p+2*tan2phi);
-    const double XII = secphi/(120*v5)*(5+28*tan2phi+24*tan4phi);
-    const double XIIA = secphi/(5040*v7)*(61+662*tan2phi+1320*tan4phi+720*tan6phi);
+    const long double VII = tanphi/(2*p*v);
+    const long double VIII = tanphi/(24*p*v3)*(5+3*tan2phi+eta2-9*tan2phi*eta2);
+    const long double IX = tanphi/(720*p*v5)*(61+90*tan2phi+45*tan4phi);
+    const long double X = secphi/v;
+    const long double XI = secphi/(6*v3)*(v/p+2*tan2phi);
+    const long double XII = secphi/(120*v5)*(5+28*tan2phi+24*tan4phi);
+    const long double XIIA = secphi/(5040*v7)*(61+662*tan2phi+1320*tan4phi+720*tan6phi);
 
-    const double dE = (E-E0);
-    const double dE2 = dE*dE;
-    const double dE3 = dE2*dE;
-    const double dE4 = dE2*dE2;
-    const double dE5 = dE3*dE2;
-    const double dE6 = dE4*dE2;
-    const double dE7 = dE5*dE2;
+    const long double dE = (E-E0);
+    const long double dE2 = dE*dE;
+    const long double dE3 = dE2*dE;
+    const long double dE4 = dE2*dE2;
+    const long double dE5 = dE3*dE2;
+    const long double dE6 = dE4*dE2;
+    const long double dE7 = dE5*dE2;
     phi = phi - VII*dE2 + VIII*dE4 - IX*dE6;
-    const double lambda = lambda0 + X*dE - XI*dE3 + XII*dE5 - XIIA*dE7;
+    const long double lambda = lambda0 + X*dE - XI*dE3 + XII*dE5 - XIIA*dE7;
 
     // The output at this stage is in OSGB36.  Needs to be converted to WGS84.
     //
@@ -396,7 +409,7 @@ static LatLon getOSGBFromEN(const OSGBRef &ref)
     // finally convert cartesian to polar
     LatLon newLatLon = toLatLonE(newCartesian);
 #ifdef DEBUG_OSGB
-    qDebug() << "-> lat" << newLatLon.lat << "lon" << newLatLon.lon;
+    qDebug() << "-> lat" << static_cast<double>(newLatLon.lat) << "lon" << static_cast<double>(newLatLon.lon);
 #endif
     return (newLatLon);
 }
