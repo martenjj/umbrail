@@ -407,9 +407,11 @@ void MainWindow::setupActions()
     ac->setDefaultShortcut(a, Qt::Key_Escape);
     connect(a, SIGNAL(triggered()), this, SLOT(slotResetAndCancel()));
 
-    MapView *mapView = mapController()->view();
+    const MapView *mapView = mapController()->view();
 
     KActionMenu *itemsMenu = new KActionMenu(this);
+    // For consistency with "Waypoint Status" which is a KSelectAction
+    itemsMenu->setPopupMode(QToolButton::InstantPopup);
     QStringList layerIds = mapView->allLayers(false);
     foreach (const QString &id, layerIds)
     {
@@ -424,6 +426,7 @@ void MainWindow::setupActions()
     a->setIcon(QIcon::fromTheme("layer-visible-on"));
 
     itemsMenu = new KActionMenu(this);
+    itemsMenu->setPopupMode(QToolButton::InstantPopup);
     QStringList notUseful = QString(notUsefulOverlays).split(',');
     QStringList itemIds = mapView->allOverlays(false);
     foreach (const QString &itemId, itemIds)
