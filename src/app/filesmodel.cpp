@@ -187,7 +187,7 @@ case COL_NAME:
                     if (!desc.isEmpty())
                     {
                         desc.replace('\n', ";&nbsp;");
-                        tip = i18n("<div style=\"white-space:nowrap\">%1</div><div>\"%2\"</div>", tip, desc);
+                        tip = i18n("<div style=\"white-space:nowrap\">%1</div><div style=\"font-style:italic\">\"%2\"</div>", tip, desc);
                     }
 
                     return (tip);
