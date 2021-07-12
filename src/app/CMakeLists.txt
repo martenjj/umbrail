@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		12-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -16,7 +16,6 @@ set(navtracks_SRCS
   commands.cpp
   createpointdialogue.cpp
   filescontroller.cpp
-  filesmodel.cpp
   filesview.cpp
   folderselectdialogue.cpp
   folderselectwidget.cpp
@@ -30,13 +29,11 @@ set(navtracks_SRCS
   ploteditwidget.cpp
   positioninfodialogue.cpp
   profilewidget.cpp
-  project.cpp
   routeslayer.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
   stopdetectdialogue.cpp
   stopslayer.cpp
-  trackfiltermodel.cpp
   trackpropertiesdialogue.cpp
   trackpropertiespage.cpp
   trackpropertiesdetailpages.cpp

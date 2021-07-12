@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		12-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -18,6 +18,9 @@ set(navtrackscore_SRCS
   units.cpp
   waypointimageprovider.cpp
   metadatamodel.cpp
+  filesmodel.cpp
+  trackfiltermodel.cpp
+  project.cpp
 )
 
 add_library(navtrackscore STATIC ${navtrackscore_SRCS})
@@ -27,4 +30,5 @@ target_link_libraries(navtrackscore
   KF5::I18n
   KF5::KIOCore
   KF5::IconThemes
+  KF5::ConfigWidgets
 )
