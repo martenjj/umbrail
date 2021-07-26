@@ -63,7 +63,7 @@ bool DialogueConstraintFilter::eventFilter(QObject *obj, QEvent *ev)
 
 FilesController::FilesController(QObject *pnt)
     : QObject(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 

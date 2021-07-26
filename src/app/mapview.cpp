@@ -30,7 +30,7 @@
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
 MapView::MapView(QWidget *pnt)
     : MarbleWidget(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 

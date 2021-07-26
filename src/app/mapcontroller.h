@@ -4,7 +4,7 @@
 #define MAPCONTROLLER_H
  
 #include <qobject.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 #include <marble/MapThemeManager.h>
 
@@ -16,7 +16,7 @@ class MapView;
 class TrackDataItem;
 
 
-class MapController : public QObject, public MainWindowInterface
+class MapController : public QObject, public ApplicationDataInterface
 {
     Q_OBJECT
 

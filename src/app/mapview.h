@@ -5,7 +5,7 @@
  
 #include <qmap.h>
 #include <marble/MarbleWidget.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 using namespace Marble;
 
@@ -16,7 +16,7 @@ class LayerBase;
 class StopsLayer;
 
 
-class MapView : public MarbleWidget, public MainWindowInterface
+class MapView : public MarbleWidget, public ApplicationDataInterface
 {
     Q_OBJECT
 

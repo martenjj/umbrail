@@ -1,12 +1,13 @@
 // -*-mode:c++ -*-
 
-#ifndef MAINWINDOWINTERFACE_H
-#define MAINWINDOWINTERFACE_H
+#ifndef APPLICATIONDATAINTERFACE_H
+#define APPLICATIONDATAINTERFACE_H
 
 class QObject;
-class MainWindow;
+class ApplicationData;
 class FilesController;
 class MapController;
+class MainWindow;
  
 
 /**
@@ -17,30 +18,33 @@ class MapController;
  * In order to avoid having to pass a pointer to those all the way down to
  * anything that may need it (sometimes through a long call chain), this
  * interface uses the Qt object hierarchy.  When constructed, it searches
- * upwards from the specified parent widget until it finds the MainWindow at
- * the top of the tree, and saves it.  The MainWindow or the controllers can
- * then be accessed via the functions provided.
+ * upwards from the specified parent widget until it finds an object which
+ * inherits ApplicationData (which will be the MainWindow) at the top of the
+ * tree, and saves it.  The application data can then be accessed via the
+ * functions provided.
  *
  * @note The parent @p pnt parameter must be non-NULL and a valid @c QObject
- * that is a descendent of the @c MainWindow, otherwise the application will
- * exit with a fatal error.
+ * that is a descendent of an object that inherits @c ApplicationData, otherwise
+ * the application will exit with a fatal error.
  *
- * @see MainWindow
+ * @see ApplicationData
  * @author Jonathan Marten
  **/
 
-class MainWindowInterface
+class ApplicationDataInterface
 {
 protected:
-    MainWindowInterface(QObject *pnt);
+    ApplicationDataInterface(QObject *pnt);
 
-    MainWindow *mainWindow() const		{ return (mMainWindow); }
+    ApplicationData *applicationData() const		{ return (mApplicationData); }
+
     FilesController *filesController() const;
     MapController *mapController() const;
+    MainWindow *mainWindow() const;
     bool isReadOnly() const;
 
 private:
-    MainWindow *mMainWindow;
+    ApplicationData *mApplicationData;
 };
- 
-#endif							// MAINWINDOWINTERFACE_H
+
+#endif							// APPLICATIONDATAINTERFACE_H

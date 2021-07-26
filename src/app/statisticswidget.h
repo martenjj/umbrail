@@ -4,14 +4,14 @@
 #define STATISTICSWIDGET_H
  
 #include <kfdialog/dialogbase.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 
 class QGridLayout;
 class TrackDataAbstractPoint;
 
 
-class StatisticsWidget : public DialogBase, public MainWindowInterface
+class StatisticsWidget : public DialogBase, public ApplicationDataInterface
 {
     Q_OBJECT
 

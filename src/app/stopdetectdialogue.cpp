@@ -57,7 +57,7 @@ static const int mergeMaxTime = 3*60;			// ask about merge this time gap (second
 
 StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     : DialogBase(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     setObjectName("StopDetectDialogue");
 

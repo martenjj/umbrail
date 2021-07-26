@@ -4,7 +4,7 @@
 
 #include <qwidget.h>
 
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 class QFormLayout;
 
@@ -33,7 +33,7 @@ class MetadataModel;
     }
 
 
-class TrackPropertiesPage : public QWidget, public MainWindowInterface
+class TrackPropertiesPage : public QWidget, public ApplicationDataInterface
 {
     Q_OBJECT
 

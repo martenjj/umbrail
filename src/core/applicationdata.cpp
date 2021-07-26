@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	23-Apr-18						//
+//  Edit:	26-Jul-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -25,63 +25,51 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "project.h"
+#include "applicationdata.h"
 
 #include <qdebug.h>
 
-//#include <kurl.h>
 #include <klocalizedstring.h>
 
 
-Project::Project()
+ApplicationData::ApplicationData()
 {
     qDebug();
     clear();
 }
 
 
-Project::~Project()
+void ApplicationData::setModified(bool mod)
 {
-}
-
-
-void Project::setModified(bool mod)
-{
-    qDebug() << "mod=" << mod;
+    qDebug() << mod;
     mModified = mod;
 }
 
 
-void Project::setFileName(const QUrl &file)
+void ApplicationData::setReadOnly(bool ro)
 {
-    qDebug() << "file=" << file;
+    qDebug() << ro;
+    mReadOnly = ro;
+}
+
+
+void ApplicationData::setFileName(const QUrl &file)
+{
+    qDebug() << file;
     mSaveFile = file;
 }
 
 
-QString Project::save(KConfig *conf)
-{
-    qDebug();
-    return (QString());
-}
-
-
-QString Project::load(const KConfig *conf)
-{
-    qDebug();
-    return (QString());
-}
-
-
-QString Project::name(bool onlyIfValid) const
+QString ApplicationData::documentName(bool onlyIfValid) const
 {
     if (mSaveFile.isValid()) return (mSaveFile.fileName());
     else return (onlyIfValid ? QString() : i18n("Untitled"));
 }
 
 
-void Project::clear()
+void ApplicationData::clear()
 {
     mSaveFile = QUrl();
     mModified = false;
+    mReadOnly = false;
 }

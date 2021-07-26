@@ -8,7 +8,7 @@
 #include <marble/LayerInterface.h>
 #include <marble/GeoDataCoordinates.h>
 #include <marble/GeoDataLineString.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 using namespace Marble;
 
@@ -51,7 +51,7 @@ private:
 ////////////////////////////////////////////////////////////////////////
 
 
-class LayerBase : public QObject, public MainWindowInterface, public Marble::LayerInterface
+class LayerBase : public QObject, public ApplicationDataInterface, public Marble::LayerInterface
 {
     Q_OBJECT
 

@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		12-Jul-21					#
+#  Edit:		26-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -22,7 +22,6 @@ set(navtracks_SRCS
   itemselectdialogue.cpp
   layerbase.cpp
   mainwindow.cpp
-  mainwindowinterface.cpp
   mapcontroller.cpp
   mapview.cpp
   moveitemdialogue.cpp

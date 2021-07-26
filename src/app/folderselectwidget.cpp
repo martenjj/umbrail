@@ -14,7 +14,7 @@
 
 FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
     : QFrame(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     setObjectName("FolderSelectWidget");
 

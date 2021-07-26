@@ -18,7 +18,7 @@
 
 FilesView::FilesView(QWidget *pnt)
     : QTreeView(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 

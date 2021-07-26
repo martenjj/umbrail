@@ -5,6 +5,7 @@
 
 #include <kxmlguiwindow.h>
 
+#include "applicationdata.h"
 #include "filescontroller.h"
 #include "importerexporterbase.h"
 
@@ -30,17 +31,13 @@ class Project;
 class TrackDataItem;
 
 
-class MainWindow : public KXmlGuiWindow
+class MainWindow : public KXmlGuiWindow, public ApplicationData
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *pnt = nullptr);
-    ~MainWindow();
-
-    MapController *mapController() const	{ return (mMapController); }
-    FilesController *filesController() const	{ return (mFilesController); }
-    bool isReadOnly() const			{ return (mReadOnly); }
+    explicit MainWindow(QWidget *pnt = nullptr);
+    virtual ~MainWindow();
 
     bool loadProject(const QUrl &loadFrom, bool readOnly = false);
 
@@ -106,11 +103,6 @@ private slots:
     void slotUpdatePasteState();
 
 private:
-    Project *mProject;
-    FilesController *mFilesController;
-    MapController *mMapController;
-    bool mReadOnly;
-
     KSqueezedTextLabel *mStatusMessage;
     QLabel *mModifiedIndicator;
 

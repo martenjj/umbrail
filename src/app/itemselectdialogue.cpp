@@ -14,7 +14,7 @@
 
 ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
     : DialogBase(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     setObjectName("ItemSelectDialogue");
 

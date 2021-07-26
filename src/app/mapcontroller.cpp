@@ -24,7 +24,7 @@
 
 MapController::MapController(QObject *pnt)
     : QObject(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 

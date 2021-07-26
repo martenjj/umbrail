@@ -4,7 +4,7 @@
 #define FILESCONTROLLER_H
  
 #include <qobject.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 #include "importerexporterbase.h"
 
 #include <math.h>					// need this for 'NAN'
@@ -34,7 +34,7 @@ public:
 };
 
 
-class FilesController : public QObject, public MainWindowInterface
+class FilesController : public QObject, public ApplicationDataInterface
 {
     Q_OBJECT
 

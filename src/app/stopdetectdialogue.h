@@ -4,7 +4,7 @@
 
 
 #include <kfdialog/dialogbase.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 #include <qtimezone.h>
 
@@ -22,7 +22,7 @@ class TrackDataWaypoint;
 class FolderSelectWidget;
 
 
-class StopDetectDialogue : public DialogBase, public MainWindowInterface
+class StopDetectDialogue : public DialogBase, public ApplicationDataInterface
 {
     Q_OBJECT
 

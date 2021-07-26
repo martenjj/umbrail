@@ -218,7 +218,7 @@ void WaypointLayerable::applyDefaultAntialiasingHint(QCPPainter *painter) const
 ProfileWidget::ProfileWidget(QWidget *pnt)
     : DialogBase(pnt),
       DialogStateSaver(this),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     setObjectName("ProfileWidget");
     setButtons(QDialogButtonBox::Close);

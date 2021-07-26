@@ -52,7 +52,7 @@ void SelectionRun::clear()
 
 LayerBase::LayerBase(QWidget *pnt)
     : QObject(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 
