@@ -83,17 +83,20 @@ void MainWindow::init()
     connect(mUndoStack, SIGNAL(redoTextChanged(const QString &)), SLOT(slotRedoTextChanged(const QString &)));
     connect(mUndoStack, SIGNAL(cleanChanged(bool)), SLOT(slotCleanUndoChanged(bool)));
 
-    mMainWindow = this;					// set in ApplicationData
+    mMainWidget = mMainWindow = this;			// set in ApplicationData
 
     mFilesController = new FilesController(this);
     connect(mFilesController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
     connect(mFilesController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mFilesController, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
 
+    mFilesView = filesController()->view();		// set in ApplicationData
+
     mMapController = new MapController(this);
     connect(mMapController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
     connect(mMapController, SIGNAL(modified()), SLOT(slotSetModified()));
     connect(mMapController, SIGNAL(mapZoomChanged(bool,bool)), SLOT(slotMapZoomChanged(bool,bool)));
+    connect(mMapController, SIGNAL(mapDraggedPoints(qreal,qreal)), mFilesController, SLOT(slotMapDraggedPoints(qreal,qreal)));
 
     connect(mFilesController, SIGNAL(updateMap()), mMapController->view(), SLOT(update()));
     // TODO: temp, see FilesView::selectionChanged()

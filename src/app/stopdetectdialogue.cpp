@@ -19,6 +19,7 @@
 #include <kseparator.h>
 #include <kmessagebox.h>
 #include <kactioncollection.h>
+#include <kxmlguiwindow.h>
 
 #include <kfdialog/dialogstatewatcher.h>
 
@@ -150,7 +151,15 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     gl->setColumnStretch(1, 1);
     l->setBuddy(mResultsList);
 
-    QAction *act = mainWindow()->actionCollection()->action("map_go_selection");
+    // Qualifying mainWidget() is necessary because of multiple inheritance:
+    //
+    // app/stopdetectdialogue.cpp:153: error: reference to 'mainWidget' is ambiguous
+    // core/applicationdatainterface.h:48: note: candidates are:
+    //                         'QWidget* ApplicationDataInterface::mainWidget() const'
+    // kfdialog/dialogbase.h:68: note: 'QWidget* DialogBase::mainWidget() const'
+    KXmlGuiWindow *mainwin = qobject_cast<KXmlGuiWindow *>(ApplicationDataInterface::mainWidget());
+
+    QAction *act = mainwin->actionCollection()->action("map_go_selection");
     Q_ASSERT(act!=nullptr);
 
     mShowOnMapButton = new QPushButton(act->icon(), act->text(), w);
@@ -159,7 +168,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     connect(mShowOnMapButton, SIGNAL(clicked(bool)), SLOT(slotShowOnMap()));
     gl->addWidget(mShowOnMapButton, 2, 2, Qt::AlignRight);
 
-    act = mainWindow()->actionCollection()->action("track_merge");
+    act = mainwin->actionCollection()->action("track_merge");
     Q_ASSERT(act!=nullptr);
 
     mMergeStopsButton = new QPushButton(act->icon(), i18n("Merge Stops"), w);

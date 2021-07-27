@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		26-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -24,6 +24,7 @@ set(navtracksgui_SRCS
   valueslider.cpp
   variableunitdisplay.cpp
   variableunitcombo.cpp
+  filesview.cpp
 )
 
 add_library(navtracksgui STATIC ${navtracksgui_SRCS})
@@ -36,7 +37,9 @@ target_link_libraries(navtracksgui
   KF5::ConfigCore
   KF5::ConfigWidgets
   KF5::ItemViews
+  KF5::XmlGui
   navtrackscore
+  navtrackssettings
   navtracksservices
   abstractcoordinate
 )

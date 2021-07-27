@@ -30,6 +30,12 @@ FilesController *ApplicationDataInterface::filesController() const
 }
 
 
+FilesView *ApplicationDataInterface::filesView() const
+{
+    return (mApplicationData->filesView());
+}
+
+
 MapController *ApplicationDataInterface::mapController() const
 {
     return (mApplicationData->mapController());
@@ -39,6 +45,12 @@ MapController *ApplicationDataInterface::mapController() const
 MainWindow *ApplicationDataInterface::mainWindow() const
 {
     return (mApplicationData->mainWindow());
+}
+
+
+QWidget *ApplicationDataInterface::mainWidget() const
+{
+    return (mApplicationData->mainWidget());
 }
 
 

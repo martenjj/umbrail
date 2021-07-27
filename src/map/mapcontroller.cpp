@@ -16,10 +16,7 @@
 #include "mapview.h"
 #include "trackdata.h"
 #include "mapthemedialogue.h"
-#include "mainwindow.h"
 #include "settings.h"
-#include "commands.h"
-#include "filesview.h"
 
 
 MapController::MapController(QObject *pnt)
@@ -28,11 +25,11 @@ MapController::MapController(QObject *pnt)
 {
     qDebug();
 
-    mView = new MapView(mainWindow());
+    mView = new MapView(mainWidget());
     connect(mView, SIGNAL(mouseMoveGeoPosition(const QString &)),
             SLOT(slotShowPosition(const QString &)));
     connect(mView, SIGNAL(zoomChanged(int)), SLOT(slotZoomChanged(int)));
-    connect(mView, SIGNAL(draggedPoints(qreal,qreal)), SLOT(slotDraggedPoints(qreal,qreal)));
+    connect(mView, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(mapDraggedPoints(qreal,qreal)));
 
     mHomeLat = 51.436019;				// default to here
     mHomeLong = -0.352764;
@@ -117,7 +114,7 @@ void MapController::slotSetHome()
     double lat = view()->centerLatitude();
     double lng = view()->centerLongitude();
 
-    if (KMessageBox::questionYesNo(mainWindow(),
+    if (KMessageBox::questionYesNo(mainWidget(),
                                    xi18nc("@info", "Set home position to <emphasis strong=\"1\">%1</emphasis>?", TrackData::formattedLatLong(lat, lng)),
                                    i18n("Set Home Position?"),
                                    KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
@@ -137,7 +134,7 @@ void MapController::slotSetZoom()
 {
     int zoom = view()->zoom();
 
-    if (KMessageBox::questionYesNo(mainWindow(),
+    if (KMessageBox::questionYesNo(mainWidget(),
                                    xi18nc("@info", "Set standard zoom to <emphasis strong=\"1\">%1</emphasis>?", zoom),
                                    i18n("Set Standard Zoom?"),
                                    KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
@@ -160,7 +157,7 @@ void MapController::slotResetZoom()
 void MapController::slotSaveImage()
 {
     RecentSaver saver("mapsave");
-    QUrl file = QFileDialog::getSaveFileUrl(mainWindow(),			// parent
+    QUrl file = QFileDialog::getSaveFileUrl(mainWidget(),			// parent
                                             i18n("Save Map As Image"),		// caption
                                             saver.recentUrl("untitled"),	// dir
                                             ImageFilter::qtFilterString(ImageFilter::Writing),
@@ -179,7 +176,7 @@ void MapController::slotSaveImage()
     qDebug() << "size" << pix.size() << "to" << file;
     if (!pix.save(file.path()))
     {
-        KMessageBox::error(mainWindow(),
+        KMessageBox::error(mainWidget(),
                            xi18nc("@info", "Failed to save image file:<nl/><filename>%1</filename>", file.toDisplayString()),
                            i18n("Save Failed"));
         emit statusMessage(i18n("Failed to save map image"));
@@ -219,7 +216,7 @@ void MapController::slotSelectTheme()
         mThemeManager = new MapThemeManager(this);
     }
 
-    MapThemeDialogue *d = new MapThemeDialogue(mThemeManager->mapThemeModel(), mainWindow());
+    MapThemeDialogue *d = new MapThemeDialogue(mThemeManager->mapThemeModel(), mainWidget());
     d->setThemeId(view()->mapThemeId());
     d->setWindowModality(Qt::WindowModal);
 
@@ -244,7 +241,7 @@ void MapController::slotMapThemeSelected(const QString &themeId)
 
 void MapController::slotAboutMarble()
 {
-    MarbleAboutDialog d(mainWindow());
+    MarbleAboutDialog d(mainWidget());
     d.exec();
 }
 
@@ -256,7 +253,7 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
     BoundingArea bb = TrackData::unifyBoundingAreas(&items);
     if (!bb.isValid())					// empty container
     {
-        KMessageBox::sorry(mainWindow(),
+        KMessageBox::sorry(mainWidget(),
                            i18n("No valid position to show"),
                            i18n("No Position"));
         return;
@@ -265,16 +262,4 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
     GeoDataLatLonBox ll(bb.north(), bb.south(),
                         bb.east(), bb.west(), GeoDataCoordinates::Degree);
     view()->centerOn(ll, true);
-}
-
-
-void MapController::slotDraggedPoints(qreal latOff, qreal lonOff)
-{
-    qDebug() << latOff << lonOff;
-
-    MovePointsCommand *cmd = new MovePointsCommand(filesController());
-    cmd->setText(i18n("Move Points"));
-    cmd->setDataItems(filesController()->view()->selectedItems());
-    cmd->setData(latOff, lonOff);
-    mainWindow()->executeCommand(cmd);
 }

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Utility library						//
-//  Edit:	26-Jul-21						//
+//  Edit:	27-Jul-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -31,7 +31,10 @@
 
 #include <qurl.h>
 
+class QWidget;
+
 class FilesController;
+class FilesView;
 class MapController;
 class MainWindow;
 
@@ -160,6 +163,13 @@ public:
     FilesController *filesController() const	{ Q_ASSERT(mFilesController!=nullptr); return (mFilesController); }
 
     /**
+     * Get the FilesView for the document.
+     *
+     * @return the @c FilesView object
+     **/
+    FilesView *filesView() const		{ Q_ASSERT(mFilesView!=nullptr); return (mFilesView); }
+
+    /**
      * Get the MapController for the document.
      *
      * @return the @c MapController object
@@ -173,6 +183,13 @@ public:
      **/
     MainWindow *mainWindow() const		{ Q_ASSERT(mMainWindow!=nullptr); return (mMainWindow); }
 
+    /**
+     * Get the MainWindow for the document, as a @c QWidget.
+     *
+     * @return the @c MainWindow object
+     **/
+    QWidget *mainWidget() const			{ Q_ASSERT(mMainWidget!=nullptr); return (mMainWidget); }
+
 protected:
     /**
      * The FilesController object.
@@ -180,6 +197,13 @@ protected:
      * Needs to be set by the MainWindow which inherits ApplicationData.
      **/
     FilesController *mFilesController;
+
+    /**
+     * The FilesView object.
+     *
+     * Needs to be set by the MainWindow which inherits ApplicationData.
+     **/
+    FilesView *mFilesView;
 
     /**
      * The MapController object.
@@ -191,9 +215,21 @@ protected:
     /**
      * The MainWindow object.
      *
-     * Needs to be set to itself by the MainWindow which inherits ApplicationData.
+     * Needs to be set to 'this' by the MainWindow which inherits ApplicationData.
      **/
     MainWindow *mMainWindow;
+
+    /**
+     * The QWidget corresponding to the MainWindow object.
+     *
+     * Needs to be set to 'this' by the MainWindow which inherits ApplicationData.
+     *
+     * @note This returns the same object as @c mainWindow(), but as a @c QWidget.
+     * This means that it can be used by code outside of 'app', for example as a
+     * widget parent or being cast to a @c KXmlGuiWindow.  It cannot, however, be
+     * cast to a @c MainWindow outside of 'app'.
+     **/
+    QWidget *mMainWidget;
 
 private:
     bool mModified;

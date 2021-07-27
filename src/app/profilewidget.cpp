@@ -403,7 +403,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     Q_ASSERT(waypointLayer!=nullptr);
     mWaypointLayerable = new WaypointLayerable(mPlot, "waypoints");
 							// only needs to be done once
-    associateWaypoints(mainWindow()->filesController()->model()->rootFileItem());
+    associateWaypoints(filesController()->model()->rootFileItem());
     qDebug() << "found" << mWaypoints.count() << "associated waypoints";
     mWaypointSelection = WaypointSelectDialogue::SelectWaypoints|WaypointSelectDialogue::SelectRoutepoints;
 

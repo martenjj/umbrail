@@ -107,6 +107,7 @@ private:
 private slots:
     void slotUpdateActionState();
     void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
+    void slotMapDraggedPoints(qreal latOff, qreal lonOff);
 
 private:
     FilesView *mView;

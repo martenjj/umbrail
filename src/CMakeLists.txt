@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		26-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -76,6 +76,7 @@ add_subdirectory(core)
 add_subdirectory(services)
 add_subdirectory(media)
 add_subdirectory(gui)
+add_subdirectory(map)
 add_subdirectory(io)
 add_subdirectory(app)
 add_subdirectory(plugins)

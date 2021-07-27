@@ -78,7 +78,7 @@ FilesController::FilesController(QObject *pnt)
     mProxyModel->setDynamicSortFilter(true);
 #endif
 
-    mView = new FilesView(mainWindow());
+    mView = new FilesView(mainWidget());
 #ifdef SORTABLE_VIEW
     mView->setModel(mProxyModel);
 #else
@@ -224,7 +224,7 @@ case ErrorReporter::Fatal:
 
     bool notAgain = false;
 
-    QDialog *dlg = new QDialog(mainWindow());
+    QDialog *dlg = new QDialog(mainWidget());
     dlg->setWindowTitle(caption);
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, dlg);
     if (detailed)
@@ -369,7 +369,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
                 return (FilesController::StatusFailed);
             }
 
-            KMessageBox::information(mainWindow(),
+            KMessageBox::information(mainWidget(),
                                      xi18nc("@info", "Original of<nl/><filename>%1</filename><nl/>has been backed up as<nl/><filename>%2</filename>",
                                           exportTo.toDisplayString(), backupFile.toDisplayString()),
                                      i18n("Original file backed up"),
@@ -479,7 +479,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
     QString zone = model()->rootFileItem()->timeZone();	// get the file time zone set
     if (zone.isEmpty() && !mWarnedNoTimezone)		// message only once per file
     {
-        q = KMessageBox::warningContinueCancel(mainWindow(),
+        q = KMessageBox::warningContinueCancel(mainWidget(),
                                                xi18nc("@info", "No time zone has been set for this file.<nl/>Locating by time and/or the time of<nl/>created waypoints may be incorrect."),
                                                i18n("No Time Zone"));
 
@@ -504,10 +504,10 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         if (!importFrom.isLocalFile())
         {
             const QString messageText = xi18nc("@info", "<filename>%1</filename> is not a local file", importFrom.toDisplayString());
-            if (!multiple) KMessageBox::sorry(mainWindow(), messageText, i18n("Cannot Import"));
+            if (!multiple) KMessageBox::sorry(mainWidget(), messageText, i18n("Cannot Import"));
             else
             {
-                q = KMessageBox::warningContinueCancel(mainWindow(),
+                q = KMessageBox::warningContinueCancel(mainWidget(),
                                                        messageText,
                                                        i18n("Cannot Import"),
                                                        KStandardGuiItem::cont(),
@@ -586,7 +586,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
         if (multiple)
         {
-            q = KMessageBox::questionYesNoCancel(mainWindow(),
+            q = KMessageBox::questionYesNoCancel(mainWidget(),
                                                  messageText,
                                                  i18n("Create Waypoint?"),
                                                  KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
@@ -595,7 +595,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         }
         else
         {
-            q = KMessageBox::questionYesNo(mainWindow(),
+            q = KMessageBox::questionYesNo(mainWidget(),
                                            messageText,
                                            i18n("Create Waypoint?"),
                                            KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
@@ -727,7 +727,7 @@ void FilesController::slotCheckTimeZone()
     bool notAgain = fileWarningIgnored(file, "timezone");
     if (notAgain) return;				// see if ignored for this file
 
-    KMessageBox::ButtonCode but = KMessageBox::questionYesNoCancel(mainWindow(),
+    KMessageBox::ButtonCode but = KMessageBox::questionYesNoCancel(mainWidget(),
         i18n("The file does not have a time zone set.\nDo you want to set or look up one?"),
 									// text
         i18n("No Time Zone"),					 	// caption
@@ -891,7 +891,7 @@ void FilesController::slotSplitSegment()
     int idx = pnt->childIndex(item);
     if (idx==0 || idx>=(pnt->childCount()-1))
     {
-        KMessageBox::sorry(mainWindow(),
+        KMessageBox::sorry(mainWidget(),
                            xi18nc("@info", "Cannot split the segment or route here<nl/>(at its start or end point)"),
                            i18n("Cannot split segment"));
         return;
@@ -948,7 +948,7 @@ void FilesController::slotMergeSegments()
 
             if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
             {						// all apart from first
-                KMessageBox::sorry(mainWindow(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
+                KMessageBox::sorry(mainWidget(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
                                                         tds->name(), items[i-1]->name()),
                                    i18n("Cannot merge segments"));
                 return;
@@ -1072,7 +1072,7 @@ void FilesController::slotDeleteItems()
         query = i18np("Delete the selected item?", "Delete the %1 selected items?", num);
     }
 
-    int result = KMessageBox::warningContinueCancel(mainWindow(), query,
+    int result = KMessageBox::warningContinueCancel(mainWidget(), query,
                                                     i18n("Confirm Delete"),
                                                     KStandardGuiItem::del());
     if (result!=KMessageBox::Continue) return;
@@ -1099,7 +1099,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     CreatePointDialogue d(this, false);			// waypoint mode
     if (!d.canCreate())
     {
-        KMessageBox::sorry(mainWindow(),
+        KMessageBox::sorry(mainWidget(),
                            i18n("There are no folders where a waypoint can be created."),
                            i18n("Cannot Create Waypoint"));
         return;
@@ -1143,7 +1143,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     CreatePointDialogue d(this, true);			// route point mode
     if (!d.canCreate())
     {
-        KMessageBox::sorry(mainWindow(),
+        KMessageBox::sorry(mainWidget(),
                            i18n("There are no routes where a point can be created."),
                            i18n("Cannot Create Routepoint"));
         return;
@@ -1195,6 +1195,18 @@ void FilesController::slotDragDropItems(const QList<TrackDataItem *> &sourceItem
     cmd->setText(i18n("Drag/Drop"));
 
     cmd->setData(sourceItems, ontoParent, row);
+    mainWindow()->executeCommand(cmd);
+}
+
+
+void FilesController::slotMapDraggedPoints(qreal latOff, qreal lonOff)
+{
+    qDebug() << latOff << lonOff;
+
+    MovePointsCommand *cmd = new MovePointsCommand(this);
+    cmd->setText(i18n("Move Points"));
+    cmd->setDataItems(filesController()->view()->selectedItems());
+    cmd->setData(latOff, lonOff);
     mainWindow()->executeCommand(cmd);
 }
 
@@ -1254,9 +1266,14 @@ void FilesController::slotSetTimeZone()
     mSettingTimeZone = true;
 
     TrackPropertiesDialogue::setNextPageIndex(0);	// open at "General" page
+
     // Open the dialogue by triggering the action, so that the dialogue
     // can access the sender() action to get its text for the window caption.
-    QAction *act = mainWindow()->actionCollection()->action("track_properties");
+    //
+    // See StopDetectDialogue::StopDetectDialogue() for why the qualification
+    // of mainWidget() is needed.
+    KXmlGuiWindow *mainwin = qobject_cast<KXmlGuiWindow *>(ApplicationDataInterface::mainWidget());
+    QAction *act = mainwin->actionCollection()->action("track_properties");
     Q_ASSERT(act!=nullptr);
     QTimer::singleShot(0, act, &QAction::trigger);
 }

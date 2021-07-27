@@ -8,9 +8,9 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
+#include <kxmlguiwindow.h>
 #include <kxmlguifactory.h>
 
-#include "mainwindow.h"
 #include "autotooltipdelegate.h"
 #include "settings.h"
 #include "filesmodel.h"
@@ -230,9 +230,10 @@ QVector<const TrackDataAbstractPoint *> FilesView::selectedPoints() const
 
 void FilesView::contextMenuEvent(QContextMenuEvent *ev)
 {
-    QMenu *popup = static_cast<QMenu *>(
-        mainWindow()->factory()->container("filesview_contextmenu",
-                                           mainWindow()));
+    KXmlGuiWindow *xmlwin = qobject_cast<KXmlGuiWindow *>(mainWidget());
+    Q_ASSERT(xmlwin!=nullptr);
+
+    QMenu *popup = static_cast<QMenu *>(xmlwin->factory()->container("filesview_contextmenu", xmlwin));
     if (popup!=nullptr) popup->exec(ev->globalPos());
 }
 

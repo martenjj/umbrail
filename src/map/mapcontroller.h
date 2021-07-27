@@ -48,13 +48,13 @@ public slots:
 protected slots:
     void slotShowPosition( const QString &pos);
     void slotZoomChanged(int zoom);
-    void slotDraggedPoints(qreal latOff, qreal lonOff);
 
 signals:
     void statusMessage(const QString &text);
     void modified();
 
     void mapZoomChanged(bool canZoomIn, bool canZoomOut);
+    void mapDraggedPoints(qreal latOff, qreal lonOff);
 
 private slots:
     void slotMapThemeSelected(const QString &themeId);
