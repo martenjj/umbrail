@@ -313,7 +313,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
     }
     else
     {
-        mainWindow()->executeCommand(cmd);		// make the operation undo'able
+        executeCommand(cmd);				// make the operation undo'able
         emit statusMessage(xi18nc("@info", "Imported <filename>%1</filename>", importFrom.toDisplayString()));
     }
 
@@ -638,7 +638,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         return (result);
     }
 
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
     emit modified();
     return (result);
 }
@@ -860,7 +860,7 @@ void FilesController::slotTrackProperties()
     }
 
     cmd->setText(actText);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -874,7 +874,7 @@ void FilesController::slotSetWaypointStatus()
     cmd->setText(i18n("Waypoint Status %1", CommandBase::senderText(sender())));
     cmd->setDataItems(view()->selectedItems());
     cmd->setData("status", (newStatus==0) ? "" : QString::number(newStatus));
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -900,7 +900,7 @@ void FilesController::slotSplitSegment()
     SplitSegmentCommand *cmd = new SplitSegmentCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(pnt, idx);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -963,7 +963,7 @@ void FilesController::slotMergeSegments()
     MergeSegmentsCommand *cmd = new MergeSegmentsCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(masterSeg, items);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -988,7 +988,7 @@ void FilesController::slotMoveItem()
     MoveItemCommand *cmd = new MoveItemCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(items, dest);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1002,7 +1002,7 @@ void FilesController::slotAddTrack()
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(TrackData::Track);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1016,7 +1016,7 @@ void FilesController::slotAddRoute()
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(TrackData::Route);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1030,7 +1030,7 @@ void FilesController::slotAddFolder()
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(TrackData::Folder, pnt);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1042,7 +1042,7 @@ void FilesController::slotAddPoint()
     AddPointCommand *cmd = new AddPointCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(items.first());
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1080,7 +1080,7 @@ void FilesController::slotDeleteItems()
     DeleteItemsCommand *cmd = new DeleteItemsCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(items);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1134,7 +1134,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     else cmd->setSenderText(sdr);
 
     cmd->setData(name, lat, lon, destFolder, selPoint);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1178,7 +1178,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     else cmd->setSenderText(sdr);
 
     cmd->setData(name, lat, lon, destRoute, selPoint);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1195,7 +1195,7 @@ void FilesController::slotDragDropItems(const QList<TrackDataItem *> &sourceItem
     cmd->setText(i18n("Drag/Drop"));
 
     cmd->setData(sourceItems, ontoParent, row);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 
@@ -1207,7 +1207,7 @@ void FilesController::slotMapDraggedPoints(qreal latOff, qreal lonOff)
     cmd->setText(i18n("Move Points"));
     cmd->setDataItems(filesController()->view()->selectedItems());
     cmd->setData(latOff, lonOff);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }
 
 //////////////////////////////////////////////////////////////////////////

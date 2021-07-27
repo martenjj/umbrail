@@ -14,7 +14,6 @@ class QListWidget;
 class QLineEdit;
 class QPushButton;
 class QShowEvent;
-class MainWindow;
 class ValueSlider;
 class TrackDataItem;
 class TrackDataAbstractPoint;

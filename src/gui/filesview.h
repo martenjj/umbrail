@@ -9,9 +9,6 @@
 #include "trackdata.h"
 
 
-class MainWindow;
-
-
 class FilesView : public QTreeView, public ApplicationDataInterface
 {
     Q_OBJECT

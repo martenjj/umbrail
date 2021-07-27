@@ -36,7 +36,6 @@ class QWidget;
 class FilesController;
 class FilesView;
 class MapController;
-class MainWindow;
 
 
 /**
@@ -177,16 +176,9 @@ public:
     MapController *mapController() const	{ Q_ASSERT(mMapController!=nullptr); return (mMapController); }
 
     /**
-     * Get the MainWindow for the document.
+     * Get the main window for the document, as a @c QWidget.
      *
-     * @return the @c MainWindow object
-     **/
-    MainWindow *mainWindow() const		{ Q_ASSERT(mMainWindow!=nullptr); return (mMainWindow); }
-
-    /**
-     * Get the MainWindow for the document, as a @c QWidget.
-     *
-     * @return the @c MainWindow object
+     * @return the @c main window object
      **/
     QWidget *mainWidget() const			{ Q_ASSERT(mMainWidget!=nullptr); return (mMainWidget); }
 
@@ -213,21 +205,14 @@ protected:
     MapController *mMapController;
 
     /**
-     * The MainWindow object.
-     *
-     * Needs to be set to 'this' by the MainWindow which inherits ApplicationData.
-     **/
-    MainWindow *mMainWindow;
-
-    /**
      * The QWidget corresponding to the MainWindow object.
      *
      * Needs to be set to 'this' by the MainWindow which inherits ApplicationData.
      *
-     * @note This returns the same object as @c mainWindow(), but as a @c QWidget.
-     * This means that it can be used by code outside of 'app', for example as a
-     * widget parent or being cast to a @c KXmlGuiWindow.  It cannot, however, be
-     * cast to a @c MainWindow outside of 'app'.
+     * @note This returns the main window as a @c QWidget.  It can therefore be
+     * used by code outside of 'app', for example as a widget parent or being
+     * cast to a @c KXmlGuiWindow.  It can only, however, be cast to a @c MainWindow
+     * within 'app'.
      **/
     QWidget *mMainWidget;
 

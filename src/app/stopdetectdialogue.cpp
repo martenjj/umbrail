@@ -574,7 +574,7 @@ void StopDetectDialogue::slotCommitResults()
         // This will end up with two operations in the undo history,
         // but unfortunately it is necessary because we need to
         // specify the destination folder for adding the waypoints.
-        mainWindow()->executeCommand(cmd1);
+        executeCommand(cmd1);
         destFolder = TrackData::findFolderByPath(folderPath, root);
         Q_ASSERT(destFolder!=nullptr);			// should now have been created
     }
@@ -599,5 +599,5 @@ void StopDetectDialogue::slotCommitResults()
         return;
     }
 
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 }

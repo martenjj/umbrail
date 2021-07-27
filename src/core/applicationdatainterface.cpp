@@ -2,6 +2,7 @@
 #include "applicationdatainterface.h"
 
 #include <qobject.h>
+#include <qwidget.h>
 
 #include "applicationdata.h"
 
@@ -42,12 +43,6 @@ MapController *ApplicationDataInterface::mapController() const
 }
 
 
-MainWindow *ApplicationDataInterface::mainWindow() const
-{
-    return (mApplicationData->mainWindow());
-}
-
-
 QWidget *ApplicationDataInterface::mainWidget() const
 {
     return (mApplicationData->mainWidget());
@@ -57,4 +52,12 @@ QWidget *ApplicationDataInterface::mainWidget() const
 bool ApplicationDataInterface::isReadOnly() const
 {
     return (mApplicationData->isReadOnly());
+}
+
+
+void ApplicationDataInterface::executeCommand(QUndoCommand *cmd)
+{
+    QMetaObject::invokeMethod(mApplicationData->mainWidget(),
+                              "slotExecuteCommand",
+                              Q_ARG(QUndoCommand *, cmd));
 }

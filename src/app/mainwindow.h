@@ -41,11 +41,11 @@ public:
 
     bool loadProject(const QUrl &loadFrom, bool readOnly = false);
 
-    void executeCommand(QUndoCommand *cmd);
-
 public slots:               
     void slotStatusMessage(const QString &text);
     void slotSetModified(bool mod = true);
+
+    void slotExecuteCommand(QUndoCommand *cmd);
 
 protected:
     void saveProperties(KConfigGroup &grp) override;

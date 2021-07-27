@@ -5,12 +5,12 @@
 
 class QObject;
 class QWidget;
+class QUndoCommand;
 
 class ApplicationData;
 class FilesController;
 class FilesView;
 class MapController;
-class MainWindow;
  
 
 /**
@@ -39,15 +39,14 @@ class ApplicationDataInterface
 protected:
     ApplicationDataInterface(QObject *pnt);
 
-    ApplicationData *applicationData() const		{ return (mApplicationData); }
-
     FilesController *filesController() const;
     FilesView *filesView() const;
     MapController *mapController() const;
-    MainWindow *mainWindow() const;
     QWidget *mainWidget() const;
 
     bool isReadOnly() const;
+
+    void executeCommand(QUndoCommand *cmd);
 
 private:
     ApplicationData *mApplicationData;

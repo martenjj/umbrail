@@ -83,7 +83,9 @@ void MainWindow::init()
     connect(mUndoStack, SIGNAL(redoTextChanged(const QString &)), SLOT(slotRedoTextChanged(const QString &)));
     connect(mUndoStack, SIGNAL(cleanChanged(bool)), SLOT(slotCleanUndoChanged(bool)));
 
-    mMainWidget = mMainWindow = this;			// set in ApplicationData
+    // Need to set this in ApplicationData before constructing
+    // anything else that will use it.
+    mMainWidget = this;
 
     mFilesController = new FilesController(this);
     connect(mFilesController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
@@ -1116,7 +1118,7 @@ void MainWindow::slotSaveMedia()
 }
 
 
-void MainWindow::executeCommand(QUndoCommand *cmd)
+void MainWindow::slotExecuteCommand(QUndoCommand *cmd)
 {
     if (mUndoStack!=nullptr) mUndoStack->push(cmd);	// do via undo system
     else { cmd->redo(); delete cmd; }			// do directly (fallback)
