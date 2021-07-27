@@ -17,9 +17,7 @@ set(navtracks_SRCS
   filescontroller.cpp
   folderselectdialogue.cpp
   folderselectwidget.cpp
-  itemselectdialogue.cpp
   mainwindow.cpp
-  moveitemdialogue.cpp
   ploteditwidget.cpp
   profilewidget.cpp
   settingsdialogue.cpp
@@ -32,7 +30,6 @@ set(navtracks_SRCS
   trackpropertiesmetadatapages.cpp
   trackpropertiesplotpages.cpp
   trackpropertiesstylepages.cpp
-  waypointselectdialogue.cpp
 )
 
 if (KF5KExiv2_FOUND)

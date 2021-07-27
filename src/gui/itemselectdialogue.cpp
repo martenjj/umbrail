@@ -6,7 +6,7 @@
 
 #include <klocalizedstring.h>
 
-#include "filescontroller.h"
+#include "filesview.h"
 #include "filesmodel.h"
 #include "trackfiltermodel.h"
 #include "trackdata.h"
@@ -33,7 +33,7 @@ ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
     mTrackList->setHeaderHidden(true);
 
     TrackFilterModel *trackModel = new TrackFilterModel(this);
-    trackModel->setSourceModel(filesController()->model());
+    trackModel->setSourceModel(filesView()->model());
     mTrackList->setModel(trackModel);
 
     connect(mTrackList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),

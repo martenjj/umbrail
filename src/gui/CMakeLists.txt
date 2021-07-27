@@ -26,6 +26,9 @@ set(navtracksgui_SRCS
   variableunitcombo.cpp
   filesview.cpp
   createpointdialogue.cpp
+  itemselectdialogue.cpp
+  moveitemdialogue.cpp
+  waypointselectdialogue.cpp
 )
 
 add_library(navtracksgui STATIC ${navtracksgui_SRCS})

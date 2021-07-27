@@ -8,7 +8,6 @@
 
 #include <klocalizedstring.h>
 
-#include "mainwindow.h"
 #include "folderselectdialogue.h"
 
 

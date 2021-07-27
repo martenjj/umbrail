@@ -87,7 +87,8 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
     TrackFilterModel *trackModel = new TrackFilterModel(this);
 
     FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    if (filesModel!=nullptr) trackModel->setSourceModel(filesModel);
+    Q_ASSERT(filesModel!=nullptr);
+    trackModel->setSourceModel(filesModel);
     trackModel->setMode(routeMode ? TrackData::Route : TrackData::Waypoint);
     mContainerList->setModel(trackModel);
     mContainerList->expandToDepth(9);
