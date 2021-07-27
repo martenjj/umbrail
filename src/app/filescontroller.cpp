@@ -1096,7 +1096,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     //
     //   3.	The user may enter the coordinates.
 
-    CreatePointDialogue d(this, false);			// waypoint mode
+    CreatePointDialogue d(false, mainWidget());		// waypoint mode
     if (!d.canCreate())
     {
         KMessageBox::sorry(mainWidget(),
@@ -1140,7 +1140,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
 
 void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
 {
-    CreatePointDialogue d(this, true);			// route point mode
+    CreatePointDialogue d(true, mainWidget());		// route point mode
     if (!d.canCreate())
     {
         KMessageBox::sorry(mainWidget(),

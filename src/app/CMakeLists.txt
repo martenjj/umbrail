@@ -14,7 +14,6 @@ project(navtracks)
 set(navtracks_SRCS
   main.cpp
   commands.cpp
-  createpointdialogue.cpp
   filescontroller.cpp
   folderselectdialogue.cpp
   folderselectwidget.cpp

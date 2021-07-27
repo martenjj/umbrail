@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		26-Jul-21					#
+#  Edit:		27-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -25,6 +25,7 @@ set(navtracksgui_SRCS
   variableunitdisplay.cpp
   variableunitcombo.cpp
   filesview.cpp
+  createpointdialogue.cpp
 )
 
 add_library(navtracksgui STATIC ${navtracksgui_SRCS})

@@ -261,7 +261,6 @@ void FilesView::slotSelectAllSiblings()
 }
 
 
-
 void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
 {
     selectionModel()->select(QItemSelection(index, index),
