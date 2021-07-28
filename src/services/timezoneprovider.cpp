@@ -14,6 +14,10 @@
 TimeZoneProvider::TimeZoneProvider(double lat, double lon, QObject *pnt)
     : QObject(pnt)
 {
+    // TODO for release: be able to configure geonames.org username
+    // or may later be able to use the KI18N regional API, see
+    // https://www.volkerkrause.eu/2021/07/24/kf5-country-timezone-location-lookup.html
+
     // http://api.geonames.org/timezone?lat=51.46&lng=-0.30&username=jmarten
     mUrl = QUrl("http://api.geonames.org/timezone");
 
