@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		27-Jul-21					#
+#  Edit:		28-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -18,7 +18,6 @@ set(navtracks_SRCS
   folderselectdialogue.cpp
   folderselectwidget.cpp
   mainwindow.cpp
-  ploteditwidget.cpp
   profilewidget.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
