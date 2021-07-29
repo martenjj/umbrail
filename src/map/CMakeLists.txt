@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		26-Jul-21					#
+#  Edit:		29-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -23,6 +23,7 @@ set(navtracksmap_SRCS
   trackslayer.cpp
   waypointslayer.cpp
   positioninfodialogue.cpp
+  mapthemedialogue.cpp
 )
 
 add_library(navtracksmap STATIC ${navtracksmap_SRCS})

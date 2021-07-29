@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		28-Jul-21					#
+#  Edit:		29-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -16,7 +16,6 @@ set(navtracksgui_SRCS
   itemtypecombo.cpp
   latlongdialogue.cpp
   latlongwidget.cpp
-  mapthemedialogue.cpp
   ploteditwidget.cpp
   timezonedialogue.cpp
   timezoneselector.cpp
