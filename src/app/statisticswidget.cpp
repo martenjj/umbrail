@@ -21,7 +21,7 @@
 
 StatisticsWidget::StatisticsWidget(QWidget *pnt)
     : DialogBase(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     setObjectName("StatisticsWidget");
     setButtons(QDialogButtonBox::Close);

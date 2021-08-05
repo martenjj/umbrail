@@ -4,12 +4,12 @@
 
 
 #include <qframe.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 class QLineEdit;
 
 
-class FolderSelectWidget : public QFrame, public MainWindowInterface
+class FolderSelectWidget : public QFrame, public ApplicationDataInterface
 {
     Q_OBJECT
 

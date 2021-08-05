@@ -4,15 +4,12 @@
 #define FILESVIEW_H
  
 #include <qtreeview.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 #include "trackdata.h"
 
 
-class MainWindow;
-
-
-class FilesView : public QTreeView, public MainWindowInterface
+class FilesView : public QTreeView, public ApplicationDataInterface
 {
     Q_OBJECT
 

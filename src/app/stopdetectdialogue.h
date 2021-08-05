@@ -4,7 +4,7 @@
 
 
 #include <kfdialog/dialogbase.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 #include <qtimezone.h>
 
@@ -14,7 +14,6 @@ class QListWidget;
 class QLineEdit;
 class QPushButton;
 class QShowEvent;
-class MainWindow;
 class ValueSlider;
 class TrackDataItem;
 class TrackDataAbstractPoint;
@@ -22,7 +21,7 @@ class TrackDataWaypoint;
 class FolderSelectWidget;
 
 
-class StopDetectDialogue : public DialogBase, public MainWindowInterface
+class StopDetectDialogue : public DialogBase, public ApplicationDataInterface
 {
     Q_OBJECT
 

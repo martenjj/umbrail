@@ -8,13 +8,12 @@
 
 #include <klocalizedstring.h>
 
-#include "mainwindow.h"
 #include "folderselectdialogue.h"
 
 
 FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
     : QFrame(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     setObjectName("FolderSelectWidget");
 

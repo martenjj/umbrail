@@ -9,7 +9,7 @@
 #include <qvector.h>
 #include <qmap.h>
 
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 #include "waypointselectdialogue.h"
 
 
@@ -32,7 +32,7 @@ class QCPLayerable;
 class WaypointLayerable;
 
 
-class ProfileWidget : public DialogBase, public DialogStateSaver, public MainWindowInterface
+class ProfileWidget : public DialogBase, public DialogStateSaver, public ApplicationDataInterface
 {
     Q_OBJECT
 

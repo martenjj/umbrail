@@ -15,10 +15,9 @@
 
 #include "filesmodel.h"
 #include "filesview.h"
-#include "mainwindow.h"
 #include "mapcontroller.h"
-#include "settings.h"
 #include "mapview.h"
+#include "settings.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -52,7 +51,7 @@ void SelectionRun::clear()
 
 LayerBase::LayerBase(QWidget *pnt)
     : QObject(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 
@@ -115,11 +114,10 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     if (!isVisible()) return (true);			// no painting if not visible
     mViewport = viewport;				// save for access by layers
 
-    const FilesModel *filesModel = filesController()->model();
+    const FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
     if (filesModel==nullptr) return (false);		// no data to use!
 
-    const FilesView *filesView = filesController()->view();
-    mSelectionId = (filesView!=nullptr ? filesView->selectionId() : 0);
+    mSelectionId = filesView()->selectionId();
 
     // Paint the data in two passes.  The first does all non-selected items,
     // the second selected ones.  This is so that selected items show up
@@ -191,7 +189,7 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
     if (this->isApplicableItem(item))			// consider this item itself?
     {
         const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
-        if (tdp!=nullptr)					// applicable type of point
+        if (tdp!=nullptr)				// applicable type of point
         {
             const double lat = tdp->latitude();
             const double lon = tdp->longitude();
@@ -339,7 +337,9 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
     if (!isVisible()) return (false);			// no interaction if not visible
 
     MapView *mapView = mapController()->view();
-    FilesModel *filesModel = filesController()->model();
+
+    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
+    if (filesModel==nullptr) return (false);		// no data to use!
 
     if (ev->type()==QEvent::MouseButtonPress)
     {

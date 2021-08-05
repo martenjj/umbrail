@@ -5,7 +5,7 @@
 
 #include <kfdialog/dialogbase.h>
 
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 #include "trackdata.h"
 
@@ -16,7 +16,7 @@ class TrackFilterModel;
 class FilesModel;
 
 
-class ItemSelectDialogue : public DialogBase, public MainWindowInterface
+class ItemSelectDialogue : public DialogBase, public ApplicationDataInterface
 {
     Q_OBJECT
 

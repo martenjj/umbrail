@@ -9,6 +9,7 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kxmlguifactory.h>
+#include <kxmlguiwindow.h>
 #include <kcolorscheme.h>
 #include <ktoggleaction.h>
 #include <kactioncollection.h>
@@ -17,7 +18,6 @@
 #include <marble/AbstractFloatItem.h>
 
 #include "trackdata.h"
-#include "mainwindow.h"
 #include "mapcontroller.h"
 #include "settings.h"
 #include "trackslayer.h"
@@ -30,7 +30,7 @@
 // see http://techbase.kde.org/Projects/Marble/MarbleMarbleWidget 
 MapView::MapView(QWidget *pnt)
     : MarbleWidget(pnt),
-      MainWindowInterface(pnt)
+      ApplicationDataInterface(pnt)
 {
     qDebug();
 
@@ -55,14 +55,13 @@ MapView::MapView(QWidget *pnt)
     addLayer(new WaypointsLayer(this));			// waypoints display layer
     addLayer(new RoutesLayer(this));			// routes display layer
 
-    mStopsLayer = new StopsLayer;			// temporary stops display layer
+    mStopsLayer = new StopsLayer(this);			// temporary stops display layer
     MarbleWidget::addLayer(mStopsLayer);
 }
 
 
 MapView::~MapView()
 {
-    delete mStopsLayer;
     qDebug() << "done";
 }
 
@@ -125,14 +124,15 @@ void MapView::slotRmbRequest(int mx, int my)
     mPopupX = mx;					// save for actions
     mPopupY = my;
 
-    QMenu *popup = static_cast<QMenu *>(
-        mainWindow()->factory()->container("mapview_contextmenu",
-                                           mainWindow()));
+    KXmlGuiWindow *xmlwin = qobject_cast<KXmlGuiWindow *>(mainWidget());
+    Q_ASSERT(xmlwin!=nullptr);
+
+    QMenu *popup = static_cast<QMenu *>(xmlwin->factory()->container("mapview_contextmenu", xmlwin));
     if (popup==nullptr) return;
 
-    QAction *act = mainWindow()->actionCollection()->action("map_add_waypoint");
+    QAction *act = xmlwin->actionCollection()->action("map_add_waypoint");
     if(act!=nullptr) act->setEnabled(!isReadOnly());
-    act = mainWindow()->actionCollection()->action("map_add_routepoint");
+    act = xmlwin->actionCollection()->action("map_add_routepoint");
     if(act!=nullptr) act->setEnabled(!isReadOnly());
 
     popup->exec(mapToGlobal(QPoint(mx, my)));
@@ -219,7 +219,7 @@ QAction *MapView::actionForOverlay(const QString &id) const
 
     QAction *a = new QAction(item->icon(),
                              i18n("%1 - %2", item->guiString(), item->description()),
-                             mainWindow());
+                             mainWidget());
     a->setData(id);					// record ID for action
     a->setChecked(item->visible());			// set initial check state
     return (a);
@@ -246,7 +246,7 @@ QAction *MapView::actionForLayer(const QString &id) const
     const LayerBase *layer = mLayers.value(id);
     if (layer==nullptr) return (nullptr);
 
-    QAction *a = new KToggleAction(layer->name(), mainWindow());
+    QAction *a = new KToggleAction(layer->name(), mainWidget());
     a->setData(id);					// record ID for action
     a->setChecked(layer->isVisible());			// set initial check state
     return (a);

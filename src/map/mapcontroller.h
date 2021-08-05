@@ -4,7 +4,7 @@
 #define MAPCONTROLLER_H
  
 #include <qobject.h>
-#include "mainwindowinterface.h"
+#include "applicationdatainterface.h"
 
 #include <marble/MapThemeManager.h>
 
@@ -16,7 +16,7 @@ class MapView;
 class TrackDataItem;
 
 
-class MapController : public QObject, public MainWindowInterface
+class MapController : public QObject, public ApplicationDataInterface
 {
     Q_OBJECT
 
@@ -48,13 +48,13 @@ public slots:
 protected slots:
     void slotShowPosition( const QString &pos);
     void slotZoomChanged(int zoom);
-    void slotDraggedPoints(qreal latOff, qreal lonOff);
 
 signals:
     void statusMessage(const QString &text);
     void modified();
 
     void mapZoomChanged(bool canZoomIn, bool canZoomOut);
+    void mapDraggedPoints(qreal latOff, qreal lonOff);
 
 private slots:
     void slotMapThemeSelected(const QString &themeId);

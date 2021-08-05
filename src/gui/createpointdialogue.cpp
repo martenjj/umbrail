@@ -8,7 +8,6 @@
 
 #include <klocalizedstring.h>
 
-#include "filescontroller.h"
 #include "filesmodel.h"
 #include "filesview.h"
 #include "trackfiltermodel.h"
@@ -48,8 +47,9 @@ static int findSelectableItems(const QModelIndex &index, const QAbstractItemMode
 }
 
 
-CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QWidget *pnt)
-    : DialogBase(pnt)
+CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
+    : DialogBase(pnt),
+      ApplicationDataInterface(pnt)
 {
     setObjectName("CreatePointDialogue");
 
@@ -85,7 +85,10 @@ CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QW
     mContainerList->setHeaderHidden(true);
  
     TrackFilterModel *trackModel = new TrackFilterModel(this);
-    trackModel->setSourceModel(fc->model());
+
+    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
+    Q_ASSERT(filesModel!=nullptr);
+    trackModel->setSourceModel(filesModel);
     trackModel->setMode(routeMode ? TrackData::Route : TrackData::Waypoint);
     mContainerList->setModel(trackModel);
     mContainerList->expandToDepth(9);
@@ -110,11 +113,11 @@ CreatePointDialogue::CreatePointDialogue(FilesController *fc, bool routeMode, QW
     {
         // If there is more than one selectable destination, then if
         // the tree's selected item is valid then preselect that.
-        QList<TrackDataItem *> items = fc->view()->selectedItems();
+        QList<TrackDataItem *> items = filesView()->selectedItems();
         if (items.count()==1)
         {
             const TrackDataItem *item = items.first();
-            mContainerList->setCurrentIndex(trackModel->mapFromSource(fc->model()->indexForItem(item)));
+            mContainerList->setCurrentIndex(trackModel->mapFromSource(filesModel->indexForItem(item)));
         }
     }
 

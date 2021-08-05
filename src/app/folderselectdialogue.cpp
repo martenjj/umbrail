@@ -64,7 +64,7 @@ void FolderSelectDialogue::slotNewFolder()
     cmd->setText(i18n("New Folder"));
     cmd->setData(TrackData::Folder, item);
     cmd->setName(name);
-    mainWindow()->executeCommand(cmd);
+    executeCommand(cmd);
 
     // select the added folder
     TrackDataFolder *newFolder = TrackData::findFolderByPath(name, item);

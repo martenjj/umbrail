@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		12-Jul-21					#
+#  Edit:		26-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -20,7 +20,8 @@ set(navtrackscore_SRCS
   metadatamodel.cpp
   filesmodel.cpp
   trackfiltermodel.cpp
-  project.cpp
+  applicationdata.cpp
+  applicationdatainterface.cpp
 )
 
 add_library(navtrackscore STATIC ${navtrackscore_SRCS})

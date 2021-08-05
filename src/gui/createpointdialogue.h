@@ -4,22 +4,22 @@
 
 
 #include <kfdialog/dialogbase.h>
+#include "applicationdatainterface.h"
 
 
 class QTreeView;
 class QLineEdit;
 class TrackDataAbstractPoint;
 class TrackDataItem;
-class FilesController;
 class LatLongWidget;
 
 
-class CreatePointDialogue : public DialogBase
+class CreatePointDialogue : public DialogBase, public ApplicationDataInterface
 {
     Q_OBJECT
 
 public:
-    explicit CreatePointDialogue(FilesController *fc, bool routeMode, QWidget *pnt = nullptr);
+    explicit CreatePointDialogue(bool routeMode, QWidget *pnt = nullptr);
     virtual ~CreatePointDialogue() = default;
 
     void setSourcePoint(const TrackDataAbstractPoint *point);

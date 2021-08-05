@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		12-Jul-21					#
+#  Edit:		28-Jul-21					#
 #########################################################################
 
 project(navtracks)
@@ -14,26 +14,14 @@ project(navtracks)
 set(navtracks_SRCS
   main.cpp
   commands.cpp
-  createpointdialogue.cpp
   filescontroller.cpp
-  filesview.cpp
   folderselectdialogue.cpp
   folderselectwidget.cpp
-  itemselectdialogue.cpp
-  layerbase.cpp
   mainwindow.cpp
-  mainwindowinterface.cpp
-  mapcontroller.cpp
-  mapview.cpp
-  moveitemdialogue.cpp
-  ploteditwidget.cpp
-  positioninfodialogue.cpp
   profilewidget.cpp
-  routeslayer.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
   stopdetectdialogue.cpp
-  stopslayer.cpp
   trackpropertiesdialogue.cpp
   trackpropertiespage.cpp
   trackpropertiesdetailpages.cpp
@@ -41,17 +29,11 @@ set(navtracks_SRCS
   trackpropertiesmetadatapages.cpp
   trackpropertiesplotpages.cpp
   trackpropertiesstylepages.cpp
-  trackslayer.cpp
-  waypointselectdialogue.cpp
-  waypointslayer.cpp
 )
 
 if (KF5KExiv2_FOUND)
   add_definitions("-DHAVE_KEXIV2=1")
 endif (KF5KExiv2_FOUND)
-
-# see https://cgit.kde.org/marble.git/tree/examples/cpp/hello-marble/CMakeLists.txt.external
-set(MARBLE_LIBRARIES "Marble")
 
 add_executable(navtracks ${navtracks_SRCS})
 target_link_libraries(navtracks
@@ -65,11 +47,12 @@ target_link_libraries(navtracks
   navtrackscore
   navtrackssettings
   navtracksgui
+  navtracksmap
   navtracksmedia
   navtracksio
   qcustomplot
   ${LIBKFDIALOG_LIBRARIES}
-  ${MARBLE_LIBRARIES})
+)
 if (KF5KExiv2_FOUND)
   target_link_libraries(navtracks KF5::KExiv2)
 endif (KF5KExiv2_FOUND)
