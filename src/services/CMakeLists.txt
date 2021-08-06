@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		05-Aug-21					#
+#  Edit:		06-Aug-21					#
 #########################################################################
 
 project(navtracks)
@@ -25,5 +25,6 @@ target_link_libraries(navtracksservices
   KF5::I18n
   KF5::KIOCore KF5::KIOWidgets
   KF5::WidgetsAddons
+  navtrackscore
   navtrackssettings
 )

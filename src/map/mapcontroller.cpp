@@ -3,7 +3,6 @@
 
 #include <qdebug.h>
 #include <qfiledialog.h>
-#include <qurlquery.h>
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
@@ -266,50 +265,22 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 }
 
 
-//  Derive a Google Maps zoom level for lat/lon map bounds,
-//  which also seems to be suitable for Bing.
-//  https://stackoverflow.com/questions/6048975/google-maps-v3-how-to-calculate-the-zoom-level-for-a-given-bounds
-
-static double latRad(double lat)
-{
-    double s = sin(lat*M_PI/180);
-    double rx2 = log((1+s)/(1-s))/2;
-    return (qBound(-M_PI, rx2, M_PI)/2);
-}
-
-
-static int zoom(int mapPx, int worldPx, double frac)
-{
-    return (static_cast<int>(floor(log((mapPx/worldPx)/frac)/log(2.0))));
-}
-
-
-static int getBoundsZoomLevel(double minlon, double minlat, double maxlon, double maxlat)
-{
-    double lngDiff = maxlon-minlon;
-
-    double latFraction = (latRad(maxlat)-latRad(minlat))/M_PI;
-    double lngFraction = lngDiff<0 ? (lngDiff+360)/360 : lngDiff/360;
-
-    // Assuming a size of 1024x768 for the browser window.
-    int latZoom = zoom(768, 256, latFraction);
-    int lngZoom = zoom(1024, 256, lngFraction);
-    return (qMin(qMin(latZoom, lngZoom), 21));
-}
-
-
 void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items)
 {
-    qDebug() << "map" << map << "with" << items.count() << "items";
-
+    // The displayed map bounding area in pixels
     const QRect rect = view()->mapRegion().boundingRect();
 
-    qreal minlon, minlat;
-    if (!view()->geoCoordinates(rect.left(), rect.bottom(), minlon, minlat)) return;
-    qreal maxlon, maxlat;
-    if (!view()->geoCoordinates(rect.right(), rect.top(), maxlon, maxlat)) return;
+    // Not a BoundingArea, its API is not quite up to this task
+    QRectF displayedArea;
 
-    qDebug() << "map bounds" << minlat << minlon << "-" << maxlat << maxlon;
+    qreal lon, lat;
+    if (!view()->geoCoordinates(rect.left(), rect.bottom(), lon, lat)) return;
+    displayedArea.setLeft(lon);
+    displayedArea.setBottom(lat);
+    if (!view()->geoCoordinates(rect.right(), rect.top(), lon, lat)) return;
+    displayedArea.setRight(lon);
+    displayedArea.setTop(lat);
+    qDebug() << "map" << map << "bounds" << displayedArea;
 
     const TrackDataAbstractPoint *selpoint = nullptr;
     if (items.count()==1)				// a single selected item
@@ -317,71 +288,5 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
         selpoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
     }
 
-    QUrl u;
-    QUrlQuery q;
-
-    switch (map)
-    {
-case MapBrowser::OSM:
-        // For OSM URL format see https://wiki.openstreetmap.org/wiki/Browsing
-        u = QUrl("https://openstreetmap.org/");
-
-        q.addQueryItem("bbox", QString("%1,%2,%3,%4").arg(minlon).arg(minlat).arg(maxlon).arg(maxlat));
-        if (selpoint!=nullptr)
-        {
-            q.addQueryItem("mlat", QString::number(selpoint->latitude()));
-            q.addQueryItem("mlon", QString::number(selpoint->longitude()));
-        }
-
-        u.setQuery(q);
-        break;
-
-#ifdef ENABLE_OPEN_WITH_GOOGLE
-case MapBrowser::Google:
-        // For Google Maps URL format see
-        // https://developers.google.com/maps/documentation/urls/get-started#map-action
-        u = QUrl("https://google.com");
-        q.addQueryItem("api", "1");
-
-        // Unfortunately a marker does not appear to be supported together with
-        // specified map position and zoom.  If there is a single selected item
-        // then display the map at that position;  otherwise, display the map
-        // as close to the currently displayed bounds as possible.
-        if (selpoint!=nullptr)
-        {
-            u.setPath("/maps/search/");			// trailing slash is needed
-            q.addQueryItem("query", QString("%1,%2").arg(selpoint->latitude()).arg(selpoint->longitude()));
-        }
-        else
-        {
-            u.setPath("/maps/@");
-            q.addQueryItem("map_action", "map");
-            q.addQueryItem("center", QString("%1,%2").arg((minlat+maxlat)/2).arg((minlon+maxlon)/2));
-            q.addQueryItem("zoom", QString::number(getBoundsZoomLevel(minlon, minlat, maxlon, maxlat)));
-        }
-        break;
-#endif // ENABLE_OPEN_WITH_GOOGLE
-
-#ifdef ENABLE_OPEN_WITH_BING
-case MapBrowser::Bing:
-        // For Bing Maps URL format see
-        // https://docs.microsoft.com/en-us/bingmaps/articles/create-a-custom-map-url
-        u = QUrl("https://bing.com/maps/default.aspx");
-
-        q.addQueryItem("cp", QString("%1~%2").arg((minlat+maxlat)/2).arg((minlon+maxlon)/2));
-        q.addQueryItem("lvl", QString::number(getBoundsZoomLevel(minlon, minlat, maxlon, maxlat)));
-
-        if (selpoint!=nullptr)
-        {
-
-            q.addQueryItem("sp", QString("point.%1_%2_%3").arg(selpoint->latitude())
-                                                          .arg(selpoint->longitude())
-                                                          .arg(selpoint->name()));
-        }
-        break;
-#endif // ENABLE_OPEN_WITH_BING
-    }
-
-    if (!q.isEmpty()) u.setQuery(q);
-    MapBrowser::openBrowser(map, u, mainWidget());
+    MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget());
 }

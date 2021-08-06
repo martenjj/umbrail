@@ -29,8 +29,9 @@
 #define MAPBROWSER_H
 
 
-class QUrl;
 class QWidget;
+class QRectF;
+class TrackDataAbstractPoint;
 
 
 namespace MapBrowser
@@ -42,7 +43,8 @@ namespace MapBrowser
         Bing						// Bing Maps
     };
 
-    void openBrowser(MapBrowser::MapProvider map, const QUrl &url, QWidget *pnt = nullptr);
+    void openBrowser(MapBrowser::MapProvider map, const QRectF &displayedArea,
+                     const TrackDataAbstractPoint *selectedPoint, QWidget *pnt = nullptr);
 };
 
 #endif							// MAPBROWSER_H

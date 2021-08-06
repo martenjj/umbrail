@@ -27,35 +27,127 @@
 
 #include "mapbrowser.h"
 
+#include <math.h>
+
 #include <qwidget.h>
 #include <qdebug.h>
+#include <qurlquery.h>
 
 #include <kio/applicationlauncherjob.h>
 #include <kio/openurljob.h>
 
 #include "settings.h"
+#include "trackdata.h"
 
 
-void MapBrowser::openBrowser(MapBrowser::MapProvider map, const QUrl &url, QWidget *pnt)
+//  Derive a Google Maps zoom level for lat/lon map bounds,
+//  which also seems to be suitable for Bing.
+//  https://stackoverflow.com/questions/6048975/google-maps-v3-how-to-calculate-the-zoom-level-for-a-given-bounds
+
+static double latRad(double lat)
 {
-    qDebug() << "map" << map << "url" << url;
+    double s = sin(lat*M_PI/180);
+    double rx2 = log((1+s)/(1-s))/2;
+    return (qBound(-M_PI, rx2, M_PI)/2);
+}
 
+
+static int zoom(int mapPx, int worldPx, double frac)
+{
+    return (static_cast<int>(floor(log((mapPx/worldPx)/frac)/log(2.0))));
+}
+
+
+static int getBoundsZoomLevel(const QRectF &bounds)
+{
+    double lngDiff = bounds.right()-bounds.left();
+
+    double latFraction = (latRad(bounds.top())-latRad(bounds.bottom()))/M_PI;
+    double lngFraction = lngDiff<0 ? (lngDiff+360)/360 : lngDiff/360;
+
+    // Assuming a size of 1024x768 for the browser window.
+    int latZoom = zoom(768, 256, latFraction);
+    int lngZoom = zoom(1024, 256, lngFraction);
+    return (qMin(qMin(latZoom, lngZoom), 21));
+}
+
+
+void MapBrowser::openBrowser(MapBrowser::MapProvider map,
+                             const QRectF &displayedArea,
+                             const TrackDataAbstractPoint *selectedPoint,
+                             QWidget *pnt)
+{
     QString browserService;
+    QUrl u;
+    QUrlQuery q;
+
     switch (map)
     {
 case MapBrowser::OSM:
         browserService = Settings::mapBrowserOSM();
+
+        // For OSM URL format see https://wiki.openstreetmap.org/wiki/Browsing
+        u.setUrl("https://openstreetmap.org/");
+
+        q.addQueryItem("bbox", QString("%1,%2,%3,%4").arg(displayedArea.left())
+                                                     .arg(displayedArea.bottom())
+                                                     .arg(displayedArea.right())
+                                                     .arg(displayedArea.top()));
+        if (selectedPoint!=nullptr)
+        {
+            q.addQueryItem("mlat", QString::number(selectedPoint->latitude()));
+            q.addQueryItem("mlon", QString::number(selectedPoint->longitude()));
+        }
         break;
 
 #ifdef ENABLE_OPEN_WITH_GOOGLE
 case MapBrowser::Google:
         browserService = Settings::mapBrowserGoogle();
+
+        // For Google Maps URL format see
+        // https://developers.google.com/maps/documentation/urls/get-started
+        u.setUrl("https://google.com");
+        q.addQueryItem("api", "1");
+
+        // Unfortunately a marker does not appear to be supported together with
+        // specified map position and zoom.  If there is a single selected item
+        // then display the map at that position;  otherwise, display the map
+        // as close to the currently displayed bounds as possible.
+        if (selectedPoint!=nullptr)
+        {
+            u.setPath("/maps/search/");			// trailing slash is needed
+            q.addQueryItem("query", QString("%1,%2").arg(selectedPoint->latitude())
+                                                    .arg(selectedPoint->longitude()));
+        }
+        else
+        {
+            u.setPath("/maps/@");
+            q.addQueryItem("map_action", "map");
+            q.addQueryItem("center", QString("%1,%2").arg(displayedArea.center().y())
+                                                     .arg(displayedArea.center().x()));
+            q.addQueryItem("zoom", QString::number(getBoundsZoomLevel(displayedArea)));
+        }
         break;
 #endif // ENABLE_OPEN_WITH_GOOGLE
 
 #ifdef ENABLE_OPEN_WITH_BING
 case MapBrowser::Bing:
         browserService = Settings::mapBrowserBing();
+
+        // For Bing Maps URL format see
+        // https://docs.microsoft.com/en-us/bingmaps/articles/create-a-custom-map-url
+        u.setUrl("https://bing.com/maps/default.aspx");
+
+        q.addQueryItem("cp", QString("%1~%2").arg(displayedArea.center().y())
+                                             .arg(displayedArea.center().x()));
+        q.addQueryItem("lvl", QString::number(getBoundsZoomLevel(displayedArea)));
+
+        if (selectedPoint!=nullptr)
+        {
+            q.addQueryItem("sp", QString("point.%1_%2_%3").arg(selectedPoint->latitude())
+                                                          .arg(selectedPoint->longitude())
+                                                          .arg(selectedPoint->name()));
+        }
         break;
 #endif // ENABLE_OPEN_WITH_BING
 
@@ -65,19 +157,20 @@ default:
     }
 
     // Make sure that the browser URL is valid.  It should always have been
-    // resolved by MapController::openExternalMap() by now, because otherwise
-    // the 'default' above will have been hit.
-    if (!url.isValid()) return;
+    // resolved by now, because otherwise the 'default' above will have been
+    // hit.  Then add the URL query parameters.
+    if (!u.isValid()) return;
+    if (!q.isEmpty()) u.setQuery(q);
 
     // TODO: if not OSM, display a warning (with "Do not show again")
     // that copying data from Google/Bing to OSM is not allowed
 
-    qDebug() << "service" << browserService;
+    qDebug() << "for map" << map << "service" << browserService << "url" << u;
     if (browserService.isEmpty())
     {
         // There is no configured browser service, just open the map URL
-        // in the default browser.
-        KIO::OpenUrlJob *job = new KIO::OpenUrlJob(url, "text/html", pnt);
+        // in the default web browser.
+        KIO::OpenUrlJob *job = new KIO::OpenUrlJob(u, "text/html", pnt);
         job->start();					// assume MIME type
     }
     else						// there is a configured service
@@ -91,7 +184,7 @@ default:
         }
 
         KIO::ApplicationLauncherJob *job = new KIO::ApplicationLauncherJob(service, pnt);
-        job->setUrls(QList<QUrl>() << url);
+        job->setUrls(QList<QUrl>() << u);
         job->start();
     }
 }
