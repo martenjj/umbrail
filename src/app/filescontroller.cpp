@@ -151,8 +151,11 @@ void FilesController::setFileWarningIgnored(const QUrl &file, const QByteArray &
 void FilesController::resetAllFileWarnings()
 {
     qDebug();
-
+    // Our application's file-specific warnings
     KConfigGroup grp = KSharedConfig::openConfig()->group("FileWarnings");
+    grp.deleteGroup();
+    // Group name from API documentation of KMessageBox
+    grp = KSharedConfig::openConfig()->group("Notification Messages");
     grp.deleteGroup();
     grp.sync();
 }
