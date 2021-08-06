@@ -346,7 +346,7 @@ case MapBrowser::Google:
         // Unfortunately a marker does not appear to be supported together with
         // specified map position and zoom.  If there is a single selected item
         // then display the map at that position;  otherwise, display the map
-        // with the displayed bounds.
+        // as close to the currently displayed bounds as possible.
         if (selpoint!=nullptr)
         {
             u.setPath("/maps/search/");			// trailing slash is needed

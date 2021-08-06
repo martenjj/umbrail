@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		05-Aug-21					#
+#  Edit:		06-Aug-21					#
 #########################################################################
 
 project(navtracks)
@@ -15,6 +15,13 @@ project(navtracks)
 #  (which is assumed to be the same as the original file order).  So there
 #  is not really need for a sortable view.
 option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
+
+#  These map services are useful, but the options are here to disable them
+#  in order that the application can be built without any dependency on or
+#  recommendation of closed map services.  Enabling them does not actually
+#  make the application non-free or embed any proprietary or copyright material.
+option(OPEN_WITH_GOOGLE "Enable external map browsing with Google Maps" ON)
+option(OPEN_WITH_BING "Enable external map browsing with Bing Maps" ON)
 
 #########################################################################
 #									#
@@ -58,10 +65,12 @@ remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
 #									#
 #########################################################################
 
-################################# TEMP, enable with option above ###############
-add_definitions("-DENABLE_OPEN_WITH_GOOGLE=1")
-add_definitions("-DENABLE_OPEN_WITH_BING=1")
-################################# TEMP #########################################
+if (OPEN_WITH_GOOGLE)
+  add_definitions("-DENABLE_OPEN_WITH_GOOGLE")
+endif (OPEN_WITH_GOOGLE)
+if (OPEN_WITH_BING)
+  add_definitions("-DENABLE_OPEN_WITH_BING")
+endif (OPEN_WITH_BING)
 
 #########################################################################
 #									#
