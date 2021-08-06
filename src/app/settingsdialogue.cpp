@@ -445,6 +445,16 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
     fillBrowserCombo(mGoogleBrowserCombo, Settings::mapBrowserGoogle());
 #endif // ENABLE_OPEN_WITH_GOOGLE
 
+#ifdef ENABLE_OPEN_WITH_BING
+    ski = Settings::self()->mapBrowserBingItem();
+    Q_ASSERT(ski!=nullptr);
+    mBingBrowserCombo = new QComboBox(w);
+    mBingBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mBingBrowserCombo);
+
+    fillBrowserCombo(mBingBrowserCombo, Settings::mapBrowserBing());
+#endif // ENABLE_OPEN_WITH_BING
+
     slotItemChanged();
 }
 
@@ -455,6 +465,9 @@ void SettingsServicesPage::slotSave()
 #ifdef ENABLE_OPEN_WITH_GOOGLE
     Settings::setMapBrowserGoogle(mGoogleBrowserCombo->currentData().toString());
 #endif // ENABLE_OPEN_WITH_GOOGLE
+#ifdef ENABLE_OPEN_WITH_BING
+    Settings::setMapBrowserBing(mBingBrowserCombo->currentData().toString());
+#endif // ENABLE_OPEN_WITH_BING
 }
 
 
@@ -464,6 +477,9 @@ void SettingsServicesPage::slotDefaults()
 #ifdef ENABLE_OPEN_WITH_GOOGLE
     mGoogleBrowserCombo->setCurrentIndex(0);
 #endif // ENABLE_OPEN_WITH_GOOGLE
+#ifdef ENABLE_OPEN_WITH_BING
+    mBingBrowserCombo->setCurrentIndex(0);
+#endif // ENABLE_OPEN_WITH_BING
     slotItemChanged();
 }
 

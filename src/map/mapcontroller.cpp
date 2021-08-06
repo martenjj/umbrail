@@ -266,7 +266,8 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 }
 
 
-//  Derive a Google Maps zoom level for lat/lon map bounds
+//  Derive a Google Maps zoom level for lat/lon map bounds,
+//  which also seems to be suitable for Bing.
 //  https://stackoverflow.com/questions/6048975/google-maps-v3-how-to-calculate-the-zoom-level-for-a-given-bounds
 
 static double latRad(double lat)
@@ -310,16 +311,10 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
 
     qDebug() << "map bounds" << minlat << minlon << "-" << maxlat << maxlon;
 
-    qreal sellon = NAN;					// geo position of marker
-    qreal sellat = NAN;
+    const TrackDataAbstractPoint *selpoint = nullptr;
     if (items.count()==1)				// a single selected item
-    {
-        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
-        if (tdp!=nullptr)				// which must be a point
-        {
-            sellon = tdp->longitude();
-            sellat = tdp->latitude();
-        }
+    {							// which must be a point
+        selpoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
     }
 
     QUrl u;
@@ -332,8 +327,12 @@ case MapBrowser::OSM:
         u = QUrl("https://openstreetmap.org/");
 
         q.addQueryItem("bbox", QString("%1,%2,%3,%4").arg(minlon).arg(minlat).arg(maxlon).arg(maxlat));
-        if (!ISNAN(sellat)) q.addQueryItem("mlat", QString::number(sellat));
-        if (!ISNAN(sellon)) q.addQueryItem("mlon", QString::number(sellon));
+        if (selpoint!=nullptr)
+        {
+            q.addQueryItem("mlat", QString::number(selpoint->latitude()));
+            q.addQueryItem("mlon", QString::number(selpoint->longitude()));
+        }
+
         u.setQuery(q);
         break;
 
@@ -348,10 +347,10 @@ case MapBrowser::Google:
         // specified map position and zoom.  If there is a single selected item
         // then display the map at that position;  otherwise, display the map
         // with the displayed bounds.
-        if (!ISNAN(sellat) &&! ISNAN(sellon))
+        if (selpoint!=nullptr)
         {
             u.setPath("/maps/search/");			// trailing slash is needed
-            q.addQueryItem("query", QString("%1,%2").arg(sellat).arg(sellon));
+            q.addQueryItem("query", QString("%1,%2").arg(selpoint->latitude()).arg(selpoint->longitude()));
         }
         else
         {
@@ -363,6 +362,24 @@ case MapBrowser::Google:
         break;
 #endif // ENABLE_OPEN_WITH_GOOGLE
 
+#ifdef ENABLE_OPEN_WITH_BING
+case MapBrowser::Bing:
+        // For Bing Maps URL format see
+        // https://docs.microsoft.com/en-us/bingmaps/articles/create-a-custom-map-url
+        u = QUrl("https://bing.com/maps/default.aspx");
+
+        q.addQueryItem("cp", QString("%1~%2").arg((minlat+maxlat)/2).arg((minlon+maxlon)/2));
+        q.addQueryItem("lvl", QString::number(getBoundsZoomLevel(minlon, minlat, maxlon, maxlat)));
+
+        if (selpoint!=nullptr)
+        {
+
+            q.addQueryItem("sp", QString("point.%1_%2_%3").arg(selpoint->latitude())
+                                                          .arg(selpoint->longitude())
+                                                          .arg(selpoint->name()));
+        }
+        break;
+#endif // ENABLE_OPEN_WITH_BING
     }
 
     if (!q.isEmpty()) u.setQuery(q);
