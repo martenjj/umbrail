@@ -384,26 +384,11 @@ void SettingsMediaPage::slotItemChanged()
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
-    : KPageWidgetItem(new QWidget(pnt))
+static void fillBrowserCombo(QComboBox *combo, const QString &currentId)
 {
-    setName(i18nc("@title:tab", "Services"));
-    setHeader(i18n("Settings for external services"));
-    setIcon(QIcon::fromTheme("applications-internet"));
-
-    QWidget *w = widget();
-    QFormLayout *fl = new QFormLayout(w);
-
-    const KConfigSkeletonItem *ski = Settings::self()->mapBrowserOSMItem();
-    Q_ASSERT(ski!=nullptr);
-    mOSMBrowserCombo = new QComboBox(w);
-    mOSMBrowserCombo->setToolTip(ski->toolTip());
-    fl->addRow(ski->label(), mOSMBrowserCombo);
-
-    // TODO: centralise filling these combo boxes and Photo Viewer on "Media" page
-
     int selectIndex = -1;
-    mOSMBrowserCombo->addItem(QIcon::fromTheme("system-run"), i18n("(Configured default)"));
+    combo->clear();
+    combo->addItem(QIcon::fromTheme("preferences-system"), i18n("(Configured default)"));
 
     // The selection query used by the "Component Chooser" KCM (before it was
     // converted to QML) and referred to in https://phabricator.kde.org/D27948
@@ -424,10 +409,41 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
     if (services.isEmpty()) qWarning() << "No web browser services available";
     for (const KService::Ptr service : services)
     {
-        mOSMBrowserCombo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
-        if (service->storageId()==Settings::mapBrowserOSM()) selectIndex = mOSMBrowserCombo->count()-1;
+        combo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
+        if (service->storageId()==currentId) selectIndex = combo->count()-1;
     }
-    if (selectIndex!=-1) mOSMBrowserCombo->setCurrentIndex(selectIndex);
+
+    if (selectIndex!=-1) combo->setCurrentIndex(selectIndex);
+}
+
+
+SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
+    : KPageWidgetItem(new QWidget(pnt))
+{
+    setName(i18nc("@title:tab", "Services"));
+    setHeader(i18n("Settings for external services"));
+    setIcon(QIcon::fromTheme("applications-internet"));
+
+    QWidget *w = widget();
+    QFormLayout *fl = new QFormLayout(w);
+
+    const KConfigSkeletonItem *ski = Settings::self()->mapBrowserOSMItem();
+    Q_ASSERT(ski!=nullptr);
+    mOSMBrowserCombo = new QComboBox(w);
+    mOSMBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mOSMBrowserCombo);
+
+    fillBrowserCombo(mOSMBrowserCombo, Settings::mapBrowserOSM());
+
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    ski = Settings::self()->mapBrowserGoogleItem();
+    Q_ASSERT(ski!=nullptr);
+    mGoogleBrowserCombo = new QComboBox(w);
+    mGoogleBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mGoogleBrowserCombo);
+
+    fillBrowserCombo(mGoogleBrowserCombo, Settings::mapBrowserGoogle());
+#endif // ENABLE_OPEN_WITH_GOOGLE
 
     slotItemChanged();
 }
@@ -435,13 +451,19 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
 
 void SettingsServicesPage::slotSave()
 {
-    Settings::setMapBrowserOSM(mOSMBrowserCombo->itemData(mOSMBrowserCombo->currentIndex()).toString());
+    Settings::setMapBrowserOSM(mOSMBrowserCombo->currentData().toString());
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    Settings::setMapBrowserGoogle(mGoogleBrowserCombo->currentData().toString());
+#endif // ENABLE_OPEN_WITH_GOOGLE
 }
 
 
 void SettingsServicesPage::slotDefaults()
 {
     mOSMBrowserCombo->setCurrentIndex(0);
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    mGoogleBrowserCombo->setCurrentIndex(0);
+#endif // ENABLE_OPEN_WITH_GOOGLE
     slotItemChanged();
 }
 

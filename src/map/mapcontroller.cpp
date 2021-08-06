@@ -266,6 +266,37 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 }
 
 
+//  Derive a Google Maps zoom level for lat/lon map bounds
+//  https://stackoverflow.com/questions/6048975/google-maps-v3-how-to-calculate-the-zoom-level-for-a-given-bounds
+
+static double latRad(double lat)
+{
+    double s = sin(lat*M_PI/180);
+    double rx2 = log((1+s)/(1-s))/2;
+    return (qBound(-M_PI, rx2, M_PI)/2);
+}
+
+
+static int zoom(int mapPx, int worldPx, double frac)
+{
+    return (static_cast<int>(floor(log((mapPx/worldPx)/frac)/log(2.0))));
+}
+
+
+static int getBoundsZoomLevel(double minlon, double minlat, double maxlon, double maxlat)
+{
+    double lngDiff = maxlon-minlon;
+
+    double latFraction = (latRad(maxlat)-latRad(minlat))/M_PI;
+    double lngFraction = lngDiff<0 ? (lngDiff+360)/360 : lngDiff/360;
+
+    // Assuming a size of 1024x768 for the browser window.
+    int latZoom = zoom(768, 256, latFraction);
+    int lngZoom = zoom(1024, 256, lngFraction);
+    return (qMin(qMin(latZoom, lngZoom), 21));
+}
+
+
 void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items)
 {
     qDebug() << "map" << map << "with" << items.count() << "items";
@@ -305,7 +336,35 @@ case MapBrowser::OSM:
         if (!ISNAN(sellon)) q.addQueryItem("mlon", QString::number(sellon));
         u.setQuery(q);
         break;
+
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+case MapBrowser::Google:
+        // For Google Maps URL format see
+        // https://developers.google.com/maps/documentation/urls/get-started#map-action
+        u = QUrl("https://google.com");
+        q.addQueryItem("api", "1");
+
+        // Unfortunately a marker does not appear to be supported together with
+        // specified map position and zoom.  If there is a single selected item
+        // then display the map at that position;  otherwise, display the map
+        // with the displayed bounds.
+        if (!ISNAN(sellat) &&! ISNAN(sellon))
+        {
+            u.setPath("/maps/search/");			// trailing slash is needed
+            q.addQueryItem("query", QString("%1,%2").arg(sellat).arg(sellon));
+        }
+        else
+        {
+            u.setPath("/maps/@");
+            q.addQueryItem("map_action", "map");
+            q.addQueryItem("center", QString("%1,%2").arg((minlat+maxlat)/2).arg((minlon+maxlon)/2));
+            q.addQueryItem("zoom", QString::number(getBoundsZoomLevel(minlon, minlat, maxlon, maxlat)));
+        }
+        break;
+#endif // ENABLE_OPEN_WITH_GOOGLE
+
     }
 
+    if (!q.isEmpty()) u.setQuery(q);
     MapBrowser::self()->openBrowser(map, u, mainWidget());
 }
