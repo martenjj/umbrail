@@ -36,19 +36,6 @@
 #include "settings.h"
 
 
-MapBrowser::MapBrowser()
-{
-    qDebug() << "allocated global instance";
-}
-
-
-MapBrowser *MapBrowser::self()
-{
-    static MapBrowser *instance = new MapBrowser();
-    return (instance);
-}
-
-
 void MapBrowser::openBrowser(MapBrowser::MapProvider map, const QUrl &url, QWidget *pnt)
 {
     qDebug() << "map" << map << "url" << url;

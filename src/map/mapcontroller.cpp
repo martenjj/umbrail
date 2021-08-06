@@ -383,5 +383,5 @@ case MapBrowser::Bing:
     }
 
     if (!q.isEmpty()) u.setQuery(q);
-    MapBrowser::self()->openBrowser(map, u, mainWidget());
+    MapBrowser::openBrowser(map, u, mainWidget());
 }

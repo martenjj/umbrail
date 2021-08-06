@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	05-Aug-21						//
+//  Edit:	06-Aug-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,23 +33,16 @@ class QUrl;
 class QWidget;
 
 
-class MapBrowser
+namespace MapBrowser
 {
-
-public:
     enum MapProvider
     {
-        OSM = 0,
-        Google,
-        Bing
+        OSM,						// OpenStreetMap
+        Google,						// Google Maps
+        Bing						// Bing Maps
     };
 
     void openBrowser(MapBrowser::MapProvider map, const QUrl &url, QWidget *pnt = nullptr);
-
-    static MapBrowser *self();
-
-private:
-    MapBrowser();
 };
 
 #endif							// MAPBROWSER_H
