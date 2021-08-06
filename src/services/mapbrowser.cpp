@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	05-Aug-21						//
+//  Edit:	06-Aug-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -96,7 +96,7 @@ default:
     else						// there is a configured service
     {
         // There is a configured browser service, use it to open the map URL.
-        KService::Ptr service = KService::serviceByDesktopName(browserService);
+        KService::Ptr service = KService::serviceByStorageId(browserService);
         if (!service)
         {
             qWarning() << "unknown service" << browserService;

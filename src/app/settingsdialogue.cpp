@@ -14,6 +14,7 @@
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
 #include <kconfigskeleton.h>
+#include <kmimetypetrader.h>
 #include <kparts/partloader.h>
 
 #include <kfdialog/dialogbase.h>
@@ -50,6 +51,11 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     addPage(page);
 
     page = new SettingsMediaPage(this);
+    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
+    addPage(page);
+
+    page = new SettingsServicesPage(this);
     connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
     connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
     addPage(page);
@@ -370,4 +376,76 @@ void SettingsMediaPage::slotDefaults()
 void SettingsMediaPage::slotItemChanged()
 {
     mTimeThresholdSpinbox->setEnabled(mUseTimeCheck->isChecked());
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsServicesPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
+    : KPageWidgetItem(new QWidget(pnt))
+{
+    setName(i18nc("@title:tab", "Services"));
+    setHeader(i18n("Settings for external services"));
+    setIcon(QIcon::fromTheme("applications-internet"));
+
+    QWidget *w = widget();
+    QFormLayout *fl = new QFormLayout(w);
+
+    const KConfigSkeletonItem *ski = Settings::self()->mapBrowserOSMItem();
+    Q_ASSERT(ski!=nullptr);
+    mOSMBrowserCombo = new QComboBox(w);
+    mOSMBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mOSMBrowserCombo);
+
+    // TODO: centralise filling these combo boxes and Photo Viewer on "Media" page
+
+    int selectIndex = -1;
+    mOSMBrowserCombo->addItem(QIcon::fromTheme("system-run"), i18n("(Configured default)"));
+
+    // The selection query used by the "Component Chooser" KCM (before it was
+    // converted to QML) and referred to in https://phabricator.kde.org/D27948
+    // was:
+    //
+    //    mimetype   text/html
+    //    constraint 'WebBrowser' in Categories and
+    //               ('x-scheme-handler/http' in ServiceTypes or 'x-scheme-handler/https' in ServiceTypes)
+    //
+    // However, the simpler query:
+    //
+    //    mimetype   x-scheme-handler/https
+    //
+    // appears to have exactly the same effect and returns the same results.
+    // Querying for a HTTPS handler alone works because most online map services
+    // redirect HTTP to HTTPS anyway, so the browser must eventually support HTTPS.
+    KService::List services = KMimeTypeTrader::self()->query("x-scheme-handler/https");
+    if (services.isEmpty()) qWarning() << "No web browser services available";
+    for (const KService::Ptr service : services)
+    {
+        mOSMBrowserCombo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
+        if (service->storageId()==Settings::mapBrowserOSM()) selectIndex = mOSMBrowserCombo->count()-1;
+    }
+    if (selectIndex!=-1) mOSMBrowserCombo->setCurrentIndex(selectIndex);
+
+    slotItemChanged();
+}
+
+
+void SettingsServicesPage::slotSave()
+{
+    Settings::setMapBrowserOSM(mOSMBrowserCombo->itemData(mOSMBrowserCombo->currentIndex()).toString());
+}
+
+
+void SettingsServicesPage::slotDefaults()
+{
+    mOSMBrowserCombo->setCurrentIndex(0);
+    slotItemChanged();
+}
+
+
+void SettingsServicesPage::slotItemChanged()
+{
 }
