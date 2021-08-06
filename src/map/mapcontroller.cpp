@@ -3,6 +3,7 @@
 
 #include <qdebug.h>
 #include <qfiledialog.h>
+#include <qurlquery.h>
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
@@ -262,4 +263,49 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
     GeoDataLatLonBox ll(bb.north(), bb.south(),
                         bb.east(), bb.west(), GeoDataCoordinates::Degree);
     view()->centerOn(ll, true);
+}
+
+
+void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items)
+{
+    qDebug() << "map" << map << "with" << items.count() << "items";
+
+    const QRect rect = view()->mapRegion().boundingRect();
+
+    qreal minlon, minlat;
+    if (!view()->geoCoordinates(rect.left(), rect.bottom(), minlon, minlat)) return;
+    qreal maxlon, maxlat;
+    if (!view()->geoCoordinates(rect.right(), rect.top(), maxlon, maxlat)) return;
+
+    qDebug() << "map bounds" << minlat << minlon << "-" << maxlat << maxlon;
+
+    qreal sellon = NAN;					// geo position of marker
+    qreal sellat = NAN;
+    if (items.count()==1)				// a single selected item
+    {
+        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
+        if (tdp!=nullptr)				// which must be a point
+        {
+            sellon = tdp->longitude();
+            sellat = tdp->latitude();
+        }
+    }
+
+    QUrl u;
+    QUrlQuery q;
+
+    switch (map)
+    {
+case MapBrowser::OSM:
+        // For OSM URL format see https://wiki.openstreetmap.org/wiki/Browsing
+        u = QUrl("https://openstreetmap.org/");
+
+        q.addQueryItem("bbox", QString("%1,%2,%3,%4").arg(minlon).arg(minlat).arg(maxlon).arg(maxlat));
+        if (!ISNAN(sellat)) q.addQueryItem("mlat", QString::number(sellat));
+        if (!ISNAN(sellon)) q.addQueryItem("mlon", QString::number(sellon));
+        u.setQuery(q);
+        break;
+    }
+
+    MapBrowser::self()->openBrowser(map, u, mainWidget());
 }

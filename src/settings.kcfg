@@ -109,13 +109,6 @@
     </entry>
   </group>
 
-  <group name="PhotoViewer">
-    <entry name="PhotoViewMode" key="Mode" type="String">
-      <label>Photo viewer:</label>
-      <tooltip>The embedded viewer to use for viewing photographs.</tooltip>
-    </entry>
-  </group>
-
   <group name="MainWindow">
     <entry name="MainWindowSplitterState" key="SplitterState" type="String">
     </entry>
@@ -123,6 +116,25 @@
 
   <group name="FilesView">
     <entry name="FilesViewColumnStates" key="ColumnStates" type="String">
+    </entry>
+  </group>
+
+  <group name="Services">
+    <entry name="PhotoViewMode" key="PhotoViewer" type="String">
+      <label>Photo viewer:</label>
+      <tooltip>The embedded viewer to use for viewing photographs.</tooltip>
+    </entry>
+    <entry name="MapBrowserOSM" type="String">
+      <label>OpenStreetMap browser:</label>
+      <tooltip>The web browser to use for viewing OpenStreetMap.</tooltip>
+    </entry>
+    <entry name="MapBrowserGoogle" type="String">
+      <label>Google Maps browser:</label>
+      <tooltip>The web browser to use for viewing Google Maps.</tooltip>
+    </entry>
+    <entry name="MapBrowserBing" type="String">
+      <label>Bing Maps browser:</label>
+      <tooltip>The web browser to use for viewing Bing Maps.</tooltip>
     </entry>
   </group>
 

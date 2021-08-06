@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		26-Jul-21					#
+#  Edit:		05-Aug-21					#
 #########################################################################
 
 project(navtracks)
@@ -51,6 +51,17 @@ add_definitions("-DQT_DEPRECATED_WARNINGS")
 
 remove_definitions("-DQT_NO_CAST_FROM_ASCII")
 remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
+
+#########################################################################
+#									#
+#  Build options							#
+#									#
+#########################################################################
+
+################################# TEMP, enable with option above ###############
+add_definitions("-DENABLE_OPEN_WITH_GOOGLE=1")
+add_definitions("-DENABLE_OPEN_WITH_BING=1")
+################################# TEMP #########################################
 
 #########################################################################
 #									#

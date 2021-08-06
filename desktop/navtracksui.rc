@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gui name="navmarks"
-     version="11"
+<gui name="navtracks"
+     version="13"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -62,7 +62,14 @@
       <Action name="map_show_layers"/>
       <Action name="map_show_overlays"/>
       <Action name="map_select_theme"/>
+      <Separator/>
       <Action name="map_save"/>
+      <Separator/>
+      <Action name="map_open_osm"/>
+      <!-- These will only appear if the corresponding build options are set	-->
+      <!-- and therefore the actions created in MainWindow::setupActions()	-->
+      <Action name="map_open_google"/>
+      <Action name="map_open_bing"/>
     </Menu>
 
     <Menu name="settings">

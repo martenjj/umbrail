@@ -404,6 +404,25 @@ void MainWindow::setupActions()
     ac->setDefaultShortcut(a, Qt::Key_Escape);
     connect(a, SIGNAL(triggered()), this, SLOT(slotResetAndCancel()));
 
+    a = ac->addAction("map_open_osm");
+    a->setText(i18n("View on OpenStreetMap..."));
+    a->setIcon(QIcon::fromTheme("openstreetmap"));
+    connect(a, &QAction::triggered, this, [this]() { openExternalMap(MapBrowser::OSM); });
+
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    a = ac->addAction("map_open_google");
+    a->setText(i18n("View with Google Maps..."));
+    a->setIcon(QIcon::fromTheme("googlemaps"));
+    connect(a, &QAction::triggered, this, [this]() { openExternalMap(MapBrowser::Google); });
+#endif // ENABLE_OPEN_WITH_GOOGLE
+
+#ifdef ENABLE_OPEN_WITH_BING
+    a = ac->addAction("map_open_bing");
+    a->setText(i18n("View with Bing Maps..."));
+    a->setIcon(QIcon::fromTheme("bingmaps"));
+    connect(a, &QAction::triggered, this, [this]() { openExternalMap(MapBrowser::Bing); });
+#endif // ENABLE_OPEN_WITH_BING
+
     const MapView *mapView = mapController()->view();
 
     KActionMenu *itemsMenu = new KActionMenu(this);
@@ -1241,4 +1260,10 @@ void MainWindow::slotReadOnly(bool on)
     // overriden if the file is read only.
     slotCanUndoChanged(mUndoStack->canUndo());
     slotCanRedoChanged(mUndoStack->canRedo());
+}
+
+
+void MainWindow::openExternalMap(MapBrowser::MapProvider map)
+{
+    mapController()->openExternalMap(map, filesController()->view()->selectedItems());
 }
