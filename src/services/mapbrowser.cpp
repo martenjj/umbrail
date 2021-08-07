@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Aug-21						//
+//  Edit:	07-Aug-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -33,6 +33,8 @@
 #include <qdebug.h>
 #include <qurlquery.h>
 
+#include <kmessagebox.h>
+#include <klocalizedstring.h>
 #include <kio/applicationlauncherjob.h>
 #include <kio/openurljob.h>
 
@@ -162,8 +164,27 @@ default:
     if (!u.isValid()) return;
     if (!q.isEmpty()) u.setQuery(q);
 
-    // TODO: if not OSM, display a warning (with "Do not show again")
-    // that copying data from Google/Bing to OSM is not allowed
+    // If not opening OpenStreetMap, display a warning that copying data from
+    // Google/Bing to OSM is not allowed.  This is not saying that the user is
+    // intending to do so, but just a warning on the first opportunity.
+    if (map!=MapBrowser::OSM)
+    {
+        KMessageBox::information(pnt,
+                                 xi18nc("@info",
+"<para>"
+"Please note that copying data from Google or Bing Maps (or any other copyright map or data source) "
+"to OpenStreetMap is not allowed, except in certain limited cases. You should ensure that your use "
+"of these maps is permitted under their terms of service."
+"</para>"
+"<para>"
+"See <link url=\"https://wiki.openstreetmap.org/wiki/Copyright\">Copyright</link> "
+"on the OpenStreetMap Wiki for more information."
+"</para>"
+),
+                                 QString(),
+                                 "closedMapWarning",
+                                 KMessageBox::AllowLink);
+    }
 
     qDebug() << "for map" << map << "service" << browserService << "url" << u;
     if (browserService.isEmpty())
