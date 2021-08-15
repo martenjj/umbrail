@@ -8,6 +8,7 @@
 #include <qgroupbox.h>
 #include <qspinbox.h>
 #include <qdebug.h>
+#include <qlineedit.h>
 
 #include <klocalizedstring.h>
 #include <kpagedialog.h>
@@ -431,18 +432,16 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
     Q_ASSERT(ski!=nullptr);
     mOSMBrowserCombo = new QComboBox(w);
     mOSMBrowserCombo->setToolTip(ski->toolTip());
-    fl->addRow(ski->label(), mOSMBrowserCombo);
-
     fillBrowserCombo(mOSMBrowserCombo, Settings::mapBrowserOSM());
+    fl->addRow(ski->label(), mOSMBrowserCombo);
 
 #ifdef ENABLE_OPEN_WITH_GOOGLE
     ski = Settings::self()->mapBrowserGoogleItem();
     Q_ASSERT(ski!=nullptr);
     mGoogleBrowserCombo = new QComboBox(w);
     mGoogleBrowserCombo->setToolTip(ski->toolTip());
-    fl->addRow(ski->label(), mGoogleBrowserCombo);
-
     fillBrowserCombo(mGoogleBrowserCombo, Settings::mapBrowserGoogle());
+    fl->addRow(ski->label(), mGoogleBrowserCombo);
 #endif // ENABLE_OPEN_WITH_GOOGLE
 
 #ifdef ENABLE_OPEN_WITH_BING
@@ -450,10 +449,18 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
     Q_ASSERT(ski!=nullptr);
     mBingBrowserCombo = new QComboBox(w);
     mBingBrowserCombo->setToolTip(ski->toolTip());
-    fl->addRow(ski->label(), mBingBrowserCombo);
-
     fillBrowserCombo(mBingBrowserCombo, Settings::mapBrowserBing());
+    fl->addRow(ski->label(), mBingBrowserCombo);
 #endif // ENABLE_OPEN_WITH_BING
+
+    fl->addItem(DialogBase::verticalSpacerItem());
+
+    ski = Settings::self()->geonamesUserItem();
+    Q_ASSERT(ski!=nullptr);
+    mGeonamesUserEdit = new QLineEdit(w);
+    mGeonamesUserEdit->setToolTip(ski->toolTip());
+    mGeonamesUserEdit->setText(Settings::geonamesUser());
+    fl->addRow(ski->label(), mGeonamesUserEdit);
 
     slotItemChanged();
 }
@@ -468,6 +475,7 @@ void SettingsServicesPage::slotSave()
 #ifdef ENABLE_OPEN_WITH_BING
     Settings::setMapBrowserBing(mBingBrowserCombo->currentData().toString());
 #endif // ENABLE_OPEN_WITH_BING
+    Settings::setGeonamesUser(mGeonamesUserEdit->text());
 }
 
 
@@ -480,6 +488,7 @@ void SettingsServicesPage::slotDefaults()
 #ifdef ENABLE_OPEN_WITH_BING
     mBingBrowserCombo->setCurrentIndex(0);
 #endif // ENABLE_OPEN_WITH_BING
+    mGeonamesUserEdit->clear();
     slotItemChanged();
 }
 

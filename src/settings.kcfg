@@ -121,8 +121,8 @@
 
   <group name="Services">
     <entry name="GeonamesUser" type="String">
-      <label>geonames.org user name:"</label>
-      <tooltip>The user name to use for access to &lt;link url='http://www.geonames.org'&gt;geonames.org&lt;/link&gt;. This web service is used for time zone lookup.</tooltip>
+      <label>geonames.org user name:</label>
+      <tooltip>The user name to use for access to geonames.org. This web service is used for time zone lookup.</tooltip>
     </entry>
     <entry name="PhotoViewMode" key="PhotoViewer" type="String">
       <label>Photo viewer:</label>

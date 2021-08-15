@@ -95,7 +95,7 @@ void TimeZoneProvider::reportError(const QString &msg)
     QString m;
     if (msg.isEmpty())					// called for missing user
     {
-        m = xi18nc("@info", "The user name for <link url=\"http://geonames.org\">geonames.org</link> is not configured. Register there if necessary, then set it in <interface>Settings&nbsp;-&nbsp;Services</interface>.");
+        m = xi18nc("@info", "The user name for <link url=\"http://geonames.org\">geonames.org</link> is not configured. Register there if necessary, then set it in <interface>Settings->Services</interface>.");
     }
     else						// some other remote error
     {

@@ -9,6 +9,7 @@
 class QCheckBox;
 class QComboBox;
 class QSpinBox;
+class QLineEdit;
 class KColorButton;
 class KUrlRequester;
 
@@ -116,6 +117,7 @@ private:
 #ifdef ENABLE_OPEN_WITH_BING
     QComboBox *mBingBrowserCombo;
 #endif // ENABLE_OPEN_WITH_BING
+    QLineEdit *mGeonamesUserEdit;
 };
 
 #endif							// SETTINGSDIALOGUE_H
