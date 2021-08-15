@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	05-Jun-21						//
+//  Edit:	15-Aug-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -64,7 +64,9 @@ int main(int argc,char *argv[])
 #endif
                          i18n("GPS track viewer and editor"),
                          KAboutLicense::GPL_V3,
-                         i18n("Copyright (c) 2014-2016 Jonathan Marten"),
+                         // The QString(...) is needed to avoid the "string literal as
+                         // second argument to i18n()" build time error.
+                         i18n("Copyright (c) 2014-%1 Jonathan Marten", QString(YEAR)),
                          "",				// otherText
                          "http://www.keelhaul.me.uk",	// homePageAddress
                         "jjm@keelhaul.me.uk");		// bugsEmailAddress

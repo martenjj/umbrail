@@ -52,6 +52,8 @@ TMPFILE="$BIN/version.h.tmp"				# temporary header file
 		echo "#define VCS_HAVE_VERSION     1"
 	fi
 	echo
+	echo "#define YEAR                 \"`date +'%Y'`\""
+	echo
 } >$TMPFILE
 
 
