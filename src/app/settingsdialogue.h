@@ -18,7 +18,7 @@ class SettingsDialogue : public KPageDialog
     Q_OBJECT
 
 public:
-    SettingsDialogue(QWidget *pnt = nullptr);
+    explicit SettingsDialogue(QWidget *pnt = nullptr);
     virtual ~SettingsDialogue() = default;
 };
 
@@ -28,8 +28,8 @@ class SettingsMapStylePage : public KPageWidgetItem
     Q_OBJECT
 
 public:
-    SettingsMapStylePage(QWidget *pnt = nullptr);
-    virtual ~SettingsMapStylePage()				{}
+    explicit SettingsMapStylePage(QWidget *pnt = nullptr);
+    virtual ~SettingsMapStylePage() = default;
 
 public slots:
     void slotSave();
@@ -53,8 +53,8 @@ class SettingsFilesPage : public KPageWidgetItem
     Q_OBJECT
 
 public:
-    SettingsFilesPage(QWidget *pnt = nullptr);
-    virtual ~SettingsFilesPage()				{}
+    explicit SettingsFilesPage(QWidget *pnt = nullptr);
+    virtual ~SettingsFilesPage() = default;
 
 public slots:
     void slotSave();
@@ -75,8 +75,8 @@ class SettingsMediaPage : public KPageWidgetItem
     Q_OBJECT
 
 public:
-    SettingsMediaPage(QWidget *pnt = nullptr);
-    virtual ~SettingsMediaPage()				{}
+    explicit SettingsMediaPage(QWidget *pnt = nullptr);
+    virtual ~SettingsMediaPage() = default;
 
 public slots:
     void slotSave();
@@ -90,6 +90,32 @@ private:
     QCheckBox *mUseGpsCheck;
     QCheckBox *mUseTimeCheck;
     QSpinBox *mTimeThresholdSpinbox;
+};
+
+
+class SettingsServicesPage : public KPageWidgetItem
+{
+    Q_OBJECT
+
+public:
+    explicit SettingsServicesPage(QWidget *pnt = nullptr);
+    virtual ~SettingsServicesPage() = default;
+
+public slots:
+    void slotSave();
+    void slotDefaults();
+
+private slots:
+    void slotItemChanged();
+
+private:
+    QComboBox *mOSMBrowserCombo;
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    QComboBox *mGoogleBrowserCombo;
+#endif // ENABLE_OPEN_WITH_GOOGLE
+#ifdef ENABLE_OPEN_WITH_BING
+    QComboBox *mBingBrowserCombo;
+#endif // ENABLE_OPEN_WITH_BING
 };
 
 #endif							// SETTINGSDIALOGUE_H

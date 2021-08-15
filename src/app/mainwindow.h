@@ -7,6 +7,7 @@
 
 #include "applicationdata.h"
 #include "filescontroller.h"
+#include "mapbrowser.h"
 #include "importerexporterbase.h"
 
 
@@ -97,6 +98,8 @@ private:
     FilesController::Status load(const QUrl &from);
 
     bool acceptMimeData(const QMimeData *mimeData);
+
+    void openExternalMap(MapBrowser::MapProvider map);
 
 private slots:
     void slotUpdateActionState();

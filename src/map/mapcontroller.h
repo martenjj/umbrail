@@ -5,6 +5,7 @@
  
 #include <qobject.h>
 #include "applicationdatainterface.h"
+#include "mapbrowser.h"
 
 #include <marble/MapThemeManager.h>
 
@@ -21,8 +22,8 @@ class MapController : public QObject, public ApplicationDataInterface
     Q_OBJECT
 
 public:
-    MapController(QObject *pnt = nullptr);
-    ~MapController();
+    explicit MapController(QObject *pnt = nullptr);
+    virtual ~MapController();
 
     MapView *view() const			{ return (mView); }
 
@@ -32,6 +33,7 @@ public:
     void clear();
 
     void gotoSelection(const QList<TrackDataItem *> &items);
+    void openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items);
 
     static QString positionToString(double lat, double lon, int zoom);
     static bool positionFromString(const QString &str, double *plat, double *plon, int *pzoom);

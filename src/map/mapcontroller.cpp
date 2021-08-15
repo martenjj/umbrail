@@ -263,3 +263,30 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
                         bb.east(), bb.west(), GeoDataCoordinates::Degree);
     view()->centerOn(ll, true);
 }
+
+
+void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items)
+{
+    // The displayed map bounding area in pixels
+    const QRect rect = view()->mapRegion().boundingRect();
+
+    // Not a BoundingArea, its API is not quite up to this task
+    QRectF displayedArea;
+
+    qreal lon, lat;
+    if (!view()->geoCoordinates(rect.left(), rect.bottom(), lon, lat)) return;
+    displayedArea.setLeft(lon);
+    displayedArea.setBottom(lat);
+    if (!view()->geoCoordinates(rect.right(), rect.top(), lon, lat)) return;
+    displayedArea.setRight(lon);
+    displayedArea.setTop(lat);
+    qDebug() << "map" << map << "bounds" << displayedArea;
+
+    const TrackDataAbstractPoint *selpoint = nullptr;
+    if (items.count()==1)				// a single selected item
+    {							// which must be a point
+        selpoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
+    }
+
+    MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget());
+}

@@ -14,6 +14,7 @@
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
 #include <kconfigskeleton.h>
+#include <kmimetypetrader.h>
 #include <kparts/partloader.h>
 
 #include <kfdialog/dialogbase.h>
@@ -50,6 +51,11 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     addPage(page);
 
     page = new SettingsMediaPage(this);
+    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
+    addPage(page);
+
+    page = new SettingsServicesPage(this);
     connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
     connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
     addPage(page);
@@ -370,4 +376,114 @@ void SettingsMediaPage::slotDefaults()
 void SettingsMediaPage::slotItemChanged()
 {
     mTimeThresholdSpinbox->setEnabled(mUseTimeCheck->isChecked());
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsServicesPage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+static void fillBrowserCombo(QComboBox *combo, const QString &currentId)
+{
+    int selectIndex = -1;
+    combo->clear();
+    combo->addItem(QIcon::fromTheme("preferences-system"), i18n("(Configured default)"));
+
+    // The selection query used by the "Component Chooser" KCM (before it was
+    // converted to QML) and referred to in https://phabricator.kde.org/D27948
+    // was:
+    //
+    //    mimetype   text/html
+    //    constraint 'WebBrowser' in Categories and
+    //               ('x-scheme-handler/http' in ServiceTypes or 'x-scheme-handler/https' in ServiceTypes)
+    //
+    // However, the simpler query:
+    //
+    //    mimetype   x-scheme-handler/https
+    //
+    // appears to have exactly the same effect and returns the same results.
+    // Querying for a HTTPS handler alone works because most online map services
+    // redirect HTTP to HTTPS anyway, so the browser must eventually support HTTPS.
+    KService::List services = KMimeTypeTrader::self()->query("x-scheme-handler/https");
+    if (services.isEmpty()) qWarning() << "No web browser services available";
+    for (const KService::Ptr service : services)
+    {
+        combo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
+        if (service->storageId()==currentId) selectIndex = combo->count()-1;
+    }
+
+    if (selectIndex!=-1) combo->setCurrentIndex(selectIndex);
+}
+
+
+SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
+    : KPageWidgetItem(new QWidget(pnt))
+{
+    setName(i18nc("@title:tab", "Services"));
+    setHeader(i18n("Settings for external services"));
+    setIcon(QIcon::fromTheme("applications-internet"));
+
+    QWidget *w = widget();
+    QFormLayout *fl = new QFormLayout(w);
+
+    const KConfigSkeletonItem *ski = Settings::self()->mapBrowserOSMItem();
+    Q_ASSERT(ski!=nullptr);
+    mOSMBrowserCombo = new QComboBox(w);
+    mOSMBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mOSMBrowserCombo);
+
+    fillBrowserCombo(mOSMBrowserCombo, Settings::mapBrowserOSM());
+
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    ski = Settings::self()->mapBrowserGoogleItem();
+    Q_ASSERT(ski!=nullptr);
+    mGoogleBrowserCombo = new QComboBox(w);
+    mGoogleBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mGoogleBrowserCombo);
+
+    fillBrowserCombo(mGoogleBrowserCombo, Settings::mapBrowserGoogle());
+#endif // ENABLE_OPEN_WITH_GOOGLE
+
+#ifdef ENABLE_OPEN_WITH_BING
+    ski = Settings::self()->mapBrowserBingItem();
+    Q_ASSERT(ski!=nullptr);
+    mBingBrowserCombo = new QComboBox(w);
+    mBingBrowserCombo->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mBingBrowserCombo);
+
+    fillBrowserCombo(mBingBrowserCombo, Settings::mapBrowserBing());
+#endif // ENABLE_OPEN_WITH_BING
+
+    slotItemChanged();
+}
+
+
+void SettingsServicesPage::slotSave()
+{
+    Settings::setMapBrowserOSM(mOSMBrowserCombo->currentData().toString());
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    Settings::setMapBrowserGoogle(mGoogleBrowserCombo->currentData().toString());
+#endif // ENABLE_OPEN_WITH_GOOGLE
+#ifdef ENABLE_OPEN_WITH_BING
+    Settings::setMapBrowserBing(mBingBrowserCombo->currentData().toString());
+#endif // ENABLE_OPEN_WITH_BING
+}
+
+
+void SettingsServicesPage::slotDefaults()
+{
+    mOSMBrowserCombo->setCurrentIndex(0);
+#ifdef ENABLE_OPEN_WITH_GOOGLE
+    mGoogleBrowserCombo->setCurrentIndex(0);
+#endif // ENABLE_OPEN_WITH_GOOGLE
+#ifdef ENABLE_OPEN_WITH_BING
+    mBingBrowserCombo->setCurrentIndex(0);
+#endif // ENABLE_OPEN_WITH_BING
+    slotItemChanged();
+}
+
+
+void SettingsServicesPage::slotItemChanged()
+{
 }
