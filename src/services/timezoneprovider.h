@@ -15,6 +15,7 @@ public:
     virtual ~TimeZoneProvider() = default;
 
     QString timeZone() const			{ return (mTimeZone); }
+    bool isValid() const			{ return (mJobReady); }
 
 signals:
     void result(const QString &timeZone);
@@ -30,6 +31,7 @@ private:
     QByteArray mReceivedData;
     QString mTimeZone;
     QUrl mUrl;
+    bool mJobReady;
 };
 
 #endif							// TIMEZONEPROVIDER_H

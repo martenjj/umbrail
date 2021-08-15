@@ -126,4 +126,11 @@
     </entry>
   </group>
 
+  <group name="Services">
+    <entry name="GeonamesUser" type="String">
+      <label>geonames.org user name:"</label>
+      <tooltip>The user name to use for access to &lt;link url='http://www.geonames.org'&gt;geonames.org&lt;/link&gt;. This web service is used for time zone lookup.</tooltip>
+    </entry>
+  </group>
+
 </kcfg>

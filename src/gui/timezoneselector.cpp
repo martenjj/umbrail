@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Jan-17						//
+//  Edit:	15-Aug-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -92,6 +92,7 @@ void TimeZoneSelector::slotGuessZone()
     qDebug() << "for lat" << mItemsLat << "lon" << mItemsLon;
 
     TimeZoneProvider *job = new TimeZoneProvider(mItemsLat, mItemsLon, this);
+    if (!job->isValid()) return;			// failed to start job
     connect(job, SIGNAL(result(const QString &)), SLOT(slotGuessJobFinished(const QString &)));
 }
 
@@ -110,5 +111,4 @@ void TimeZoneSelector::setItems(const QList<TrackDataItem *> *items)
 void TimeZoneSelector::slotGuessJobFinished(const QString &zone)
 {
     if (!zone.isEmpty()) mZoneDisplay->setText(zone);
-    sender()->deleteLater();
 }
