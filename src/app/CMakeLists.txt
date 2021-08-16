@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		28-Jul-21					#
+#  Edit:		16-Aug-21					#
 #########################################################################
 
 project(navtracks)
@@ -69,4 +69,3 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 if (INSTALL_BINARIES)
   install(TARGETS navtracks ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif (INSTALL_BINARIES)
-install(FILES settings.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME navtracks.kcfg)
