@@ -43,6 +43,8 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
     addSeparatorField();
     mFormLayout->addRow(i18nc("@label:textbox", "Name:"), mNameEdit);
     addSeparatorField();
+							// note whether named at start
+    mHasExplicitName = (!items->isEmpty() && items->first()->hasExplicitName());
 
     mTypeCombo = nullptr;				// fields which may be created later
     mDescEdit = nullptr;
@@ -54,16 +56,28 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
 
 bool TrackItemGeneralPage::isDataValid() const
 {
-    const QVariant &name = dataModel()->data("name");
+    const QString &name = dataModel()->data("name").toString();
     qDebug() << "name" << name << "enabled?" << mNameEdit->isEnabled();
-    if (!mNameEdit->isEnabled()) return (true);
-    return (!name.isNull());
+    if (!mNameEdit->isEnabled()) return (true);		// multiple items, entry ignored
+    if (!mHasExplicitName) return (true);		// no explicit name, null allowed
+    return (!name.isEmpty());				// name entered
 }
 
 
 void TrackItemGeneralPage::refreshData()
 {
-    mNameEdit->setText(dataModel()->data("name").toString());
+    mNameEdit->setPlaceholderText(i18n("Specify an item name..."));
+    const QString &name = dataModel()->data("name").toString();
+    if (!mHasExplicitName)				// no explicit name set
+    {
+        mNameEdit->setText("");
+        if (!name.isEmpty()) mNameEdit->setPlaceholderText(name);
+    }
+    else						// item has explicit name
+    {
+        mNameEdit->setText(name);
+    }
+
     if (mTypeCombo!=nullptr) mTypeCombo->setType(dataModel()->data("type").toString());
 
     if (mDescEdit!=nullptr && mDescEdit->isEnabled())

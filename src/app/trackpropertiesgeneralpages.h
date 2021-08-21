@@ -61,6 +61,9 @@ protected:
     TrackDataLabel *mTimeLabel;
     TrackDataLabel *mTimeStartLabel;
     TrackDataLabel *mTimeEndLabel;
+
+private:
+    bool mHasExplicitName;
 };
 
 
