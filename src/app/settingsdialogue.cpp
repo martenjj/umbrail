@@ -15,7 +15,7 @@
 #include <kcolorbutton.h>
 #include <kurlrequester.h>
 #include <kconfigskeleton.h>
-#include <kmimetypetrader.h>
+#include <kapplicationtrader.h>
 #include <kparts/partloader.h>
 
 #include <kfdialog/dialogbase.h>
@@ -406,7 +406,7 @@ static void fillBrowserCombo(QComboBox *combo, const QString &currentId)
     // appears to have exactly the same effect and returns the same results.
     // Querying for a HTTPS handler alone works because most online map services
     // redirect HTTP to HTTPS anyway, so the browser must eventually support HTTPS.
-    KService::List services = KMimeTypeTrader::self()->query("x-scheme-handler/https");
+    KService::List services = KApplicationTrader::queryByMimeType("x-scheme-handler/https");
     if (services.isEmpty()) qWarning() << "No web browser services available";
     for (const KService::Ptr service : services)
     {
