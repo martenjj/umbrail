@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Sep-19						//
+//  Edit:	14-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -32,6 +32,25 @@
 
 static DataIndexer *sInstance = nullptr;
 
+// The XML namespace prefix used by this application.
+// The namespace URI is only used by and is set in GpxExporter.
+static const char *sApplicationNamespace = "navtracks";
+
+// Private tags which are used by this application.
+// They are namespaced with our prefix when exporting.
+static const char *sApplicationTags[] =
+{
+    "status",
+    "source",
+    "stop",
+    "folder",
+    "linecolor",
+    "pointcolor",
+    "bearingline",
+    "rangering",
+    nullptr
+};
+
 
 DataIndexer::DataIndexer()
 {
@@ -50,15 +69,33 @@ DataIndexer *DataIndexer::self()
 }
 
 
-
 int DataIndexer::index(const QString &nm)
 {
+    if (nm.contains(':'))				// only plain names allowed here
+    {
+        qWarning() << "called for name" << nm << "with namespace";
+        return (indexWithNamespace(nm));
+    }
+
     int idx = mIndexHash.value(nm, -1);
     if (idx==-1)					// nothing allocated yet
     {
         idx = mNextIndex++;				// next integer value
         mIndexHash.insert(nm, idx);
         qDebug() << "allocated index" << idx << "for" << nm;
+
+        // See if this name belongs to our application namespace.
+        // If so, associate the namespace now so that it is not
+        // overridden by "legacy" files being loaded.
+        for (const char **tag = &sApplicationTags[0]; *tag!=nullptr; ++tag)
+        {
+            if (nm==*tag)
+            {
+                mNamespaceHash.insert(idx, sApplicationNamespace);
+                qDebug() << "associated application namespace";
+                break;
+            }
+        }
     }
 
     return (idx);					// existing or new index
@@ -68,4 +105,74 @@ int DataIndexer::index(const QString &nm)
 QString DataIndexer::name(int idx) const
 {
     return (mIndexHash.key(idx));
+}
+
+
+int DataIndexer::indexWithNamespace(const QString &nm, const QString &nsp)
+{
+    const int idx = index(nm);				// look up index as before
+    const QString &curnsp = mNamespaceHash.value(idx);	// get existing namespace
+
+    if (curnsp.isEmpty())				// no existing namespace
+    {
+        if (!nsp.isEmpty())				// and a new one provided
+        {
+            mNamespaceHash.insert(idx, nsp);
+            qDebug() << "associated namespace" << nsp << "for tag" << nm;
+        }
+    }
+    else						// there is an existing namespace
+    {
+        if (nsp!=curnsp)				// if not the same as current
+        {						// then ignore the new namespace
+            qWarning() << "ignoring namespace" << nsp << "because tag" << nm << "already has" << curnsp;
+        }
+    }
+
+    return (idx);
+}
+
+
+int DataIndexer::indexWithNamespace(const QString &qnm)
+{
+    const int pos = qnm.indexOf(':');
+    if (pos==-1) return (index(qnm));			// not a qualified name
+							// split up qualified name
+    return (indexWithNamespace(qnm.mid(pos+1), qnm.left(pos)));
+}
+
+
+QString DataIndexer::nameWithNamespace(const QString &nm)
+{
+    return (nameWithNamespace(index(nm)));
+}
+
+
+QString DataIndexer::nameWithNamespace(int idx)
+{
+    const QString &nm = name(idx);			// plain name for index
+    const QString &nsp = mNamespaceHash.value(idx);	// get existing namespace
+
+    if (nsp.isEmpty()) return (nm);			// no associated namespace
+    return (nsp+':'+nm);				// name with namespace
+}
+
+
+bool DataIndexer::isApplicationTag(const QString &nm)
+{
+    const int idx = index(nm);				// look up index
+    const QString &nsp = mNamespaceHash.value(idx);	// get existing namespace
+    return (nsp==sApplicationNamespace);		// check whether it is our own
+}
+
+
+bool DataIndexer::isInternalTag(const QString &nm)
+{
+    return (nm=="name" || nm=="latitude" || nm=="longitude");
+}
+
+
+QString DataIndexer::applicationNamespace()
+{
+    return (sApplicationNamespace);
 }

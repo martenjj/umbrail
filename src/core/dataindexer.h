@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	24-Feb-14						//
+//  Edit:	14-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -46,6 +46,9 @@
  * attribute/element names and small integer indexes.  Using the index, the
  * value can be stored in a more compact vector within the item.
  *
+ * XML namespaces, either for known tags or "learned" while importing, are
+ * automatically associated with the names to which they apply.
+ *
  * @author Jonathan Marten
  **/
 
@@ -72,7 +75,7 @@ public:
      * Get the name allocated for an index.
      *
      * @param idx The index
-     * @return the allocated name, or @c QString::null if the index is not allocated
+     * @return the allocated name, or a null @c QString if the index is not allocated
      **/
     QString name(int idx) const;
 
@@ -83,12 +86,79 @@ public:
      **/
     int count() const				{ return (mNextIndex); }
 
+    /**
+     * Note that an XML namespace tag is associated with a name.
+     *
+     * @param nm The name
+     * @param nsp The XML namespace tag
+     * @return the existing or a newly allocated index
+     *
+     * @note This is intended to be used during GPX or KML import,
+     * so that the namespace associated with a tag will be remembered
+     * for export.
+     **/
+    int indexWithNamespace(const QString &nm, const QString &nsp);
+
+    /**
+     * Note that an XML namespace tag is associated with a name.
+     *
+     * @param nm The qualified name, in the format "namespace:name"
+     * @return the existing or a newly allocated index
+     **/
+    int indexWithNamespace(const QString &qnm);
+
+    /**
+     * Get a full name including an XML namespace tag.
+     *
+     * @param nm The plain internal name
+     * @return the name with an XML namespace prepended, if there is one,
+     * otherwise the name unchanged.
+     *
+     * @note This is intended to be used during GPX or KML export,
+     * so that the namespace that was previously found to be associated
+     * with a tag will be used.
+     **/
+    QString nameWithNamespace(const QString &nm);
+
+    /**
+     * Get a full name including an XML namespace tag.
+     *
+     * @param idx The index
+     * @return the name with an XML namespace prepended, if there is one,
+     * otherwise the plain name.
+     **/
+    QString nameWithNamespace(int idx);
+
+    /**
+     * Check whether the tag should be in our application namespace.
+     *
+     * @param nm The plain internal name
+     * @return @c true if the name should be namespaced as such
+     **/
+    bool isApplicationTag(const QString &nm);
+
+    /**
+     * Check whether the tag is internal to this application only.
+     *
+     * @param nm The plain internal name
+     * @return @c true if this is an internal tag
+     **/
+    bool isInternalTag(const QString &nm);
+
+    /**
+     * Get our application namespace name
+     *
+     * @return the namespace name
+     **/
+    QString applicationNamespace();
+
 private:
     DataIndexer();
-    ~DataIndexer()				{}
+    ~DataIndexer() = default;
 
 private:
     QHash<QString,int> mIndexHash;
+    QHash<int,QString> mNamespaceHash;
     int mNextIndex;
 };
 
