@@ -126,14 +126,14 @@ public:
         : ChangeItemCommand(fc, parent)			{}
     virtual ~ChangeItemDataCommand()			{}
 
-    void setData(const QString &key,
+    void setData(const QByteArray &key,
                  const QVariant &value)			{ mKey = key; mNewValue = value; }
 
     void redo() override;
     void undo() override;
 
 private:
-    QString mKey;
+    QByteArray mKey;
     QVariant mNewValue;
     QVariantList mSavedValues;
 };

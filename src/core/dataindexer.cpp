@@ -34,8 +34,8 @@
 // These are not POD, but they will not be used
 // until the application is fully initialised
 // so should be safe.
-static QHash<QString,int> sIndexHash;
-static QHash<int,QString> sNamespaceHash;
+static QHash<QByteArray,int> sIndexHash;
+static QHash<int,QByteArray> sNamespaceHash;
 
 // The XML namespace prefix used by this application.
 // The namespace URI is only used by and is set in GpxExporter.
@@ -57,7 +57,7 @@ static const char *sApplicationTags[] =
 };
 
 
-int DataIndexer::index(const QString &nm)
+int DataIndexer::index(const QByteArray &nm)
 {
     if (nm.contains(':'))				// only plain names allowed here
     {
@@ -90,17 +90,17 @@ int DataIndexer::index(const QString &nm)
 }
 
 
-QString DataIndexer::name(int idx)
+QByteArray DataIndexer::name(int idx)
 {
     return (sIndexHash.key(idx));
 }
 
 
-int DataIndexer::indexWithNamespace(const QString &nm, const QString &nsp)
+int DataIndexer::indexWithNamespace(const QByteArray &nm, const QByteArray &nsp)
 {
     const int idx = index(nm);				// look up index as before
-    const QString &curnsp = sNamespaceHash.value(idx);	// get existing namespace
-
+    const QByteArray &curnsp = sNamespaceHash.value(idx);
+							// get existing namespace
     if (curnsp.isEmpty())				// no existing namespace
     {
         if (!nsp.isEmpty())				// and a new one provided
@@ -121,7 +121,7 @@ int DataIndexer::indexWithNamespace(const QString &nm, const QString &nsp)
 }
 
 
-int DataIndexer::indexWithNamespace(const QString &qnm)
+int DataIndexer::indexWithNamespace(const QByteArray &qnm)
 {
     const int pos = qnm.indexOf(':');
     if (pos==-1) return (index(qnm));			// not a qualified name
@@ -130,37 +130,37 @@ int DataIndexer::indexWithNamespace(const QString &qnm)
 }
 
 
-QString DataIndexer::nameWithNamespace(const QString &nm)
+QByteArray DataIndexer::nameWithNamespace(const QByteArray &nm)
 {
     return (nameWithNamespace(index(nm)));
 }
 
 
-QString DataIndexer::nameWithNamespace(int idx)
+QByteArray DataIndexer::nameWithNamespace(int idx)
 {
-    const QString &nm = name(idx);			// plain name for index
-    const QString &nsp = sNamespaceHash.value(idx);	// get existing namespace
+    const QByteArray &nm = name(idx);			// plain name for index
+    const QByteArray &nsp = sNamespaceHash.value(idx);	// get existing namespace
 
     if (nsp.isEmpty()) return (nm);			// no associated namespace
     return (nsp+':'+nm);				// name with namespace
 }
 
 
-bool DataIndexer::isApplicationTag(const QString &nm)
+bool DataIndexer::isApplicationTag(const QByteArray &nm)
 {
     const int idx = index(nm);				// look up index
-    const QString &nsp = sNamespaceHash.value(idx);	// get existing namespace
+    const QByteArray &nsp = sNamespaceHash.value(idx);	// get existing namespace
     return (nsp==sApplicationNamespace);		// check whether it is our own
 }
 
 
-bool DataIndexer::isInternalTag(const QString &nm)
+bool DataIndexer::isInternalTag(const QByteArray &nm)
 {
     return (nm=="name" || nm=="latitude" || nm=="longitude");
 }
 
 
-QString DataIndexer::applicationNamespace()
+QByteArray DataIndexer::applicationNamespace()
 {
     return (sApplicationNamespace);
 }

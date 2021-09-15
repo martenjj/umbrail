@@ -116,7 +116,7 @@ const QVariant MetadataModel::data(int idx) const
 
 const QVariant MetadataModel::data(const QString &nm) const
 {
-    return (data(DataIndexer::index(nm)));
+    return (data(DataIndexer::index(nm.toLocal8Bit())));
 }
 
 

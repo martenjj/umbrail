@@ -56,7 +56,7 @@ static void endExtensions(QXmlStreamWriter &str)
 }
 
 
-static bool isExtensionTag(const TrackDataItem *item, const QString &name)
+static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 {
     if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (false);
 							// file metadata - never in extensions
@@ -94,7 +94,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         //         << "name" << DataIndexer::name(idx)
         //         << "=" << item->metadata(idx);
 
-        const QString name = DataIndexer::name(idx);
+        const QByteArray name = DataIndexer::name(idx);
         if (DataIndexer::isInternalTag(name)) continue;
 							// ignore internally used tags
         if (isExtensionTag(item, name) ^ wantExtensions) continue;

@@ -214,9 +214,9 @@ public:
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
     QVariant metadata(int idx) const;
-    QVariant metadata(const QString &key) const;
+    QVariant metadata(const QByteArray &key) const;
     void setMetadata(int idx, const QVariant &value);
-    void setMetadata(const QString &key, const QVariant &value);
+    void setMetadata(const QByteArray &key, const QVariant &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
     virtual BoundingArea boundingArea() const;

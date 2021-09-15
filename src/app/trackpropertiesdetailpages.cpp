@@ -527,7 +527,7 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> *items
 }
 
 
-void TrackItemDetailPage::addMetadataField(const QString &key, const QString &label)
+void TrackItemDetailPage::addMetadataField(const QByteArray &key, const QString &label)
 {
     const int idx = DataIndexer::index(key);
 

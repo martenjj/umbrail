@@ -28,7 +28,7 @@
 #ifndef DATAINDEXER_H
 #define DATAINDEXER_H
 
-class QString;
+class QByteArray;
 
 
 /**
@@ -59,15 +59,15 @@ namespace DataIndexer
      * @param nm The name
      * @return the existing or a newly allocated index
      **/
-    int index(const QString &nm);
+    int index(const QByteArray &nm);
 
     /**
      * Get the name allocated for an index.
      *
      * @param idx The index
-     * @return the allocated name, or a null @c QString if the index is not allocated
+     * @return the allocated name, or a null string if the index is not allocated
      **/
-    QString name(int idx);
+    QByteArray name(int idx);
 
     /**
      * Get the number of indexes that are currently allocated.
@@ -87,7 +87,7 @@ namespace DataIndexer
      * so that the namespace associated with a tag will be remembered
      * for export.
      **/
-    int indexWithNamespace(const QString &nm, const QString &nsp);
+    int indexWithNamespace(const QByteArray &nm, const QByteArray &nsp);
 
     /**
      * Note that an XML namespace tag is associated with a name.
@@ -95,7 +95,7 @@ namespace DataIndexer
      * @param nm The qualified name, in the format "namespace:name"
      * @return the existing or a newly allocated index
      **/
-    int indexWithNamespace(const QString &qnm);
+    int indexWithNamespace(const QByteArray &qnm);
 
     /**
      * Get a full name including an XML namespace tag.
@@ -108,7 +108,7 @@ namespace DataIndexer
      * so that the namespace that was previously found to be associated
      * with a tag will be used.
      **/
-    QString nameWithNamespace(const QString &nm);
+    QByteArray nameWithNamespace(const QByteArray &nm);
 
     /**
      * Get a full name including an XML namespace tag.
@@ -117,7 +117,7 @@ namespace DataIndexer
      * @return the name with an XML namespace prepended, if there is one,
      * otherwise the plain name.
      **/
-    QString nameWithNamespace(int idx);
+    QByteArray nameWithNamespace(int idx);
 
     /**
      * Check whether the tag should be in our application namespace.
@@ -125,7 +125,7 @@ namespace DataIndexer
      * @param nm The plain internal name
      * @return @c true if the name should be namespaced as such
      **/
-    bool isApplicationTag(const QString &nm);
+    bool isApplicationTag(const QByteArray &nm);
 
     /**
      * Check whether the tag is internal to this application only.
@@ -133,14 +133,14 @@ namespace DataIndexer
      * @param nm The plain internal name
      * @return @c true if this is an internal tag
      **/
-    bool isInternalTag(const QString &nm);
+    bool isInternalTag(const QByteArray &nm);
 
     /**
      * Get our application namespace name
      *
      * @return the namespace name
      **/
-    QString applicationNamespace();
+    QByteArray applicationNamespace();
 }
 
  

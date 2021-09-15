@@ -418,7 +418,7 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
 }
 
 
-void TrackDataItem::setMetadata(const QString &key, const QVariant &value)
+void TrackDataItem::setMetadata(const QByteArray &key, const QVariant &value)
 {
     setMetadata(DataIndexer::index(key), value);
 }
@@ -431,7 +431,7 @@ QVariant TrackDataItem::metadata(int idx) const
 }
 
 
-QVariant TrackDataItem::metadata(const QString &key) const
+QVariant TrackDataItem::metadata(const QByteArray &key) const
 {
     if (mMetadata==nullptr) return (QVariant());
     return (metadata(DataIndexer::index(key)));
