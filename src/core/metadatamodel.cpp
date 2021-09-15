@@ -25,7 +25,7 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
 
     // Copy the existing item metadata.
 
-    const int num = DataIndexer::self()->count();
+    const int num = DataIndexer::count();
     for (int i = 0; i<num; ++i)
     {
         QVariant v = item->metadata(i);
@@ -40,12 +40,12 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     // used anywhere outside of this model.  If any are added here then
     // they also need to be ignored in FilesController::slotTrackProperties()
     // and in isInternalTag() in gpxexporter.cpp
-    mItemData[DataIndexer::self()->index("name")] = item->name();
+    mItemData[DataIndexer::index("name")] = item->name();
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
     if (tdp!=nullptr)
     {
-        mItemData[DataIndexer::self()->index("latitude")] = tdp->latitude();
-        mItemData[DataIndexer::self()->index("longitude")] = tdp->longitude();
+        mItemData[DataIndexer::index("latitude")] = tdp->latitude();
+        mItemData[DataIndexer::index("longitude")] = tdp->longitude();
     }
 
     // The default time zone to use is that appropriate for the reference item,
@@ -67,7 +67,7 @@ MetadataModel::~MetadataModel()
 
 int MetadataModel::rowCount(const QModelIndex &pnt) const
 {
-    return (DataIndexer::self()->count());		// this must be the size of all,
+    return (DataIndexer::count());			// this must be the size of all,
 }							// not just what we have stored
 
 
@@ -91,7 +91,7 @@ case Qt::DisplayRole:					// formatted display data
         switch (idx.column())
         {
 case COL_NAME:
-            return (DataIndexer::self()->name(row));
+            return (DataIndexer::name(row));
 case COL_VALUE:
             switch (v.type())
             {
@@ -116,7 +116,7 @@ const QVariant MetadataModel::data(int idx) const
 
 const QVariant MetadataModel::data(const QString &nm) const
 {
-    return (data(DataIndexer::self()->index(nm)));
+    return (data(DataIndexer::index(nm)));
 }
 
 
@@ -136,7 +136,7 @@ void MetadataModel::setData(int idx, const QVariant &value)
 {
     mItemData[idx] = value;
 
-    if (idx==DataIndexer::self()->index("timezone")) resolveTimeZone();
+    if (idx==DataIndexer::index("timezone")) resolveTimeZone();
 							// update time zone data
     emit metadataChanged(idx);				// signal that data changed
 }
@@ -144,14 +144,14 @@ void MetadataModel::setData(int idx, const QVariant &value)
 
 double MetadataModel::latitude() const
 {
-    const QVariant &v = data(DataIndexer::self()->index("latitude"));
+    const QVariant &v = data(DataIndexer::index("latitude"));
     return (!v.isNull() ? v.toDouble() : NAN);
 }
 
 
 double MetadataModel::longitude() const
 {
-    const QVariant &v = data(DataIndexer::self()->index("longitude"));
+    const QVariant &v = data(DataIndexer::index("longitude"));
     return (!v.isNull() ? v.toDouble() : NAN);
 }
 

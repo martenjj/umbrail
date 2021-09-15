@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	14-Sep-21						//
+//  Edit:	15-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -27,10 +27,15 @@
 
 #include "dataindexer.h"
 
+#include <qhash.h>
 #include <qdebug.h>
 
 
-static DataIndexer *sInstance = nullptr;
+// These are not POD, but they will not be used
+// until the application is fully initialised
+// so should be safe.
+static QHash<QString,int> sIndexHash;
+static QHash<int,QString> sNamespaceHash;
 
 // The XML namespace prefix used by this application.
 // The namespace URI is only used by and is set in GpxExporter.
@@ -52,36 +57,19 @@ static const char *sApplicationTags[] =
 };
 
 
-DataIndexer::DataIndexer()
-{
-    mNextIndex = 0;
-}
-
-
-DataIndexer *DataIndexer::self()
-{
-    if (sInstance==nullptr)
-    {
-        sInstance = new DataIndexer();
-        qDebug() << "allocated global instance";
-    }
-    return (sInstance);
-}
-
-
 int DataIndexer::index(const QString &nm)
 {
     if (nm.contains(':'))				// only plain names allowed here
     {
         qWarning() << "called for name" << nm << "with namespace";
-        return (indexWithNamespace(nm));
+        return (indexWithNamespace(nm));		// should not recurse
     }
 
-    int idx = mIndexHash.value(nm, -1);
+    int idx = sIndexHash.value(nm, -1);
     if (idx==-1)					// nothing allocated yet
     {
-        idx = mNextIndex++;				// next integer value
-        mIndexHash.insert(nm, idx);
+        idx = sIndexHash.count();			// next integer value
+        sIndexHash.insert(nm, idx);
         qDebug() << "allocated index" << idx << "for" << nm;
 
         // See if this name belongs to our application namespace.
@@ -91,7 +79,7 @@ int DataIndexer::index(const QString &nm)
         {
             if (nm==*tag)
             {
-                mNamespaceHash.insert(idx, sApplicationNamespace);
+                sNamespaceHash.insert(idx, sApplicationNamespace);
                 qDebug() << "associated application namespace";
                 break;
             }
@@ -102,22 +90,22 @@ int DataIndexer::index(const QString &nm)
 }
 
 
-QString DataIndexer::name(int idx) const
+QString DataIndexer::name(int idx)
 {
-    return (mIndexHash.key(idx));
+    return (sIndexHash.key(idx));
 }
 
 
 int DataIndexer::indexWithNamespace(const QString &nm, const QString &nsp)
 {
     const int idx = index(nm);				// look up index as before
-    const QString &curnsp = mNamespaceHash.value(idx);	// get existing namespace
+    const QString &curnsp = sNamespaceHash.value(idx);	// get existing namespace
 
     if (curnsp.isEmpty())				// no existing namespace
     {
         if (!nsp.isEmpty())				// and a new one provided
         {
-            mNamespaceHash.insert(idx, nsp);
+            sNamespaceHash.insert(idx, nsp);
             qDebug() << "associated namespace" << nsp << "for tag" << nm;
         }
     }
@@ -151,7 +139,7 @@ QString DataIndexer::nameWithNamespace(const QString &nm)
 QString DataIndexer::nameWithNamespace(int idx)
 {
     const QString &nm = name(idx);			// plain name for index
-    const QString &nsp = mNamespaceHash.value(idx);	// get existing namespace
+    const QString &nsp = sNamespaceHash.value(idx);	// get existing namespace
 
     if (nsp.isEmpty()) return (nm);			// no associated namespace
     return (nsp+':'+nm);				// name with namespace
@@ -161,7 +149,7 @@ QString DataIndexer::nameWithNamespace(int idx)
 bool DataIndexer::isApplicationTag(const QString &nm)
 {
     const int idx = index(nm);				// look up index
-    const QString &nsp = mNamespaceHash.value(idx);	// get existing namespace
+    const QString &nsp = sNamespaceHash.value(idx);	// get existing namespace
     return (nsp==sApplicationNamespace);		// check whether it is our own
 }
 
@@ -175,4 +163,10 @@ bool DataIndexer::isInternalTag(const QString &nm)
 QString DataIndexer::applicationNamespace()
 {
     return (sApplicationNamespace);
+}
+
+
+int DataIndexer::count()
+{
+    return (sIndexHash.count());
 }

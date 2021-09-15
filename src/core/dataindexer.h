@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	14-Sep-21						//
+//  Edit:	15-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -28,12 +28,11 @@
 #ifndef DATAINDEXER_H
 #define DATAINDEXER_H
 
-
-#include <qhash.h>
+class QString;
 
 
 /**
- * @short Maintains data indexes for file, track/segment and point data.
+ * @short Maintains data indexes for file, track/segment and point metadata.
  *
  * Depending on the contents of the GPX file, arbitrary data and attributes
  * may need to be attached to any TrackDataItem.  The logical way to do this
@@ -52,17 +51,8 @@
  * @author Jonathan Marten
  **/
 
-class DataIndexer
+namespace DataIndexer
 {
-
-public:
-    /**
-     * Get the singleton instance, creating it if necessary.
-     *
-     * @return the instance
-     **/
-    static DataIndexer *self();
-
     /**
      * Get the index for an attribute or element name, allocating it if necessary.
      *
@@ -77,14 +67,14 @@ public:
      * @param idx The index
      * @return the allocated name, or a null @c QString if the index is not allocated
      **/
-    QString name(int idx) const;
+    QString name(int idx);
 
     /**
      * Get the number of indexes that are currently allocated.
      *
      * @return the number, or 0 if none are currently allocated
      **/
-    int count() const				{ return (mNextIndex); }
+    int count();
 
     /**
      * Note that an XML namespace tag is associated with a name.
@@ -151,16 +141,7 @@ public:
      * @return the namespace name
      **/
     QString applicationNamespace();
-
-private:
-    DataIndexer();
-    ~DataIndexer() = default;
-
-private:
-    QHash<QString,int> mIndexHash;
-    QHash<int,QString> mNamespaceHash;
-    int mNextIndex;
-};
+}
 
  
 #endif							// DATAINDEXER_H

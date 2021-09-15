@@ -60,7 +60,7 @@ static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 {
     if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (false);
 							// file metadata - never in extensions
-    if (DataIndexer::self()->isApplicationTag(name)) return (true);
+    if (DataIndexer::isApplicationTag(name)) return (true);
 							// application tag - always in extensions
     if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
     {							// point - these not in extensions
@@ -88,14 +88,14 @@ static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 
 static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool wantExtensions)
 {
-    for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
+    for (int idx = 0; idx<DataIndexer::count(); ++idx)
     {
         //qDebug() << "metadata" << idx
-        //         << "name" << DataIndexer::self()->name(idx)
+        //         << "name" << DataIndexer::name(idx)
         //         << "=" << item->metadata(idx);
 
-        const QString name = DataIndexer::self()->name(idx);
-        if (DataIndexer::self()->isInternalTag(name)) continue;
+        const QString name = DataIndexer::name(idx);
+        if (DataIndexer::isInternalTag(name)) continue;
 							// ignore internally used tags
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
 							// check matches extension state
@@ -148,7 +148,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         }
         else
         {
-            str.writeTextElement(DataIndexer::self()->nameWithNamespace(name), data);
+            str.writeTextElement(DataIndexer::nameWithNamespace(name), data);
         }
     }
 }
@@ -294,7 +294,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             if (fold!=nullptr)				// within a folder?
             {						// save the folder path
                 startExtensions(str);
-                str.writeTextElement(DataIndexer::self()->nameWithNamespace("folder"), fold->path());
+                str.writeTextElement(DataIndexer::nameWithNamespace("folder"), fold->path());
             }
         }
 
@@ -343,7 +343,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
     // our own extensions
-    str.writeNamespace("http://www.keelhaul.me.uk/navtracks", DataIndexer::self()->applicationNamespace());
+    str.writeNamespace("http://www.keelhaul.me.uk/navtracks", DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
     str.writeNamespace("http://www.topografix.com/GPX/gpx_style/0/2", "topografix");
     str.writeCharacters("\n\n  ");

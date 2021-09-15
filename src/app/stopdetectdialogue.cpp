@@ -232,9 +232,9 @@ static void setStopData(TrackDataWaypoint *tdw, const QDateTime &dt, int dur)
     QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));
 
     tdw->setName(i18n("Stop at %1 for %2", text1, text2), true);
-    tdw->setMetadata(DataIndexer::self()->index("time"), dt);
-    tdw->setMetadata(DataIndexer::self()->index("duration"), QVariant(dur));
-    tdw->setMetadata(DataIndexer::self()->index("stop"), QString(text1+' '+text2));
+    tdw->setMetadata(DataIndexer::index("time"), dt);
+    tdw->setMetadata(DataIndexer::index("duration"), QVariant(dur));
+    tdw->setMetadata(DataIndexer::index("stop"), QString(text1+' '+text2));
 }
 
 

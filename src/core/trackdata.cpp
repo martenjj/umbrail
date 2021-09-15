@@ -426,7 +426,7 @@ QVariant TrackDataItem::metadata(int idx) const
 QVariant TrackDataItem::metadata(const QString &key) const
 {
     if (mMetadata==nullptr) return (QVariant());
-    return (metadata(DataIndexer::self()->index(key)));
+    return (metadata(DataIndexer::index(key)));
 }
 
 

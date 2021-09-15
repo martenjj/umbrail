@@ -124,7 +124,7 @@ void TrackPropertiesDialogue::addPage(TrackPropertiesPage *page,
 
 void TrackPropertiesDialogue::slotModelDataChanged(int idx)
 {
-    qDebug() << DataIndexer::self()->name(idx);
+    qDebug() << DataIndexer::name(idx);
 
     bool ok = true;
     const int num = mTabWidget->count();

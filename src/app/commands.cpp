@@ -245,7 +245,7 @@ void ChangeItemDataCommand::redo()
 {
     mSavedValues.clear();
 
-    const int idx = DataIndexer::self()->index(mKey);
+    const int idx = DataIndexer::index(mKey);
     for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
     {
         TrackDataItem *item = (*it);
@@ -265,7 +265,7 @@ void ChangeItemDataCommand::undo()
 {
     Q_ASSERT(mSavedValues.count()==mDataItems.count());
 
-    const int idx = DataIndexer::self()->index(mKey);
+    const int idx = DataIndexer::index(mKey);
     for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
     {
         TrackDataItem *item = (*it);
@@ -631,7 +631,7 @@ void AddContainerCommand::redo()
 
         Q_ASSERT(addedItem!=nullptr);
         if (!mAddName.isEmpty()) addedItem->setName(mAddName, true);
-        addedItem->setMetadata(DataIndexer::self()->index("creator"), QApplication::applicationDisplayName());
+        addedItem->setMetadata(DataIndexer::index("creator"), QApplication::applicationDisplayName());
 
         qDebug() << "created" << addedItem->name();
         mNewItemContainer->addChildItem(addedItem);
@@ -1101,13 +1101,13 @@ void AddWaypointCommand::redo()
         newWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=nullptr)
         {
-            int idx = DataIndexer::self()->index("ele");
+            int idx = DataIndexer::index("ele");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
-            idx = DataIndexer::self()->index("time");
+            idx = DataIndexer::index("time");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
-            newWaypoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
+            newWaypoint->setMetadata(DataIndexer::index("source"), mSourcePoint->name());
             const QVariant stopData = mSourcePoint->metadata("stop");
-            if (!stopData.isNull()) newWaypoint->setMetadata(DataIndexer::self()->index("stop"), stopData);
+            if (!stopData.isNull()) newWaypoint->setMetadata(DataIndexer::index("stop"), stopData);
         }
 
         mNewWaypointContainer->addChildItem(newWaypoint);
@@ -1191,7 +1191,7 @@ void AddRoutepointCommand::redo()
         TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
         if (!mRoutepointName.isEmpty()) newRoutepoint->setName(mRoutepointName, true);
         newRoutepoint->setLatLong(mLatitude, mLongitude);
-        if (mSourcePoint!=nullptr) newRoutepoint->setMetadata(DataIndexer::self()->index("source"), mSourcePoint->name());
+        if (mSourcePoint!=nullptr) newRoutepoint->setMetadata(DataIndexer::index("source"), mSourcePoint->name());
 
         mNewRoutepointContainer->addChildItem(newRoutepoint);
     }
@@ -1245,8 +1245,8 @@ void AddPhotoCommand::redo()
 
     TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
     Q_ASSERT(tdw!=nullptr);				// retrieve the just added point
-    if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::self()->index("link"), mLinkUrl.toDisplayString());
-    if (mDateTime.isValid()) tdw->setMetadata(DataIndexer::self()->index("time"), mDateTime);
+    if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::index("link"), mLinkUrl.toDisplayString());
+    if (mDateTime.isValid()) tdw->setMetadata(DataIndexer::index("time"), mDateTime);
 }
 
 
