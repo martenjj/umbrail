@@ -527,9 +527,9 @@ void TrackItemDetailPage::addChildCountField(const QList<TrackDataItem *> *items
 }
 
 
-void TrackItemDetailPage::addMetadataField(const QString &key, const QString &label)
+void TrackItemDetailPage::addMetadataField(const QByteArray &key, const QString &label)
 {
-    const int idx = DataIndexer::self()->index(key);
+    const int idx = DataIndexer::index(key);
 
     TrackDataLabel *l;
     if (key=="time")					// special conversion for this
@@ -576,7 +576,7 @@ void TrackItemDetailPage::refreshData()
         const QVariant &v = dataModel()->data(idx);
         QWidget *l = it.value();
 
-        if (idx==DataIndexer::self()->index("time"))	// special conversion for this
+        if (idx==DataIndexer::index("time"))	// special conversion for this
         {
             TrackDataLabel *tl = qobject_cast<TrackDataLabel *>(l);
             Q_ASSERT(tl!=nullptr);
@@ -584,7 +584,7 @@ void TrackItemDetailPage::refreshData()
             tl->setDateTime(dt);
             tl->setTimeZone(tz);
         }
-        else if (idx==DataIndexer::self()->index("speed"))
+        else if (idx==DataIndexer::index("speed"))
         {						// special 'double' value
             QLabel *ql = qobject_cast<QLabel *>(l);
             Q_ASSERT(ql!=nullptr);

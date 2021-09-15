@@ -108,13 +108,13 @@ void TrackItemGeneralPage::refreshData()
 void TrackItemGeneralPage::slotNameChanged(const QString &text)
 {
     if (!mNameEdit->isEnabled()) return;		// name is read only
-    dataModel()->setData(DataIndexer::self()->index("name"), text);
+    dataModel()->setData(DataIndexer::index("name"), text);
 }
 
 
 void TrackItemGeneralPage::slotTypeChanged(const QString &text)
 {							// do not use 'text', it could be "none"
-    dataModel()->setData(DataIndexer::self()->index("type"), mTypeCombo->typeText());
+    dataModel()->setData(DataIndexer::index("type"), mTypeCombo->typeText());
 }
 
 
@@ -122,7 +122,7 @@ void TrackItemGeneralPage::slotDescChanged()
 {
     const QString desc = mDescEdit->toPlainText().trimmed();
     qDebug() << desc;
-    dataModel()->setData(DataIndexer::self()->index("desc"), desc);
+    dataModel()->setData(DataIndexer::index("desc"), desc);
 }
 
 
@@ -134,8 +134,8 @@ void TrackItemGeneralPage::slotChangePosition()
 
     if (!d.exec()) return;
 
-    dataModel()->setData(DataIndexer::self()->index("latitude"), d.latitude());
-    dataModel()->setData(DataIndexer::self()->index("longitude"), d.longitude());
+    dataModel()->setData(DataIndexer::index("latitude"), d.latitude());
+    dataModel()->setData(DataIndexer::index("longitude"), d.longitude());
     refreshData();					// update the position display
 }
 
@@ -302,7 +302,7 @@ void TrackFileGeneralPage::refreshData()
 
 void TrackFileGeneralPage::slotTimeZoneChanged(const QString &zoneName)
 {
-    dataModel()->setData(DataIndexer::self()->index("timezone"), zoneName);
+    dataModel()->setData(DataIndexer::index("timezone"), zoneName);
     refreshData();					// update times on this page
 }
 
@@ -525,7 +525,7 @@ void TrackWaypointGeneralPage::slotStatusChanged(int idx)
     qDebug() << idx;
 
     const int status = mStatusCombo->itemData(idx).toInt();
-    dataModel()->setData(DataIndexer::self()->index("status"), (status==0 ? QVariant() : status));
+    dataModel()->setData(DataIndexer::index("status"), (status==0 ? QVariant() : status));
 }
 
 

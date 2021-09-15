@@ -781,7 +781,7 @@ void FilesController::slotTrackProperties()
     // usual way.
     if (wasSettingTimeZone && isReadOnly())		// setting time zone only
     {
-        const int idx = DataIndexer::self()->index("timezone");
+        const int idx = DataIndexer::index("timezone");
         const QVariant oldData = item->metadata(idx);
         const QVariant newData = model->data(idx);
         if (newData==oldData) return;			// time zone has not changed
@@ -794,7 +794,7 @@ void FilesController::slotTrackProperties()
     }
 
     // Item name
-    const QString newItemName = model->data(DataIndexer::self()->index("name")).toString();
+    const QString newItemName = model->data(DataIndexer::index("name")).toString();
     if (!newItemName.isEmpty() && newItemName!=item->name())
     {							// changing the name
         qDebug() << "name change" << item->name() << "->" << newItemName;
@@ -804,8 +804,8 @@ void FilesController::slotTrackProperties()
     }
 
     // Point position
-    const QVariant &latData = model->data(DataIndexer::self()->index("latitude"));
-    const QVariant &lonData = model->data(DataIndexer::self()->index("longitude"));
+    const QVariant &latData = model->data(DataIndexer::index("latitude"));
+    const QVariant &lonData = model->data(DataIndexer::index("longitude"));
     if (!latData.isNull() && !lonData.isNull())		// if applies to this point
     {
         TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(item);
@@ -824,10 +824,10 @@ void FilesController::slotTrackProperties()
     }
 
     // The remaining metadata
-    const int num = model->rowCount();			// same as DataIndexer::self()->count()
+    const int num = model->rowCount();			// same as DataIndexer::count()
     for (int idx = 0; idx<num; ++idx)
     {
-        const QString name = DataIndexer::self()->name(idx);
+        const QString name = DataIndexer::name(idx);
         if (name=="name") continue;			// these handled specially above
         if (name=="latitude" || name=="longitude") continue;
 
@@ -853,7 +853,7 @@ void FilesController::slotTrackProperties()
         ChangeItemDataCommand *cmd3 = new ChangeItemDataCommand(this, cmd);
         cmd3->setDataItems(items);
         // TODO: overload setData() to take an index
-        cmd3->setData(DataIndexer::self()->name(idx), newData);
+        cmd3->setData(DataIndexer::name(idx), newData);
     }
 
     if (cmd->childCount()==0)				// anything to actually do?

@@ -67,11 +67,11 @@ bool ImporterBase::prepareLoadFile(const QUrl &file)
 static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
 {
     qDebug() << source.toLatin1().constData();
-    for (int i = 0; i<DataIndexer::self()->count(); ++i)
+    for (int i = 0; i<DataIndexer::count(); ++i)
     {
         QVariant s =  tdd->metadata(i);
         if (s.isNull()) continue;
-        qDebug() << "  " << i << DataIndexer::self()->name(i) << "=" << s.toString();
+        qDebug() << "  " << i << DataIndexer::name(i) << "=" << s.toString();
     }
 }
 #endif
