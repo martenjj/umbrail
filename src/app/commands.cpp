@@ -631,7 +631,7 @@ void AddContainerCommand::redo()
 
         Q_ASSERT(addedItem!=nullptr);
         if (!mAddName.isEmpty()) addedItem->setName(mAddName, true);
-        addedItem->setMetadata(DataIndexer::index("creator"), QApplication::applicationDisplayName());
+        addedItem->setMetadata("creator", QApplication::applicationDisplayName());
 
         qDebug() << "created" << addedItem->name();
         mNewItemContainer->addChildItem(addedItem);
@@ -1105,9 +1105,9 @@ void AddWaypointCommand::redo()
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
             idx = DataIndexer::index("time");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
-            newWaypoint->setMetadata(DataIndexer::index("source"), mSourcePoint->name());
+            newWaypoint->setMetadata("source", mSourcePoint->name());
             const QVariant stopData = mSourcePoint->metadata("stop");
-            if (!stopData.isNull()) newWaypoint->setMetadata(DataIndexer::index("stop"), stopData);
+            if (!stopData.isNull()) newWaypoint->setMetadata("stop", stopData);
         }
 
         mNewWaypointContainer->addChildItem(newWaypoint);
@@ -1191,7 +1191,7 @@ void AddRoutepointCommand::redo()
         TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
         if (!mRoutepointName.isEmpty()) newRoutepoint->setName(mRoutepointName, true);
         newRoutepoint->setLatLong(mLatitude, mLongitude);
-        if (mSourcePoint!=nullptr) newRoutepoint->setMetadata(DataIndexer::index("source"), mSourcePoint->name());
+        if (mSourcePoint!=nullptr) newRoutepoint->setMetadata("source", mSourcePoint->name());
 
         mNewRoutepointContainer->addChildItem(newRoutepoint);
     }
@@ -1245,8 +1245,8 @@ void AddPhotoCommand::redo()
 
     TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
     Q_ASSERT(tdw!=nullptr);				// retrieve the just added point
-    if (mLinkUrl.isValid()) tdw->setMetadata(DataIndexer::index("link"), mLinkUrl.toDisplayString());
-    if (mDateTime.isValid()) tdw->setMetadata(DataIndexer::index("time"), mDateTime);
+    if (mLinkUrl.isValid()) tdw->setMetadata("link", mLinkUrl.toDisplayString());
+    if (mDateTime.isValid()) tdw->setMetadata("time", mDateTime);
 }
 
 

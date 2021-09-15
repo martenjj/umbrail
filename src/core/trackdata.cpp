@@ -391,15 +391,28 @@ void TrackDataItem::setMetadata(int idx, const QString &value)
 }
 
 
+void TrackDataItem::setMetadata(const QString &key, const QString &value)
+{
+    setMetadata(DataIndexer::index(key), value);
+}
+
+
 void TrackDataItem::setMetadata(int idx, const QColor &value)
 {
     // The same reasoning as above applies to a colour value.
-
     if (!value.isValid()) setMetadata(idx, QVariant());
     else setMetadata(idx, QVariant(value));
 }
 
 
+void TrackDataItem::setMetadata(const QString &key, const QColor &value)
+{
+    setMetadata(DataIndexer::index(key), value);
+}
+
+
+// TODO: can eliminate QString/QColor overloads
+// by examining what data type is contained in the variant?
 void TrackDataItem::setMetadata(int idx, const QVariant &value)
 {
     if (mMetadata==nullptr)				// allocate array if needed
@@ -413,6 +426,12 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
     int cnt = mMetadata->count();			// current size of array
     if (idx>=cnt) mMetadata->resize(idx+1);		// need to allocate more
     (*mMetadata)[idx] = value;				// set value of variant
+}
+
+
+void TrackDataItem::setMetadata(const QString &key, const QVariant &value)
+{
+    setMetadata(DataIndexer::index(key), value);
 }
 
 

@@ -528,7 +528,7 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         Q_ASSERT(folder!=nullptr);
 
         // Clear the folder name metadata, will regenerate on export
-        tdw->setMetadata(DataIndexer::index("folder"), QString(""));
+        tdw->setMetadata("folder", QString(""));
 
         folder->addChildItem(tdw);			// add to destination folder
         mCurrentPoint = nullptr;			// finished with temporary
@@ -602,13 +602,15 @@ bool GpxImporter::endElement(const QString &namespaceURI, const QString &localNa
         // attributes if they are not already set.
         if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
         {						// colour for a point
-            const QVariant &v = item->metadata("pointcolor");
-            if (v.isNull()) item->setMetadata(DataIndexer::index("pointcolor"), col);
+            const int idx = DataIndexer::index("pointcolor");
+            const QVariant &v = item->metadata(idx);
+            if (v.isNull()) item->setMetadata(idx, col);
         }
         else						// colour for a line/container
         {
-            const QVariant &v = item->metadata("linecolor");
-            if (v.isNull()) item->setMetadata(DataIndexer::index("linecolor"), col);
+            const int idx = DataIndexer::index("linecolor");
+            const QVariant &v = item->metadata(idx);
+            if (v.isNull()) item->setMetadata(idx, col);
         }
     }
     else if (localName=="category")			// end of a CATEGORY element

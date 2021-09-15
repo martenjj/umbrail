@@ -577,11 +577,11 @@ bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
     if (tdf==nullptr) return (false);			// should never happen
 
     // metadata from map controller
-    tdf->setMetadata(DataIndexer::index("position"), mapController()->view()->currentPosition());
+    tdf->setMetadata("position", mapController()->view()->currentPosition());
 
     // metadata for save file
-    tdf->setMetadata(DataIndexer::index("creator"), QApplication::applicationDisplayName());
-    tdf->setMetadata(DataIndexer::index("time"), QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+    tdf->setMetadata("creator", QApplication::applicationDisplayName());
+    tdf->setMetadata("time", QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
     return (filesController()->exportFile(to, tdf, options)==FilesController::StatusOk);
 }
