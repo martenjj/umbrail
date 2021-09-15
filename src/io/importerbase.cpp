@@ -8,7 +8,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-//#include <kurl.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"
@@ -97,14 +96,14 @@ bool ImporterBase::finaliseLoadFile(const QUrl &file)
         TrackDataTrack *tdt = dynamic_cast<TrackDataTrack *>(mDataRoot->childAt(i));
         if (tdt==nullptr) continue;
 #ifdef DEBUG_IMPORT
-        dumpMetadata(tdt, QString("original metadata of track %1:").arg(i));
+        dumpMetadata(tdt, QString("original metadata of track %1 \"%2\":").arg(i).arg(tdt->name()));
 #endif
 
         if (tdt->metadata("creator").isNull())		// only if blank already
         {
             tdt->copyMetadata(mDataRoot, false);
 #ifdef DEBUG_IMPORT
-            dumpMetadata(tdt, QString("merged metadata of track %1:").arg(i));
+            dumpMetadata(tdt, QString("merged metadata of track %1 \"%2\":").arg(i).arg(tdt->name()));
 #endif
         }
     }

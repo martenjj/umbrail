@@ -724,6 +724,7 @@ TrackTrackpointDetailPage::TrackTrackpointDetailPage(const QList<TrackDataItem *
         addSeparatorField();
         addMetadataField("hdop", i18nc("@label:textbox", "GPS HDOP:"));
         addMetadataField("speed", i18nc("@label:textbox", "GPS speed:"));
+        addMetadataField("heading", i18nc("@label:textbox", "GPS heading:"));
     }
     else						// multiple selection
     {

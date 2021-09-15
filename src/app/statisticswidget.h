@@ -32,6 +32,7 @@ private:
     int mWithElevation;
     int mWithGpsSpeed;
     int mWithGpsHdop;
+    int mWithGpsHeading;
 };
 
 #endif							// STATISTICSWIDGET_H
