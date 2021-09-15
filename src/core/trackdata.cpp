@@ -372,47 +372,6 @@ TimeRange TrackDataItem::timeSpan() const
 }
 
 
-void TrackDataItem::setMetadata(int idx, const QString &value)
-{
-    // Strings are a special case;  setting a null string item sets a null QVariant
-    // as the value.  This is so that QVariant::isNull() can be used to test the
-    // metadata value and will give the expected result:  in this application an
-    // empty string is always considered to be equivalent to no metadata value.
-    //
-    // Results obtained by experimentation:
-    //
-    //   QVariant()		->	isValid()=false		isNull()=true
-    //	 QVariant("str")	->	isValid()=true		isNull()=false
-    //	 QVariant("")		->	isValid()=true		isNull()=false
-    //	 QVariant(QString())	->	isValid()=true		isNull()=true
-
-    if (value.isEmpty()) setMetadata(idx, QVariant());
-    else setMetadata(idx, QVariant(value));
-}
-
-
-void TrackDataItem::setMetadata(const QString &key, const QString &value)
-{
-    setMetadata(DataIndexer::index(key), value);
-}
-
-
-void TrackDataItem::setMetadata(int idx, const QColor &value)
-{
-    // The same reasoning as above applies to a colour value.
-    if (!value.isValid()) setMetadata(idx, QVariant());
-    else setMetadata(idx, QVariant(value));
-}
-
-
-void TrackDataItem::setMetadata(const QString &key, const QColor &value)
-{
-    setMetadata(DataIndexer::index(key), value);
-}
-
-
-// TODO: can eliminate QString/QColor overloads
-// by examining what data type is contained in the variant?
 void TrackDataItem::setMetadata(int idx, const QVariant &value)
 {
     if (mMetadata==nullptr)				// allocate array if needed
@@ -423,9 +382,39 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
         mMetadata = new QVector<QVariant>;
     }
 
-    int cnt = mMetadata->count();			// current size of array
+    const int cnt = mMetadata->count();			// current size of array
     if (idx>=cnt) mMetadata->resize(idx+1);		// need to allocate more
-    (*mMetadata)[idx] = value;				// set value of variant
+
+    QVariant val = value;				// provided new value
+
+    // Strings are a special case;  setting a null string item sets a null QVariant
+    // as the value.  This is so that QVariant::isNull() can be used to test the
+    // metadata value, without having to convert it to a string, and will give the
+    // expected result.  In this application an empty string is always considered
+    // to be equivalent to there being no metadata value.
+    //
+    // Results obtained by experimentation:
+    //
+    //   QVariant()		->	isValid()=false		isNull()=true
+    //	 QVariant("str")	->	isValid()=true		isNull()=false
+    //	 QVariant("")		->	isValid()=true		isNull()=false
+    //	 QVariant(QString())	->	isValid()=true		isNull()=true
+    //
+    // Do not do this test with QVariant::canConvert(QMetaType::QString),
+    // there are many types that can be converted to a QString but we
+    // want to make sure that the value really is a string.
+    if (val.type()==QVariant::String || val.type()==QVariant::ByteArray)
+    {
+        if (val.toString().isEmpty()) val.clear();
+    }
+
+    // The same reasoning as above applies to a colour value.
+    if (val.type()==QVariant::Color)
+    {
+        if (!val.value<QColor>().isValid()) val.clear();
+    }
+
+    mMetadata->replace(idx, val);				// set value of variant
 }
 
 

@@ -217,10 +217,6 @@ public:
     QVariant metadata(const QString &key) const;
     void setMetadata(int idx, const QVariant &value);
     void setMetadata(const QString &key, const QVariant &value);
-    void setMetadata(int idx, const QString &value);
-    void setMetadata(const QString &key, const QString &value);
-    void setMetadata(int idx, const QColor &value);
-    void setMetadata(const QString &key, const QColor &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
     virtual BoundingArea boundingArea() const;
