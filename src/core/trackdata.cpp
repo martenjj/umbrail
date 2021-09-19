@@ -736,11 +736,14 @@ TrackData::WaypointType TrackDataWaypoint::waypointType() const
     // TODO: eliminate "media" here and in MediaPlayer, translate in importer
     if (n.isNull()) n = metadata("media");		// compatibility with old metadata
     if (n.isNull()) n = name();				// lastly try our waypoint name
+    if (n.isNull()) return (TrackData::WaypointNormal);	// no media data present
 
     QString ns = n.toString();
-    if (ns.contains(QRegExp("\\.3gp$"))) return (TrackData::WaypointAudioNote);
-    if (ns.contains(QRegExp("\\.mp4$"))) return (TrackData::WaypointVideoNote);
-    if (ns.contains(QRegExp("\\.jpg$"))) return (TrackData::WaypointPhoto);
+    // TODO: should get MIME type for extension and then compare against recognised ones
+    // or even look for a general category (audio/... video/... image/... respectively)
+    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::WaypointAudioNote);
+    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::WaypointVideoNote);
+    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::WaypointPhoto);
     return (TrackData::WaypointNormal);
 }
 
