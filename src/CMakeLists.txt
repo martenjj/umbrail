@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		16-Aug-21					#
+#  Edit:		19-Sep-21					#
 #########################################################################
 
 project(navtracks)
@@ -36,6 +36,12 @@ find_package(Marble REQUIRED NO_POLICY_SCOPE)
 find_package(Phonon4Qt5 NO_POLICY_SCOPE)
 find_package(KF5KExiv2 NO_POLICY_SCOPE)
 find_package(LibKFDialog REQUIRED NO_POLICY_SCOPE)
+if (NOT WIN32)
+  # This sems to be necessary as a consequence of commit cb40e3d6
+  # to tier1/kwindowsystem, "Make link against X11 and XCB public".
+  # Otherwise the final link fails with "cannot find -lX11::X11".
+  find_package(X11 REQUIRED NO_POLICY_SCOPE)
+endif (NOT WIN32)
 
 set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
 set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
