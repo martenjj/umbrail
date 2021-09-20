@@ -192,7 +192,7 @@ void MainWindow::setupActions()
 
     a = ac->addAction("track_expand_complete");
     a->setText(i18n("Expand All"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::Key_Period);
+    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Period);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(expandAll()));
 
     a = ac->addAction("track_collapse_all");
@@ -203,7 +203,7 @@ void MainWindow::setupActions()
 
     a = ac->addAction("track_collapse_complete");
     a->setText(i18n("Collapse All"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::Key_Comma);
+    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Comma);
     connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
 
     mAddTrackAction = ac->addAction("edit_add_track");
