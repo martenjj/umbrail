@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	15-Aug-21						//
+//  Edit:	20-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -55,21 +55,21 @@
  
 int main(int argc,char *argv[])
 {
-    KAboutData aboutData("navtracks",			// componentName
-                         i18n("NavTracks"),		// displayName
+    KAboutData aboutData(PROJECT_NAME,			// componentName
+                         i18n("Umbrail"),		// displayName
 #ifdef VCS_HAVE_VERSION
                          ( VERSION " (" VCS_TYPE_STRING " " VCS_REVISION_STRING ")" ),
 #else
                          VERSION,			// version
 #endif
-                         i18n("GPS track viewer and editor"),
+                         i18n("GPS log viewer and editor"),
                          KAboutLicense::GPL_V3,
                          // The QString(...) is needed to avoid the "string literal as
                          // second argument to i18n()" build time error.
                          i18n("Copyright (c) 2014-%1 Jonathan Marten", QString(YEAR)),
                          "",				// otherText
-                         "http://www.keelhaul.me.uk",	// homePageAddress
-                        "jjm@keelhaul.me.uk");		// bugsEmailAddress
+                         "https://github.com/martenjj/umbrail",		// homePageAddress
+                         "https://github.com/martenjj/umbrail/issues");	// bugsEmailAddress
     aboutData.addAuthor(i18n("Jonathan Marten"),
                         "",
                         "jjm@keelhaul.me.uk",
