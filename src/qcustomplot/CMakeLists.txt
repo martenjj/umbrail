@@ -1,27 +1,23 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		02-Apr-19					#
+#  Edit:		12-Sep-21					#
 #########################################################################
 
 project(navtracks)
 
 #########################################################################
 #									#
-#  Rigourousness							#
+#  Compile options for QCustomPlot only					#
 #									#
 #########################################################################
 
-add_definitions("-DQT_USE_FAST_CONCATENATION")
-add_definitions("-DQT_USE_FAST_OPERATOR_PLUS")
-add_definitions("-DQT_NO_CAST_FROM_BYTEARRAY")
-add_definitions("-DQT_NO_URL_CAST_FROM_STRING")
-add_definitions("-DQT_NO_CAST_TO_ASCII")
-add_definitions("-DQT_NO_NARROWING_CONVERSIONS_IN_CONNECT")
-
-remove_definitions("-DQT_NO_CAST_FROM_ASCII")
-remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
-
-find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets)
+# Normally these warnings are useful, but until the upstream source
+# has been cleaned of them they are too noisy.
+#
+# warning: declaration of 'name' shadows a member of 'class'
+add_compile_options(-Wno-shadow)
+# warning: 'virtual type class::member()' can be marked override
+add_compile_options(-Wno-suggest-override)
 
 #########################################################################
 #									#

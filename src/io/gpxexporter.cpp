@@ -16,7 +16,6 @@
 #include <klocalizedstring.h>
 
 #include "trackdata.h"
-// #include "style.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
 
@@ -57,20 +56,12 @@ static void endExtensions(QXmlStreamWriter &str)
 }
 
 
-static bool isApplicationTag(const QString &name)
-{
-    return (name=="status" || name=="source" || name=="stop" ||
-            name=="linecolor" || name=="pointcolor" ||
-            name=="bearingline" || name=="rangering");
-}
-
-
-static bool isExtensionTag(const TrackDataItem *item, const QString &name)
+static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 {
     if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (false);
-							// file metadata - not in extensions
-    if (isApplicationTag(name)) return (true);		// application tag always in extensions
-
+							// file metadata - never in extensions
+    if (DataIndexer::isApplicationTag(name)) return (true);
+							// application tag - always in extensions
     if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
     {							// point - these not in extensions
         return (!(name=="name" || name=="ele" || name=="time" || name=="hdop"));
@@ -95,22 +86,17 @@ static bool isExtensionTag(const TrackDataItem *item, const QString &name)
 }
 
 
-static bool isInternalTag(const QString &name)
-{
-    return (name=="name" || name=="latitude" || name=="longitude");
-}
-
-
 static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool wantExtensions)
 {
-    for (int idx = 0; idx<DataIndexer::self()->count(); ++idx)
+    for (int idx = 0; idx<DataIndexer::count(); ++idx)
     {
         //qDebug() << "metadata" << idx
-        //         << "name" << DataIndexer::self()->name(idx)
+        //         << "name" << DataIndexer::name(idx)
         //         << "=" << item->metadata(idx);
 
-        QString name = DataIndexer::self()->name(idx);
-        if (isInternalTag(name)) continue;		// ignore internally used tags
+        const QByteArray name = DataIndexer::name(idx);
+        if (DataIndexer::isInternalTag(name)) continue;
+							// ignore internally used tags
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
 							// check matches extension state
         const QVariant &v = item->metadata(idx);	// get metadata from item
@@ -119,7 +105,6 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         if (wantExtensions) startExtensions(str);	// start extensions if needed
 
         QString data;					// string form to output
-        QString nstag;					// namespace tag if needed
 
         // Our internal LINECOLOR/POINTCOLOR data is namespaced and only for
         // our own purposes.  The COLOR attribute of the item is also set
@@ -156,12 +141,6 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
             data = v.toString();			// default string format
         }
 
-        if (nstag.isEmpty())				// no namespace assigned yet
-        {						// our application one if needed
-            if (isApplicationTag(name)) nstag = "navtracks:";
-        }
-        name.prepend(nstag);				// now set namespace tag
-
         if (name=="link")				// special format for this
         {
             str.writeEmptyElement(name);
@@ -169,7 +148,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         }
         else
         {
-            str.writeTextElement(name, data);
+            str.writeTextElement(DataIndexer::nameWithNamespace(name), data);
         }
     }
 }
@@ -315,7 +294,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             if (fold!=nullptr)				// within a folder?
             {						// save the folder path
                 startExtensions(str);
-                str.writeTextElement("navtracks:folder", fold->path());
+                str.writeTextElement(DataIndexer::nameWithNamespace("folder"), fold->path());
             }
         }
 
@@ -364,7 +343,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
     // our own extensions
-    str.writeNamespace("http://www.keelhaul.me.uk/navtracks", "navtracks");
+    str.writeNamespace("http://www.keelhaul.me.uk/navtracks", DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
     str.writeNamespace("http://www.topografix.com/GPX/gpx_style/0/2", "topografix");
     str.writeCharacters("\n\n  ");

@@ -22,7 +22,6 @@ class QIcon;
 class TrackDataItem;
 class TrackDataFolder;
 class TrackPropertiesPage;
-//class MetadataModel;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -52,11 +51,6 @@ public:
     DEFINE_PROPERTIES_PAGE_INTERFACE(Style)
     DEFINE_PROPERTIES_PAGE_INTERFACE(Plot)
     DEFINE_PROPERTIES_PAGE_INTERFACE(Metadata)
-    // virtual TrackPropertiesPage *createPropertiesGeneralPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesDetailPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesStylePage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesPlotPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
-    // virtual TrackPropertiesPage *createPropertiesMetadataPage(const QList<TrackDataItem *> *items, MetadataModel *dataModel, QWidget *pnt = nullptr) const = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -220,10 +214,9 @@ public:
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
     QVariant metadata(int idx) const;
-    QVariant metadata(const QString &key) const;
+    QVariant metadata(const QByteArray &key) const;
     void setMetadata(int idx, const QVariant &value);
-    void setMetadata(int idx, const QString &value);
-    void setMetadata(int idx, const QColor &value);
+    void setMetadata(const QByteArray &key, const QVariant &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
     virtual BoundingArea boundingArea() const;

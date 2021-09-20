@@ -43,13 +43,13 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
         qWarning() << "item" << item->name() << "uses old COLOR data";
         if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
         {						// colour for a point
-            dataModel()->setData(DataIndexer::self()->index("pointcolor"), v);
-            dataModel()->setData(DataIndexer::self()->index("color"), QVariant());
+            dataModel()->setData(DataIndexer::index("pointcolor"), v);
+            dataModel()->setData(DataIndexer::index("color"), QVariant());
         }
         else						// colour for a line/container
         {
-            dataModel()->setData(DataIndexer::self()->index("linecolor"), v);
-            dataModel()->setData(DataIndexer::self()->index("color"), QVariant());
+            dataModel()->setData(DataIndexer::index("linecolor"), v);
+            dataModel()->setData(DataIndexer::index("color"), QVariant());
         }
     }
 }
@@ -126,7 +126,7 @@ QColor TrackItemStylePage::getColourData(bool isLine)
 
 void TrackItemStylePage::setColourData(bool isLine, const QColor &col)
 {
-    dataModel()->setData(DataIndexer::self()->index(colourKey(isLine)), col);
+    dataModel()->setData(DataIndexer::index(colourKey(isLine)), col);
 }
 
 

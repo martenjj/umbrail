@@ -42,7 +42,7 @@ protected:
 
     void addDisplayFields(const QList<TrackDataItem *> *items, DisplayItems disp);
     void addChildCountField(const QList<TrackDataItem *> *items, const QString &labelText);
-    void addMetadataField(const QString &key, const QString &label);
+    void addMetadataField(const QByteArray &key, const QString &label);
 
 private:
     QLabel *mPositionLabel;

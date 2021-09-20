@@ -56,8 +56,8 @@ void TrackWaypointPlotPage::slotPlotDataChanged()
     Q_ASSERT(plot!=nullptr);
 
     const QString pd = plot->plotData();
-    if (plot==mBearingEdit) dataModel()->setData(DataIndexer::self()->index("bearingline"), pd);
-    else if (plot==mRangeEdit) dataModel()->setData(DataIndexer::self()->index("rangering"), pd);
+    if (plot==mBearingEdit) dataModel()->setData(DataIndexer::index("bearingline"), pd);
+    else if (plot==mRangeEdit) dataModel()->setData(DataIndexer::index("rangering"), pd);
     else Q_ASSERT(false);
 }
 

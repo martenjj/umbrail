@@ -31,6 +31,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithElevation = 0;
     mWithGpsSpeed = 0;
     mWithGpsHdop = 0;
+    mWithGpsHeading = 0;
 
     QVector<const TrackDataAbstractPoint *> points;
     // TODO: FilesView::selectedPoints() only returns points with time,
@@ -47,6 +48,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     addRow(i18nc("@title:row", "With elevation:"), mWithElevation);
     addRow(i18nc("@title:row", "With GPS speed:"), mWithGpsSpeed);
     addRow(i18nc("@title:row", "With GPS HDOP:"), mWithGpsHdop);
+    addRow(i18nc("@title:row", "With GPS heading:"), mWithGpsHeading);
 
     mLayout->setRowStretch(mLayout->rowCount(), 1);
     mLayout->setColumnStretch(5, 1);
@@ -125,5 +127,8 @@ void StatisticsWidget::getPointData(const TrackDataAbstractPoint *point)
 
         const QVariant hdopMeta = tdp->metadata("hdop");
         if (!hdopMeta.isNull()) ++mWithGpsHdop;		// GPS HDOP recorded
+
+        const QVariant headingMeta = tdp->metadata("heading");
+        if (!headingMeta.isNull()) ++mWithGpsHeading;	// GPS heading recorded
     }
 }
