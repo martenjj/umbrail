@@ -343,7 +343,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
     // our own extensions
-    str.writeNamespace("http://www.keelhaul.me.uk/navtracks", DataIndexer::applicationNamespace());
+    str.writeNamespace(("http://www.keelhaul.me.uk/" PROJECT_NAME), DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
     str.writeNamespace("http://www.topografix.com/GPX/gpx_style/0/2", "topografix");
     str.writeCharacters("\n\n  ");

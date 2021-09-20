@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	15-Sep-21						//
+//  Edit:	20-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -39,7 +39,7 @@ static QHash<int,QByteArray> sNamespaceHash;
 
 // The XML namespace prefix used by this application.
 // The namespace URI is only used by and is set in GpxExporter.
-static const char *sApplicationNamespace = "navtracks";
+static const char *sApplicationNamespace = PROJECT_NAME;
 
 // Private tags which are used by this application.
 // They are namespaced with our prefix when exporting.

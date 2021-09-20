@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -11,7 +10,7 @@ project(navtracks)
 #									#
 #########################################################################
 
-set(navtracksio_SRCS
+set(io_SRCS
   errorreporter.cpp
   exporterbase.cpp
   gpxexporter.cpp
@@ -20,12 +19,12 @@ set(navtracksio_SRCS
   importerbase.cpp
 )
 
-add_library(navtracksio STATIC ${navtracksio_SRCS})
-target_link_libraries(navtracksio
+add_library(${PN}io STATIC ${io_SRCS})
+target_link_libraries(${PN}io
   Qt5::Core
   Qt5::Gui
   Qt5::Xml
   KF5::I18n
   KF5::ConfigWidgets
-  navtrackscore
+  ${PN}core
 )

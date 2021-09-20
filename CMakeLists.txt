@@ -1,14 +1,14 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		11-Jul-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 #									#
 #									#
 #########################################################################
 
-project(navtracks)
-set(VERSION "0.0.2")
-message(STATUS "Configuring for NavTracks version ${VERSION}")
+project(umbrail)
+set(VERSION "1.0.0")
+message(STATUS "Configuring for project '${CMAKE_PROJECT_NAME}' version ${VERSION}")
 
 #########################################################################
 #									#
@@ -59,6 +59,8 @@ add_custom_target(vcsversion
 #  Subdirectories							#
 #									#
 #########################################################################
+
+set(PN ${CMAKE_PROJECT_NAME})
 
 add_subdirectory(src)
 add_subdirectory(desktop)

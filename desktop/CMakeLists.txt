@@ -1,14 +1,13 @@
 
-project(navtracks)
 
 include(ECMInstallIcons)
 
-set(navtracks_ICONS
-  32-apps-navtracks.png
+set(icons_SRCS
+  32-apps-${PN}.png
 )
 
-ecm_install_icons(ICONS ${navtracks_ICONS} DESTINATION ${KDE_INSTALL_ICONDIR})
+ecm_install_icons(ICONS ${icons_SRCS} DESTINATION ${KDE_INSTALL_ICONDIR})
 
-install(FILES navtracksui.rc DESTINATION ${KDE_INSTALL_KXMLGUI5DIR}/navtracks)
-install(FILES viewerui.rc DESTINATION ${KDE_INSTALL_KXMLGUI5DIR}/navtracks)
-install(FILES navtracks.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES mainui.rc DESTINATION ${KDE_INSTALL_KXMLGUI5DIR}/${PN} RENAME ${PN}ui.rc)
+install(FILES viewerui.rc DESTINATION ${KDE_INSTALL_KXMLGUI5DIR}/${PN})
+install(FILES app.desktop DESTINATION ${KDE_INSTALL_APPDIR} RENAME ${PN}.desktop)

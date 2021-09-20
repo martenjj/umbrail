@@ -18,7 +18,7 @@ struct OSGBRef;
 class OSGBCoordinateHandler : public AbstractCoordinateHandler
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.kde.navtracks.AbstractCoordinateHandler")
+    Q_PLUGIN_METADATA(IID ACH_PLUGIN_IID)
     Q_INTERFACES(AbstractCoordinateHandler)
 
 public:

@@ -274,7 +274,7 @@ void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardMod
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-static const QString itemMimeType = QStringLiteral("application/x-navtracks-internal");
+static const QString itemMimeType = QStringLiteral("application/x-umbrail-dnd-internal");
 
 
 Qt::ItemFlags FilesModel::flags(const QModelIndex &idx) const

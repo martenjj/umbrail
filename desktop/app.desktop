@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-TryExec=navtracks
-Exec=navtracks %F
-Name=NavTracks
-GenericName=GPX Track Viewer/Editor
+TryExec=umbrail
+Exec=umbrail %F
+Name=Umbrail
+GenericName=GPX Log Viewer/Editor
 MimeType=application/x-gpx+xml;application/gpx+xml;
-Icon=navtracks
+Icon=umbrail
 Terminal=false
 Categories=Qt;KDE;Education;Geography;

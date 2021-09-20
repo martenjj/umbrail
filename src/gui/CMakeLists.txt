@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		29-Jul-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -11,7 +10,7 @@ project(navtracks)
 #									#
 #########################################################################
 
-set(navtracksgui_SRCS
+set(gui_SRCS
   autotooltipdelegate.cpp
   itemtypecombo.cpp
   latlongdialogue.cpp
@@ -31,8 +30,8 @@ set(navtracksgui_SRCS
   waypointselectdialogue.cpp
 )
 
-add_library(navtracksgui STATIC ${navtracksgui_SRCS})
-target_link_libraries(navtracksgui
+add_library(${PN}gui STATIC ${gui_SRCS})
+target_link_libraries(${PN}gui
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
@@ -42,8 +41,8 @@ target_link_libraries(navtracksgui
   KF5::ConfigWidgets
   KF5::ItemViews
   KF5::XmlGui
-  navtrackscore
-  navtrackssettings
-  navtracksservices
-  abstractcoordinate
+  ${PN}core
+  ${PN}settings
+  ${PN}services
+  ${PN}coordinate
 )

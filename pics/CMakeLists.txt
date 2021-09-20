@@ -1,9 +1,8 @@
 
-project(navtracks)
 
 ########### install files ###############
 
-set(navtracks_PICS
+set(pics_SRCS
   application_side_list.png
   application_side_tree.png
   chart_track.png
@@ -15,4 +14,4 @@ set(navtracks_PICS
   waypoint_32.png
 )
 
-install(FILES ${navtracks_PICS} DESTINATION ${KDE_INSTALL_DATADIR}/navtracks/pics)
+install(FILES ${pics_SRCS} DESTINATION ${KDE_INSTALL_DATADIR}/${PN}/pics)

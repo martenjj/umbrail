@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		23-Jun-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -11,24 +10,24 @@ project(navtracks)
 #									#
 #########################################################################
 
-set(navtracksmedia_SRCS
+set(media_SRCS
   mediaplayer.cpp
   photoviewer.cpp
 )
 
 if (Phonon4Qt5_FOUND)
-  set(navtracksmedia_SRCS ${navtracksmedia_SRCS} videoviewer.cpp)
+  set(media_SRCS ${media_SRCS} videoviewer.cpp)
   add_definitions("-DHAVE_PHONON=1")
 endif (Phonon4Qt5_FOUND)
 
-add_library(navtracksmedia STATIC ${navtracksmedia_SRCS})
-target_link_libraries(navtracksmedia
+add_library(${PN}media STATIC ${media_SRCS})
+target_link_libraries(${PN}media
   Qt5::Core
   KF5::Parts
-  navtrackscore
-  navtrackssettings
+  ${PN}core
+  ${PN}settings
 )
 
 if (Phonon4Qt5_FOUND)
-  target_link_libraries(navtracksmedia Phonon::phonon4qt5)
+  target_link_libraries(${PN}media Phonon::phonon4qt5)
 endif (Phonon4Qt5_FOUND)

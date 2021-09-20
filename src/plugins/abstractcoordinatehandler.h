@@ -14,8 +14,10 @@
 #define PLUGIN_EXPORT
 #endif
 
+
 class AbstractCoordinateHandler;
-Q_DECLARE_INTERFACE(AbstractCoordinateHandler, "org.kde.navtracks.AbstractCoordinateHandler")
+Q_DECLARE_INTERFACE(AbstractCoordinateHandler, ACH_PLUGIN_IID)
+
 
 class PLUGIN_EXPORT AbstractCoordinateHandler : public QObject
 {

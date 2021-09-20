@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		16-Aug-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -11,7 +10,7 @@ project(navtracks)
 #									#
 #########################################################################
 
-set(navtracks_SRCS
+set(app_SRCS
   main.cpp
   commands.cpp
   filescontroller.cpp
@@ -35,8 +34,8 @@ if (KF5KExiv2_FOUND)
   add_definitions("-DHAVE_KEXIV2=1")
 endif (KF5KExiv2_FOUND)
 
-add_executable(navtracks ${navtracks_SRCS})
-target_link_libraries(navtracks
+add_executable(${PN} ${app_SRCS})
+target_link_libraries(${PN}
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
@@ -44,20 +43,20 @@ target_link_libraries(navtracks
   KF5::I18n
   KF5::XmlGui
   KF5::Crash
-  navtrackscore
-  navtrackssettings
-  navtracksgui
-  navtracksmap
-  navtracksmedia
-  navtracksio
+  ${PN}core
+  ${PN}settings
+  ${PN}gui
+  ${PN}map
+  ${PN}media
+  ${PN}io
   qcustomplot
   ${LIBKFDIALOG_LIBRARIES}
 )
 if (KF5KExiv2_FOUND)
-  target_link_libraries(navtracks KF5::KExiv2)
+  target_link_libraries(${PN} KF5::KExiv2)
 endif (KF5KExiv2_FOUND)
 
-add_dependencies(navtracks vcsversion)
+add_dependencies(${PN} vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 
 #########################################################################
@@ -67,5 +66,5 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)
 #########################################################################
 
 if (INSTALL_BINARIES)
-  install(TARGETS navtracks ${INSTALL_TARGETS_DEFAULT_ARGS})
+  install(TARGETS ${PN} ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif (INSTALL_BINARIES)

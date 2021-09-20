@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		19-Sep-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -67,9 +66,18 @@ remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
 
 #########################################################################
 #									#
-#  Build options							#
+#  Global build options							#
 #									#
 #########################################################################
+
+add_definitions("-DPROJECT_NAME=\\\"${PN}\\\"")
+
+set(ACH_PLUGIN_STRING "uk.me.keelhaul.${PN}.AbstractCoordinateHandler")
+# I don't know exactly where or by what the quoting is being
+# handled differently, but these separate definitions are needed
+# for compliation and automoc!
+set(CMAKE_AUTOMOC_MOC_OPTIONS "-DACH_PLUGIN_IID=\"${ACH_PLUGIN_STRING}\"")
+add_definitions("-DACH_PLUGIN_IID=\\\"${ACH_PLUGIN_STRING}\\\"")
 
 if (OPEN_WITH_GOOGLE)
   add_definitions("-DENABLE_OPEN_WITH_GOOGLE")
@@ -84,9 +92,9 @@ endif (OPEN_WITH_BING)
 #									#
 #########################################################################
 
-kconfig_add_kcfg_files(navtrackssettings_SRCS settings.kcfgc)
-add_library(navtrackssettings STATIC ${navtrackssettings_SRCS})
-target_link_libraries(navtrackssettings
+kconfig_add_kcfg_files(settings_SRCS settings.kcfgc)
+add_library(${PN}settings STATIC ${settings_SRCS})
+target_link_libraries(${PN}settings
   KF5::ConfigCore
   KF5::ConfigGui
 )
@@ -113,4 +121,4 @@ add_subdirectory(plugins)
 #									#
 #########################################################################
 
-install(FILES settings.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME navtracks.kcfg)
+install(FILES settings.kcfg DESTINATION ${KDE_INSTALL_KCFGDIR} RENAME ${PN}.kcfg)

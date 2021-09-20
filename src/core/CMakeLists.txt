@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		26-Jul-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -11,7 +10,7 @@ project(navtracks)
 #									#
 #########################################################################
 
-set(navtrackscore_SRCS
+set(core_SRCS
   trackdata.cpp
   dataindexer.cpp
   pluginmanager.cpp
@@ -24,8 +23,8 @@ set(navtrackscore_SRCS
   applicationdatainterface.cpp
 )
 
-add_library(navtrackscore STATIC ${navtrackscore_SRCS})
-target_link_libraries(navtrackscore
+add_library(${PN}core STATIC ${core_SRCS})
+target_link_libraries(${PN}core
   Qt5::Core
   Qt5::Gui
   KF5::I18n

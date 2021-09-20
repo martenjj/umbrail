@@ -1,9 +1,8 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		29-Jul-21					#
+#  Edit:		20-Sep-21					#
 #########################################################################
 
-project(navtracks)
 
 #########################################################################
 #									#
@@ -14,7 +13,7 @@ project(navtracks)
 # see https://cgit.kde.org/marble.git/tree/examples/cpp/hello-marble/CMakeLists.txt.external
 set(MARBLE_LIBRARIES "Marble")
 
-set(navtracksmap_SRCS
+set(map_SRCS
   mapcontroller.cpp
   mapview.cpp
   layerbase.cpp
@@ -26,15 +25,15 @@ set(navtracksmap_SRCS
   mapthemedialogue.cpp
 )
 
-add_library(navtracksmap STATIC ${navtracksmap_SRCS})
-target_link_libraries(navtracksmap
+add_library(${PN}map STATIC ${map_SRCS})
+target_link_libraries(${PN}map
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
   KF5::XmlGui
-  navtrackscore
-  navtrackssettings
-  navtracksgui
+  ${PN}core
+  ${PN}settings
+  ${PN}gui
   ${MARBLE_LIBRARIES}
 )
