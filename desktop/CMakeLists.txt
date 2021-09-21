@@ -4,6 +4,7 @@ include(ECMInstallIcons)
 
 set(icons_SRCS
   32-apps-${PN}.png
+  64-apps-${PN}.png
 )
 
 ecm_install_icons(ICONS ${icons_SRCS} DESTINATION ${KDE_INSTALL_ICONDIR})
