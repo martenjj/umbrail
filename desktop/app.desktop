@@ -4,7 +4,10 @@ TryExec=umbrail
 Exec=umbrail %F
 Name=Umbrail
 GenericName=GPX Log Viewer/Editor
-MimeType=application/x-gpx+xml;application/gpx+xml;
 Icon=umbrail
 Terminal=false
 Categories=Qt;KDE;Education;Geography;
+# This the assigned shared-mime-info MIME type.
+# It has an alias application/x-gpx+xml, but including
+# both of them confuses Plasma's file associations.
+MimeType=application/gpx+xml;
