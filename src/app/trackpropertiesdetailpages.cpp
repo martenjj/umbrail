@@ -860,13 +860,16 @@ TrackRoutepointDetailPage::TrackRoutepointDetailPage(const QList<TrackDataItem *
     qDebug();
     setObjectName("TrackRoutepointDetailPage");
 
+    // TODO: maybe have an action to fill in the routepoint elevation
+    // from the DEM, then displaying elevation would make sense
+
     if (items->count()==1)				// single selection
     {
-        addDisplayFields(items, DisplayPosition|DisplayElevation);
+        addDisplayFields(items, DisplayPosition);
     }
     else						// multiple selection
     {
-        addDisplayFields(items, DisplayPosition|DisplayElevation|DisplayStraightLine|DisplayRelativeBearing|DisplayTravelDistance);
+        addDisplayFields(items, DisplayPosition|DisplayStraightLine|DisplayRelativeBearing|DisplayTravelDistance);
     }
 }
 
