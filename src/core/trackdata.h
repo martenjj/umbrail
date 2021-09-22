@@ -474,6 +474,9 @@ public:
 
     TrackData::Type type() const override		{ return (TrackData::Routepoint); }
 
+    // There is a "chart_routepoint" icon (present for completeness),
+    // but the flag looks better on the map and plot.  So use it in the
+    // data model also.
     QString iconName() const override			{ return ("flag"); }
 
     DEFINE_PROPERTIES_PAGE(General)

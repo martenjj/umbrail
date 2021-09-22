@@ -34,7 +34,7 @@ struct WaypointImageProviderPrivate
         QImage img;
         if (!pMasterImages.contains(size))		// master not found already
         {
-            QString picFile = "pics/waypoint_"+QString::number(size)+".png";
+            QString picFile = "pics/waypoint-"+QString::number(size)+".png";
             QString imgFile = QStandardPaths::locate(QStandardPaths::AppDataLocation, picFile);
             if (!imgFile.isEmpty())			// look for master image file
             {
