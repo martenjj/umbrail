@@ -34,10 +34,8 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithGpsHeading = 0;
 
     QVector<const TrackDataAbstractPoint *> points;
-    // TODO: FilesView::selectedPoints() only returns points with time,
-    // so this total will always be 100%
     filesController()->view()->selectedPoints().swap(points);
-    for (int i = 0; i<points.count(); ++i) getPointData(points.at(i));
+    for (const TrackDataAbstractPoint *tdp : qAsConst(points)) getPointData(tdp);
 
     mWidget = new QWidget(this);
     mLayout = new QGridLayout(mWidget);
@@ -111,7 +109,7 @@ void StatisticsWidget::addRow(const QString &text, int num, bool withPercent)
 
 void StatisticsWidget::getPointData(const TrackDataAbstractPoint *point)
 {
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(point);
+    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(point);
     if (tdp!=nullptr)					// is this a point?
     {
         ++mTotalPoints;					// count up total points

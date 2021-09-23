@@ -814,6 +814,7 @@ void MainWindow::slotUpdateActionState()
     bool copyEnabled = false;
     bool propsEnabled = false;
     bool profileEnabled = false;
+    bool stopsEnabled = false;
     QString propsText = i18nc("@action:inmenu", "Properties...");
     bool delEnabled = true;
     QString delText = i18nc("@action:inmenu", "Delete");
@@ -835,7 +836,7 @@ case TrackData::File:
         propsText = i18ncp("@action:inmenu", "File Properties...", "Files Properties...", selCount);
         propsEnabled = true;
         delEnabled = false;
-        profileEnabled = true;
+        stopsEnabled = profileEnabled = true;
         break;
 
 case TrackData::Track:
@@ -843,7 +844,7 @@ case TrackData::Track:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
         selectedContainer = filesController()->view()->selectedItem();
-        profileEnabled = true;
+        stopsEnabled = profileEnabled = true;
         break;
 
 case TrackData::Route:
@@ -862,7 +863,7 @@ case TrackData::Segment:
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Segment...");
-        profileEnabled = true;
+        stopsEnabled = profileEnabled = true;
         mergeEnabled = (selCount>1);
         mergeText = i18nc("@action:inmenu", "Merge Segments");
         break;
@@ -872,7 +873,7 @@ case TrackData::Point:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
         selectedContainer = filesController()->view()->selectedItem()->parent();
-        profileEnabled = (selCount>1);
+        stopsEnabled = profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
         splitText = i18nc("@action:inmenu", "Split Segment");
@@ -952,7 +953,7 @@ default:
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
     mStatisticsAction->setEnabled(profileEnabled);
-    mStopDetectAction->setEnabled(profileEnabled);
+    mStopDetectAction->setEnabled(stopsEnabled);
 
     mPlayMediaAction->setEnabled(playEnabled);
     mPlayMediaAction->setText(playText);
