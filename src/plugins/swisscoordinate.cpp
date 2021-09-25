@@ -23,9 +23,12 @@
 //    20_1467104436749.download/refsyse.pdf
 //
 //  Section references to "SwissTopo" are to this document.
+//
 //  Currently the implementation here is for coordinate system CH1903/LV03.
 //  SwissTopo section 1.1 says that the new CH1903+/LV95 system is mandated
-//  for official use from 2016 onwards.
+//  for official use from 2016 onwards, but if using the approximate formulas
+//  (SwissTopo sections 4.1 and 4.2) the two systems are identical apart from
+//  the fixed E/N offsets.
 //
 //  For background information and an online converter see also
 //
