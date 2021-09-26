@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		20-Sep-21					#
+#  Edit:		26-Sep-21					#
 #########################################################################
 
 
@@ -17,7 +17,6 @@ set(app_SRCS
   folderselectdialogue.cpp
   folderselectwidget.cpp
   mainwindow.cpp
-  profilewidget.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
   stopdetectdialogue.cpp
@@ -30,8 +29,16 @@ set(app_SRCS
   trackpropertiesstylepages.cpp
 )
 
+if (QCUSTOMPLOT_FOUND)
+  add_definitions("-DHAVE_QCUSTOMPLOT")
+  set(app_SRCS ${app_SRCS} profilewidget.cpp)
+  if (NOT QCUSTOMPLOT_INTERNAL)
+    include_directories(${QCUSTOMPLOT_INCLUDES})
+  endif (NOT QCUSTOMPLOT_INTERNAL)
+endif (QCUSTOMPLOT_FOUND)
+
 if (KF5KExiv2_FOUND)
-  add_definitions("-DHAVE_KEXIV2=1")
+  add_definitions("-DHAVE_KEXIV2")
 endif (KF5KExiv2_FOUND)
 
 add_executable(${PN} ${app_SRCS})
@@ -49,12 +56,14 @@ target_link_libraries(${PN}
   ${PN}map
   ${PN}media
   ${PN}io
-  qcustomplot
   ${LIBKFDIALOG_LIBRARIES}
 )
 if (KF5KExiv2_FOUND)
   target_link_libraries(${PN} KF5::KExiv2)
 endif (KF5KExiv2_FOUND)
+if (QCUSTOMPLOT_FOUND)
+  target_link_libraries(${PN} ${QCUSTOMPLOT_LIB})
+endif (QCUSTOMPLOT_FOUND)
 
 add_dependencies(${PN} vcsversion)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../..)

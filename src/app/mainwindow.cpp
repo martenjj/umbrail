@@ -1083,10 +1083,14 @@ void MainWindow::slotMapMovePoints()
 
 void MainWindow::slotTrackProfile()
 {
+#ifdef HAVE_QCUSTOMPLOT
     ProfileWidget *w = new ProfileWidget(this);
     w->setAttribute(Qt::WA_DeleteOnClose);
     w->setModal(false);
     w->show();
+#else // HAVE_QCUSTOMPLOT
+    KMessageBox::sorry(this, i18n("The application is not built with QCustomPlot, profile is not available."));
+#endif // HAVE_QCUSTOMPLOT
 }
 
 

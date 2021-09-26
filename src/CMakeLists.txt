@@ -1,6 +1,6 @@
 #########################################################################
 #  Project:		Track Editor					#
-#  Edit:		20-Sep-21					#
+#  Edit:		26-Sep-21					#
 #########################################################################
 
 
@@ -35,6 +35,41 @@ find_package(Marble REQUIRED NO_POLICY_SCOPE)
 find_package(Phonon4Qt5 NO_POLICY_SCOPE)
 find_package(KF5KExiv2 NO_POLICY_SCOPE)
 find_package(LibKFDialog REQUIRED NO_POLICY_SCOPE)
+
+# find_package(QCustomPlot) is currently untested, my distro
+# does not provide any CMake or package config for QCustomPlot.
+find_package(QCustomPlot NO_POLICY_SCOPE QUIET)
+if (QCustomPlot_FOUND)
+  message(STATUS "Found external QCustomPlot package")
+  set(QCUSTOMPLOT_FOUND TRUE)
+  set(QCUSTOMPLOT_LIB ${QCUSTOMPLOT_LIBRARIES})
+else (QCustomPlot_FOUND)
+  find_library(QCUSTOMPLOT_LIB qcustomplot)
+  find_file(QCUSTOMPLOT_HDR qcustomplot.h)
+
+  if (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+    message(STATUS "Found external QCustomPlot library")
+    set(QCUSTOMPLOT_FOUND TRUE)
+    get_filename_component(QCUSTOMPLOT_INCLUDES ${QCUSTOMPLOT_HDR} DIRECTORY)
+  else (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
+      message(STATUS "Could not find external QCustomPlot, using internal source")
+      set(QCUSTOMPLOT_FOUND TRUE)
+      set(QCUSTOMPLOT_INTERNAL TRUE)
+      set(QCUSTOMPLOT_LIB "qcustomplot")
+      # No need to set QCUSTOMPLOT_INCLUDES, linking to QCUSTOMPLOT_LIB
+      # will add the internal source directory to the search path.
+    endif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
+  endif (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+endif (QCustomPlot_FOUND)
+
+if (QCUSTOMPLOT_FOUND)
+  message(STATUS "QCustomPlot library: ${QCUSTOMPLOT_LIB}")
+  message(STATUS "QCustomPlot include: ${QCUSTOMPLOT_INCLUDES}")
+else (QCUSTOMPLOT_FOUND)
+  message(STATUS "QCustomPlot not found, profile plotting will not be available")
+endif (QCUSTOMPLOT_FOUND)
+
 if (NOT WIN32)
   # This sems to be necessary as a consequence of commit cb40e3d6
   # to tier1/kwindowsystem, "Make link against X11 and XCB public".
@@ -46,6 +81,7 @@ set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL
 set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
 set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://quickgit.kde.org/?p=libkexiv2.git" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 set_package_properties("LibKFDialog" PROPERTIES DESCRIPTION "KDE Frameworks dialogue utility library" URL "https://github.com/martenjj/libkfdialog" TYPE REQUIRED PURPOSE "Required to build the project")
+set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and data visualization" URL "https://www.qcustomplot.com" TYPE OPTIONAL PURPOSE "Required for the profile display, internal source will be used if not found")
 
 #########################################################################
 #									#
@@ -105,7 +141,10 @@ target_link_libraries(${PN}settings
 #									#
 #########################################################################
 
-add_subdirectory(qcustomplot)
+if (QCUSTOMPLOT_INTERNAL)
+  add_subdirectory(qcustomplot)
+endif (QCUSTOMPLOT_INTERNAL)
+
 add_subdirectory(core)
 add_subdirectory(services)
 add_subdirectory(media)
