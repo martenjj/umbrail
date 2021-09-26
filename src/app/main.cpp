@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	Track Editor						//
-//  Edit:	20-Sep-21						//
+//  Edit:	26-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -46,6 +46,9 @@
 #include "filescontroller.h"
 
 #include "version.h"
+#ifdef HAVE_QCUSTOMPLOT
+#include "qcustomplot.h"
+#endif // HAVE_QCUSTOMPLOT
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -74,6 +77,17 @@ int main(int argc,char *argv[])
                         "",
                         "jjm@keelhaul.me.uk",
                         "http://www.keelhaul.me.uk");
+
+    aboutData.addComponent(i18n("LibKFDialog"),
+                           i18n("Dialogue utility library"),
+                           "",
+                           "https://github.com/martenjj/libkfdialog");
+#ifdef HAVE_QCUSTOMPLOT
+    aboutData.addComponent(i18n("QCustomPlot"),
+                           i18n("Qt plotting and data visualization"),
+                           QCUSTOMPLOT_VERSION_STR,
+                           "https://www.qcustomplot.com");
+#endif // HAVE_QCUSTOMPLOT
 
     QApplication app(argc, argv);
     KAboutData::setApplicationData(aboutData);
