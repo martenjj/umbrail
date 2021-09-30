@@ -133,14 +133,14 @@ QWidget *SwissCoordinateHandler::createWidget(QWidget *pnt)
     QFormLayout *fl = new QFormLayout(w);
 
     mSwissNorthEdit = new QLineEdit(w);
-    connect(mSwissNorthEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mSwissNorthEdit, &QLineEdit::textEdited, this, &SwissCoordinateHandler::slotTextChanged);
     QIntValidator *iv = new QIntValidator(mSwissNorthEdit);
     iv->setRange(MIN_SWISS_NORTHING, MAX_SWISS_NORTHING);
     mSwissNorthEdit->setValidator(iv);
     fl->addRow(i18n("Northing:"), mSwissNorthEdit);
 
     mSwissEastEdit = new QLineEdit(w);
-    connect(mSwissEastEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mSwissEastEdit, &QLineEdit::textEdited, this, &SwissCoordinateHandler::slotTextChanged);
     iv = new QIntValidator(mSwissEastEdit);
     iv->setRange(MIN_SWISS_EASTING, MAX_SWISS_EASTING);
     mSwissEastEdit->setValidator(iv);

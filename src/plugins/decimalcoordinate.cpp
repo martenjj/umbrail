@@ -28,14 +28,14 @@ QWidget *DecimalCoordinateHandler::createWidget(QWidget *pnt)
     QFormLayout *fl = new QFormLayout(w);
 
     mLatitudeEdit = new QLineEdit(w);
-    connect(mLatitudeEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged(const QString &)));
+    connect(mLatitudeEdit, &QLineEdit::textEdited, this, &DecimalCoordinateHandler::slotTextChanged);
     QDoubleValidator *dv = new QDoubleValidator(mLatitudeEdit);
     dv->setRange(-90, 90, PRECISION);
     mLatitudeEdit->setValidator(dv);
     fl->addRow(i18n("Latitude:"), mLatitudeEdit);
 
     mLongitudeEdit = new QLineEdit(w);
-    connect(mLongitudeEdit, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged(const QString &)));
+    connect(mLongitudeEdit, &QLineEdit::textEdited, this, &DecimalCoordinateHandler::slotTextChanged);
     dv = new QDoubleValidator(mLongitudeEdit);
     dv->setRange(-180, 180, PRECISION);
     mLongitudeEdit->setValidator(dv);

@@ -71,7 +71,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 0, 0, labelAlign);
 
     mLatitudeDeg = new QLineEdit(w);
-    connect(mLatitudeDeg, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mLatitudeDeg, &QLineEdit::textEdited, this, &DMSCoordinateHandler::slotTextChanged);
     QIntValidator *iv = new QIntValidator(mLatitudeDeg);
     iv->setRange(0, 90);
     mLatitudeDeg->setValidator(iv);
@@ -82,7 +82,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 0, 3, Qt::AlignLeft);
 
     mLatitudeMin = new QLineEdit(w);
-    connect(mLatitudeMin, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mLatitudeMin, &QLineEdit::textEdited, this, &DMSCoordinateHandler::slotTextChanged);
     iv = new QIntValidator(mLatitudeMin);
     iv->setRange(0, 59);
     mLatitudeMin->setValidator(iv);
@@ -92,7 +92,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 0, 6, Qt::AlignLeft);
 
     mLatitudeSec = new QLineEdit(w);
-    connect(mLatitudeSec, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mLatitudeSec, &QLineEdit::textEdited, this, &DMSCoordinateHandler::slotTextChanged);
     QDoubleValidator *dv = new QDoubleValidator(mLatitudeSec);
     dv->setRange(0, 59.99, 2);
     mLatitudeSec->setValidator(dv);
@@ -102,7 +102,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 0, 9, Qt::AlignLeft);
 
     mLatitudeCombo = new QComboBox(w);
-    connect(mLatitudeCombo, SIGNAL(activated(int)), SLOT(slotTextChanged()));
+    connect(mLatitudeCombo, QOverload<int>::of(&QComboBox::activated), this, &DMSCoordinateHandler::slotTextChanged);
     mLatitudeCombo->addItem(i18n("North"));
     mLatitudeCombo->addItem(i18n("South"));
     gl->addWidget(mLatitudeCombo, 0, 11);
@@ -112,7 +112,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 1, 0, labelAlign);
 
     mLongitudeDeg = new QLineEdit(w);
-    connect(mLongitudeDeg, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mLongitudeDeg, &QLineEdit::textEdited, this, &DMSCoordinateHandler::slotTextChanged);
     iv = new QIntValidator(mLongitudeDeg);
     iv->setRange(0, 180);
     mLongitudeDeg->setValidator(iv);
@@ -123,7 +123,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 1, 3, Qt::AlignLeft);
 
     mLongitudeMin = new QLineEdit(w);
-    connect(mLongitudeMin, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mLongitudeMin, &QLineEdit::textEdited, this, &DMSCoordinateHandler::slotTextChanged);
     iv = new QIntValidator(mLongitudeMin);
     iv->setRange(0, 59);
     mLongitudeMin->setValidator(iv);
@@ -133,7 +133,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 1, 6, Qt::AlignLeft);
 
     mLongitudeSec = new QLineEdit(w);
-    connect(mLongitudeSec, SIGNAL(textEdited(const QString &)), SLOT(slotTextChanged()));
+    connect(mLongitudeSec, &QLineEdit::textEdited, this, &DMSCoordinateHandler::slotTextChanged);
     dv = new QDoubleValidator(mLongitudeSec);
     dv->setRange(0, 59.99, 2);
     mLongitudeSec->setValidator(dv);
@@ -143,7 +143,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(l, 1, 9, Qt::AlignLeft);
 
     mLongitudeCombo = new QComboBox(w);
-    connect(mLongitudeCombo, SIGNAL(activated(int)), SLOT(slotTextChanged()));
+    connect(mLongitudeCombo, QOverload<int>::of(&QComboBox::activated), this, &DMSCoordinateHandler::slotTextChanged);
     mLongitudeCombo->addItem(i18n("East"));
     mLongitudeCombo->addItem(i18n("West"));
     gl->addWidget(mLongitudeCombo, 1, 11);
