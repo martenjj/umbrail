@@ -83,7 +83,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mIdleTimer = new QTimer(this);
     mIdleTimer->setInterval(2000);
     mIdleTimer->setSingleShot(true);			// don't start until show event
-    connect(mIdleTimer, SIGNAL(timeout()), SLOT(slotDetectStops()));
+    connect(mIdleTimer, &QTimer::timeout, this, &StopDetectDialogue::slotDetectStops);
 
     QWidget *w = new QWidget(this);
     QHBoxLayout *hb = new QHBoxLayout(w);
@@ -99,19 +99,19 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mTimeSlider->setToolTip(i18n("The minimum length of time which will be considered to be a stop"));
     mTimeSlider->spinBox()->setSuffix(i18nc("abbreviation for seconds unit", " sec"));
     mTimeSlider->spinBox()->setSingleStep(10);
-    connect(mTimeSlider, SIGNAL(settingChanged(int)), mIdleTimer, SLOT(start()));
+    connect(mTimeSlider, &ValueSlider::settingChanged, mIdleTimer, QOverload<>::of(&QTimer::start));
     fl->addRow(i18n("Minimum duration:"), mTimeSlider);
 
     mDistanceSlider = new ValueSlider(w, 5, 200, true, 20);
     mDistanceSlider->setToolTip(i18n("The distance tolerance for points considered to be together"));
     mDistanceSlider->spinBox()->setSuffix(i18nc("abbreviation for metres unit", " m"));
     mDistanceSlider->spinBox()->setSingleStep(5);
-    connect(mDistanceSlider, SIGNAL(settingChanged(int)), mIdleTimer, SLOT(start()));
+    connect(mDistanceSlider, &ValueSlider::settingChanged, mIdleTimer, QOverload<>::of(&QTimer::start));
     fl->addRow(i18n("Distance threshold:"), mDistanceSlider);
 
     mNoiseSlider = new ValueSlider(w, 0, 20, true, 2);
     mNoiseSlider->setToolTip(i18n("The number of outlying points which may be ignored"));
-    connect(mNoiseSlider, SIGNAL(settingChanged(int)), mIdleTimer, SLOT(start()));
+    connect(mNoiseSlider, &ValueSlider::settingChanged, mIdleTimer, QOverload<>::of(&QTimer::start));
     fl->addRow(i18n("Noise points:"), mNoiseSlider);
 
     fl->addRow(new QLabel("", this));
@@ -122,7 +122,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     const bool folderExists = (TrackData::findFolderByPath(folderName, filesController()->model()->rootFileItem())!=nullptr);
 							// either existing or placeholder
     mFolderSelect->setFolderPath(folderName, !folderExists);
-    connect(mFolderSelect, SIGNAL(folderChanged(const QString &)), SLOT(slotSetButtonStates()));
+    connect(mFolderSelect, &FolderSelectWidget::folderChanged, this, &StopDetectDialogue::slotSetButtonStates);
     fl->addRow(i18n("Destination folder:"), mFolderSelect);
 
     // Middle: separator
@@ -143,8 +143,8 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mResultsList->setSelectionMode(QAbstractItemView::ContiguousSelection);
     mResultsList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mResultsList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-    connect(mResultsList, SIGNAL(itemSelectionChanged()), SLOT(slotSetButtonStates()));
-    connect(mResultsList, SIGNAL(itemChanged(QListWidgetItem *)), SLOT(slotSetButtonStates()));
+    connect(mResultsList, &QListWidget::itemSelectionChanged, this, &StopDetectDialogue::slotSetButtonStates);
+    connect(mResultsList, &QListWidget::itemChanged, this, &StopDetectDialogue::slotSetButtonStates);
 
     gl->addWidget(mResultsList, 1, 0, 1, -1);
     gl->setRowStretch(1, 1);
@@ -165,7 +165,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mShowOnMapButton = new QPushButton(act->icon(), act->text(), w);
     mShowOnMapButton->setShortcut(act->shortcut());
     mShowOnMapButton->setToolTip(i18n("Show the selected stop point on the map"));
-    connect(mShowOnMapButton, SIGNAL(clicked(bool)), SLOT(slotShowOnMap()));
+    connect(mShowOnMapButton, &QAbstractButton::clicked, this, &StopDetectDialogue::slotShowOnMap);
     gl->addWidget(mShowOnMapButton, 2, 2, Qt::AlignRight);
 
     act = mainwin->actionCollection()->action("track_merge");
@@ -174,10 +174,10 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mMergeStopsButton = new QPushButton(act->icon(), i18n("Merge Stops"), w);
     mMergeStopsButton->setShortcut(act->shortcut());
     mMergeStopsButton->setToolTip(i18n("Merge the selected stop points into one"));
-    connect(mMergeStopsButton, SIGNAL(clicked(bool)), SLOT(slotMergeStops()));
+    connect(mMergeStopsButton, &QAbstractButton::clicked, this, &StopDetectDialogue::slotMergeStops);
     gl->addWidget(mMergeStopsButton, 2, 0, Qt::AlignLeft);
 
-    connect(this, SIGNAL(accepted()), SLOT(slotCommitResults()));
+    connect(this, &QDialog::accepted, this, &StopDetectDialogue::slotCommitResults);
 
     hb->addLayout(gl);
     setMainWidget(w);
@@ -199,7 +199,7 @@ void StopDetectDialogue::showEvent(QShowEvent *ev)
 {
     qDebug();
     DialogBase::showEvent(ev);
-    QTimer::singleShot(0, this, SLOT(slotDetectStops()));
+    QTimer::singleShot(0, this, &StopDetectDialogue::slotDetectStops);
 }
 
 

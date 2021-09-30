@@ -214,7 +214,7 @@ void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
     b->setToolTip(i18nc("@info:tooltip", "Change the latitude/longitude position"));
     b->setEnabled(!isReadOnly());
-    connect(b, SIGNAL(clicked()), SLOT(slotChangePosition()));
+    connect(b, &QAbstractButton::clicked, this, &TrackItemGeneralPage::slotChangePosition);
     hb->setFocusProxy(b);
     hb->setFocusPolicy(Qt::StrongFocus);
     hlay->addWidget(b);
@@ -440,19 +440,19 @@ default:				typeName = i18n("(Unknown)");	break;
 case TrackData::WaypointAudioNote:
             actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
-            connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayAudioNote()));
+            connect(actionButton, &QAbstractButton::clicked, this, &TrackWaypointGeneralPage::slotPlayAudioNote);
             break;
 
 case TrackData::WaypointVideoNote:
             actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the video note"));
-            connect(actionButton, SIGNAL(clicked()), SLOT(slotPlayVideoNote()));
+            connect(actionButton, &QAbstractButton::clicked, this, &TrackWaypointGeneralPage::slotPlayVideoNote);
             break;
 
 case TrackData::WaypointPhoto:
             actionButton = new QPushButton(QIcon::fromTheme("document-preview"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "View the photo"));
-            connect(actionButton, SIGNAL(clicked()), SLOT(slotViewPhotoNote()));
+            connect(actionButton, &QAbstractButton::clicked, this, &TrackWaypointGeneralPage::slotViewPhotoNote);
             break;
 
 default:    break;
@@ -515,7 +515,7 @@ void TrackWaypointGeneralPage::addStatusField(const QList<TrackDataItem *> *item
     }
     mStatusCombo->setEnabled(!isReadOnly());
 
-    connect(mStatusCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotStatusChanged(int)));
+    connect(mStatusCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TrackWaypointGeneralPage::slotStatusChanged);
     mFormLayout->addRow(i18nc("@label:listbox", "Status:"), mStatusCombo);
 }
 

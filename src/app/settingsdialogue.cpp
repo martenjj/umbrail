@@ -41,28 +41,39 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
 
     setFaceType(KPageDialog::Auto);
 
-    KPageWidgetItem *page = new SettingsMapStylePage(this);
-    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
-    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
+    SettingsPage *page = new SettingsMapStylePage(this);
+    connect(buttonBox(), &QDialogButtonBox::accepted, page, &SettingsPage::slotSave);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
     addPage(page);
 
     page = new SettingsFilesPage(this);
-    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
-    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
+    connect(buttonBox(), &QDialogButtonBox::accepted, page, &SettingsPage::slotSave);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
     addPage(page);
 
     page = new SettingsMediaPage(this);
-    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
-    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
+    connect(buttonBox(), &QDialogButtonBox::accepted, page, &SettingsPage::slotSave);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
     addPage(page);
 
     page = new SettingsServicesPage(this);
-    connect(buttonBox(), SIGNAL(accepted()), page, SLOT(slotSave()));
-    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), SIGNAL(clicked()), page, SLOT(slotDefaults()));
+    connect(buttonBox(), &QDialogButtonBox::accepted, page, &SettingsPage::slotSave);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
     addPage(page);
 
     setMinimumSize(440, 360);
     new DialogStateSaver(this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsPage							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+SettingsPage::SettingsPage(QWidget *pnt)
+    : KPageWidgetItem(new QWidget(pnt))
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,7 +83,7 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
 //////////////////////////////////////////////////////////////////////////
 
 SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
-    : KPageWidgetItem(new QWidget(pnt))
+    : SettingsPage(pnt)
 {
     setName(i18nc("@title:tab", "Map"));
     setHeader(i18n("Settings for the map display"));
@@ -96,7 +107,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     kcsi = Settings::self()->showTrackArrowsItem();
     mShowTrackArrowsCheck = new QCheckBox(kcsi->label(), w);
     mShowTrackArrowsCheck->setChecked(Settings::showTrackArrows());
-    connect(mShowTrackArrowsCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    connect(mShowTrackArrowsCheck, &QAbstractButton::toggled, this, &SettingsMapStylePage::slotItemChanged);
     mShowTrackArrowsCheck->setToolTip(kcsi->toolTip());
     fl->addRow("", mShowTrackArrowsCheck);
 
@@ -105,7 +116,7 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     kcsi = Settings::self()->selectedUseSystemColoursItem();
     mSelectedUseSystemCheck = new QCheckBox(kcsi->label(), w);
     mSelectedUseSystemCheck->setChecked(Settings::selectedUseSystemColours());
-    connect(mSelectedUseSystemCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    connect(mSelectedUseSystemCheck, &QAbstractButton::toggled, this, &SettingsMapStylePage::slotItemChanged);
     mSelectedUseSystemCheck->setToolTip(kcsi->toolTip());
     fl->addRow(i18n("Selection:"), mSelectedUseSystemCheck);
 
@@ -179,7 +190,7 @@ void SettingsMapStylePage::slotItemChanged()
 //////////////////////////////////////////////////////////////////////////
 
 SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
-    : KPageWidgetItem(new QWidget(pnt))
+    : SettingsPage(pnt)
 {
     setName(i18nc("@title:tab", "Files"));
     setHeader(i18n("Settings for files and locations"));
@@ -210,7 +221,7 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     QPushButton *but = new QPushButton(QIcon::fromTheme("edit-clear"), i18n("Clear all file warnings"), w);
     but->setToolTip(i18n("Clear all remembered file questions and warnings."));
 
-    connect(but, SIGNAL(clicked()), SLOT(slotClearFileWarnings()));
+    connect(but, &QAbstractButton::clicked, this, &SettingsFilesPage::slotClearFileWarnings);
     lay->addWidget(but);
     fl->addRow(lay);
 
@@ -258,11 +269,6 @@ void SettingsFilesPage::slotDefaults()
 }
 
 
-void SettingsFilesPage::slotItemChanged()
-{
-}
-
-
 void SettingsFilesPage::slotClearFileWarnings()
 {
     FilesController::resetAllFileWarnings();
@@ -278,7 +284,7 @@ void SettingsFilesPage::slotClearFileWarnings()
 //////////////////////////////////////////////////////////////////////////
 
 SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
-    : KPageWidgetItem(new QWidget(pnt))
+    : SettingsPage(pnt)
 {
     setName(i18nc("@title:tab", "Media"));
     setHeader(i18n("Settings for notes and photographs"));
@@ -325,7 +331,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
     mUseTimeCheck = new QCheckBox(ski->label(), w);
     mUseTimeCheck->setToolTip(ski->toolTip());
     mUseTimeCheck->setChecked(Settings::photoUseTime());
-    connect(mUseTimeCheck, SIGNAL(toggled(bool)), SLOT(slotItemChanged()));
+    connect(mUseTimeCheck, &QAbstractButton::toggled, this, &SettingsMediaPage::slotItemChanged);
     fl->addRow(mUseTimeCheck);
 
     ski = Settings::self()->photoTimeThresholdItem();
@@ -419,7 +425,7 @@ static void fillBrowserCombo(QComboBox *combo, const QString &currentId)
 
 
 SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
-    : KPageWidgetItem(new QWidget(pnt))
+    : SettingsPage(pnt)
 {
     setName(i18nc("@title:tab", "Services"));
     setHeader(i18n("Settings for external services"));
@@ -490,9 +496,4 @@ void SettingsServicesPage::slotDefaults()
 #endif // ENABLE_OPEN_WITH_BING
     mGeonamesUserEdit->clear();
     slotItemChanged();
-}
-
-
-void SettingsServicesPage::slotItemChanged()
-{
 }

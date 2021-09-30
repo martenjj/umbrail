@@ -27,7 +27,7 @@ FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
 
     QPushButton *reqButton = new QPushButton(QIcon::fromTheme("folder"), "", this);
     reqButton->setToolTip(i18n("Select or create a folder"));
-    connect(reqButton, SIGNAL(clicked(bool)), SLOT(slotSelectFolder()));
+    connect(reqButton, &QAbstractButton::clicked, this, &FolderSelectWidget::slotSelectFolder);
     hb->addWidget(reqButton);
 
     hb->setStretch(0, 1);

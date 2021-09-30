@@ -77,37 +77,35 @@ void MainWindow::init()
     setCentralWidget(mSplitter);
 
     mUndoStack = new QUndoStack(this);
-    connect(mUndoStack, SIGNAL(canUndoChanged(bool)), SLOT(slotCanUndoChanged(bool)));
-    connect(mUndoStack, SIGNAL(canRedoChanged(bool)), SLOT(slotCanRedoChanged(bool)));
-    connect(mUndoStack, SIGNAL(undoTextChanged(const QString &)), SLOT(slotUndoTextChanged(const QString &)));
-    connect(mUndoStack, SIGNAL(redoTextChanged(const QString &)), SLOT(slotRedoTextChanged(const QString &)));
-    connect(mUndoStack, SIGNAL(cleanChanged(bool)), SLOT(slotCleanUndoChanged(bool)));
+    connect(mUndoStack, &QUndoStack::canUndoChanged, this, &MainWindow::slotCanUndoChanged);
+    connect(mUndoStack, &QUndoStack::canRedoChanged, this, &MainWindow::slotCanRedoChanged);
+    connect(mUndoStack, &QUndoStack::undoTextChanged, this, &MainWindow::slotUndoTextChanged);
+    connect(mUndoStack, &QUndoStack::redoTextChanged, this, &MainWindow::slotRedoTextChanged);
+    connect(mUndoStack, &QUndoStack::cleanChanged, this, &MainWindow::slotCleanUndoChanged);
 
     // Need to set this in ApplicationData before constructing
     // anything else that will use it.
     mMainWidget = this;
 
     mFilesController = new FilesController(this);
-    connect(mFilesController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
-    connect(mFilesController, SIGNAL(modified()), SLOT(slotSetModified()));
-    connect(mFilesController, SIGNAL(updateActionState()), SLOT(slotUpdateActionState()));
+    connect(mFilesController, &FilesController::statusMessage, this, &MainWindow::slotStatusMessage);
+    connect(mFilesController, &FilesController::modified, this, [this]() { slotSetModified(true); });
+    connect(mFilesController, &FilesController::updateActionState, this, &MainWindow::slotUpdateActionState);
 
     mFilesView = filesController()->view();		// set in ApplicationData
 
     mMapController = new MapController(this);
-    connect(mMapController, SIGNAL(statusMessage(const QString &)), SLOT(slotStatusMessage(const QString &)));
-    connect(mMapController, SIGNAL(modified()), SLOT(slotSetModified()));
-    connect(mMapController, SIGNAL(mapZoomChanged(bool,bool)), SLOT(slotMapZoomChanged(bool,bool)));
-    connect(mMapController, SIGNAL(mapDraggedPoints(qreal,qreal)), mFilesController, SLOT(slotMapDraggedPoints(qreal,qreal)));
+    connect(mMapController, &MapController::statusMessage, this, &MainWindow::slotStatusMessage);
+    connect(mMapController, &MapController::modified, this, [this]() { slotSetModified(true); });
+    connect(mMapController, &MapController::mapZoomChanged, this, &MainWindow::slotMapZoomChanged);
+    connect(mMapController, &MapController::mapDraggedPoints, mFilesController, &FilesController::slotMapDraggedPoints);
 
-    connect(mFilesController, SIGNAL(updateMap()), mMapController->view(), SLOT(update()));
+    connect(mFilesController, &FilesController::updateMap, mMapController->view(), QOverload<>::of(&QWidget::update));
     // TODO: temp, see FilesView::selectionChanged()
-    connect(mFilesController, SIGNAL(updateActionState()), mMapController->view(), SLOT(update()));
+    connect(mFilesController, &FilesController::updateActionState, mMapController->view(), QOverload<>::of(&QWidget::update));
 
-    connect(mMapController->view(), SIGNAL(createWaypoint(qreal,qreal)),
-            mFilesController, SLOT(slotAddWaypoint(qreal,qreal)));
-    connect(mMapController->view(), SIGNAL(createRoutepoint(qreal,qreal)),
-            mFilesController, SLOT(slotAddRoutepoint(qreal,qreal)));
+    connect(mMapController->view(), &MapView::createWaypoint, mFilesController, &FilesController::slotAddWaypoint);
+    connect(mMapController->view(), &MapView::createRoutepoint, mFilesController, &FilesController::slotAddRoutepoint);
 
     mSplitter->addWidget(mFilesController->view());
     mSplitter->addWidget(mMapController->view());
@@ -135,143 +133,143 @@ void MainWindow::setupActions()
 {
     KActionCollection *ac = actionCollection();
 
-    KStandardAction::quit(this, SLOT(close()), ac);
+    KStandardAction::quit(this, &MainWindow::close, ac);
 
-    QAction *a = KStandardAction::openNew(this, SLOT(slotNewProject()), ac);
-    a = KStandardAction::open(this, SLOT(slotOpenProject()), ac);
-    mSaveProjectAction = KStandardAction::save(this, SLOT(slotSaveProject()), ac);
-    mSaveProjectAsAction = KStandardAction::saveAs(this, SLOT(slotSaveAs()), ac);
+    QAction *a = KStandardAction::openNew(this, &MainWindow::slotNewProject, ac);
+    a = KStandardAction::open(this, &MainWindow::slotOpenProject, ac);
+    mSaveProjectAction = KStandardAction::save(this, &MainWindow::slotSaveProject, ac);
+    mSaveProjectAsAction = KStandardAction::saveAs(this, &MainWindow::slotSaveAs, ac);
 
     mSaveProjectCopyAction = ac->addAction("file_save_copy");
     mSaveProjectCopyAction->setText(i18n("Save Copy As..."));
     mSaveProjectCopyAction->setIcon(QIcon::fromTheme("folder-new"));
-    connect(mSaveProjectCopyAction, SIGNAL(triggered()), SLOT(slotSaveCopy()));
+    connect(mSaveProjectCopyAction, &QAction::triggered, this, &MainWindow::slotSaveCopy);
 
     mImportAction = ac->addAction("file_import");
     mImportAction->setText(i18n("Import File..."));
     mImportAction->setIcon(QIcon::fromTheme("document-import"));
     ac->setDefaultShortcut(mImportAction, Qt::CTRL+Qt::Key_I);
-    connect(mImportAction, SIGNAL(triggered()), SLOT(slotImportFile()));
+    connect(mImportAction, &QAction::triggered, this, &MainWindow::slotImportFile);
 
     mExportAction = ac->addAction("file_export");
     mExportAction->setText(i18n("Export..."));
     mExportAction->setIcon(QIcon::fromTheme("document-export"));
     ac->setDefaultShortcut(mExportAction, Qt::CTRL+Qt::Key_E);
-    connect(mExportAction, SIGNAL(triggered()), SLOT(slotExportFile()));
+    connect(mExportAction, &QAction::triggered, this, &MainWindow::slotExportFile);
     mExportAction->setEnabled(false);
 
     mPhotoAction = ac->addAction("file_add_photo");
     mPhotoAction->setText("Import Photo...");
     mPhotoAction->setIcon(QIcon::fromTheme("image-loading"));
-    connect(mPhotoAction, SIGNAL(triggered()), SLOT(slotImportPhoto()));
+    connect(mPhotoAction, &QAction::triggered, this, &MainWindow::slotImportPhoto);
 
-    mSelectAllAction = KStandardAction::selectAll(filesController()->view(), SLOT(slotSelectAllSiblings()), ac);
-    mClearSelectAction = KStandardAction::deselect(filesController()->view(), SLOT(clearSelection()), ac);
+    mSelectAllAction = KStandardAction::selectAll(filesController()->view(), &FilesView::slotSelectAllSiblings, ac);
+    mClearSelectAction = KStandardAction::deselect(filesController()->view(), &QTreeView::clearSelection, ac);
     mClearSelectAction->setIcon(QIcon::fromTheme("edit-clear-list"));
 
-    mUndoAction = KStandardAction::undo(mUndoStack, SLOT(undo()), ac);
+    mUndoAction = KStandardAction::undo(mUndoStack, &QUndoStack::undo, ac);
     mUndoAction->setEnabled(false);
     mUndoText = mUndoAction->text();
 
-    mRedoAction = KStandardAction::redo(mUndoStack, SLOT(redo()), ac);
+    mRedoAction = KStandardAction::redo(mUndoStack, &QUndoStack::redo, ac);
     mRedoAction->setEnabled(false);
     mRedoText = mRedoAction->text();
 
-    mCopyAction = KStandardAction::copy(this, SLOT(slotCopy()), ac);
+    mCopyAction = KStandardAction::copy(this, &MainWindow::slotCopy, ac);
     mCopyAction->setEnabled(false);
 
-    mPasteAction = KStandardAction::paste(this, SLOT(slotPaste()), ac);
+    mPasteAction = KStandardAction::paste(this, &MainWindow::slotPaste, ac);
     mPasteAction->setEnabled(false);
-    connect(QApplication::clipboard(), SIGNAL(dataChanged()), SLOT(slotUpdatePasteState()));
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::slotUpdatePasteState);
 
     a = ac->addAction("track_expand_all");
     a->setText(i18n("Expand View"));
     a->setIcon(QIcon::fromTheme("application_side_tree"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Period);
-    connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(slotExpandAll()));
+    connect(a, &QAction::triggered, filesController()->view(), &FilesView::slotExpandAll);
 
     a = ac->addAction("track_expand_complete");
     a->setText(i18n("Expand All"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Period);
-    connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(expandAll()));
+    connect(a, &QAction::triggered, filesController()->view(), &QTreeView::expandAll);
 
     a = ac->addAction("track_collapse_all");
     a->setText(i18n("Collapse View"));
     a->setIcon(QIcon::fromTheme("application_side_list"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Comma);
-    connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(slotCollapseAll()));
+    connect(a, &QAction::triggered, filesController()->view(), &FilesView::slotCollapseAll);
 
     a = ac->addAction("track_collapse_complete");
     a->setText(i18n("Collapse All"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Comma);
-    connect(a, SIGNAL(triggered()), filesController()->view(), SLOT(collapseAll()));
+    connect(a, &QAction::triggered, filesController()->view(), &QTreeView::collapseAll);
 
     mAddTrackAction = ac->addAction("edit_add_track");
     mAddTrackAction->setText(i18n("Add Track"));
     mAddTrackAction->setIcon(QIcon::fromTheme("list-add"));
-    connect(mAddTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotAddTrack()));
+    connect(mAddTrackAction, &QAction::triggered, filesController(), &FilesController::slotAddTrack);
 
     mAddFolderAction = ac->addAction("edit_add_folder");
     mAddFolderAction->setText(i18n("Add Folder"));
     mAddFolderAction->setIcon(QIcon::fromTheme("bookmark-new-list"));
-    connect(mAddFolderAction, SIGNAL(triggered()), filesController(), SLOT(slotAddFolder()));
+    connect(mAddFolderAction, &QAction::triggered, filesController(), &FilesController::slotAddFolder);
 
     mAddPointAction = ac->addAction("edit_add_point");
     mAddPointAction->setText(i18n("Add Point"));
     mAddPointAction->setIcon(QIcon::fromTheme("list-add"));
-    connect(mAddPointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddPoint()));
+    connect(mAddPointAction, &QAction::triggered, filesController(), &FilesController::slotAddPoint);
 
     mAddWaypointAction = ac->addAction("edit_add_waypoint");
     mAddWaypointAction->setText(i18n("Add Waypoint..."));
     mAddWaypointAction->setIcon(QIcon::fromTheme("list-add"));
-    connect(mAddWaypointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddWaypoint()));
+    connect(mAddWaypointAction, &QAction::triggered, this, [this]() { filesController()->slotAddWaypoint(); });
 
     mAddRouteAction = ac->addAction("edit_add_route");
     mAddRouteAction->setText(i18n("Add Route"));
     mAddRouteAction->setIcon(QIcon::fromTheme("list-add"));
-    connect(mAddRouteAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoute()));
+    connect(mAddRouteAction, &QAction::triggered, filesController(), &FilesController::slotAddRoute);
 
     mAddRoutepointAction = ac->addAction("edit_add_routepoint");
     mAddRoutepointAction->setText(i18n("Add Route Point..."));
     mAddRoutepointAction->setIcon(QIcon::fromTheme("list-add"));
-    connect(mAddRoutepointAction, SIGNAL(triggered()), filesController(), SLOT(slotAddRoutepoint()));
+    connect(mAddRoutepointAction, &QAction::triggered, this, [this]() { filesController()->slotAddRoutepoint(); });
 
     // TODO: could these actions be combined with corresponding 2 above?
     a = ac->addAction("map_add_waypoint");
     a->setText(i18n("Create Waypoint..."));
     a->setIcon(QIcon::fromTheme("list-add"));
-    connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotAddWaypoint()));
+    connect(a, &QAction::triggered, mapController()->view(), &MapView::slotAddWaypoint);
 
     a = ac->addAction("map_add_routepoint");
     a->setText(i18n("Create Route Point..."));
     a->setIcon(QIcon::fromTheme("list-add"));
-    connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotAddRoutepoint()));
+    connect(a, &QAction::triggered, mapController()->view(), &MapView::slotAddRoutepoint);
 
     mDeleteItemsAction = ac->addAction("edit_delete_track");
     mDeleteItemsAction->setText(i18n("Delete"));
     mDeleteItemsAction->setIcon(QIcon::fromTheme("edit-delete"));
     ac->setDefaultShortcut(mDeleteItemsAction, KStandardShortcut::deleteFile().value(0));
-    connect(mDeleteItemsAction, SIGNAL(triggered()), filesController(), SLOT(slotDeleteItems()));
+    connect(mDeleteItemsAction, &QAction::triggered, filesController(), &FilesController::slotDeleteItems);
 
     mSplitTrackAction = ac->addAction("track_split");
     mSplitTrackAction->setText(i18n("Split Segment"));
     mSplitTrackAction->setIcon(QIcon::fromTheme("split"));
-    connect(mSplitTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotSplitSegment()));
+    connect(mSplitTrackAction, &QAction::triggered, filesController(), &FilesController::slotSplitSegment);
 
     mMergeTrackAction = ac->addAction("track_merge");
     mMergeTrackAction->setText(i18n("Merge Segments"));
     mMergeTrackAction->setIcon(QIcon::fromTheme("merge"));
-    connect(mMergeTrackAction, SIGNAL(triggered()), filesController(), SLOT(slotMergeSegments()));
+    connect(mMergeTrackAction, &QAction::triggered, filesController(), &FilesController::slotMergeSegments);
 
     mMoveItemAction = ac->addAction("track_move_item");
     mMoveItemAction->setText(i18n("Move Item..."));
     mMoveItemAction->setIcon(QIcon::fromTheme("go-up"));
-    connect(mMoveItemAction, SIGNAL(triggered()), filesController(), SLOT(slotMoveItem()));
+    connect(mMoveItemAction, &QAction::triggered, filesController(), &FilesController::slotMoveItem);
 
     mStopDetectAction = ac->addAction("track_stop_detect");
     mStopDetectAction->setText(i18n("Locate Stops..."));
     mStopDetectAction->setIcon(QIcon::fromTheme("media-playback-stop"));
-    connect(mStopDetectAction, SIGNAL(triggered()), SLOT(slotTrackStopDetect()));
+    connect(mStopDetectAction, &QAction::triggered, this, &MainWindow::slotTrackStopDetect);
 
     mPropertiesAction = ac->addAction("track_properties");
     // text set in slotUpdateActionState() below
@@ -280,7 +278,7 @@ void MainWindow::setupActions()
     cuts.append(QKeySequence(Qt::CTRL+Qt::Key_Enter));
     ac->setDefaultShortcuts(mPropertiesAction, cuts);
     mPropertiesAction->setIcon(QIcon::fromTheme("document-properties"));
-    connect(mPropertiesAction, SIGNAL(triggered()), filesController(), SLOT(slotTrackProperties()));
+    connect(mPropertiesAction, &QAction::triggered, filesController(), &FilesController::slotTrackProperties);
 
     mWaypointStatusAction = new KSelectAction(QIcon::fromTheme("favorites"), i18nc("@action:inmenu", "Waypoint Status"), this);
     mWaypointStatusAction->setToolBarMode(KSelectAction::MenuMode);
@@ -288,121 +286,121 @@ void MainWindow::setupActions()
 
     a = mWaypointStatusAction->addAction(QIcon::fromTheme("unknown"), TrackData::formattedWaypointStatus(TrackData::StatusNone));
     a->setData(TrackData::StatusNone);
-    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotSetWaypointStatus);
 
     a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-ongoing"), TrackData::formattedWaypointStatus(TrackData::StatusTodo));
     a->setData(TrackData::StatusTodo);
-    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotSetWaypointStatus);
 
     a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-complete"), TrackData::formattedWaypointStatus(TrackData::StatusDone));
     a->setData(TrackData::StatusDone);
-    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotSetWaypointStatus);
 
     a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-attempt"), TrackData::formattedWaypointStatus(TrackData::StatusQuestion));
     a->setData(TrackData::StatusQuestion);
-    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotSetWaypointStatus);
 
     a = mWaypointStatusAction->addAction(QIcon::fromTheme("task-reject"), TrackData::formattedWaypointStatus(TrackData::StatusUnwanted));
     a->setData(TrackData::StatusUnwanted);
-    connect(a, SIGNAL(triggered(bool)), filesController(), SLOT(slotSetWaypointStatus()));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotSetWaypointStatus);
 
     mProfileAction = ac->addAction("track_profile");
     mProfileAction->setText(i18n("Elevation/Speed Profile..."));
     mProfileAction->setIcon(QIcon::fromTheme("office-chart-line-stacked"));
-    connect(mProfileAction, SIGNAL(triggered()), SLOT(slotTrackProfile()));
+    connect(mProfileAction, &QAction::triggered, this, &MainWindow::slotTrackProfile);
 
     mStatisticsAction = ac->addAction("track_statistics");
     mStatisticsAction->setText(i18n("Statistics/Quality..."));
     mStatisticsAction->setIcon(QIcon::fromTheme("kt-check-data"));
-    connect(mStatisticsAction, SIGNAL(triggered()), SLOT(slotTrackStatistics()));
+    connect(mStatisticsAction, &QAction::triggered, this, &MainWindow::slotTrackStatistics);
 
     a = ac->addAction("track_play_media");
     a->setText(i18nc("@action:inmenu", "View Media"));
     a->setIcon(QIcon::fromTheme("media-playback-start"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_P);
-    connect(a, SIGNAL(triggered()), SLOT(slotPlayMedia()));
+    connect(a, &QAction::triggered, this, &MainWindow::slotPlayMedia);
     mPlayMediaAction = a;
 
     a = ac->addAction("file_open_media");
     a->setText(i18nc("@action:inmenu", "Open Media With..."));
     a->setIcon(QIcon::fromTheme("document-open"));
-    connect(a, SIGNAL(triggered()), SLOT(slotOpenMedia()));
+    connect(a, &QAction::triggered, this, &MainWindow::slotOpenMedia);
     mOpenMediaAction = a;
 
     a = ac->addAction("file_save_media");
     a->setText(i18nc("@action:inmenu", "Save Media As..."));
     a->setIcon(QIcon::fromTheme("folder-video"));
-    connect(a, SIGNAL(triggered()), SLOT(slotSaveMedia()));
+    connect(a, &QAction::triggered, this, &MainWindow::slotSaveMedia);
     mSaveMediaAction = a;
 
     a = ac->addAction("track_time_zone");
     a->setText(i18nc("@action:inmenu", "Set Time Zone..."));
     a->setIcon(QIcon::fromTheme("preferences-system-time"));
-    connect(a, SIGNAL(triggered()), filesController(), SLOT(slotSetTimeZone()));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotSetTimeZone);
 
     a = ac->addAction("map_save");
     a->setText(i18n("Save As Image..."));
     a->setIcon(QIcon::fromTheme("folder-picture"));
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSaveImage()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotSaveImage);
 
     a = ac->addAction("map_set_home");
     a->setText(i18n("Set Home Position"));
     a->setIconText(i18n("Set Home"));
     a->setIcon(QIcon::fromTheme("bookmarks"));
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSetHome()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotSetHome);
 
     a = ac->addAction("map_go_home");
     a->setText(i18n("Go to Home Position"));
     a->setIconText(i18n("Go Home"));
     a->setIcon(QIcon::fromTheme("go-home"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Home);
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotGoHome()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotGoHome);
 
     mMapZoomInAction = ac->addAction(KStandardAction::ZoomIn, "map_zoom_in");
-    connect(mMapZoomInAction, SIGNAL(triggered()), mapController()->view(), SLOT(zoomIn()));
+    connect(mMapZoomInAction, &QAction::triggered, this, [this]() { mapController()->view()->zoomIn(); });
 
     mMapZoomOutAction = ac->addAction(KStandardAction::ZoomOut, "map_zoom_out");
-    connect(mMapZoomOutAction, SIGNAL(triggered()), mapController()->view(), SLOT(zoomOut()));
+    connect(mMapZoomOutAction, &QAction::triggered, this, [this]() { mapController()->view()->zoomOut(); });
 
     a = ac->addAction("map_set_zoom");
     a->setText(i18n("Set Standard Zoom"));
     a->setIconText(i18n("Set Zoom"));
     a->setIcon(QIcon::fromTheme("bookmarks"));
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSetZoom()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotSetZoom);
 
     a = ac->addAction("map_zoom_standard");
     a->setText(i18n("Reset to Standard Zoom"));
     a->setIconText(i18n("Reset Zoom"));
     a->setIcon(QIcon::fromTheme("zoom-original"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_1);
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotResetZoom()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotResetZoom);
 
     mMapGoToAction = ac->addAction("map_go_selection");
     mMapGoToAction->setText(i18n("Show on Map"));
     mMapGoToAction->setIcon(QIcon::fromTheme("marble"));
     ac->setDefaultShortcut(mMapGoToAction, Qt::CTRL+Qt::Key_G);
-    connect(mMapGoToAction, SIGNAL(triggered()), SLOT(slotMapGotoSelection()));
+    connect(mMapGoToAction, &QAction::triggered, this, &MainWindow::slotMapGotoSelection);
 
     a = ac->addAction("map_select_theme");
     a->setText(i18n("Select Theme..."));
     a->setIcon(QIcon::fromTheme("image-loading"));
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotSelectTheme()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotSelectTheme);
 
     a = ac->addAction("map_find_address");
     a->setText(i18n("Position Information..."));
     a->setIcon(QIcon::fromTheme("view-pim-mail"));
-    connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotFindAddress()));
+    connect(a, &QAction::triggered, mapController()->view(), &MapView::slotFindAddress);
 
     mReadOnlyAction = ac->addAction("settings_read_only");
     mReadOnlyAction->setText(i18n("Read Only"));
     mReadOnlyAction->setCheckable(true);
-    connect(mReadOnlyAction, SIGNAL(toggled(bool)), this, SLOT(slotReadOnly(bool)));
+    connect(mReadOnlyAction, &QAction::toggled, this, &MainWindow::slotReadOnly);
 
     a = ac->addAction("reset_cancel");
     a->setText(i18n("Reset/Cancel"));			// only seen in "Configure Shortcuts"
     a->setIcon(QIcon::fromTheme("dialog-cancel"));
     ac->setDefaultShortcut(a, Qt::Key_Escape);
-    connect(a, SIGNAL(triggered()), this, SLOT(slotResetAndCancel()));
+    connect(a, &QAction::triggered, this, &MainWindow::slotResetAndCancel);
 
     a = ac->addAction("map_open_osm");
     a->setText(i18n("View on OpenStreetMap..."));
@@ -434,7 +432,7 @@ void MainWindow::setupActions()
         a = mapView->actionForLayer(id);
         if (a==nullptr) continue;
 
-        connect(a, SIGNAL(triggered()), mapView, SLOT(slotShowLayer()));
+        connect(a, &QAction::triggered, mapView, &MapView::slotShowLayer);
         itemsMenu->addAction(a);
     }
     a = ac->addAction("map_show_layers", itemsMenu);
@@ -452,7 +450,7 @@ void MainWindow::setupActions()
         a = mapView->actionForOverlay(itemId);
         if (a==nullptr) continue;
 
-        connect(a, SIGNAL(triggered()), mapController()->view(), SLOT(slotShowOverlay()));
+        connect(a, &QAction::triggered, mapController()->view(), &MapView::slotShowOverlay);
         itemsMenu->addAction(a);
     }
     a = ac->addAction("map_show_overlays", itemsMenu);
@@ -461,15 +459,15 @@ void MainWindow::setupActions()
 
     mMapDragAction = new KToggleAction(QIcon::fromTheme("transform-move"), i18n("Move Mode"), this);
     ac->setDefaultShortcut(mMapDragAction, Qt::CTRL+Qt::Key_M);
-    connect(mMapDragAction, SIGNAL(triggered()), SLOT(slotMapMovePoints()));
+    connect(mMapDragAction, &QAction::triggered, this, &MainWindow::slotMapMovePoints);
     ac->addAction("map_move_points", mMapDragAction);
 
-    a = KStandardAction::preferences(this, SLOT(slotPreferences()), ac);
+    a = KStandardAction::preferences(this, &MainWindow::slotPreferences, ac);
 
     a = ac->addAction("help_about_marble");
     a->setText(i18n("About Marble"));
     a->setIcon(QIcon::fromTheme("marble"));
-    connect(a, SIGNAL(triggered()), mapController(), SLOT(slotAboutMarble()));
+    connect(a, &QAction::triggered, mapController(), &MapController::slotAboutMarble);
 
     setupGUI(KXmlGuiWindow::Default);
     setAutoSaveSettings();
@@ -612,7 +610,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
     filesController()->view()->expandToDepth(1);	// expand to show segments
     if (Settings::fileCheckTimezone())			// check time zone is set
     {
-        QTimer::singleShot(0, filesController(), SLOT(slotCheckTimeZone()));
+        QTimer::singleShot(0, filesController(), &FilesController::slotCheckTimeZone);
     }
     return (status);
 }

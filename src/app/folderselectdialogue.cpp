@@ -28,8 +28,8 @@ FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
     setButtonText(QDialogButtonBox::Yes, i18nc("@action:button", "New Folder..."));
     setButtonIcon(QDialogButtonBox::Yes, QIcon::fromTheme("folder-new"));
 
-    connect(buttonBox()->button(QDialogButtonBox::Yes), SIGNAL(clicked()), SLOT(slotNewFolder()));
-    connect(this, SIGNAL(selectionChanged()), SLOT(slotUpdateButtonStates()));
+    connect(buttonBox()->button(QDialogButtonBox::Yes), &QAbstractButton::clicked, this, &FolderSelectDialogue::slotNewFolder);
+    connect(this, &ItemSelectDialogue::selectionChanged, this, &FolderSelectDialogue::slotUpdateButtonStates);
 
     trackModel()->setMode(TrackData::Folder);		// can select folders
 

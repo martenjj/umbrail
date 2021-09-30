@@ -24,7 +24,24 @@ public:
 };
 
 
-class SettingsMapStylePage : public KPageWidgetItem
+class SettingsPage : public KPageWidgetItem
+{
+    Q_OBJECT
+
+public:
+    explicit SettingsPage(QWidget *pnt = nullptr);
+    virtual ~SettingsPage() = default;
+
+public slots:
+    virtual void slotSave() = 0;
+    virtual void slotDefaults() = 0;
+
+protected slots:
+    virtual void slotItemChanged()			{}
+};
+
+
+class SettingsMapStylePage : public SettingsPage
 {
     Q_OBJECT
 
@@ -33,11 +50,11 @@ public:
     virtual ~SettingsMapStylePage() = default;
 
 public slots:
-    void slotSave();
-    void slotDefaults();
+    void slotSave() override;
+    void slotDefaults() override;
 
-private slots:
-    void slotItemChanged();
+protected slots:
+    void slotItemChanged() override;
 
 private:
     KColorButton *mLineColourButton;
@@ -49,7 +66,7 @@ private:
 };
 
 
-class SettingsFilesPage : public KPageWidgetItem
+class SettingsFilesPage : public SettingsPage
 {
     Q_OBJECT
 
@@ -58,11 +75,10 @@ public:
     virtual ~SettingsFilesPage() = default;
 
 public slots:
-    void slotSave();
-    void slotDefaults();
+    void slotSave() override;
+    void slotDefaults() override;
 
 private slots:
-    void slotItemChanged();
     void slotClearFileWarnings();
 
 private:
@@ -71,7 +87,7 @@ private:
 };
 
 
-class SettingsMediaPage : public KPageWidgetItem
+class SettingsMediaPage : public SettingsPage
 {
     Q_OBJECT
 
@@ -80,11 +96,11 @@ public:
     virtual ~SettingsMediaPage() = default;
 
 public slots:
-    void slotSave();
-    void slotDefaults();
+    void slotSave() override;
+    void slotDefaults() override;
 
-private slots:
-    void slotItemChanged();
+protected slots:
+    void slotItemChanged() override;
 
 private:
     QComboBox *mPhotoViewerCombo;
@@ -94,7 +110,7 @@ private:
 };
 
 
-class SettingsServicesPage : public KPageWidgetItem
+class SettingsServicesPage : public SettingsPage
 {
     Q_OBJECT
 
@@ -103,11 +119,8 @@ public:
     virtual ~SettingsServicesPage() = default;
 
 public slots:
-    void slotSave();
-    void slotDefaults();
-
-private slots:
-    void slotItemChanged();
+    void slotSave() override;
+    void slotDefaults() override;
 
 private:
     QComboBox *mOSMBrowserCombo;

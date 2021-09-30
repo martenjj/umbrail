@@ -88,6 +88,8 @@ public slots:
     void slotCheckTimeZone();
     void slotSetTimeZone();
 
+    void slotMapDraggedPoints(qreal latOff, qreal lonOff);
+
 signals:
     void statusMessage(const QString &text);
     void modified();
@@ -107,7 +109,6 @@ private:
 private slots:
     void slotUpdateActionState();
     void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
-    void slotMapDraggedPoints(qreal latOff, qreal lonOff);
 
 private:
     FilesView *mView;

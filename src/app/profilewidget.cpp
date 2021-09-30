@@ -253,7 +253,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     mUpdateTimer = new QTimer(this);
     mUpdateTimer->setSingleShot(true);
     mUpdateTimer->setInterval(50);
-    connect(mUpdateTimer, SIGNAL(timeout()), SLOT(slotUpdatePlot()));
+    connect(mUpdateTimer, &QTimer::timeout, this, &ProfileWidget::slotUpdatePlot);
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);
@@ -273,21 +273,23 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     ++col;						// New column: elevation/speed checks
     mElevationCheck = new QCheckBox(i18n("Elevation"), this);
-    connect(mElevationCheck, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
+    connect(mElevationCheck, &QAbstractButton::toggled, mUpdateTimer, QOverload<>::of(&QTimer::start));
     gl->addWidget(mElevationCheck, 2, col);
 
     mSpeedCheck = new QCheckBox(i18n("Speed"), this);
     if (mRouteMode) mSpeedCheck->setEnabled(false);
-    connect(mSpeedCheck, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
+    connect(mSpeedCheck, &QAbstractButton::toggled, mUpdateTimer, QOverload<>::of(&QTimer::start));
     gl->addWidget(mSpeedCheck, 3, col);
 
     ++col;						// New column: elevation/speed units
     mElevationUnit = new VariableUnitCombo(VariableUnitCombo::Elevation);
-    connect(mElevationUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
+    connect(mElevationUnit, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            mUpdateTimer, QOverload<>::of(&QTimer::start));
     gl->addWidget(mElevationUnit, 2, col);
 
     mSpeedUnit = new VariableUnitCombo(VariableUnitCombo::Speed);
-    connect(mSpeedUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
+    connect(mSpeedUnit, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            mUpdateTimer, QOverload<>::of(&QTimer::start));
     gl->addWidget(mSpeedUnit, 3, col);
 
     ++col;						// New column: source labels
@@ -301,8 +303,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
         mElevationSourceCombo->setCurrentIndex(1);	// only DEM allowed for route
         mElevationSourceCombo->setEnabled(false);
     }
-    connect(mElevationSourceCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+    connect(mElevationSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            mUpdateTimer, QOverload<>::of(&QTimer::start));
     l = new QLabel(i18n("source"), this);
     l->setBuddy(mElevationSourceCombo);
     gl->addWidget(l, 2, col-1);
@@ -311,8 +313,8 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     mSpeedSourceCombo = new QComboBox(this);
     mSpeedSourceCombo->addItem(i18n("GPS"), SpeedSourceGPS);
     mSpeedSourceCombo->addItem(i18n("Track"), SpeedSourceTrack);
-    connect(mSpeedSourceCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+    connect(mSpeedSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            mUpdateTimer, QOverload<>::of(&QTimer::start));
     l = new QLabel(i18n("source"), this);
     l->setBuddy(mSpeedSourceCombo);
     gl->addWidget(l, 3, col-1);
@@ -330,24 +332,24 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     mReferenceTimeRadio = new QRadioButton(i18n("Time"), this);
     if (mRouteMode) mReferenceTimeRadio->setEnabled(false);
-    connect(mReferenceTimeRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
+    connect(mReferenceTimeRadio, &QAbstractButton::toggled, mUpdateTimer, QOverload<>::of(&QTimer::start));
     bg->addButton(mReferenceTimeRadio);
     gl->addWidget(mReferenceTimeRadio, 2, col);
 
     mReferenceDistRadio = new QRadioButton(i18n("Distance"), this);
     if (mRouteMode) mReferenceDistRadio->setChecked(true);
-    connect(mReferenceDistRadio, SIGNAL(toggled(bool)), mUpdateTimer, SLOT(start()));
+    connect(mReferenceDistRadio, &QAbstractButton::toggled, mUpdateTimer, QOverload<>::of(&QTimer::start));
     bg->addButton(mReferenceDistRadio);
     gl->addWidget(mReferenceDistRadio, 3, col);
 
     ++col;						// New column: distance/time units
 
     mTimeUnit = new VariableUnitCombo(VariableUnitCombo::Time);
-    connect(mTimeUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
+    connect(mTimeUnit, QOverload<int>::of(&QComboBox::currentIndexChanged), mUpdateTimer, QOverload<>::of(&QTimer::start));
     gl->addWidget(mTimeUnit, 2, col);
 
     mDistanceUnit = new VariableUnitCombo(VariableUnitCombo::Distance);
-    connect(mDistanceUnit, SIGNAL(currentIndexChanged(int)), mUpdateTimer, SLOT(start()));
+    connect(mDistanceUnit, QOverload<int>::of(&QComboBox::currentIndexChanged), mUpdateTimer, QOverload<>::of(&QTimer::start));
     gl->addWidget(mDistanceUnit, 3, col);
 
     ++col;						// New column: spacer
@@ -366,13 +368,13 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     mScaleRangeCombo = new QComboBox(this);
     mScaleRangeCombo->addItem(i18n("Auto Range"), ScaleRangeAuto);
     mScaleRangeCombo->addItem(i18n("Zero Origin"), ScaleRangeZero);
-    connect(mScaleRangeCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            mUpdateTimer, static_cast<void (QTimer::*)(void)>(&QTimer::start));
+    connect(mScaleRangeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            mUpdateTimer, QOverload<>::of(&QTimer::start));
     l->setBuddy(mScaleRangeCombo);
     gl->addWidget(mScaleRangeCombo, 2, col);
 
     QPushButton *waypointSelectButton = new QPushButton(i18n("Show..."), this);
-    connect(waypointSelectButton, &QPushButton::clicked, this, &ProfileWidget::slotSelectWaypoints);
+    connect(waypointSelectButton, &QAbstractButton::clicked, this, &ProfileWidget::slotSelectWaypoints);
     gl->addWidget(waypointSelectButton, 3, col);
 
     ++col;						// New column: stretch
