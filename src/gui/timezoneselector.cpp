@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	15-Aug-21						//
+//  Edit:	30-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -52,18 +52,18 @@ TimeZoneSelector::TimeZoneSelector(QWidget *pnt)
     mZoneDisplay->setReadOnly(true);
     mZoneDisplay->setPlaceholderText(i18n("(UTC)"));
     gl->addWidget(mZoneDisplay, 0, 0);
-    connect(mZoneDisplay, SIGNAL(textChanged(const QString &)), SIGNAL(zoneChanged(const QString &)));
+    connect(mZoneDisplay, &QLineEdit::textChanged, this, &TimeZoneSelector::zoneChanged);
 
     QPushButton *b = new QPushButton(QIcon::fromTheme("document-edit"), i18nc("@action:button", "Change..."), this);
     gl->addWidget(b, 0, 1);
-    connect(b, SIGNAL(clicked()), SLOT(slotChangeZone()));
+    connect(b, &QAbstractButton::clicked, this, &TimeZoneSelector::slotChangeZone);
     setFocusProxy(b);
     setFocusPolicy(Qt::StrongFocus);
 
     mGuessButton = new QPushButton(QIcon::fromTheme("preferences-system-network"), i18nc("@action:button", "Get from Location"), this);
     mGuessButton->setEnabled(false);
     gl->addWidget(mGuessButton, 1, 1);
-    connect(mGuessButton, SIGNAL(clicked()), SLOT(slotGuessZone()));
+    connect(mGuessButton, &QAbstractButton::clicked, this, &TimeZoneSelector::slotGuessZone);
 }
 
 
@@ -93,7 +93,7 @@ void TimeZoneSelector::slotGuessZone()
 
     TimeZoneProvider *job = new TimeZoneProvider(mItemsLat, mItemsLon, this);
     if (!job->isValid()) return;			// failed to start job
-    connect(job, SIGNAL(result(const QString &)), SLOT(slotGuessJobFinished(const QString &)));
+    connect(job, &TimeZoneProvider::result, this, &TimeZoneSelector::slotGuessJobFinished);
 }
 
 

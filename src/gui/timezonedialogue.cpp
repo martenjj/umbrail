@@ -58,7 +58,7 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 
     mTimeZoneWidget = new TimeZoneWidget(this, zoneIds);
     mTimeZoneWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-    connect(mTimeZoneWidget, SIGNAL(itemSelectionChanged()), SLOT(slotTimeZoneChanged()));
+    connect(mTimeZoneWidget, &QTreeWidget::itemSelectionChanged, this, &TimeZoneDialogue::slotTimeZoneChanged);
     gl->addWidget(mTimeZoneWidget, 1, 0, 1, -1);
 
     KTreeWidgetSearchLine *sl = new KTreeWidgetSearchLine(this, mTimeZoneWidget);

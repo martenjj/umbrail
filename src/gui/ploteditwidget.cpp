@@ -148,7 +148,7 @@ void PlotEditWidget::updateLayout(bool focusLast)
     mLayout->addWidget(but, row, 2);
 
     // If a row is being added, focus its numeric entry
-    if (focusLast) QTimer::singleShot(0, this, SLOT(slotFocusLast()));
+    if (focusLast) QTimer::singleShot(0, this, &PlotEditWidget::slotFocusLast);
 }
 
 

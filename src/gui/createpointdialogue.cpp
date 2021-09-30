@@ -65,11 +65,11 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
 
     mNameEdit = new QLineEdit(w);
     mNameEdit->setPlaceholderText(i18n("(Default name)"));
-    connect(mNameEdit, SIGNAL(textChanged(const QString &)), SLOT(slotSetButtonStates()));
+    connect(mNameEdit, &QLineEdit::textChanged, this, &CreatePointDialogue::slotSetButtonStates);
     fl->addRow(i18nc("@title:row", "Name:"), mNameEdit);
 
     mLatLongEdit = new LatLongWidget(w);
-    connect(mLatLongEdit, SIGNAL(positionValid(bool)), SLOT(slotSetButtonStates()));
+    connect(mLatLongEdit, &LatLongWidget::positionValid, this, &CreatePointDialogue::slotSetButtonStates);
     fl->addRow(i18nc("@title:row", "Position:"), mLatLongEdit);
 
     mContainerList = new QTreeView(this);
@@ -121,8 +121,8 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
         }
     }
 
-    connect(mContainerList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
-            SLOT(slotSetButtonStates()));
+    connect(mContainerList->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &CreatePointDialogue::slotSetButtonStates);
 
     fl->addRow(routeMode ? i18nc("@title:row", "Route:") : i18nc("@title:row", "Folder:"), mContainerList);
 

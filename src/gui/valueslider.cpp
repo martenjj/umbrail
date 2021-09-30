@@ -47,9 +47,9 @@ ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int s
         mLayout->addWidget(mStdButt);
     }
 
-    connect(mSlider, SIGNAL(valueChanged(int)), SLOT(slotSliderSpinboxChange(int)));
-    connect(mSpinbox, SIGNAL(valueChanged(int)), SLOT(slotSliderSpinboxChange(int)));
-    if (mStdButt!=nullptr) connect(mStdButt, SIGNAL(clicked()), SLOT(slotRevertValue()));
+    connect(mSlider, &QAbstractSlider::valueChanged, this, &ValueSlider::slotSliderSpinboxChange);
+    connect(mSpinbox, QOverload<int>::of(&QSpinBox::valueChanged), this, &ValueSlider::slotSliderSpinboxChange);
+    if (mStdButt!=nullptr) connect(mStdButt, &QAbstractButton::clicked, this, &ValueSlider::slotRevertValue);
 
     setFocusProxy(mSlider);
     setFocusPolicy(Qt::StrongFocus);

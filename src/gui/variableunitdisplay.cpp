@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	06-Sep-19						//
+//  Edit:	30-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -58,7 +58,7 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QW
 
     mUnitCombo = new VariableUnitCombo(type, this);
     hb->addWidget(mUnitCombo);
-    connect(mUnitCombo, SIGNAL(currentIndexChanged(int)), SLOT(slotUpdateDisplay()));
+    connect(mUnitCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &VariableUnitDisplay::slotUpdateDisplay);
     mComboIndex = -1;
 
     setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());

@@ -36,12 +36,12 @@ ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
     trackModel->setSourceModel(filesView()->model());
     mTrackList->setModel(trackModel);
 
-    connect(mTrackList->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,const QItemSelection &)),
-            SLOT(slotSelectionChanged(const QItemSelection &,const QItemSelection &)));
+    connect(mTrackList->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &ItemSelectDialogue::slotSelectionChanged);
 
     setMainWidget(mTrackList);
 
-    QTimer::singleShot(0, this, SLOT(slotExpandTree()));
+    QTimer::singleShot(0, this, &ItemSelectDialogue::slotExpandTree);
 
     setMinimumSize(360, 280);
 }

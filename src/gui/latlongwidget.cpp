@@ -64,8 +64,8 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
         lab->setPalette(pal);				// set error message colour
         vbl->addWidget(lab);
 
-        connect(handler, SIGNAL(valueChanged()), this, SLOT(slotValueChanged()));
-        connect(handler, SIGNAL(statusMessage(const QString &)), lab, SLOT(setText(const QString &)));
+        connect(handler, &AbstractCoordinateHandler::valueChanged, this, &LatLongWidget::slotValueChanged);
+        connect(handler, &AbstractCoordinateHandler::statusMessage, lab, &QLabel::setText);
 
         mHandlers.append(handler);
         mTabs->addTab(w, handler->tabName());
@@ -74,7 +74,7 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
     // "Paste" button
     QAction *act = KStandardAction::paste(this);
     QPushButton *pasteButton = new QPushButton(act->icon(), act->text(), this);
-    connect(pasteButton, SIGNAL(clicked()), SLOT(slotPasteCoordinates()));
+    connect(pasteButton, &QAbstractButton::clicked, this, &LatLongWidget::slotPasteCoordinates);
     hb->addWidget(pasteButton);
 
     KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
