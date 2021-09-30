@@ -62,7 +62,7 @@ LayerBase::LayerBase(QWidget *pnt)
     mMovePointsMode = false;
     mViewport = nullptr;
 
-    QTimer::singleShot(0, this, SLOT(slotInstallEventFilter()));
+    QTimer::singleShot(0, this, &LayerBase::slotInstallEventFilter);
 }
 
 

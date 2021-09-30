@@ -46,8 +46,8 @@ MapView::MapView(QWidget *pnt)
 
     // Replace existing context menu with our own
     MarbleWidgetInputHandler *ih = inputHandler();
-    disconnect(ih, SIGNAL(rmbRequest(int,int)), nullptr, nullptr);
-    connect(ih, SIGNAL(rmbRequest(int,int)), SLOT(slotRmbRequest(int,int)));
+    disconnect(ih, &MarbleWidgetInputHandler::rmbRequest, nullptr, nullptr);
+    connect(ih, &MarbleWidgetInputHandler::rmbRequest, this, &MapView::slotRmbRequest);
 
     installEventFilter(this);				// modify cursor shape
 
@@ -69,7 +69,7 @@ MapView::~MapView()
 void MapView::addLayer(LayerBase *layer)
 {
     qDebug() << layer->id();
-    connect(layer, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(draggedPoints(qreal,qreal)));
+    connect(layer, &LayerBase::draggedPoints, this, &MapView::draggedPoints);
     mLayers[layer->id()] = layer;
     MarbleWidget::addLayer(layer);
 }

@@ -26,10 +26,9 @@ MapController::MapController(QObject *pnt)
     qDebug();
 
     mView = new MapView(mainWidget());
-    connect(mView, SIGNAL(mouseMoveGeoPosition(const QString &)),
-            SLOT(slotShowPosition(const QString &)));
-    connect(mView, SIGNAL(zoomChanged(int)), SLOT(slotZoomChanged(int)));
-    connect(mView, SIGNAL(draggedPoints(qreal,qreal)), SIGNAL(mapDraggedPoints(qreal,qreal)));
+    connect(mView, &MarbleWidget::mouseMoveGeoPosition, this, &MapController::slotShowPosition);
+    connect(mView, &MarbleWidget::zoomChanged, this, &MapController::slotZoomChanged);
+    connect(mView, &MapView::draggedPoints, this, &MapController::mapDraggedPoints);
 
     mHomeLat = 51.436019;				// default to here
     mHomeLong = -0.352764;
