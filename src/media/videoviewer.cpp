@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Jun-21						//
+//  Edit:	30-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -56,31 +56,30 @@ VideoViewer::VideoViewer(const QUrl &url, QWidget *pnt)
  
     QGridLayout *gl = new QGridLayout(this);
     mPlayer = new Phonon::VideoPlayer(this);
-    QObject::connect(mPlayer, SIGNAL(finished()), SLOT(slotFinished()));
+    QObject::connect(mPlayer, &Phonon::VideoPlayer::finished, this, &VideoViewer::slotFinished);
     gl->addWidget(mPlayer, 0, 0, 1, -1);
     gl->setRowStretch(0, 1);
 
     mPlayButton = new QPushButton(QIcon::fromTheme("media-playback-start"), i18nc("@action:button", "Play"), this);
     mPlayButton->setEnabled(false);
-    connect(mPlayButton, SIGNAL(clicked()), SLOT(slotPlay()));
+    connect(mPlayButton, &QAbstractButton::clicked, this, &VideoViewer::slotPlay);
     gl->addWidget(mPlayButton, 1, 0, Qt::AlignLeft);
 
     mPauseButton = new QPushButton(QIcon::fromTheme("media-playback-pause"), i18nc("@action:button", "Pause"), this);
-    connect(mPauseButton, SIGNAL(clicked()), SLOT(slotPause()));
+    connect(mPauseButton, &QAbstractButton::clicked, this, &VideoViewer::slotPause);
     gl->addWidget(mPauseButton, 1, 1, Qt::AlignLeft);
 
     mRewindButton = new QPushButton(QIcon::fromTheme("media-skip-backward"), i18nc("@action:button", "Rewind"), this);
-    connect(mRewindButton, SIGNAL(clicked()), SLOT(slotRewind()));
+    connect(mRewindButton, &QAbstractButton::clicked, this, &VideoViewer::slotRewind);
     gl->addWidget(mRewindButton, 1, 3, Qt::AlignLeft);
 
     mStopButton = new QPushButton(QIcon::fromTheme("media-playback-stop"), i18nc("@action:button", "Stop"), this);
-    connect(mStopButton, SIGNAL(clicked()), SLOT(slotStop()));
+    connect(mStopButton, &QAbstractButton::clicked, this, &VideoViewer::slotStop);
     gl->addWidget(mStopButton, 1, 5, Qt::AlignRight);
 
     QPushButton *but = new QPushButton(this);
     KGuiItem::assign(but, KStandardGuiItem::close());
-
-    connect(but, SIGNAL(clicked()), SLOT(close()));
+    connect(but, &QAbstractButton::clicked, this, &QWidget::close);
     gl->addWidget(but, 1, 6, Qt::AlignRight);
 
     mTimeLabel = new QLabel(this);
@@ -90,7 +89,7 @@ VideoViewer::VideoViewer(const QUrl &url, QWidget *pnt)
     mTickTimer = new QTimer(this);
     mTickTimer->setSingleShot(false);
     mTickTimer->setInterval(100);
-    connect(mTickTimer, SIGNAL(timeout()), SLOT(slotTickTimer()));
+    connect(mTickTimer, &QTimer::timeout, this, &VideoViewer::slotTickTimer);
 
     setMinimumSize(400, 300);
     DialogStateSaver::restoreWindowState(this);

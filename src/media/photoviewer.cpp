@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	10-Jun-21						//
+//  Edit:	30-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -99,7 +99,7 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
     }
 
     // Set up actions
-    actionCollection()->addAction(KStandardAction::Close, "file_close", this, SLOT(close()));
+    actionCollection()->addAction(KStandardAction::Close, "file_close", this, &QWidget::close);
 
     // Create/merge the GUI
     setCentralWidget(mPart->widget());

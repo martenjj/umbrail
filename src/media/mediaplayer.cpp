@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Project:	NavTracks						//
-//  Edit:	23-Jun-21						//
+//  Edit:	30-Sep-21						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -98,7 +98,7 @@ void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
 #ifdef HAVE_PHONON
     Phonon::MediaObject *mediaObject = new Phonon::MediaObject;
     mediaObject->setCurrentSource(file);
-    QObject::connect(mediaObject, SIGNAL(finished()), mediaObject, SLOT(deleteLater()));
+    QObject::connect(mediaObject, &Phonon::MediaObject::finished, mediaObject, &QObject::deleteLater);
 
     Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::NoCategory);
     Phonon::createPath(mediaObject, audioOutput);
