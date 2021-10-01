@@ -39,9 +39,9 @@ TimeZoneProvider::TimeZoneProvider(double lat, double lon, QObject *pnt)
     mUrl.setQuery(query);
 
     qDebug() << "getting" << mUrl;
-    KJob *job = KIO::get(mUrl);
-    connect(job, SIGNAL(data(KIO::Job *, const QByteArray &)), SLOT(slotDataReceived(KIO::Job *, const QByteArray &)));
-    connect(job, SIGNAL(result(KJob *)), SLOT(slotDataResult(KJob *)));
+    KIO::TransferJob *job = KIO::get(mUrl);
+    connect(job, &KIO::TransferJob::data, this, &TimeZoneProvider::slotDataReceived);
+    connect(job, &KJob::result, this, &TimeZoneProvider::slotDataResult);
     mJobReady = true;
     job->start();
 }
