@@ -1,14 +1,31 @@
-#########################################################################
-#  Project:		Track Editor					#
-#  Edit:		11-Jul-21					#
-#########################################################################
-#									#
-#									#
-#########################################################################
+##########################################################################
+##									##
+##  Project:	Umbrail - GPX track viewer and editor			##
+##									##
+##########################################################################
+##									##
+##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Home and download page:  <http://github.com/martenjj/umbrail>	##
+##									##
+##  This program is free software;  you can redistribute it and/or	##
+##  modify it under the terms of the GNU General Public License as	##
+##  published by the Free Software Foundation, either version 3 of	##
+##  the License or (at your option) any later version.			##
+##									##
+##  It is distributed in the hope that it will be useful, but		##
+##  WITHOUT ANY WARRANTY; without even the implied warranty of		##
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the	##
+##  GNU General Public License for more details.			##
+##									##
+##  You should have received a copy of the GNU General Public License	##
+##  along with this program;  see the file COPYING for further		##
+##  details.  If not, see <http://gnu.org/licenses/gpl>.      		##
+##									##
+##########################################################################
 
-project(navtracks)
-set(VERSION "0.0.2")
-message(STATUS "Configuring for NavTracks version ${VERSION}")
+project(umbrail)
+set(VERSION "1.0.0")
+message(STATUS "Configuring for project '${CMAKE_PROJECT_NAME}' version ${VERSION}")
 
 #########################################################################
 #									#
@@ -59,6 +76,8 @@ add_custom_target(vcsversion
 #  Subdirectories							#
 #									#
 #########################################################################
+
+set(PN ${CMAKE_PROJECT_NAME})
 
 add_subdirectory(src)
 add_subdirectory(desktop)

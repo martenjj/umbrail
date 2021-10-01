@@ -1,27 +1,25 @@
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Project:	Track Editor						//
-//  Edit:	05-Jun-21						//
+//  Project:	Umbrail - GPX track viewer and editor			//
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2012 Jonathan Marten <jjm@keelhaul.me.uk>		//
-//  Home and download page:  http://www.keelhaul.me.uk/TBD/		//
+//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
 //  modify it under the terms of the GNU General Public License as	//
-//  published by the Free Software Foundation; either version 2 of	//
-//  the License, or (at your option) any later version.			//
+//  published by the Free Software Foundation, either version 3 of	//
+//  the License or (at your option) any later version.			//
 //									//
 //  It is distributed in the hope that it will be useful, but		//
-//  WITHOUT ANY WARRANTY; without even the implied warranty of		//
+//  WITHOUT ANY WARRANTY;  without even the implied warranty of		//
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the	//
 //  GNU General Public License for more details.			//
 //									//
-//  You should have received a copy of the GNU General Public		//
-//  License along with this program; see the file COPYING for further	//
-//  details.  If not, write to the Free Software Foundation, Inc.,	//
-//  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.		//
+//  You should have received a copy of the GNU General Public License	//
+//  along with this program;  see the file COPYING for further		//
+//  details.  If not, see <http://gnu.org/licenses/gpl>.      		//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
@@ -46,6 +44,9 @@
 #include "filescontroller.h"
 
 #include "version.h"
+#ifdef HAVE_QCUSTOMPLOT
+#include "qcustomplot.h"
+#endif // HAVE_QCUSTOMPLOT
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -55,23 +56,36 @@
  
 int main(int argc,char *argv[])
 {
-    KAboutData aboutData("navtracks",			// componentName
-                         i18n("NavTracks"),		// displayName
+    KAboutData aboutData(PROJECT_NAME,			// componentName
+                         i18n("Umbrail"),		// displayName
 #ifdef VCS_HAVE_VERSION
                          ( VERSION " (" VCS_TYPE_STRING " " VCS_REVISION_STRING ")" ),
 #else
                          VERSION,			// version
 #endif
-                         i18n("GPS track viewer and editor"),
+                         i18n("GPS log viewer and editor"),
                          KAboutLicense::GPL_V3,
-                         i18n("Copyright (c) 2014-2016 Jonathan Marten"),
+                         // The QString(...) is needed to avoid the "string literal as
+                         // second argument to i18n()" build time error.
+                         i18n("Copyright (c) 2014-%1 Jonathan Marten", QString(YEAR)),
                          "",				// otherText
-                         "http://www.keelhaul.me.uk",	// homePageAddress
-                        "jjm@keelhaul.me.uk");		// bugsEmailAddress
+                         "https://github.com/martenjj/umbrail",		// homePageAddress
+                         "https://github.com/martenjj/umbrail/issues");	// bugsEmailAddress
     aboutData.addAuthor(i18n("Jonathan Marten"),
                         "",
                         "jjm@keelhaul.me.uk",
                         "http://www.keelhaul.me.uk");
+
+    aboutData.addComponent(i18n("LibKFDialog"),
+                           i18n("Dialogue utility library"),
+                           "",
+                           "https://github.com/martenjj/libkfdialog");
+#ifdef HAVE_QCUSTOMPLOT
+    aboutData.addComponent(i18n("QCustomPlot"),
+                           i18n("Qt plotting and data visualization"),
+                           QCUSTOMPLOT_VERSION_STR,
+                           "https://www.qcustomplot.com");
+#endif // HAVE_QCUSTOMPLOT
 
     QApplication app(argc, argv);
     KAboutData::setApplicationData(aboutData);

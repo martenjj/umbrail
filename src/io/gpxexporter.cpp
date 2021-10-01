@@ -1,5 +1,27 @@
-
-// http://www.topografix.com/GPX/1/1/
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Project:	Umbrail - GPX track viewer and editor			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Home and download page: <http://github.com/martenjj/umbrail>	//
+//									//
+//  This program is free software; you can redistribute it and/or	//
+//  modify it under the terms of the GNU General Public License as	//
+//  published by the Free Software Foundation, either version 3 of	//
+//  the License or (at your option) any later version.			//
+//									//
+//  It is distributed in the hope that it will be useful, but		//
+//  WITHOUT ANY WARRANTY;  without even the implied warranty of		//
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the	//
+//  GNU General Public License for more details.			//
+//									//
+//  You should have received a copy of the GNU General Public License	//
+//  along with this program;  see the file COPYING for further		//
+//  details.  If not, see <http://gnu.org/licenses/gpl>.      		//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 #include "gpxexporter.h"
 
@@ -19,7 +41,7 @@
 #include "dataindexer.h"
 #include "errorreporter.h"
 
-
+// GPX specification: http://www.topografix.com/GPX/1/1/
 
 // According to the GPX specification, extensions must appear after
 // any children of an element.  However, the output GPX file is more
@@ -154,7 +176,6 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
 }
 
 
-
 bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const
 {
     int num = item->childCount();
@@ -165,11 +186,6 @@ bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str
 
     return (true);
 }
-
-
-
-
-
 
 
 bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const
@@ -315,12 +331,6 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
 }
 
 
-
-
-
-
-
-
 bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 {
     qDebug() << "item" << item->name() << "to" << dev;
@@ -343,7 +353,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
     // our own extensions
-    str.writeNamespace("http://www.keelhaul.me.uk/navtracks", DataIndexer::applicationNamespace());
+    str.writeNamespace(("http://www.keelhaul.me.uk/" PROJECT_NAME), DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
     str.writeNamespace("http://www.topografix.com/GPX/gpx_style/0/2", "topografix");
     str.writeCharacters("\n\n  ");

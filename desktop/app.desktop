@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+TryExec=umbrail
+Exec=umbrail %F
+Name=Umbrail
+GenericName=GPX Log Viewer/Editor
+Icon=umbrail
+Terminal=false
+# Copied from org.kde.marble.desktop
+Categories=Qt;KDE;Education;Geoscience;Geography;Science;Maps;
+# This the assigned shared-mime-info MIME type.
+# It has an alias application/x-gpx+xml, but including
+# both of them seems to confuse Plasma's file associations.
+MimeType=application/gpx+xml;

@@ -1,3 +1,27 @@
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Project:	Umbrail - GPX track viewer and editor			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Home and download page: <http://github.com/martenjj/umbrail>	//
+//									//
+//  This program is free software; you can redistribute it and/or	//
+//  modify it under the terms of the GNU General Public License as	//
+//  published by the Free Software Foundation, either version 3 of	//
+//  the License or (at your option) any later version.			//
+//									//
+//  It is distributed in the hope that it will be useful, but		//
+//  WITHOUT ANY WARRANTY;  without even the implied warranty of		//
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the	//
+//  GNU General Public License for more details.			//
+//									//
+//  You should have received a copy of the GNU General Public License	//
+//  along with this program;  see the file COPYING for further		//
+//  details.  If not, see <http://gnu.org/licenses/gpl>.      		//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 #include "trackpropertiesdialogue.h"
 
@@ -55,11 +79,46 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     QLabel *typeLabel = new QLabel("?", this);
     gl->addWidget(typeLabel, 0, 1, Qt::AlignLeft);
 
+    // The icon for the item type that the properties are being shown for.
+    //
+    // Some of these are "user" icons, installed in the application's 'pics'
+    // directory.  This is searched automatically by KIconLoader (and hence
+    // QIcon::from Theme() also), but they are not loaded by requested size
+    // in the same way as for installed icons.  Therefore we detect this
+    // special case and, if the icon is a user icon, look to see if there is
+    // a suitable size available.
+    //
+    // 16x16 icons are installed with the plain name, and 32x32 versions are
+    // installed with a "-32" suffix.
+
     // TODO: if the items are files, there are more than one, and they are
     // of mixed types (although we only support GPX files at present), the
     // icon should be "unknown".
     QLabel *iconLabel = new QLabel(this);
-    iconLabel->setPixmap(item->icon().pixmap(KIconLoader::SizeMedium));
+
+    QIcon icon = item->icon();
+    const QString iconName = icon.name();
+
+    // For a coloured waypoint icon, iconName will be null.  The required
+    // size has already been taken into account by WaypointImageProvider.
+    if (!iconName.isEmpty())
+    {
+        // Use KIconLoader::User here to avoid an expensive search of all
+        // installed icon themes.  If the icon is not a user icon then
+        // we are not interested anyway.
+        QString userPath = KIconLoader::global()->iconPath(iconName, KIconLoader::User, true);
+        if (!userPath.isEmpty() && userPath.contains("/pics/"))
+        {
+            // This is a "user" icon.  Look for the 32x32 version (which should
+            // always be present) and use it.
+            userPath = KIconLoader::global()->iconPath((iconName+"-32"), KIconLoader::User, true);
+            if (!userPath.isEmpty()) icon = QIcon(userPath);
+            // QIcon::addFile(userPath, QSize(32, 32)) does not appear to work.
+            else qWarning() << "32x32 icon for" << iconName << "not found";
+        }
+    }
+
+    iconLabel->setPixmap(icon.pixmap(KIconLoader::SizeMedium));
     gl->addWidget(iconLabel, 0, 2, Qt::AlignRight);
 
     gl->setRowMinimumHeight(1, 2*DialogBase::verticalSpacing());
