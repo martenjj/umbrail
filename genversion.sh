@@ -28,7 +28,7 @@ else							# source not under SVN
 	if [ -d "$SRC/.git" ]				# try for GIT instead
 	then
 		VCSTYPE="GIT"
-		VCSREV=`cd $SRC && git describe 2>/dev/null`
+		VCSREV=`cd $SRC && git describe --long 2>/dev/null`
 							# formatted version
 		if [ ! -n "$VCSREV" ]			# if not available then
 		then					# hash of last commit
