@@ -43,7 +43,7 @@
 #include "mainwindow.h"
 #include "filescontroller.h"
 
-#include "version.h"
+#include "vcsversion.h"
 #ifdef HAVE_QCUSTOMPLOT
 #include "qcustomplot.h"
 #endif // HAVE_QCUSTOMPLOT
@@ -58,8 +58,8 @@ int main(int argc,char *argv[])
 {
     KAboutData aboutData(PROJECT_NAME,			// componentName
                          i18n("Umbrail"),		// displayName
-#ifdef VCS_HAVE_VERSION
-                         ( VERSION " (" VCS_TYPE_STRING " " VCS_REVISION_STRING ")" ),
+#if VCS_AVAILABLE
+                         ( VERSION " (" VCS_TYPE " " VCS_REVISION ")" ),
 #else
                          VERSION,			// version
 #endif
