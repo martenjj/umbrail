@@ -77,7 +77,7 @@ bool DialogueConstraintFilter::eventFilter(QObject *obj, QEvent *ev)
 {
     if (ev->type()==QEvent::Show)
     {
-        QWidget*w = qobject_cast<QWidget *>(obj);	// auto resize when "Details" toggled
+        QWidget *w = qobject_cast<QWidget *>(obj);	// auto resize when "Details" toggled
         if (w!=nullptr) w->layout()->setSizeConstraint(QLayout::SetFixedSize);
     }
 
@@ -215,8 +215,8 @@ case ErrorReporter::Warning:
 
         detailed = true;
         message = (saving ?
-                   xi18nc("@info", "The file <filename>%1</filename> was saved but with warnings.", file.toDisplayString()) :
-                   xi18nc("@info", "The file <filename>%1</filename> was loaded but with warnings.", file.toDisplayString()));
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was saved but with warnings.###", file.toDisplayString()) :
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was loaded but with warnings.###", file.toDisplayString()));
         caption = (saving ? i18n("File Save Warning") : i18n("File Load Warning"));
         iconName = "dialog-information";
         askText = i18n("Do not show again for this file");
@@ -224,28 +224,37 @@ case ErrorReporter::Warning:
 
 case ErrorReporter::Error:
         message = (saving ?
-                   xi18nc("@info", "The file <filename>%1</filename> was saved but had errors.", file.toDisplayString()) :
-                   xi18nc("@info", "The file <filename>%1</filename> was loaded but had errors.", file.toDisplayString()));
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was saved but had errors.###", file.toDisplayString()) :
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was loaded but had errors.###", file.toDisplayString()));
         caption = (saving ? i18n("File Save Error") : i18n("File Load Error"));
         iconName = "dialog-warning";
         break;
 
 case ErrorReporter::Fatal:
         message = (saving ?
-                   xi18nc("@info", "The file <filename>%1</filename> could not be saved.<nl/>%2", file.toDisplayString(), list.last()) :
-                   xi18nc("@info", "The file <filename>%1</filename> could not be loaded.<nl/>%2", file.toDisplayString(), list.last()));
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> could not be saved.###", file.toDisplayString()) :
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> could not be loaded.###", file.toDisplayString()));
         caption = (saving ? i18n("File Save Failure") : i18n("File Load Failure"));
         iconName = "dialog-error";
         result = false;
         break;
     }
 
-    if (!detailed && rep->severity()!=ErrorReporter::Fatal)
-    {							// don't want full details?
-        message += i18n("<br><br>%1", list.last());	// just show the last message
-							// if not shown already
+    // The "###" marker in the formatted messages above is a placeholder for the
+    // error message, the last in the list if not showing full details.  It cannot
+    // simply be appended to the I18N string, because of the closing "</html>"
+    // markup from KUIT.
+    //
+    // The diagnostics in 'list' are already I18N'ed and formatted either as
+    // plain text or HTML (from KUIT markup).  So just insert the string into
+    // the appropriate place in the message.
+    QString details;
+    if (!detailed)
+    {
+        details = "<br/><br/>"+list.last();		// last or only error message
         list.clear();					// don't show in list
     }
+    message.replace("###", details);			// insert or blank details
 
     // Using the message box indirectly here for versatility.
 
@@ -269,7 +278,7 @@ case ErrorReporter::Fatal:
     // will expand and contract when the "Details" button is used.  However, there
     // is a problem with KMessageBox:  if the NoExec option is used so that the
     // layout constraint can be set before the exec(), then there is no way to
-    // access the state of the check box when the dialogue finished.  Therefore,
+    // access the state of the check box when the dialogue is finished.  Therefore,
     // we use an event filter to set the constraint when the dialogue is shown.
     dlg->installEventFilter(new DialogueConstraintFilter(this));
 
