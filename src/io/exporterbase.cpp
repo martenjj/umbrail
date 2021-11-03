@@ -34,12 +34,13 @@
 #include <qguiapplication.h>
 #include <qclipboard.h>
 #include <qmimedata.h>
+#include <qtemporaryfile.h>
 
 #include <klocalizedstring.h>
+#include <kio/filecopyjob.h>
 
 #include "trackdata.h"
 #include "errorreporter.h"
-
 
 
 ExporterBase::ExporterBase()
@@ -115,30 +116,66 @@ bool ExporterBase::save(const QUrl &file, const TrackDataFile *item, ImporterExp
     }
     else						// output to a real file
     {
-        // verify/open save file
-        if (!file.isLocalFile())
+        // Verify and open the save file
+        QString savePath = file.toLocalFile();		// local path of file
+        QString tempPath;				// no temporary file yet
+
+        // See ImporterBase::load()
+        if (!savePath.isEmpty() && !file.host().isEmpty()) savePath.clear();
+
+        // Not doing the StatJob::mostLocalUrl() optimisation here as is done
+        // in ImporterBase::load(), because it is not obvious what happens
+        // if the file could potentially be resolved to a local path but does
+        // not currently exist.
+
+        if (savePath.isEmpty())				// not a local file
         {
-            reporter()->setError(ErrorReporter::Fatal, i18n("Can only save to local files"));
-            return (false);
+            QTemporaryFile tempFile(nullptr);
+            if (!tempFile.open())			// unlikely to go wrong,
+            {						// so don't bother reporting
+                qWarning() << "Cannot create temp file";
+                return (false);
+            }
+
+            tempPath = tempFile.fileName();		// get the generated file name
+            tempFile.setAutoRemove(false);		// will remove when copied
+            tempFile.close();				// don't need the file now
+
+            savePath = tempPath;			// save to this file
+            qDebug() << "temp" << savePath;
         }
 
-        QSaveFile mSaveFile;
-
-        mSaveFile.setFileName(file.path());
-        if (!mSaveFile.open(QIODevice::WriteOnly))
+        // It is not necessary to use a QSaveFile if saving to a temporary
+        // file (to be copied to the remote destination via KIO), but we
+        // use one in any case to keep things simple.
+        QSaveFile saveFile(savePath);			// to destination or temp file
+        saveFile.setDirectWriteFallback(true);
+        if (!saveFile.open(QIODevice::WriteOnly))
         {
             reporter()->setError(ErrorReporter::Fatal, i18n("Cannot open file, %1", strerror(errno)));
             return (false);
         }
 
-        if (!saveTo(&mSaveFile, item))
+        if (!saveTo(&saveFile, item))
         {
-            reporter()->setError(ErrorReporter::Fatal, mSaveFile.errorString());
-            mSaveFile.cancelWriting();
+            reporter()->setError(ErrorReporter::Fatal, saveFile.errorString());
+            saveFile.cancelWriting();
             return (false);
         }
 
-        mSaveFile.commit();
+        saveFile.commit();				// finished writing the file
+        if (!tempPath.isEmpty())			// saving to a remote file
+        {
+            qDebug() << "remote" << tempPath << "->" << file;
+            KIO::FileCopyJob *job = KIO::file_copy(QUrl::fromLocalFile(tempPath), file, -1, KIO::Overwrite);
+            if (!job->exec())
+            {
+                reporter()->setError(ErrorReporter::Fatal, i18n("Cannot save to remote file, %1", job->errorString()));
+                return (false);
+            }
+
+            QFile::remove(tempPath);			// finished with temporary file
+        }
     }
 
     return (true);					// export was successful

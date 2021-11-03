@@ -732,7 +732,7 @@ void MainWindow::slotSaveAs()
                                             FilesController::allProjectFilters(false),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -751,7 +751,7 @@ void MainWindow::slotSaveCopy()
                                             FilesController::allProjectFilters(false),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -787,7 +787,7 @@ void MainWindow::slotExportFile()
                                             FilesController::allExportFilters(),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
