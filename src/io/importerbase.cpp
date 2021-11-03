@@ -34,6 +34,7 @@
 
 #include <klocalizedstring.h>
 #include <kio/filecopyjob.h>
+#include <kio/statjob.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"
@@ -84,7 +85,27 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
 
     if (loadPath.isEmpty())				// not a local file
     {
-        // The temporary file does not need to have an appropriate suffix,
+        // See if the file uses a KIO protocol which resolves to a
+        // local file (e.g. "desktop").  If so, then there is no need to
+        // copy the file - just use the equivalent local file directly.
+        KIO::StatJob *job = KIO::statDetails(file, KIO::StatJob::SourceSide, KIO::StatBasic|KIO::StatResolveSymlink);
+        if (!job->exec())
+        {
+            reporter()->setError(ErrorReporter::Fatal, i18n("Cannot examine remote file, %1", job->errorString()));
+            return (nullptr);
+        }
+
+        const QUrl localUrl = job->mostLocalUrl();
+        if (localUrl.isLocalFile())			// resolved to a local path
+        {
+            loadPath = localUrl.toLocalFile();
+            qDebug() << "as local" << loadPath;
+        }
+    }
+
+    if (loadPath.isEmpty())				// still not a local file
+    {
+        // The temporary file does not need to have the appropriate suffix,
         // because MIME type detection has already been done by FilesController.
         QTemporaryFile tempFile(nullptr);
         if (!tempFile.open())				// unlikely to happen,
@@ -127,7 +148,7 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
         delete mDataRoot; mDataRoot = nullptr;
     }
 
-    loadFile.close();					// finished with reading file
+    loadFile.close();					// finished reading file
     if (!tempPath.isEmpty()) QFile::remove(tempPath);	// finished with temporary file
 
     if (mDataRoot!=nullptr)				// read successfully and have data
