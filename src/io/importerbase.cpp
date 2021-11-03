@@ -30,8 +30,10 @@
 
 #include <qfile.h>
 #include <qdebug.h>
+#include <qtemporaryfile.h>
 
 #include <klocalizedstring.h>
+#include <kio/filecopyjob.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"
@@ -69,33 +71,65 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
     reporter()->setFile(file);
 
     // Verify and open the load file
-    if (!file.isLocalFile())
+    QString loadPath = file.toLocalFile();		// local path of file
+    QString tempPath;					// no temporary file yet
+
+    // Consider an apparently local file with a host name to be remote.
+    //
+    // From the API documentation of QUrl::isLocalFile():
+    // "Note that this function considers URLs with hostnames
+    // to be local file paths, even if the eventual file path
+    // cannot be opened with QFile::open()".
+    if (!loadPath.isEmpty() && !file.host().isEmpty()) loadPath.clear();
+
+    if (loadPath.isEmpty())				// not a local file
     {
-        reporter()->setError(ErrorReporter::Fatal, i18n("Can only read local files"));
-        return (nullptr);
+        // The temporary file does not need to have an appropriate suffix,
+        // because MIME type detection has already been done by FilesController.
+        QTemporaryFile tempFile(nullptr);
+        if (!tempFile.open())				// unlikely to happen,
+        {						// so don't bother reporting
+            qWarning() << "Cannot create temp file";
+            return (nullptr);
+        }
+
+        tempPath = tempFile.fileName();			// get the generated file name
+        tempFile.setAutoRemove(false);			// will remove when loaded
+        tempFile.close();				// don't need the file now
+
+        qDebug() << "remote" << file << "->" << tempPath;
+        KIO::FileCopyJob *job = KIO::file_copy(file, QUrl::fromLocalFile(tempPath), -1, KIO::Overwrite);
+        if (!job->exec())
+        {
+            reporter()->setError(ErrorReporter::Fatal, i18n("Cannot read remote file, %1", job->errorString()));
+            return (nullptr);
+        }
+
+        loadPath = tempPath;				// load from this file
     }
 
-    QFile importFile(file.path());
-    if (!importFile.open(QIODevice::ReadOnly))
+    QFile loadFile(loadPath);				// from original or temp file
+    if (!loadFile.open(QIODevice::ReadOnly))
     {
         reporter()->setError(ErrorReporter::Fatal, i18n("Cannot open file, %1", strerror(errno)));
         return (nullptr);
     }
 
-    // Allocate the data root item.  If the read is successful
+    // Allocate the root data item.  If the read is successful
     // then it is returned to the caller which takes ownership of it.
-
-    mDataRoot = new TrackDataFile;			// no need to set name here,
-    mDataRoot->setFileName(file);			// this does from file's basename
+    mDataRoot = new TrackDataFile;
+    mDataRoot->setFileName(file);			// sets name from file's basename
 
     // Import from the file
-    if (!loadFrom(&importFile))
+    if (!loadFrom(&loadFile))
     {
         qWarning() << "file load failed!";
         delete mDataRoot; mDataRoot = nullptr;
     }
 
-    importFile.close();					// finished with reading file
+    loadFile.close();					// finished with reading file
+    if (!tempPath.isEmpty()) QFile::remove(tempPath);	// finished with temporary file
+
     if (mDataRoot!=nullptr)				// read successfully and have data
     {
         // The metadata as read from the file is currently stored in mDataRoot.

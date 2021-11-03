@@ -231,6 +231,7 @@ case ErrorReporter::Error:
         break;
 
 case ErrorReporter::Fatal:
+    // TODO: HTML formatting in 'list' does not work
         message = (saving ?
                    xi18nc("@info", "The file <filename>%1</filename> could not be saved.<nl/>%2", file.toDisplayString(), list.last()) :
                    xi18nc("@info", "The file <filename>%1</filename> could not be loaded.<nl/>%2", file.toDisplayString(), list.last()));

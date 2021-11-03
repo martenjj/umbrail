@@ -666,7 +666,7 @@ void MainWindow::slotOpenProject()
                                             FilesController::allProjectFilters(true),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -770,7 +770,7 @@ void MainWindow::slotImportFile()
                                             FilesController::allImportFilters(),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
