@@ -31,23 +31,22 @@
 class QFile;
 class QUrl;
 class TrackDataFile;
+class QIODevice;
 
 
 class ImporterBase : public ImporterExporterBase
 {
 public:
     ImporterBase();
-    virtual ~ImporterBase();
+    virtual ~ImporterBase() = default;
 
-    virtual TrackDataFile *load(const QUrl &file) = 0;
+    TrackDataFile *load(const QUrl &file);
     virtual bool needsResave() const			{ return (false); }
 
 protected:
-    bool prepareLoadFile(const QUrl &file);
-    bool finaliseLoadFile(const QUrl &file);
+    virtual bool loadFrom(QIODevice *dev) = 0;
 
 protected:
-    QFile *mFile;
     TrackDataFile *mDataRoot;
 };
 

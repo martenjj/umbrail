@@ -48,7 +48,7 @@ public:
     static QString filter();
 
     // ImporterBase
-    TrackDataFile *load(const QUrl &file) override;
+    bool loadFrom(QIODevice *dev) override;
     bool needsResave() const override;
 
     // QXmlContentHandler
