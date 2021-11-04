@@ -25,6 +25,7 @@
 
 #include "gpximporter.h"
 
+#include <QXmlStreamReader>
 #include <qxml.h>
 #include <qcolor.h>
 #include <qdebug.h>
@@ -41,6 +42,8 @@
 
 #undef DEBUG_IMPORT
 #undef DEBUG_DETAILED
+#define DEBUG_IMPORT
+#define DEBUG_DETAILED
 
 
 GpxImporter::GpxImporter()
@@ -50,18 +53,11 @@ GpxImporter::GpxImporter()
 }
 
 
-GpxImporter::~GpxImporter()
-{
-    qDebug() << "done";
-}
-
-
-
-
-
 bool GpxImporter::loadFrom(QIODevice *dev)
 {
-    // prepare to read into 'mDataRoot'
+#ifdef DEBUG_IMPORT
+    qDebug() << "starting";
+#endif
 
     mXmlIndent = 0;
     mXmlLocator = nullptr;
@@ -77,16 +73,68 @@ bool GpxImporter::loadFrom(QIODevice *dev)
 
     mUndefinedNamespaces.clear();
 
-    QXmlSimpleReader xmlReader;
-    xmlReader.setContentHandler(this);
-    xmlReader.setErrorHandler(this);
-    xmlReader.setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
+    QXmlStreamReader xml(dev);				// XML reader from device
+    bool ok = true;					// so far, anyway
 
-    QXmlInputSource xmlSource(dev);
+    while (!xml.atEnd())
+    {
+        xml.readNext();					// get next XML token
+        switch (xml.tokenType())			// act on token type
+        {
+case QXmlStreamReader::NoToken:
+            qDebug() << "unexpected NoToken";
+            break;
 
-    // xml read
-    const bool ok = xmlReader.parse(xmlSource);
+case QXmlStreamReader::Invalid:
+            qDebug() << "unexpected Invalid";
+            break;
+
+case QXmlStreamReader::StartDocument:
+            startDocument(xml.documentVersion(), xml.documentEncoding());
+            break;
+
+case QXmlStreamReader::EndDocument:
+            endDocument();
+            break;
+
+case QXmlStreamReader::StartElement:
+            startElement(xml.namespaceUri(), xml.name().toString(), xml.qualifiedName().toString(), xml.attributes());
+            break;
+
+case QXmlStreamReader::EndElement:
+            endElement(xml.namespaceUri(), xml.name().toString(), xml.qualifiedName().toString());
+            break;
+
+case QXmlStreamReader::Characters:
+            // Ignoring whitespace was previously forced for QXmlSimpleReader by
+            // setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false)
+            if (!xml.isWhitespace()) characters(xml.text());
+            break;
+
+case QXmlStreamReader::Comment:
+            qDebug() << "ignored Comment";
+            break;
+
+case QXmlStreamReader::DTD:
+            qDebug() << "ignored DTD, name" << xml.dtdName() << "public" << xml.dtdPublicId() << "system" << xml.dtdSystemId();
+            break;
+
+case QXmlStreamReader::EntityReference:
+            qDebug() << "unexpected EntityReference";
+            break;
+
+case QXmlStreamReader::ProcessingInstruction:
+            qDebug() << "unexpected ProcessingInstruction";
+            break;
+        }
+    }
+
+    if (xml.hasError()) ok = false;			// error in XML parsing
     if (!ok) qWarning() << "XML parsing failed!";
+
+#ifdef DEBUG_IMPORT
+    qDebug() << "done ok?" << ok;
+#endif
     return (ok);
 }
 
@@ -95,8 +143,6 @@ QString GpxImporter::filter()
 {
     return ("GPX files (*.gpx)");
 }
-
-
 
 
 QByteArray GpxImporter::indent() const
@@ -186,17 +232,18 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 }
 
 
-void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName)
+void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName)
 {
     double lat = NAN;					// coordinates found
     double lon = NAN;
-    for (int i = 0; i<atts.count(); ++i)
+
+    for (const QXmlStreamAttribute att : atts)
     {
-        QString attrName = atts.localName(i);
-        QString attrValue = atts.value(i);
+        QStringRef attrName = att.name();
+        QStringRef attrValue = att.value();
         if (attrName=="lat") lat = attrValue.toDouble();
         else if (attrName=="lon") lon = attrValue.toDouble();
-        else warning(makeXmlException("unexpected attribute "+attrName.toUpper()+" on "+localName.toUpper()+" element"));
+        else warning(makeXmlException("unexpected attribute "+attrName.toString().toUpper()+" on "+localName.toUpper()+" element"));
     }
 
     if (!ISNAN(lat) && !ISNAN(lon)) pnt->setLatLong(lat, lon);
@@ -204,22 +251,27 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &
 }
 
 
-bool GpxImporter::startDocument()
+bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &encoding)
 {
-    qDebug() << "start document";
 #ifdef DEBUG_DETAILED
-    qDebug() << endl << indent().constData() << "START DOCUMENT";
+    qDebug() << endl << indent().constData() << "START DOCUMENT version" << version << "encoding" << encoding;
+#else
+    qDebug() << "START DOCUMENT";
 #endif
     ++mXmlIndent;
     return (true);
 }
 
 
-bool GpxImporter::startElement(const QString &namespaceURI, const QString &localName,
-                               const QString &qName, const QXmlAttributes &atts)
+bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &localName,
+                               const QString &qName, const QXmlStreamAttributes &atts)
 {
 #ifdef DEBUG_DETAILED
     qDebug() << indent().constData() << "START" << localName;
+    for (const QXmlStreamAttribute &att : atts)
+    {
+        qDebug() << indent().constData() << "+" << att.name() << "=" << att.value();
+    }
 #endif
 
     if (namespaceURI.isEmpty())				// element with undefined namespace
@@ -234,22 +286,15 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
         }
     }
 
-    for (int i = 0; i<atts.count(); ++i)
-    {
-#ifdef DEBUG_DETAILED
-        qDebug() << indent().constData() << "+" << atts.localName(i) << "=" << atts.value(i);
-#endif
-    }
-
     ++mXmlIndent;
     if (!parsing()) return (true);
 
     if (localName=="gpx")				// start of a GPX element
     {
-        int i = atts.index("version");
-        if (i>=0) mDataRoot->setMetadata(DataIndexer::indexWithNamespace(atts.qName(i).toLocal8Bit()), atts.value(i));
-        i = atts.index("creator");
-        if (i>=0) mDataRoot->setMetadata(DataIndexer::indexWithNamespace(atts.qName(i).toLocal8Bit()), atts.value(i));
+        QStringRef val = atts.value("version");
+        if (!val.isEmpty()) mDataRoot->setMetadata(DataIndexer::index("version"), val.toString());
+        val = atts.value("creator");
+        if (!val.isEmpty()) mDataRoot->setMetadata(DataIndexer::index("creator"), val.toString());
     }
     else if (localName=="metadata")			// start of a METADATA element
     {
@@ -379,9 +424,9 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
             return (error(makeXmlException("LINK start not within WPT", "link")));
         }
 
-        QString link = atts.value("link");
+        QStringRef link = atts.value("link");
         if (link.isEmpty()) link = atts.value("href");
-        if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName.toLocal8Bit()), link);
+        if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName.toLocal8Bit()), link.toString());
         else warning(makeXmlException("missing LINK/HREF attribute on LINK element"));
     }
 
@@ -390,7 +435,7 @@ bool GpxImporter::startElement(const QString &namespaceURI, const QString &local
 }
 
 
-bool GpxImporter::endElement(const QString &namespaceURI, const QString &localName, const QString &qName)
+bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName)
 {
     --mXmlIndent;
 #ifdef DEBUG_DETAILED
@@ -685,6 +730,8 @@ bool GpxImporter::endDocument()
     --mXmlIndent;
 #ifdef DEBUG_DETAILED
     qDebug() << indent().constData() << "END DOCUMENT" << endl;
+#else
+    qDebug() << "END DOCUMENT";
 #endif
 
     if (currentItem()!=nullptr)				// check terminated
@@ -702,19 +749,18 @@ bool GpxImporter::endDocument()
         warning(makeXmlException("Undefined XML namespaces, re-save file to correct"));
     }
 
-    qDebug() << "end document";
     return (true);
 }
 
 
-bool GpxImporter::characters(const QString &ch)
+bool GpxImporter::characters(const QStringRef &ch)
 {
 #ifdef DEBUG_DETAILED
     qDebug() << indent().constData() << "=" << ch;
 #endif
     if (!parsing()) return (true);
 
-    mContainedChars = ch.trimmed();			// save for element end
+    mContainedChars = ch.trimmed().toString();		// save for element end
     return (true);
 }
 

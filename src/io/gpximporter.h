@@ -28,6 +28,8 @@
 
 #include <QXmlDefaultHandler>
 
+
+
 #include "importerbase.h"
 
 class TrackDataItem;
@@ -39,11 +41,15 @@ class TrackDataFolder;
 class TrackDataWaypoint;
 
 
+class QXmlStreamAttributes;
+
+
+
 class GpxImporter : public ImporterBase, public QXmlDefaultHandler
 {
 public:
     GpxImporter();
-    virtual ~GpxImporter();
+    virtual ~GpxImporter() = default;
 
     static QString filter();
 
@@ -53,16 +59,20 @@ public:
 
     // QXmlContentHandler
     void setDocumentLocator(QXmlLocator *locator) override;
-    bool startDocument() override;
-    bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) override;
-    bool characters(const QString &ch) override;
-    bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) override;
-    bool endDocument() override;
 
     // QXmlErrorHandler
     bool error(const QXmlParseException &ex) override;
     bool fatalError(const QXmlParseException &ex) override;
     bool warning(const QXmlParseException &ex) override;
+
+protected:
+    bool startElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName, const QXmlStreamAttributes &atts);
+    bool endElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName);
+
+    bool characters(const QStringRef &ch);
+
+    bool startDocument(const QStringRef &version, const QStringRef &encoding);
+    bool endDocument() override;
 
 private:
     QByteArray indent() const;
@@ -71,7 +81,7 @@ private:
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
-    void getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName);
+    void getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName);
 
     bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
     QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
@@ -88,6 +98,7 @@ private:
     int mXmlIndent;
     QString mRestartTag;
     const QXmlLocator *mXmlLocator;
+    // TODO: can possibly be a QStringRef
     QString mContainedChars;
 
     QStringList mUndefinedNamespaces;
