@@ -333,7 +333,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
 
 bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 {
-    qDebug() << "item" << item->name() << "to" << dev;
+    qDebug() << "item" << item->name();
 
     startedExtensions = false;
 

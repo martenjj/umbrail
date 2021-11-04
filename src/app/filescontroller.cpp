@@ -46,6 +46,8 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kactioncollection.h>
+#include <kio/statjob.h>
+#include <kio/filecopyjob.h>
 
 #ifdef HAVE_KEXIV2
 #include <kexiv2/kexiv2.h>
@@ -360,6 +362,33 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
 }
 
 
+// The result may be:	 1 - file definitely exists
+//			 0 - file does not exist
+//			-1 - unable to determine
+static int fileExists(const QUrl &file)
+{
+    int exists = -1;
+    if (file.isLocalFile())				// to a local file?
+    {							// see if exists already
+        exists = (QFile::exists(file.toLocalFile())) ? 1 : 0;
+    }
+    else						// to a remote file
+    {
+        qDebug() << "stat remote" << file;
+
+        KIO::StatJob *job = KIO::statDetails(file, KIO::StatJob::DestinationSide,
+                                             KIO::StatBasic|KIO::StatResolveSymlink);
+        bool ok = job->exec();
+        qDebug() << "job result" << ok << "error" << job->error();
+
+        if (ok) exists = 1;
+        else if (job->error()==KIO::ERR_DOES_NOT_EXIST) exists = 0;
+    }
+
+    return (exists);
+}
+
+
 FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
@@ -374,7 +403,8 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
     }
 
     exportType = exportType.toUpper();
-    qDebug() << "to" << exportTo << "type" << exportType << "options" << options;
+    qDebug() << "to" << exportTo;
+    qDebug() << "type" << exportType << "options" << options;
 
     QScopedPointer<ExporterBase> exp;			// exporter for requested format
     if (exportType=="GPX")				// export to GPX file
@@ -389,16 +419,47 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
         return (FilesController::StatusFailed);
     }
 
-    if (exportTo.isLocalFile() && QFile::exists(exportTo.path()))
-    {							// to a local file?
+    if (exportTo.scheme()!="clipboard")			// no backup for copy/paste!
+    {
         QUrl backupFile = exportTo;			// make path for backup file
         backupFile.setPath(backupFile.path()+".orig");
 
-// TODO: use KIO
-// ask whether to backup if a remote file (if cannot test for exists)
-        if (!QFile::exists(backupFile.path()))		// no backup already?
+        int exportExists = fileExists(exportTo);	// see whether file and backup exist
+        int backupExists = fileExists(backupFile);
+        qDebug() << "exportexists" << exportExists << "backupexists" << backupExists;
+
+        if (exportExists==-1 || backupExists==-1)	// unable to determine either
         {
-            if (!QFile::copy(exportTo.path(), backupFile.path()))
+            if (!fileWarningIgnored(exportTo, "remotebackup"))
+            {
+                const QString q = xi18nc("@info", "Cannot determine whether the remote file<nl/><filename>%1</filename><nl/> has a backup.<nl/><nl/>Save the file anyway (the original may be overwritten)?",
+                                         exportTo.toDisplayString());
+                KMessageBox::ButtonCode but = KMessageBox::warningContinueCancel(mainWidget(), q,
+                                                                                 i18n("Cannot Check Backup"),
+                                                                                 KStandardGuiItem::save());
+                if (but==KMessageBox::Cancel) return (FilesController::StatusCancelled);
+							// ignore from now on for this file
+                setFileWarningIgnored(exportTo, "remotebackup");
+            }
+
+            exportExists = 0;				// pretend not overwriting
+        }
+
+        if (exportExists==1 && backupExists==0)		// no backup taken yet
+        {
+            bool ok;
+            if (exportTo.isLocalFile())			// to a local file?
+            {
+                ok = QFile::copy(exportTo.path(), backupFile.path());
+            }
+            else					// to a remote file
+            {
+                KIO::FileCopyJob *job = KIO::file_copy(exportTo, backupFile, -1, KIO::Overwrite);
+                ok = job->exec();
+                qDebug() << "job result" << ok << "error" << job->error();
+            }
+
+            if (!ok)
             {
                 reportFileError(true, backupFile, i18n("Cannot save backup file"));
                 emit statusMessage(i18n("Backup failed"));
@@ -407,7 +468,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
 
             KMessageBox::information(mainWidget(),
                                      xi18nc("@info", "Original of<nl/><filename>%1</filename><nl/>has been backed up as<nl/><filename>%2</filename>",
-                                          exportTo.toDisplayString(), backupFile.toDisplayString()),
+                                            exportTo.toDisplayString(), backupFile.toDisplayString()),
                                      i18n("Original file backed up"),
                                      "fileBackupInfo");
         }

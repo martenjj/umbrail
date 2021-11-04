@@ -591,7 +591,6 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
 {
     qDebug() << "to" << to;
-
     if (!to.isValid()) return (false);			// should never happen
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
@@ -613,8 +612,6 @@ bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
 FilesController::Status MainWindow::load(const QUrl &from)
 {
     qDebug() << "from" << from;
-
-    // TODO: allow non-local files
     if (!from.isValid()) return (FilesController::StatusFailed);
 
     FilesController::Status status = filesController()->importFile(from);
@@ -666,7 +663,7 @@ void MainWindow::slotOpenProject()
                                             FilesController::allProjectFilters(true),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -732,7 +729,7 @@ void MainWindow::slotSaveAs()
                                             FilesController::allProjectFilters(false),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -751,7 +748,7 @@ void MainWindow::slotSaveCopy()
                                             FilesController::allProjectFilters(false),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -770,7 +767,7 @@ void MainWindow::slotImportFile()
                                             FilesController::allImportFilters(),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
@@ -787,7 +784,7 @@ void MainWindow::slotExportFile()
                                             FilesController::allExportFilters(),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
-                                            QStringList("file"));			// supportedSchemes
+                                            QStringList());				// supportedSchemes
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);

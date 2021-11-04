@@ -56,11 +56,11 @@ GpxImporter::~GpxImporter()
 }
 
 
-TrackDataFile *GpxImporter::load(const QUrl &file)
-{
-    qDebug() << "from" << file;
-    if (!ImporterBase::prepareLoadFile(file)) return (nullptr);
 
+
+
+bool GpxImporter::loadFrom(QIODevice *dev)
+{
     // prepare to read into 'mDataRoot'
 
     mXmlIndent = 0;
@@ -82,18 +82,12 @@ TrackDataFile *GpxImporter::load(const QUrl &file)
     xmlReader.setErrorHandler(this);
     xmlReader.setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false);
 
-    QXmlInputSource xmlSource(mFile);
+    QXmlInputSource xmlSource(dev);
 
     // xml read
-    bool ok = xmlReader.parse(xmlSource);
-    if (!ok)
-    {
-        qDebug() << "XML parsing failed!";
-        delete mDataRoot; mDataRoot = nullptr;
-    }
-
-    ImporterBase::finaliseLoadFile(file);
-    return (mDataRoot);
+    const bool ok = xmlReader.parse(xmlSource);
+    if (!ok) qWarning() << "XML parsing failed!";
+    return (ok);
 }
 
 

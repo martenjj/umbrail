@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 TryExec=umbrail
-Exec=umbrail %F
+Exec=umbrail %U
 Name=Umbrail
 GenericName=GPX Log Viewer/Editor
 Icon=umbrail
