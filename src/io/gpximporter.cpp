@@ -26,7 +26,6 @@
 #include "gpximporter.h"
 
 #include <QXmlStreamReader>
-#include <qxml.h>
 #include <qcolor.h>
 #include <qdebug.h>
 
@@ -60,7 +59,6 @@ bool GpxImporter::loadFrom(QIODevice *dev)
 #endif
 
     mXmlIndent = 0;
-    mXmlLocator = nullptr;
     mRestartTag.clear();
     mContainedChars.clear();
 
@@ -73,13 +71,13 @@ bool GpxImporter::loadFrom(QIODevice *dev)
 
     mUndefinedNamespaces.clear();
 
-    QXmlStreamReader xml(dev);				// XML reader from device
-    bool ok = true;					// so far, anyway
-
-    while (!xml.atEnd())
+    // TODO: only used outside this function in 2 places,
+    // make into an automatic variable
+    mXmlReader = new QXmlStreamReader(dev);		// XML reader from device
+    while (!mXmlReader->atEnd())			// process the token stream
     {
-        xml.readNext();					// get next XML token
-        switch (xml.tokenType())			// act on token type
+        mXmlReader->readNext();				// get next XML token
+        switch (mXmlReader->tokenType())		// look at token type
         {
 case QXmlStreamReader::NoToken:
             qDebug() << "unexpected NoToken";
@@ -90,7 +88,7 @@ case QXmlStreamReader::Invalid:
             break;
 
 case QXmlStreamReader::StartDocument:
-            startDocument(xml.documentVersion(), xml.documentEncoding());
+            startDocument(mXmlReader->documentVersion(), mXmlReader->documentEncoding());
             break;
 
 case QXmlStreamReader::EndDocument:
@@ -98,17 +96,20 @@ case QXmlStreamReader::EndDocument:
             break;
 
 case QXmlStreamReader::StartElement:
-            startElement(xml.namespaceUri(), xml.name().toString(), xml.qualifiedName().toString(), xml.attributes());
+            startElement(mXmlReader->namespaceUri(), mXmlReader->name().toString(), mXmlReader->qualifiedName().toString(), mXmlReader->attributes());
             break;
 
 case QXmlStreamReader::EndElement:
-            endElement(xml.namespaceUri(), xml.name().toString(), xml.qualifiedName().toString());
+            endElement(mXmlReader->namespaceUri(), mXmlReader->name().toString(), mXmlReader->qualifiedName().toString());
             break;
 
 case QXmlStreamReader::Characters:
-            // Ignoring whitespace was previously forced for QXmlSimpleReader by
-            // setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false)
-            if (!xml.isWhitespace()) characters(xml.text());
+            // Ignoring whitespace was previously set for QXmlSimpleReader by
+            //
+            //   setFeature("http://trolltech.com/xml/features/report-whitespace-only-CharData", false)
+            //
+            // This does the equivalent.
+            if (!mXmlReader->isWhitespace()) characters(mXmlReader->text());
             break;
 
 case QXmlStreamReader::Comment:
@@ -116,7 +117,7 @@ case QXmlStreamReader::Comment:
             break;
 
 case QXmlStreamReader::DTD:
-            qDebug() << "ignored DTD, name" << xml.dtdName() << "public" << xml.dtdPublicId() << "system" << xml.dtdSystemId();
+            qDebug() << "ignored DTD, name" << mXmlReader->dtdName() << "public" << mXmlReader->dtdPublicId() << "system" << mXmlReader->dtdSystemId();
             break;
 
 case QXmlStreamReader::EntityReference:
@@ -129,7 +130,8 @@ case QXmlStreamReader::ProcessingInstruction:
         }
     }
 
-    if (xml.hasError()) ok = false;			// error in XML parsing
+    const bool ok = !mXmlReader->hasError();		// XML parsing successful?
+    delete mXmlReader;					// finished with XML reader
     if (!ok) qWarning() << "XML parsing failed!";
 
 #ifdef DEBUG_IMPORT
@@ -154,25 +156,10 @@ QByteArray GpxImporter::indent() const
 }							// (pointer into temporary!)
 
 
+// TODO: inline in header
 bool GpxImporter::parsing() const
 {
     return (mRestartTag.isEmpty());
-}
-
-
-QXmlParseException GpxImporter::makeXmlException(const QString &message, const QString &restartTag)
-{
-    if (!restartTag.isEmpty()) mRestartTag = restartTag;
-
-    int col = (mXmlLocator!=nullptr) ? mXmlLocator->columnNumber() : -1;
-    int line = (mXmlLocator!=nullptr) ? mXmlLocator->lineNumber() : -1;
-    return (QXmlParseException(message, col, line));
-}
-
-
-void GpxImporter::setDocumentLocator(QXmlLocator *locator)
-{
-    mXmlLocator = locator;
 }
 
 
@@ -216,6 +203,7 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
 }
 
 
+// TODO: never called with nullptr (and would crash if it was)
 TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 {
     //  If the waypoint is specified and has a folder defined, then that
@@ -237,23 +225,25 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
     double lat = NAN;					// coordinates found
     double lon = NAN;
 
-    for (const QXmlStreamAttribute att : atts)
+    // TODO: just look up directly, no point in warning
+    for (const QXmlStreamAttribute &att : atts)
     {
         QStringRef attrName = att.name();
         QStringRef attrValue = att.value();
         if (attrName=="lat") lat = attrValue.toDouble();
         else if (attrName=="lon") lon = attrValue.toDouble();
-        else warning(makeXmlException("unexpected attribute "+attrName.toString().toUpper()+" on "+localName.toUpper()+" element"));
+        else addWarning("unexpected attribute "+attrName.toString().toUpper()+" on "+localName.toUpper()+" element");
     }
 
     if (!ISNAN(lat) && !ISNAN(lon)) pnt->setLatLong(lat, lon);
-    else warning(makeXmlException("missing LAT/LON on "+localName.toUpper()+" element"));
+    else addWarning("missing LAT/LON on "+localName.toUpper()+" element");
 }
 
 
 bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &encoding)
 {
 #ifdef DEBUG_DETAILED
+    // TODO: to std::cerr for consistent identation
     qDebug() << endl << indent().constData() << "START DOCUMENT version" << version << "encoding" << encoding;
 #else
     qDebug() << "START DOCUMENT";
@@ -274,14 +264,18 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     }
 #endif
 
+    // TODO: move out to loop, then no need for
+    // namespaceURI parameter to this or endElement()
+
     if (namespaceURI.isEmpty())				// element with undefined namespace
     {
         if (!mUndefinedNamespaces.contains(qName))	// only report each one once
         {
+            // TODO: use prefix() and localName
             QStringList nameParts = qName.split(':');
-            warning(makeXmlException(QString("Undefined namespace '%1' for element '%2'")
+            addWarning(QString("Undefined namespace '%1' for element '%2'")
                                      .arg(nameParts.at(0))
-                                     .arg(nameParts.at(1).toUpper())));
+                                     .arg(nameParts.at(1).toUpper()));
             mUndefinedNamespaces.append(qName);
         }
     }
@@ -300,7 +294,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mWithinMetadata || currentItem()!=nullptr)	// check not nested
         {
-            return (error(makeXmlException("nested METADATA elements", "metadata")));
+            addError("nested METADATA elements", "metadata");
         }
 
         mWithinMetadata = true;				// just note for contents
@@ -309,12 +303,12 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mWithinExtensions)				// check not nested
         {
-            return (error(makeXmlException("nested EXTENSIONS elements", "extensions")));
+            return (addError("nested EXTENSIONS elements", "extensions"));
         }
 
         if (currentItem()==nullptr)			// must be within element
         {
-            return (error(makeXmlException("EXTENSIONS not within TRK, TRKSEG, TRKPT or WPT", "extensions")));
+            return (addError("EXTENSIONS not within TRK, TRKSEG, TRKPT or WPT", "extensions"));
         }
 
         mWithinExtensions = true;			// just note for contents
@@ -323,7 +317,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentTrack!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested TRK elements", "trk")));
+            return (addError("nested TRK elements", "trk"));
         }
 							// start new track
         mCurrentTrack = new TrackDataTrack;
@@ -332,7 +326,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentRoute!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested RTE elements", "rte")));
+            return (addError("nested RTE elements", "rte"));
         }
 							// start new track
         mCurrentRoute = new TrackDataRoute;
@@ -341,12 +335,12 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentSegment!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested TRKSEG elements", "trkseg")));
+            return (addError("nested TRKSEG elements", "trkseg"));
         }
 
         if (mCurrentTrack==nullptr)			// check properly nested
         {
-            return (error(makeXmlException("TRKSEG start not within TRK", "trkseg")));
+            return (addError("TRKSEG start not within TRK", "trkseg"));
         }
 							// start new segment
         mCurrentSegment = new TrackDataSegment;
@@ -355,17 +349,17 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested TRKPT elements", "trkpt")));
+            return (addError("nested TRKPT elements", "trkpt"));
         }
 
         if (mCurrentSegment==nullptr)			// no current segment yet
         {
             if (mCurrentTrack==nullptr)			// must be within track, though
             {
-                return (error(makeXmlException("TRKPT start not within TRKSEG or TRK", "trkpt")));
+                return (addError("TRKPT start not within TRKSEG or TRK", "trkpt"));
             }
 
-            warning(makeXmlException("TRKPT start not within TRKSEG"));
+            addWarning("TRKPT start not within TRKSEG");
 							// start new implied segment
             mCurrentSegment = new TrackDataSegment;
         }
@@ -377,26 +371,26 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentPoint==nullptr)
         {						// check properly nested
-            return (error(makeXmlException(localName.toUpper()+" start not within TRKPT or WPT", localName)));
+            return (addError(localName.toUpper()+" start not within TRKPT or WPT", localName));
         }
     }
     else if (localName=="time")
     {							// start of a TIME element
         if (mCurrentPoint==nullptr && mCurrentTrack==nullptr && !mWithinMetadata)
         {						// check properly nested
-            warning(makeXmlException(localName.toUpper()+" start not within TRKPT, WPT or METADATA"));
+            addWarning(localName.toUpper()+" start not within TRKPT, WPT or METADATA");
         }
     }
     else if (localName=="wpt")				// start of an WPT element
     {
         if (mCurrentTrack!=nullptr || mCurrentRoute!=nullptr)
         {
-            return (error(makeXmlException("WPT start within TRK or RTE", "wpt")));
+            return (addError("WPT start within TRK or RTE", "wpt"));
         }
 
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested WPT element", "wpt")));
+            return (addError("nested WPT element", "wpt"));
         }
 
         mCurrentPoint = new TrackDataWaypoint;		// start new waypoint item
@@ -406,12 +400,12 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentRoute==nullptr)
         {
-            return (error(makeXmlException("RTEPT start not within RTE", "rtept")));
+            return (addError("RTEPT start not within RTE", "rtept"));
         }
 
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (error(makeXmlException("nested RTEPT element", "rtept")));
+            return (addError("nested RTEPT element", "rtept"));
         }
 
         mCurrentPoint = new TrackDataRoutepoint;	// start new route point item
@@ -421,13 +415,13 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (dynamic_cast<TrackDataWaypoint *>(mCurrentPoint)==nullptr)
         {						// check contained where expected
-            return (error(makeXmlException("LINK start not within WPT", "link")));
+            return (addError("LINK start not within WPT", "link"));
         }
 
         QStringRef link = atts.value("link");
         if (link.isEmpty()) link = atts.value("href");
         if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName.toLocal8Bit()), link.toString());
-        else warning(makeXmlException("missing LINK/HREF attribute on LINK element"));
+        else addWarning("missing LINK/HREF attribute on LINK element");
     }
 
     mContainedChars.clear();				// clear element contents
@@ -468,7 +462,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     {
         if (mCurrentTrack==nullptr)			// check must have started
         {
-            return (error(makeXmlException("TRK element not started")));
+            return (addError("TRK element not started"));
         }
 
         if (mCurrentSegment!=nullptr)			// segment not closed
@@ -491,7 +485,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     {
         if (mCurrentSegment==nullptr)			// check must have started
         {
-            return (error(makeXmlException("TRKSEG element not started")));
+            return (addError("TRKSEG element not started"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -505,12 +499,12 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     {
         if (mCurrentPoint==nullptr)			// check must have started
         {
-            return (error(makeXmlException("TRKPT element not started")));
+            return (addError("TRKPT element not started"));
         }
 
         if (dynamic_cast<TrackDataTrackpoint *>(mCurrentPoint)==nullptr)
         {						// check start element matched
-            return (error(makeXmlException("TRKPT end did not start element")));
+            return (addError("TRKPT end did not start element"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -526,7 +520,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     {
         if (mCurrentRoute==nullptr)			// check must have started
         {
-            return (error(makeXmlException("RTE element not started")));
+            return (addError("RTE element not started"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -540,12 +534,12 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     {
         if (mCurrentPoint==nullptr)			// check must have started
         {
-            return (error(makeXmlException("RTEPT element not started")));
+            return (addError("RTEPT element not started"));
         }
 
         if (dynamic_cast<TrackDataRoutepoint *>(mCurrentPoint)==nullptr)
         {						// check start element matched
-            return (error(makeXmlException("RTEPT end did not start element")));
+            return (addError("RTEPT end did not start element"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -560,7 +554,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     {
         if (mCurrentPoint==nullptr)			// check must have started
         {
-            return (error(makeXmlException("WPT element not started")));
+            return (addError("WPT element not started"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -568,7 +562,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
 #endif
 
         TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mCurrentPoint);
-        if (tdw==nullptr) return (error(makeXmlException("WPT end did not start element")));
+        if (tdw==nullptr) return (addError("WPT end did not start element"));
 
         if (tdw->isMediaType())
         {
@@ -625,7 +619,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
         // double to QColor and an implicit conversion from double to any sort of integer
         // type should not be allowed.
         if (p!=nullptr) p->setMetadata(idx, QVariant(ele));
-        else return (error(makeXmlException("ELE end not within TRKPT or WPT")));
+        else return (addError("ELE end not within TRKPT or WPT"));
     }
     else if (localName=="time")				// end of a TIME element
     {							// may belong to any element
@@ -647,24 +641,24 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
         }
 
         if (item!=nullptr) item->setMetadata(idx, dt);
-        else return (error(makeXmlException("TIME end not within TRK, TRKPT, WPT or METADATA")));
+        else return (addError("TIME end not within TRK, TRKPT, WPT or METADATA"));
     }
     else if (localName=="name")				// end of a NAME element
     {							// may belong to any container
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=nullptr) item->setName(elementContents(), true);	// assign its name
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementContents());
-        else warning(makeXmlException("NAME end not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA"));
+        else addWarning("NAME end not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA");
     }
     else if (localName=="color")			// end of a COLOR element
     {							// should be within EXTENSIONS
         TrackDataItem *item = currentItem();		// find innermost current element
-        if (item==nullptr) return (error(makeXmlException("COLOR end not within TRK, TRKSEG, TRKPT or WPT")));
+        if (item==nullptr) return (addError("COLOR end not within TRK, TRKSEG, TRKPT or WPT"));
 
         QString rgbString = elementContents();
         if (!rgbString.startsWith('#')) rgbString.prepend('#');
         QColor col(rgbString);
-        if (!col.isValid()) return (error(makeXmlException("invalid value for COLOR")));
+        if (!col.isValid()) return (addError("invalid value for COLOR"));
 
         // The COLOR attribute will only set our internal LINECOLOR/POINTCOLOR
         // attributes if they are not already set.
@@ -686,7 +680,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
         TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
 
         if (item!=nullptr) item->setMetadata(idx, elementContents());
-        else warning(makeXmlException("CATEGORY end not within WPT"));
+        else addWarning("CATEGORY end not within WPT");
     }
     else if (localName=="type")				// end of a TYPE element
     {
@@ -704,8 +698,9 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
             // For a track or segment, normal metadata.
             item->setMetadata(idx, elementContents());
         }
-        else warning(makeXmlException("TYPE end not within WPT, TRK or TRKSEG"));
+        else addWarning("TYPE end not within WPT, TRK or TRKSEG");
     }
+    // TODO: qName.startsWith() -> prefix() 
     else if (localName=="Category" && qName.startsWith("gpxx:"))
     {							// ignore this, covered in CATEGORY/TYPE
         (void) elementContents();
@@ -718,7 +713,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
 
         if (item!=nullptr) item->setMetadata(idx, elementContents());
         else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementContents());
-        else warning(makeXmlException("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TRKPT, WPT or METADATA"));
+        else addWarning("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TRKPT, WPT or METADATA");
     }
 
     return (true);
@@ -736,17 +731,16 @@ bool GpxImporter::endDocument()
 
     if (currentItem()!=nullptr)				// check terminated
     {
-        return (error(makeXmlException(QString("Point or container not terminated"))));
+        addError("Point or container not terminated");
     }
-
-    if (mWithinMetadata || mWithinExtensions)		// check terminated
+    else if (mWithinMetadata || mWithinExtensions)	// check terminated
     {
-        return (error(makeXmlException(QString("METADATA or EXTENSIONS not terminated"))));
+        addError("METADATA or EXTENSIONS not terminated");
     }
 
     if (!mUndefinedNamespaces.isEmpty())
     {
-        warning(makeXmlException("Undefined XML namespaces, re-save file to correct"));
+        addWarning("Undefined XML namespaces, re-save file to correct");
     }
 
     return (true);
@@ -765,22 +759,33 @@ bool GpxImporter::characters(const QStringRef &ch)
 }
 
 
-bool GpxImporter::error(const QXmlParseException &ex)
+void GpxImporter::addMessage(ErrorReporter::Severity severity, const QString &msg, const QString &restartTag)
 {
-    reporter()->setError(ErrorReporter::Error, ex.message(), ex.lineNumber());
-    return (true);
+    // TODO: can use skipCurrentElement() to replace restart tag?
+    if (!restartTag.isEmpty()) mRestartTag = restartTag;
+    reporter()->setError(severity, msg, mXmlReader->lineNumber());
 }
 
-bool GpxImporter::fatalError(const QXmlParseException &ex)
+
+bool GpxImporter::addError(const QString &msg, const QString &restartTag)
 {
-    reporter()->setError(ErrorReporter::Fatal, ex.message(), ex.lineNumber());
-    return (false);
+    addMessage(ErrorReporter::Error, msg, restartTag);
+    return (true);					// continue reading
 }
 
-bool GpxImporter::warning(const QXmlParseException &ex)
+
+bool GpxImporter::addWarning(const QString &msg, const QString &restartTag)
 {
-    reporter()->setError(ErrorReporter::Warning, ex.message(), ex.lineNumber());
-    return (true);
+    addMessage(ErrorReporter::Warning, msg, restartTag);
+    return (true);					// continue reading
+}
+
+
+bool GpxImporter::addFatal(const QString &msg)
+{
+    addMessage(ErrorReporter::Fatal, msg, QString());
+    mXmlReader->raiseError(i18n("XML parsing failed"));
+    return (false);					// stop reading now
 }
 
 

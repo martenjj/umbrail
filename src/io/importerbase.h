@@ -47,6 +47,7 @@ protected:
     virtual bool loadFrom(QIODevice *dev) = 0;
 
 protected:
+    // TODO: private with accessor
     TrackDataFile *mDataRoot;
 };
 
