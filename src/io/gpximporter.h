@@ -75,15 +75,14 @@ protected:
     bool startDocument(const QStringRef &version, const QStringRef &encoding);
     bool endDocument();
 
-    // Again all of these were originally return type 'bool' in QXmlErrorHandler.
-    // To support the above, the return type is retained.
-    bool addError(const QString &msg, const QString &restartTag = QString());
-    bool addWarning(const QString &msg, const QString &restartTag = QString());
+    // Again the equivalents of these were originally return type 'bool'
+    // in QXmlErrorHandler.  To support the above, the return type is retained.
+    bool addError(const QString &msg);
+    bool addWarning(const QString &msg);
     bool addFatal(const QString &msg);
 
 private:
     QByteArray indent() const;
-    inline bool parsing() const;
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
@@ -93,7 +92,7 @@ private:
     bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
     QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
 
-    void addMessage(ErrorReporter::Severity severity, const QString &msg, const QString &restartTag);
+    void addMessage(ErrorReporter::Severity severity, const QString &msg);
 
 private:
     TrackDataTrack *mCurrentTrack;
@@ -105,7 +104,6 @@ private:
     bool mWithinExtensions;
 
     int mXmlIndent;
-    QString mRestartTag;
 
     // TODO: can possibly be a QStringRef
     QString mContainedChars;

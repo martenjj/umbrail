@@ -25,6 +25,8 @@
 
 #undef DEBUG_IMPORT
 #undef DEBUG_DETAILED
+#undef DEBUG_TOKENS
+
 #define DEBUG_IMPORT
 #define DEBUG_DETAILED
 
@@ -63,7 +65,6 @@ bool GpxImporter::loadFrom(QIODevice *dev)
 #endif
 
     mXmlIndent = 0;
-    mRestartTag.clear();
     mContainedChars.clear();
 
     mWithinMetadata = false;
@@ -79,6 +80,9 @@ bool GpxImporter::loadFrom(QIODevice *dev)
     while (!mXmlReader->atEnd())			// process the token stream
     {
         mXmlReader->readNext();				// get next XML token
+#ifdef DEBUG_TOKENS
+        qDebug() << "token" << mXmlReader->tokenType() << "name" << mXmlReader->name();
+#endif
         switch (mXmlReader->tokenType())		// look at token type
         {
 case QXmlStreamReader::NoToken:
@@ -133,11 +137,13 @@ case QXmlStreamReader::ProcessingInstruction:
     }
 
     const bool ok = !mXmlReader->hasError();		// XML parsing successful?
-    delete mXmlReader;					// finished with XML reader
-    if (!ok) qWarning() << "XML parsing failed!";
+    // Setting a fatal error is necessary so that FilesController::importFile()
+    // will recognise the failure, display the errors and give up.
+    if (!ok) reporter()->setError(ErrorReporter::Fatal, "XML parsing failed", mXmlReader->lineNumber());
 
+    delete mXmlReader;					// finished with XML reader
 #ifdef DEBUG_IMPORT
-    qDebug() << "done ok?" << ok;
+    qDebug() << "done, ok" << ok;
 #endif
     return (ok);
 }
@@ -151,16 +157,7 @@ QString GpxImporter::filter()
 
 QByteArray GpxImporter::indent() const
 {
-    QString ind = parsing() ? "  " : "! ";
-    ind += QString("  ").repeated(mXmlIndent);
-    return (ind.toLatin1());				// cannot use 'constData()' here
-}							// (pointer into temporary!)
-
-
-// TODO: inline in header
-bool GpxImporter::parsing() const
-{
-    return (mRestartTag.isEmpty());
+    return (QByteArray("  ").repeated(mXmlIndent+1));
 }
 
 
@@ -247,6 +244,15 @@ bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &enc
 }
 
 
+// Process the start of an XML element.  Create an empty item of the
+// appropriate type, so that it can be filled in as its contained
+// elements are read.
+//
+// If it is necessary to use addError() - which skips the remainder of
+// the current element - after an empty item has been created, it must
+// be cleaned up again so that it is not mistaken for a new item when
+// the parser restarts.
+
 bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &localName,
                                const QString &qName, const QXmlStreamAttributes &atts)
 {
@@ -275,7 +281,6 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     }
 
     ++mXmlIndent;
-    if (!parsing()) return (true);
 
     if (localName=="gpx")				// start of a GPX element
     {
@@ -288,7 +293,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mWithinMetadata || currentItem()!=nullptr)	// check not nested
         {
-            addError("nested METADATA elements", "metadata");
+            addError("nested METADATA elements");
         }
 
         mWithinMetadata = true;				// just note for contents
@@ -297,21 +302,23 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mWithinExtensions)				// check not nested
         {
-            return (addError("nested EXTENSIONS elements", "extensions"));
+            addError("nested EXTENSIONS elements");
         }
 
         if (currentItem()==nullptr)			// must be within element
         {
-            return (addError("EXTENSIONS not within TRK, TRKSEG, TRKPT or WPT", "extensions"));
+            return (addError("EXTENSIONS not expected here"));
         }
 
         mWithinExtensions = true;			// just note for contents
     }
     else if (localName=="trk")				// start of a TRK element
     {
+        // TODO: check currentItem(), "TRK must be at top level"
+        // also for RTE below
         if (mCurrentTrack!=nullptr)			// check not nested
         {
-            return (addError("nested TRK elements", "trk"));
+            return (addError("nested TRK elements"));
         }
 							// start new track
         mCurrentTrack = new TrackDataTrack;
@@ -320,7 +327,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentRoute!=nullptr)			// check not nested
         {
-            return (addError("nested RTE elements", "rte"));
+            return (addError("nested RTE elements"));
         }
 							// start new track
         mCurrentRoute = new TrackDataRoute;
@@ -329,12 +336,12 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentSegment!=nullptr)			// check not nested
         {
-            return (addError("nested TRKSEG elements", "trkseg"));
+            return (addError("nested TRKSEG elements"));
         }
 
         if (mCurrentTrack==nullptr)			// check properly nested
         {
-            return (addError("TRKSEG start not within TRK", "trkseg"));
+            return (addError("TRKSEG start not within TRK"));
         }
 							// start new segment
         mCurrentSegment = new TrackDataSegment;
@@ -343,14 +350,14 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (addError("nested TRKPT elements", "trkpt"));
+            return (addError("nested TRKPT elements"));
         }
 
         if (mCurrentSegment==nullptr)			// no current segment yet
         {
             if (mCurrentTrack==nullptr)			// must be within track, though
             {
-                return (addError("TRKPT start not within TRKSEG or TRK", "trkpt"));
+                return (addError("TRKPT start not within TRKSEG or TRK"));
             }
 
             addWarning("TRKPT start not within TRKSEG");
@@ -365,7 +372,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentPoint==nullptr)
         {						// check properly nested
-            return (addError(localName.toUpper()+" start not within TRKPT or WPT", localName));
+            return (addError(localName.toUpper()+" start not within TRKPT or WPT"));
         }
     }
     else if (localName=="time")
@@ -379,12 +386,12 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentTrack!=nullptr || mCurrentRoute!=nullptr)
         {
-            return (addError("WPT start within TRK or RTE", "wpt"));
+            return (addError("WPT start within TRK or RTE"));
         }
 
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (addError("nested WPT element", "wpt"));
+            return (addError("nested WPT element"));
         }
 
         mCurrentPoint = new TrackDataWaypoint;		// start new waypoint item
@@ -394,12 +401,12 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (mCurrentRoute==nullptr)
         {
-            return (addError("RTEPT start not within RTE", "rtept"));
+            return (addError("RTEPT start not within RTE"));
         }
 
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (addError("nested RTEPT element", "rtept"));
+            return (addError("nested RTEPT element"));
         }
 
         mCurrentPoint = new TrackDataRoutepoint;	// start new route point item
@@ -409,7 +416,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
     {
         if (dynamic_cast<TrackDataWaypoint *>(mCurrentPoint)==nullptr)
         {						// check contained where expected
-            return (addError("LINK start not within WPT", "link"));
+            return (addError("LINK start not within WPT"));
         }
 
         QStringRef link = atts.value("link");
@@ -423,6 +430,17 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
 }
 
 
+// Process the end of an XML element.  Finalise the item being created,
+// and add it to the data tree in the appropriate place.
+//
+// The XML parser should ensure that the file is well structured, so the
+// element should always have been started and nested correctly.  The
+// various "XXX element not started" errors should therefore never be
+// seen.  If it is necessary to use addError() - which skips the remainder
+// of the current element - before the item being created has been added
+// to the data tree, it must be cleaned up so that it is not mistaken for
+// a new item when the parser restarts.  See the comment for WPT below.
+
 bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName)
 {
     --mXmlIndent;
@@ -430,23 +448,23 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     std::cerr << qPrintable(indent()) << "END <" << qPrintable(localName.toUpper()) << ">" << std::endl;
 #endif
 
-    const bool canRestart = (localName==mRestartTag);	// found tag, can now restart
-    if (canRestart) mRestartTag.clear();		// restart tag now found
-
 // handle end of element here even if it had some errors
 
     if (localName=="gpx") return (true);		// end of the GPX element
-    else if (localName=="metadata")			// end of a METADATA element
+
+    if (localName=="metadata")				// end of a METADATA element
     {
         mWithinMetadata = false;
         return (true);
     }
-    else if (localName=="extensions")			// end of an EXTENSIONS element
+
+    if (localName=="extensions")			// end of an EXTENSIONS element
     {
         mWithinExtensions = false;
         return (true);
     }
-    else if (localName=="trk")				// end of a TRK element
+
+    if (localName=="trk")				// end of a TRK element
     {
         if (mCurrentTrack==nullptr)			// check must have started
         {
@@ -485,6 +503,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     }
     else if (localName=="trkpt")			// end of a TRKPT element
     {
+        // TODO: combine the two tests
         if (mCurrentPoint==nullptr)			// check must have started
         {
             return (addError("TRKPT element not started"));
@@ -540,6 +559,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     }
     else if (localName=="wpt")				// end of a WPT element
     {
+        // TODO: combine the two tests
         if (mCurrentPoint==nullptr)			// check must have started
         {
             return (addError("WPT element not started"));
@@ -569,19 +589,27 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
             }
         }
 
+        // If for some reason any element cannot be finalised or added to the
+        // data tree, it must be cleaned up before returning with addError()
+        // to skip the current element.  For example,
+        //
+        //    if (there is a problem with the waypoint)
+        //    {
+        //      delete mCurrentPoint; mCurrentPoint = nullptr;
+        //      return (addError("Waypoint not complete"));
+        //    }
+
         TrackDataFolder *folder = waypointFolder(tdw);
         Q_ASSERT(folder!=nullptr);
 
-        // Clear the folder name metadata, will regenerate on export
-        tdw->setMetadata("folder", QString(""));
+        // Clear the folder name metadata, it will be regenerated
+        // when the file is exported.
+        tdw->setMetadata("folder", QVariant());
 
         folder->addChildItem(tdw);			// add to destination folder
         mCurrentPoint = nullptr;			// finished with temporary
         return (true);
     }
-
-    if (canRestart) return (true);			// end tag now handled
-    if (!parsing()) return (true);			// still ignoring until restart
 
 // handle end of element only if it was error free
 
@@ -740,38 +768,47 @@ bool GpxImporter::characters(const QStringRef &ch)
 #ifdef DEBUG_DETAILED
     std::cerr << qPrintable(indent()) << "= '" << qPrintable(ch.toLocal8Bit()) << "'" << std::endl;
 #endif
-    if (!parsing()) return (true);
 
     mContainedChars = ch.trimmed().toString();		// save for element end
     return (true);
 }
 
 
-void GpxImporter::addMessage(ErrorReporter::Severity severity, const QString &msg, const QString &restartTag)
+void GpxImporter::addMessage(ErrorReporter::Severity severity, const QString &msg)
 {
-    // TODO: can use skipCurrentElement() to replace restart tag?
-    if (!restartTag.isEmpty()) mRestartTag = restartTag;
     reporter()->setError(severity, msg, mXmlReader->lineNumber());
 }
 
 
-bool GpxImporter::addError(const QString &msg, const QString &restartTag)
+bool GpxImporter::addError(const QString &msg)
 {
-    addMessage(ErrorReporter::Error, msg, restartTag);
-    return (true);					// continue reading
+    addMessage(ErrorReporter::Error, msg);
+
+    // If the error is detected at the start of an element (which
+    // indicates bad nesting, an unexpected tag or similar), then
+    // ignore the remainder of the element.
+    if (mXmlReader->isStartElement())
+    {
+#ifdef DEBUG_IMPORT
+        qDebug() << "skipping current" << mXmlReader->name()  << "element";
+#endif
+        mXmlReader->skipCurrentElement();
+    }
+
+    return (true);					// but continue reading
 }
 
 
-bool GpxImporter::addWarning(const QString &msg, const QString &restartTag)
+bool GpxImporter::addWarning(const QString &msg)
 {
-    addMessage(ErrorReporter::Warning, msg, restartTag);
+    addMessage(ErrorReporter::Warning, msg);
     return (true);					// continue reading
 }
 
 
 bool GpxImporter::addFatal(const QString &msg)
 {
-    addMessage(ErrorReporter::Fatal, msg, QString());
+    addMessage(ErrorReporter::Fatal, msg);
     mXmlReader->raiseError("XML parsing failed");
     return (false);					// stop reading now
 }
