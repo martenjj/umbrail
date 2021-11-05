@@ -75,8 +75,6 @@ bool GpxImporter::loadFrom(QIODevice *dev)
 
     mUndefinedNamespaces.clear();
 
-    // TODO: only used outside this function in 2 places,
-    // make into an automatic variable
     mXmlReader = new QXmlStreamReader(dev);		// XML reader from device
     while (!mXmlReader->atEnd())			// process the token stream
     {
@@ -155,8 +153,7 @@ QByteArray GpxImporter::indent() const
 {
     QString ind = parsing() ? "  " : "! ";
     ind += QString("  ").repeated(mXmlIndent);
-    ind.chop(1);					// allow for added qDebug() space
-    return (ind.toLatin1());				// cannot do the 'constData() here
+    return (ind.toLatin1());				// cannot use 'constData()' here
 }							// (pointer into temporary!)
 
 
@@ -183,14 +180,13 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
     qDebug() << path;
 #endif
 
-    QStringList folders = path.split("/");
+    const QStringList folders = path.split('/');
     Q_ASSERT(!folders.isEmpty());
     TrackDataItem *cur = mDataRoot;
     TrackDataFolder *foundFolder = nullptr;
 
-    for (QStringList::const_iterator it = folders.constBegin(); it!=folders.constEnd(); ++it)
+    for (const QString &name : folders)			// look for existing subfolder
     {
-        const QString name = (*it);			// look for existing subfolder
         foundFolder = TrackData::findFolderByPath(name, cur);
         if (foundFolder==nullptr)			// nothing existing found
         {
@@ -207,18 +203,16 @@ TrackDataFolder *GpxImporter::getFolder(const QString &path)
 }
 
 
-// TODO: never called with nullptr (and would crash if it was)
 TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 {
-    //  If the waypoint is specified and has a folder defined, then that
-    // folder is used.  Otherwise, an appropriately named top level folder
-    // is used, or created if necessary.
+    Q_ASSERT(tdw!=nullptr);
 
-    if (tdw!=nullptr)					// a waypoint is specified
-    {
-        const QVariant path = tdw->metadata("folder");	// its folder, if it has one
-        if (!path.isNull()) return (getFolder(path.toString()));
-    }
+    //  If the waypoint has a folder defined, then that folder is used.
+    // Otherwise, an appropriately named top level folder is used, or
+    // created if necessary.
+
+    const QVariant path = tdw->metadata("folder");	// waypoint folder, if it has one
+    if (!path.isNull()) return (getFolder(path.toString()));
 							// find or create folder
     return (getFolder(tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME));
 }
