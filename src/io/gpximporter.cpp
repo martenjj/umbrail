@@ -49,8 +49,6 @@
 #endif
 
 
-
-
 GpxImporter::GpxImporter()
     : ImporterBase()
 {
@@ -102,11 +100,14 @@ case QXmlStreamReader::EndDocument:
             break;
 
 case QXmlStreamReader::StartElement:
-            startElement(mXmlReader->namespaceUri(), mXmlReader->name().toString(), mXmlReader->qualifiedName().toString(), mXmlReader->attributes());
+            startElement(mXmlReader->namespaceUri(),
+                         mXmlReader->name().toLocal8Bit(), mXmlReader->qualifiedName().toLocal8Bit(),
+                         mXmlReader->attributes());
             break;
 
 case QXmlStreamReader::EndElement:
-            endElement(mXmlReader->namespaceUri(), mXmlReader->name().toString(), mXmlReader->qualifiedName().toString());
+            endElement(mXmlReader->namespaceUri(),
+                       mXmlReader->name().toLocal8Bit(), mXmlReader->qualifiedName().toLocal8Bit());
             break;
 
 case QXmlStreamReader::Characters:
@@ -253,16 +254,10 @@ bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &enc
 // be cleaned up again so that it is not mistaken for a new item when
 // the parser restarts.
 
-bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &localName,
-                               const QString &qName, const QXmlStreamAttributes &atts)
+bool GpxImporter::startElement(const QStringRef &namespaceURI,
+                               const QByteArray &localName, const QByteArray &qName,
+                               const QXmlStreamAttributes &atts)
 {
-#ifdef DEBUG_DETAILED
-    std::cerr << qPrintable(indent()) << "START <" << qPrintable(localName.toUpper()) << ">" << std::endl;
-    for (const QXmlStreamAttribute &att : atts)
-    {
-        std::cerr << qPrintable(indent()) << "+ " << qPrintable(att.name().toLocal8Bit()) << " = " << qPrintable(att.value().toLocal8Bit()) << std::endl;
-    }
-#endif
 
     // TODO: move out to loop, then no need for
     // namespaceURI parameter to this or endElement()
@@ -272,15 +267,169 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
         if (!mUndefinedNamespaces.contains(qName))	// only report each one once
         {
             // TODO: use prefix() and localName
-            QStringList nameParts = qName.split(':');
+            QList<QByteArray> nameParts = qName.split(':');
             addWarning(QString("Undefined namespace '%1' for element '%2'")
-                                     .arg(nameParts.at(0))
-                                     .arg(nameParts.at(1).toUpper()));
+                       .arg(nameParts.at(0).constData())
+                       .arg(nameParts.at(1).toUpper().constData()));
             mUndefinedNamespaces.append(qName);
         }
     }
 
-    ++mXmlIndent;
+    // First look for elements which simply provide contain a textual
+    // value.  If the element tag is recognised, then use the value
+    // as appropriate.  The readElementText() consumes the element.
+    // This just an optimisation so that characters() and endElement()
+    // do not havs to be called as the tokeniser parses the element.
+    //
+    // The (default) option ErrorOnUnexpectedElement to readElementText()
+    // will raise an error if any nested elements are found.  Really, the
+    // option that is wanted is the missing one - return any text found
+    // immediately inside the element (which may be blank) and leave the
+    // parser ready to read any contained element without raising an
+    // error.  Because of this, collecting the contained text with
+    // characters() and processing it in endElement() is still necessary
+    // to handle unknown tags as metadata.
+
+    QString elementText;				// text found, if any
+
+    if (localName=="name")				// start of a NAME element
+    {							// may belong to any container
+        elementText = mXmlReader->readElementText();
+
+        TrackDataItem *item = currentItem();		// find innermost current element
+        if (item!=nullptr) item->setName(elementText, true);	// assign its name
+        else if (mWithinMetadata) mDataRoot->setMetadata(localName, elementText);
+        else addError("NAME not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA");
+    }
+    else if (localName=="time")				// start of a TIME element
+    {							// may belong to any element
+        elementText = mXmlReader->readElementText();
+        // The time spec of the decoded date/time is UTC, which is what we want.
+        const QDateTime dt = QDateTime::fromString(elementText, Qt::ISODate);
+
+        TrackDataItem *item = currentItem();		// find innermost current element
+        if (item==nullptr)				// no element in progress?
+        {
+            // GPSbabel does not enclose TIME within METADATA:
+            //
+            // <?xml version="1.0" encoding="UTF-8"?>
+            // <gpx version="1.0" ... >
+            // <time>2010-04-18T16:28:47Z</time>
+            // <bounds minlat="46.827816667" minlon="8.370250000" maxlat="46.850700000" maxlon="8.391166667"/>
+            // <wpt> ...
+
+            if (!mWithinMetadata) addError("TIME not within TRK, TRKPT, WPT or METADATA");
+            item = mDataRoot;				// assume to be in metadata
+        }
+
+        item->setMetadata(localName, dt);
+    }
+    else if (localName=="ele")				// start of an ELE element
+    {
+        elementText = mXmlReader->readElementText();
+        const double ele = elementText.toDouble();
+        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
+
+        // The explicit use of QVariant(double) seems to be needed, otherwise there is
+        // an ambiguous overload:
+        //
+        //   gpximporter.cpp:547: error: call of overloaded 'setMetadata(int, const double&)' is ambiguous
+        //   trackdata.h:207: note: candidate 'void TrackDataItem::setMetadata(int, const QColor&)'
+        //   trackdata.h:208: note: candidate 'void TrackDataItem::setMetadata(int, const QVariant&)'
+        //
+        // I don't understand why, because there is no explicit conversion defined from
+        // double to QColor and an implicit conversion from double to any sort of integer
+        // type should not be allowed.
+        if (tdp!=nullptr) tdp->setMetadata(localName, QVariant(ele));
+        else return (addError("ELE not within TRKPT or WPT"));
+    }
+    else if (localName=="category")			// start of a CATEGORY element
+    {
+        elementText = mXmlReader->readElementText();
+        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        if (item!=nullptr) item->setMetadata(localName, elementText);
+        else addError("CATEGORY not within WPT");
+    }
+    else if (localName=="type")				// start of a TYPE element
+    {
+        elementText = mXmlReader->readElementText();
+
+        TrackDataItem *item = currentItem();
+        if (dynamic_cast<TrackDataWaypoint *>(item)!=nullptr)
+        {
+            // For a waypoint, a synonym for CATEGORY but only if
+            // there is no CATEGORY already.
+            const int idx2 = DataIndexer::index("category");
+            if (item->metadata(idx2).isNull()) item->setMetadata(idx2, elementText);
+        }
+        else if (dynamic_cast<TrackDataTrack *>(item)!=nullptr || dynamic_cast<TrackDataSegment *>(item)!=nullptr)
+        {
+            // For a track or segment, normal metadata.
+            item->setMetadata(localName, elementText);
+        }
+        else addError("TYPE not within WPT, TRK or TRKSEG");
+    }
+    else if (qName=="gpxx:Category")
+    {
+        // Ignore this, covered by CATEGORY/TYPE above
+        elementText = mXmlReader->readElementText();
+        return (true);
+    }
+    else if (localName=="color")			// start of a COLOR element, which
+    {							// should be within EXTENSIONS
+        elementText = mXmlReader->readElementText();
+
+        TrackDataItem *item = currentItem();		// find innermost current element
+        if (item!=nullptr)
+        {
+            QString rgbString = elementText;
+            if (!rgbString.startsWith('#')) rgbString.prepend('#');
+            QColor col(rgbString);
+            if (!col.isValid()) return (addError("invalid value for COLOR"));
+
+            // The COLOR attribute will only set our internal LINECOLOR/POINTCOLOR
+            // attributes if they are not already set.
+            if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+            {						// colour for a point
+                const int idx2 = DataIndexer::index("pointcolor");
+                const QVariant &v = item->metadata(idx2);
+                if (v.isNull()) item->setMetadata(idx2, col);
+            }
+            else					// colour for a line/container
+            {
+                const int idx2 = DataIndexer::index("linecolor");
+                const QVariant &v = item->metadata(idx2);
+                if (v.isNull()) item->setMetadata(idx2, col);
+            }
+        }
+        else addError("COLOR not within TRK, TRKSEG, TRKPT, WPT, RTE or RTEPT");
+    }
+
+    // Contrary to standard practice, perform this test with isNull() not
+    // isEmpty().  We want to detect a matching element above even if its
+    // text value was a null string.
+    if (!elementText.isNull())
+    {
+#ifdef DEBUG_DETAILED
+        std::cerr << qPrintable(indent()) << "TEXT <" << qPrintable(localName.toUpper()) << ">"
+                  << " = '" << qPrintable(elementText) << "'" << std::endl;
+#endif
+        return (true);					// element has been processed
+    }
+
+    // The start of what is most likely to be a container element.
+    // Create a blank item of the appropriate type, whioch will be
+    // filled in as parsing continues and added to the data tree when
+    // the correcponding end element is seen.
+
+#ifdef DEBUG_DETAILED
+    std::cerr << qPrintable(indent()) << "START <" << qPrintable(localName.toUpper()) << ">" << std::endl;
+    for (const QXmlStreamAttribute &att : atts)
+    {
+        std::cerr << qPrintable(indent()) << "+ " << qPrintable(att.name().toLocal8Bit()) << " = " << qPrintable(att.value().toLocal8Bit()) << std::endl;
+    }
+#endif
+    ++mXmlIndent;					// increase indent for display
 
     if (localName=="gpx")				// start of a GPX element
     {
@@ -368,20 +517,6 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
         mCurrentPoint = new TrackDataTrackpoint;	// start new point item
         getLatLong(mCurrentPoint, atts, localName);	// get coordinates
     }
-    else if (localName=="ele")				// start of an ELEvation element
-    {
-        if (mCurrentPoint==nullptr)
-        {						// check properly nested
-            return (addError(localName.toUpper()+" start not within TRKPT or WPT"));
-        }
-    }
-    else if (localName=="time")
-    {							// start of a TIME element
-        if (mCurrentPoint==nullptr && mCurrentTrack==nullptr && !mWithinMetadata)
-        {						// check properly nested
-            addWarning(localName.toUpper()+" start not within TRKPT, WPT or METADATA");
-        }
-    }
     else if (localName=="wpt")				// start of an WPT element
     {
         if (mCurrentTrack!=nullptr || mCurrentRoute!=nullptr)
@@ -421,7 +556,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
 
         QStringRef link = atts.value("link");
         if (link.isEmpty()) link = atts.value("href");
-        if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName.toLocal8Bit()), link.toString());
+        if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName), link.toString());
         else addWarning("missing LINK/HREF attribute on LINK element");
     }
 
@@ -441,7 +576,8 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
 // to the data tree, it must be cleaned up so that it is not mistaken for
 // a new item when the parser restarts.  See the comment for WPT below.
 
-bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName)
+bool GpxImporter::endElement(const QStringRef &namespaceURI,
+                             const QByteArray &localName, const QByteArray &qName)
 {
     --mXmlIndent;
 #ifdef DEBUG_DETAILED
@@ -611,126 +747,23 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
         return (true);
     }
 
-// handle end of element only if it was error free
+    // If we get here, the element tag is not recognised as a container
+    // or a value that is treated specially.  If the element contained
+    // any textual data, then add it to the current element or file metadata
+    // indexed by the literal element tag.
 
-    QByteArray key = qName.toLocal8Bit();		// namespaced name of the element
+    const QString elementText = elementContents();	// get any current contents
+    if (elementText.isEmpty()) return (true);		// ignore if there was none
+
+    QByteArray key = qName;				// namespaced name of the element
     // Ultra GPS Logger tags waypoints with <description> instead of <desc>
     if (key=="description") key = "desc";
     const int idx = DataIndexer::indexWithNamespace(key);
 
-    if (localName=="ele")				// end of an ELE element
-    {
-        const double ele = elementContents().toDouble();
-        TrackDataAbstractPoint *p = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
-
-        // The explicit use of QVariant(double) seems to be needed, otherwise there is
-        // an ambiguous overload:
-        //
-        //   gpximporter.cpp:547: error: call of overloaded 'setMetadata(int, const double&)' is ambiguous
-        //   In file included from gpximporter.cpp:10:
-        //   trackdata.h:207: note: candidate 'void TrackDataItem::setMetadata(int, const QColor&)'
-        //   trackdata.h:208: note: candidate 'void TrackDataItem::setMetadata(int, const QVariant&)'
-        //
-        // I don't understand why, because there is no explicit conversion defined from
-        // double to QColor and an implicit conversion from double to any sort of integer
-        // type should not be allowed.
-        if (p!=nullptr) p->setMetadata(idx, QVariant(ele));
-        else return (addError("ELE end not within TRKPT or WPT"));
-    }
-    else if (localName=="time")				// end of a TIME element
-    {							// may belong to any element
-        // The time spec of the decoded date/time is UTC, which is what we want.
-        const QDateTime dt = QDateTime::fromString(elementContents(), Qt::ISODate);
-
-        TrackDataItem *item = currentItem();		// find innermost current element
-        if (item==nullptr)				// no element in progress?
-        {
-            // GPSbabel does not enclose TIME within METADATA:
-            //
-            // <?xml version="1.0" encoding="UTF-8"?>
-            // <gpx version="1.0" ... >
-            // <time>2010-04-18T16:28:47Z</time>
-            // <bounds minlat="46.827816667" minlon="8.370250000" maxlat="46.850700000" maxlon="8.391166667"/>
-            // <wpt> ...
-            //
-            if (mWithinMetadata) item = mDataRoot;	// but can be in metadata
-        }
-
-        if (item!=nullptr) item->setMetadata(idx, dt);
-        else return (addError("TIME end not within TRK, TRKPT, WPT or METADATA"));
-    }
-    else if (localName=="name")				// end of a NAME element
-    {							// may belong to any container
-        TrackDataItem *item = currentItem();		// find innermost current element
-        if (item!=nullptr) item->setName(elementContents(), true);	// assign its name
-        else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementContents());
-        else addWarning("NAME end not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA");
-    }
-    else if (localName=="color")			// end of a COLOR element
-    {							// should be within EXTENSIONS
-        TrackDataItem *item = currentItem();		// find innermost current element
-        if (item==nullptr) return (addError("COLOR end not within TRK, TRKSEG, TRKPT or WPT"));
-
-        QString rgbString = elementContents();
-        if (!rgbString.startsWith('#')) rgbString.prepend('#');
-        QColor col(rgbString);
-        if (!col.isValid()) return (addError("invalid value for COLOR"));
-
-        // The COLOR attribute will only set our internal LINECOLOR/POINTCOLOR
-        // attributes if they are not already set.
-        if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
-        {						// colour for a point
-            const int idx2 = DataIndexer::index("pointcolor");
-            const QVariant &v = item->metadata(idx2);
-            if (v.isNull()) item->setMetadata(idx2, col);
-        }
-        else						// colour for a line/container
-        {
-            const int idx2 = DataIndexer::index("linecolor");
-            const QVariant &v = item->metadata(idx2);
-            if (v.isNull()) item->setMetadata(idx2, col);
-        }
-    }
-    else if (localName=="category")			// end of a CATEGORY element
-    {
-        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
-
-        if (item!=nullptr) item->setMetadata(idx, elementContents());
-        else addWarning("CATEGORY end not within WPT");
-    }
-    else if (localName=="type")				// end of a TYPE element
-    {
-        TrackDataItem *item = currentItem();
-
-        if (dynamic_cast<TrackDataWaypoint *>(item)!=nullptr)
-        {
-            // For a waypoint, a synonym for CATEGORY but only if
-            // there is no CATEGORY already.
-            const int idx2 = DataIndexer::index("category");
-            if (item->metadata(idx2).isNull()) item->setMetadata(idx2, elementContents());
-        }
-        else if (dynamic_cast<TrackDataTrack *>(item)!=nullptr || dynamic_cast<TrackDataSegment *>(item)!=nullptr)
-        {
-            // For a track or segment, normal metadata.
-            item->setMetadata(idx, elementContents());
-        }
-        else addWarning("TYPE end not within WPT, TRK or TRKSEG");
-    }
-    // TODO: qName.startsWith() -> prefix() 
-    else if (localName=="Category" && qName.startsWith("gpxx:"))
-    {							// ignore this, covered in CATEGORY/TYPE
-        (void) elementContents();
-    }
-    else						// Unknown tag, save as metadata
-    {
-        if (!hasElementContents()) return (true);	// if there is anything to save
-
-        TrackDataItem *item = currentItem();		// find innermost current element
-
-        if (item!=nullptr) item->setMetadata(idx, elementContents());
-        else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementContents());
-        else addWarning("unrecognised "+localName.toUpper()+" end not within TRK, TRKSEG, TRKPT, WPT or METADATA");
-    }
+    TrackDataItem *item = currentItem();		// find innermost current element
+    if (item!=nullptr) item->setMetadata(idx, elementText);
+    else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementText);
+    else addWarning("unrecognised "+localName.toUpper()+" not expected here");
 
     return (true);
 }
@@ -763,14 +796,24 @@ bool GpxImporter::endDocument()
 }
 
 
+// This is still necessary, because readElementText() will not work
+// as described in startElement().
+
 bool GpxImporter::characters(const QStringRef &ch)
 {
 #ifdef DEBUG_DETAILED
     std::cerr << qPrintable(indent()) << "= '" << qPrintable(ch.toLocal8Bit()) << "'" << std::endl;
 #endif
-
     mContainedChars = ch.trimmed().toString();		// save for element end
     return (true);
+}
+
+
+QString GpxImporter::elementContents()
+{
+    const QString cc = mContainedChars;			// stored by characters() above
+    mContainedChars.clear();				// contents are now consumed
+    return (cc);
 }
 
 
@@ -784,7 +827,7 @@ bool GpxImporter::addError(const QString &msg)
 {
     addMessage(ErrorReporter::Error, msg);
 
-    // If the error is detected at the start of an element (which
+    // If the error detected is at the start of an element (which
     // indicates bad nesting, an unexpected tag or similar), then
     // ignore the remainder of the element.
     if (mXmlReader->isStartElement())

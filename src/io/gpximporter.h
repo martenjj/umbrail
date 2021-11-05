@@ -69,8 +69,8 @@ protected:
     //    }
     //
     // with the slight cost of needing to end with an explicit 'return'.
-    bool startElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName, const QXmlStreamAttributes &atts);
-    bool endElement(const QStringRef &namespaceURI, const QString &localName, const QString &qName);
+    bool startElement(const QStringRef &namespaceURI, const QByteArray &localName, const QByteArray &qName, const QXmlStreamAttributes &atts);
+    bool endElement(const QStringRef &namespaceURI, const QByteArray &localName, const QByteArray &qName);
     bool characters(const QStringRef &ch);
     bool startDocument(const QStringRef &version, const QStringRef &encoding);
     bool endDocument();
@@ -87,10 +87,7 @@ private:
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
     void getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName);
-
-    // TODO: eliminate, use readElementText()
-    bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
-    QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
+    QString elementContents();
 
     void addMessage(ErrorReporter::Severity severity, const QString &msg);
 
