@@ -23,13 +23,16 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
+#undef DEBUG_IMPORT
+#undef DEBUG_DETAILED
+#define DEBUG_IMPORT
+#define DEBUG_DETAILED
+
 #include "gpximporter.h"
 
 #include <QXmlStreamReader>
 #include <qcolor.h>
 #include <qdebug.h>
-
-#include <klocalizedstring.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"
@@ -39,10 +42,11 @@
 #define WAYPOINTS_FOLDER_NAME	"Waypoints"
 #define NOTES_FOLDER_NAME	"Notes"
 
-#undef DEBUG_IMPORT
-#undef DEBUG_DETAILED
-#define DEBUG_IMPORT
-#define DEBUG_DETAILED
+#ifdef DEBUG_DETAILED
+#include <iostream>
+#endif
+
+
 
 
 GpxImporter::GpxImporter()
@@ -175,7 +179,7 @@ TrackDataItem *GpxImporter::currentItem() const
 
 TrackDataFolder *GpxImporter::getFolder(const QString &path)
 {
-#ifdef DEBUG_DETAILED
+#ifdef DEBUG_IMPORT
     qDebug() << path;
 #endif
 
@@ -243,8 +247,9 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
 bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &encoding)
 {
 #ifdef DEBUG_DETAILED
-    // TODO: to std::cerr for consistent identation
-    qDebug() << endl << indent().constData() << "START DOCUMENT version" << version << "encoding" << encoding;
+    std::cerr << std::endl << qPrintable(indent()) << "START DOCUMENT"
+              << " version " << qPrintable(version.toLocal8Bit())
+              << " encoding " << qPrintable(encoding.toLocal8Bit()) << std::endl;
 #else
     qDebug() << "START DOCUMENT";
 #endif
@@ -257,10 +262,10 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI, const QString &lo
                                const QString &qName, const QXmlStreamAttributes &atts)
 {
 #ifdef DEBUG_DETAILED
-    qDebug() << indent().constData() << "START" << localName;
+    std::cerr << qPrintable(indent()) << "START <" << qPrintable(localName.toUpper()) << ">" << std::endl;
     for (const QXmlStreamAttribute &att : atts)
     {
-        qDebug() << indent().constData() << "+" << att.name() << "=" << att.value();
+        std::cerr << qPrintable(indent()) << "+ " << qPrintable(att.name().toLocal8Bit()) << " = " << qPrintable(att.value().toLocal8Bit()) << std::endl;
     }
 #endif
 
@@ -433,7 +438,7 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
 {
     --mXmlIndent;
 #ifdef DEBUG_DETAILED
-    qDebug() << indent().constData() << "END  " << localName;
+    std::cerr << qPrintable(indent()) << "END <" << qPrintable(localName.toUpper()) << ">" << std::endl;
 #endif
 
     const bool canRestart = (localName==mRestartTag);	// found tag, can now restart
@@ -444,17 +449,11 @@ bool GpxImporter::endElement(const QStringRef &namespaceURI, const QString &loca
     if (localName=="gpx") return (true);		// end of the GPX element
     else if (localName=="metadata")			// end of a METADATA element
     {
-#ifdef DEBUG_DETAILED
-        qDebug() << "got end of METADATA";
-#endif
         mWithinMetadata = false;
         return (true);
     }
     else if (localName=="extensions")			// end of an EXTENSIONS element
     {
-#ifdef DEBUG_DETAILED
-        qDebug() << "got end of EXTENSIONS";
-#endif
         mWithinExtensions = false;
         return (true);
     }
@@ -724,7 +723,7 @@ bool GpxImporter::endDocument()
 {
     --mXmlIndent;
 #ifdef DEBUG_DETAILED
-    qDebug() << indent().constData() << "END DOCUMENT" << endl;
+    std::cerr << qPrintable(indent()) << "END DOCUMENT" << std::endl;
 #else
     qDebug() << "END DOCUMENT";
 #endif
@@ -750,7 +749,7 @@ bool GpxImporter::endDocument()
 bool GpxImporter::characters(const QStringRef &ch)
 {
 #ifdef DEBUG_DETAILED
-    qDebug() << indent().constData() << "=" << ch;
+    std::cerr << qPrintable(indent()) << "= '" << qPrintable(ch.toLocal8Bit()) << "'" << std::endl;
 #endif
     if (!parsing()) return (true);
 
@@ -784,7 +783,7 @@ bool GpxImporter::addWarning(const QString &msg, const QString &restartTag)
 bool GpxImporter::addFatal(const QString &msg)
 {
     addMessage(ErrorReporter::Fatal, msg, QString());
-    mXmlReader->raiseError(i18n("XML parsing failed"));
+    mXmlReader->raiseError("XML parsing failed");
     return (false);					// stop reading now
 }
 
