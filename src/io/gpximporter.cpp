@@ -223,15 +223,10 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
     double lat = NAN;					// coordinates found
     double lon = NAN;
 
-    // TODO: just look up directly, no point in warning
-    for (const QXmlStreamAttribute &att : atts)
-    {
-        QStringRef attrName = att.name();
-        QStringRef attrValue = att.value();
-        if (attrName=="lat") lat = attrValue.toDouble();
-        else if (attrName=="lon") lon = attrValue.toDouble();
-        else addWarning("unexpected attribute "+attrName.toString().toUpper()+" on "+localName.toUpper()+" element");
-    }
+    QStringRef val = atts.value("lat");
+    if (!val.isEmpty()) lat = val.toDouble();
+    val = atts.value("lon");
+    if (!val.isEmpty()) lon = val.toDouble();
 
     if (!ISNAN(lat) && !ISNAN(lon)) pnt->setLatLong(lat, lon);
     else addWarning("missing LAT/LON on "+localName.toUpper()+" element");
