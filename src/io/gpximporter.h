@@ -69,8 +69,8 @@ protected:
     //    }
     //
     // with the slight cost of needing to end with an explicit 'return'.
-    bool startElement(const QStringRef &namespaceURI, const QByteArray &localName, const QByteArray &qName, const QXmlStreamAttributes &atts);
-    bool endElement(const QStringRef &namespaceURI, const QByteArray &localName, const QByteArray &qName);
+    bool startElement(const QByteArray &localName, const QByteArray &qName, const QXmlStreamAttributes &atts);
+    bool endElement(const QByteArray &localName, const QByteArray &qName);
     bool characters(const QStringRef &ch);
     bool startDocument(const QStringRef &version, const QStringRef &encoding);
     bool endDocument();
@@ -91,6 +91,8 @@ private:
 
     void addMessage(ErrorReporter::Severity severity, const QString &msg);
 
+    void checkNamespace(const QStringRef &namespaceURI, const QStringRef &localName, const QStringRef &nsPrefix);
+
 private:
     TrackDataTrack *mCurrentTrack;
     TrackDataRoute *mCurrentRoute;
@@ -100,14 +102,12 @@ private:
     bool mWithinMetadata;
     bool mWithinExtensions;
 
+    QXmlStreamReader *mXmlReader;
     int mXmlIndent;
 
-    // TODO: can possibly be a QStringRef
     QString mContainedChars;
 
     QStringList mUndefinedNamespaces;
-
-    QXmlStreamReader *mXmlReader;
 };
 
 #endif							// GPXIMPORTER_H

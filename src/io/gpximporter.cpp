@@ -40,13 +40,12 @@
 #include "dataindexer.h"
 #include "errorreporter.h"
 
-
-#define WAYPOINTS_FOLDER_NAME	"Waypoints"
-#define NOTES_FOLDER_NAME	"Notes"
-
 #ifdef DEBUG_DETAILED
 #include <iostream>
 #endif
+
+#define WAYPOINTS_FOLDER_NAME	"Waypoints"
+#define NOTES_FOLDER_NAME	"Notes"
 
 
 GpxImporter::GpxImporter()
@@ -58,9 +57,7 @@ GpxImporter::GpxImporter()
 
 bool GpxImporter::loadFrom(QIODevice *dev)
 {
-#ifdef DEBUG_IMPORT
     qDebug() << "starting";
-#endif
 
     mXmlIndent = 0;
     mContainedChars.clear();
@@ -75,6 +72,18 @@ bool GpxImporter::loadFrom(QIODevice *dev)
     mUndefinedNamespaces.clear();
 
     mXmlReader = new QXmlStreamReader(dev);		// XML reader from device
+
+    // This needs to be turned off in order to be able to load files that
+    // do not have an XML namespace prefix declared correctly.  Otherwise the
+    // parser will give an error if any element tag with an undefined prefix
+    // is encountered.  See the comments for checkNamespace() below.
+    //
+    // The Qt function is slightly misnamed - it does not turn off namespace
+    // processing completely, an element's namespaceURI is still reported
+    // if a prefix is present and the namespace is defined.  It simply causes
+    // the parser to not give an error for an undefined prefix.
+    mXmlReader->setNamespaceProcessing(false);
+
     while (!mXmlReader->atEnd())			// process the token stream
     {
         mXmlReader->readNext();				// get next XML token
@@ -100,14 +109,13 @@ case QXmlStreamReader::EndDocument:
             break;
 
 case QXmlStreamReader::StartElement:
-            startElement(mXmlReader->namespaceUri(),
-                         mXmlReader->name().toLocal8Bit(), mXmlReader->qualifiedName().toLocal8Bit(),
+            checkNamespace(mXmlReader->namespaceUri(), mXmlReader->name(), mXmlReader->prefix());
+            startElement(mXmlReader->name().toLocal8Bit(), mXmlReader->qualifiedName().toLocal8Bit(),
                          mXmlReader->attributes());
             break;
 
 case QXmlStreamReader::EndElement:
-            endElement(mXmlReader->namespaceUri(),
-                       mXmlReader->name().toLocal8Bit(), mXmlReader->qualifiedName().toLocal8Bit());
+            endElement(mXmlReader->name().toLocal8Bit(), mXmlReader->qualifiedName().toLocal8Bit());
             break;
 
 case QXmlStreamReader::Characters:
@@ -138,14 +146,12 @@ case QXmlStreamReader::ProcessingInstruction:
     }
 
     const bool ok = !mXmlReader->hasError();		// XML parsing successful?
+    qDebug() << "done, ok" << ok;
     // Setting a fatal error is necessary so that FilesController::importFile()
     // will recognise the failure, display the errors and give up.
     if (!ok) reporter()->setError(ErrorReporter::Fatal, "XML parsing failed", mXmlReader->lineNumber());
 
     delete mXmlReader;					// finished with XML reader
-#ifdef DEBUG_IMPORT
-    qDebug() << "done, ok" << ok;
-#endif
     return (ok);
 }
 
@@ -205,7 +211,7 @@ TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
 {
     Q_ASSERT(tdw!=nullptr);
 
-    //  If the waypoint has a folder defined, then that folder is used.
+    // If the waypoint has a folder defined, then that folder is used.
     // Otherwise, an appropriately named top level folder is used, or
     // created if necessary.
 
@@ -254,27 +260,9 @@ bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &enc
 // be cleaned up again so that it is not mistaken for a new item when
 // the parser restarts.
 
-bool GpxImporter::startElement(const QStringRef &namespaceURI,
-                               const QByteArray &localName, const QByteArray &qName,
+bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qName,
                                const QXmlStreamAttributes &atts)
 {
-
-    // TODO: move out to loop, then no need for
-    // namespaceURI parameter to this or endElement()
-
-    if (namespaceURI.isEmpty())				// element with undefined namespace
-    {
-        if (!mUndefinedNamespaces.contains(qName))	// only report each one once
-        {
-            // TODO: use prefix() and localName
-            QList<QByteArray> nameParts = qName.split(':');
-            addWarning(QString("Undefined namespace '%1' for element '%2'")
-                       .arg(nameParts.at(0).constData())
-                       .arg(nameParts.at(1).toUpper().constData()));
-            mUndefinedNamespaces.append(qName);
-        }
-    }
-
     // First look for elements which simply provide contain a textual
     // value.  If the element tag is recognised, then use the value
     // as appropriate.  The readElementText() consumes the element.
@@ -284,7 +272,7 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI,
     // The (default) option ErrorOnUnexpectedElement to readElementText()
     // will raise an error if any nested elements are found.  Really, the
     // option that is wanted is the missing one - return any text found
-    // immediately inside the element (which may be blank) and leave the
+    // immediately inside the element (which may be blank) but leave the
     // parser ready to read any contained element without raising an
     // error.  Because of this, collecting the contained text with
     // characters() and processing it in endElement() is still necessary
@@ -418,9 +406,9 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI,
     }
 
     // The start of what is most likely to be a container element.
-    // Create a blank item of the appropriate type, whioch will be
+    // Create a blank item of the appropriate type, which will be
     // filled in as parsing continues and added to the data tree when
-    // the correcponding end element is seen.
+    // the corresponding end element is seen.
 
 #ifdef DEBUG_DETAILED
     std::cerr << qPrintable(indent()) << "START <" << qPrintable(localName.toUpper()) << ">" << std::endl;
@@ -576,27 +564,24 @@ bool GpxImporter::startElement(const QStringRef &namespaceURI,
 // to the data tree, it must be cleaned up so that it is not mistaken for
 // a new item when the parser restarts.  See the comment for WPT below.
 
-bool GpxImporter::endElement(const QStringRef &namespaceURI,
-                             const QByteArray &localName, const QByteArray &qName)
+bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qName)
 {
     --mXmlIndent;
 #ifdef DEBUG_DETAILED
     std::cerr << qPrintable(indent()) << "END <" << qPrintable(localName.toUpper()) << ">" << std::endl;
 #endif
 
-// handle end of element here even if it had some errors
-
-    if (localName=="gpx") return (true);		// end of the GPX element
-
+    if (localName=="gpx") return (true);		// end of the GPX element,
+							// nothing to do
     if (localName=="metadata")				// end of a METADATA element
     {
-        mWithinMetadata = false;
+        mWithinMetadata = false;			// just note it finished
         return (true);
     }
 
     if (localName=="extensions")			// end of an EXTENSIONS element
     {
-        mWithinExtensions = false;
+        mWithinExtensions = false;			// just note it finished
         return (true);
     }
 
@@ -860,4 +845,29 @@ bool GpxImporter::addFatal(const QString &msg)
 bool GpxImporter::needsResave() const
 {
     return (!mUndefinedNamespaces.isEmpty());
+}
+
+
+// Look to see whether the current element has an XML namespace prefix
+// that is not defined.  This happens with files from an older version
+// of the application (before commit a79378d7 in January 2016) which
+// did not declare the namespace correctly.
+//
+// If this is detected, add a file warning and note the prefix of the
+// undefined namespace.  This will be checked by the FilesController via
+// needsResave() and the user will be prompted to resave the file in order
+// to update it with the correct namespace declaration.
+
+void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
+                                 const QStringRef &localName,
+                                 const QStringRef &nsPrefix)
+{
+    if (!nsPrefix.isEmpty() && namespaceURI.isEmpty())	// element with undefined namespace
+    {
+        if (!mUndefinedNamespaces.contains(nsPrefix))	// only report each one once
+        {
+            addWarning(QString("Undefined namespace '%1' for element '%2'").arg(nsPrefix).arg(localName));
+            mUndefinedNamespaces.append(nsPrefix.toString());
+        }
+    }
 }
