@@ -864,10 +864,11 @@ void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
 {
     if (!nsPrefix.isEmpty() && namespaceURI.isEmpty())	// element with undefined namespace
     {
-        if (!mUndefinedNamespaces.contains(nsPrefix))	// only report each one once
+        const QString qName = nsPrefix+':'+localName;
+        if (!mUndefinedNamespaces.contains(qName))	// only report each one once
         {
-            addWarning(QString("Undefined namespace '%1' for element '%2'").arg(nsPrefix).arg(localName));
-            mUndefinedNamespaces.append(nsPrefix.toString());
+            addWarning(QString("Undefined namespace '%1' for element &lt;%2&gt;").arg(nsPrefix).arg(localName));
+            mUndefinedNamespaces.append(qName);
         }
     }
 }
