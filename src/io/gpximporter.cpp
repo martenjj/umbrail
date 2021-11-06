@@ -27,9 +27,6 @@
 #undef DEBUG_DETAILED
 #undef DEBUG_TOKENS
 
-#define DEBUG_IMPORT
-#define DEBUG_DETAILED
-
 #include "gpximporter.h"
 
 #include <QXmlStreamReader>
