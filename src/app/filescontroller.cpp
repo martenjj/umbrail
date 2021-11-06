@@ -217,8 +217,8 @@ case ErrorReporter::Warning:
 
         detailed = true;
         message = (saving ?
-                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was saved but with warnings.###", file.toDisplayString()) :
-                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was loaded but with warnings.###", file.toDisplayString()));
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename><nl/>was saved but with warnings.###", file.toDisplayString()) :
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename><nl/>was loaded but with warnings.###", file.toDisplayString()));
         caption = (saving ? i18n("File Save Warning") : i18n("File Load Warning"));
         iconName = "dialog-information";
         askText = i18n("Do not show again for this file");
@@ -226,16 +226,16 @@ case ErrorReporter::Warning:
 
 case ErrorReporter::Error:
         message = (saving ?
-                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was saved but had errors.###", file.toDisplayString()) :
-                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> was loaded but had errors.###", file.toDisplayString()));
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename><nl/>was saved but had errors.###", file.toDisplayString()) :
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename><nl/>was loaded but had errors.###", file.toDisplayString()));
         caption = (saving ? i18n("File Save Error") : i18n("File Load Error"));
         iconName = "dialog-warning";
         break;
 
 case ErrorReporter::Fatal:
         message = (saving ?
-                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> could not be saved.###", file.toDisplayString()) :
-                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename> could not be loaded.###", file.toDisplayString()));
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename><nl/>could not be saved.###", file.toDisplayString()) :
+                   xi18nc("@info with placeholder at end", "The file <filename>%1</filename><nl/>could not be loaded.###", file.toDisplayString()));
         caption = (saving ? i18n("File Save Failure") : i18n("File Load Failure"));
         iconName = "dialog-error";
         result = false;
