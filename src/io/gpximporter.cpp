@@ -72,18 +72,6 @@ bool GpxImporter::loadFrom(QIODevice *dev)
     mUndefinedNamespaces.clear();
 
     mXmlReader = new QXmlStreamReader(dev);		// XML reader from device
-
-    // This needs to be turned off in order to be able to load files that
-    // do not have an XML namespace prefix declared correctly.  Otherwise the
-    // parser will give an error if any element tag with an undefined prefix
-    // is encountered.  See the comments for checkNamespace() below.
-    //
-    // The Qt function is slightly misnamed - it does not turn off namespace
-    // processing completely, an element's namespaceURI is still reported
-    // if a prefix is present and the namespace is defined.  It simply causes
-    // the parser to not give an error for an undefined prefix.
-    mXmlReader->setNamespaceProcessing(false);
-
     while (!mXmlReader->atEnd())			// process the token stream
     {
         mXmlReader->readNext();				// get next XML token
@@ -263,6 +251,27 @@ bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &enc
 bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qName,
                                const QXmlStreamAttributes &atts)
 {
+    if (localName!="gpx")				// past the first GPX element
+    {
+        // Namespace processing needs to be turned off in order to be able to
+        // load files that do not have an XML namespace prefix declared correctly.
+        // Otherwise the parser will give an error if any element tag with an
+        // undefined prefix is encountered.  See the comments for checkNamespace()
+        // below.
+        //
+        // The processing is turned off here, after the top level GPX element with
+        // its list of namespaces has started.  Turning it off right at the
+        // beginning would have ignored that namespace list, which means that all
+        // namespace prefixes - even those which are correctly defined - are
+        // reported as undefined.
+        //
+        // The Qt function is slightly misnamed - it does not turn off namespace
+        // processing completely, an element's namespaceURI is still reported
+        // if a prefix is present and the namespace is defined.  It simply causes
+        // the parser to not give an error for an undefined prefix.
+        if (mXmlReader->namespaceProcessing()) mXmlReader->setNamespaceProcessing(false);
+    }
+
     // First look for elements which simply provide contain a textual
     // value.  If the element tag is recognised, then use the value
     // as appropriate.  The readElementText() consumes the element.
