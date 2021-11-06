@@ -451,20 +451,18 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     }
     else if (localName=="trk")				// start of a TRK element
     {
-        // TODO: check currentItem(), "TRK must be at top level"
-        // also for RTE below
-        if (mCurrentTrack!=nullptr)			// check not nested
+        if (currentItem()!=nullptr)			// check not nested
         {
-            return (addError("nested TRK elements"));
+            return (addError("TRK element nested or not at top level"));
         }
 							// start new track
         mCurrentTrack = new TrackDataTrack;
     }
     else if (localName=="rte")				// start of a RTE element
     {
-        if (mCurrentRoute!=nullptr)			// check not nested
+        if (currentItem()!=nullptr)			// check not nested
         {
-            return (addError("nested RTE elements"));
+            return (addError("RTE element nested or not at top level"));
         }
 							// start new track
         mCurrentRoute = new TrackDataRoute;
@@ -478,7 +476,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
 
         if (mCurrentTrack==nullptr)			// check properly nested
         {
-            return (addError("TRKSEG start not within TRK"));
+            return (addError("TRKSEG not within TRK"));
         }
 							// start new segment
         mCurrentSegment = new TrackDataSegment;
@@ -487,19 +485,18 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     {
         if (mCurrentPoint!=nullptr)			// check not nested
         {
-            return (addError("nested TRKPT elements"));
+            return (addError("nested TRKPT element"));
         }
 
         if (mCurrentSegment==nullptr)			// no current segment yet
         {
             if (mCurrentTrack==nullptr)			// must be within track, though
             {
-                return (addError("TRKPT start not within TRKSEG or TRK"));
+                return (addError("TRKPT not within TRKSEG or TRK"));
             }
 
-            addWarning("TRKPT start not within TRKSEG");
-							// start new implied segment
-            mCurrentSegment = new TrackDataSegment;
+            mCurrentSegment = new TrackDataSegment;	// start new implied segment
+            addWarning("TRKPT not within TRKSEG");
         }
 
         mCurrentPoint = new TrackDataTrackpoint;	// start new point item
@@ -507,14 +504,9 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     }
     else if (localName=="wpt")				// start of an WPT element
     {
-        if (mCurrentTrack!=nullptr || mCurrentRoute!=nullptr)
+        if (currentItem()!=nullptr)			// check not nested
         {
-            return (addError("WPT start within TRK or RTE"));
-        }
-
-        if (mCurrentPoint!=nullptr)			// check not nested
-        {
-            return (addError("nested WPT element"));
+            return (addError("WPT element nested or not at top level"));
         }
 
         mCurrentPoint = new TrackDataWaypoint;		// start new waypoint item
@@ -524,7 +516,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     {
         if (mCurrentRoute==nullptr)
         {
-            return (addError("RTEPT start not within RTE"));
+            return (addError("RTEPT not within RTE"));
         }
 
         if (mCurrentPoint!=nullptr)			// check not nested
@@ -539,7 +531,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     {
         if (dynamic_cast<TrackDataWaypoint *>(mCurrentPoint)==nullptr)
         {						// check contained where expected
-            return (addError("LINK start not within WPT"));
+            return (addError("LINK not within WPT"));
         }
 
         QStringRef link = atts.value("link");
@@ -624,15 +616,9 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="trkpt")			// end of a TRKPT element
     {
-        // TODO: combine the two tests
-        if (mCurrentPoint==nullptr)			// check must have started
+        if (dynamic_cast<TrackDataTrackpoint *>(mCurrentPoint)==nullptr)
         {
             return (addError("TRKPT element not started"));
-        }
-
-        if (dynamic_cast<TrackDataTrackpoint *>(mCurrentPoint)==nullptr)
-        {						// check start element matched
-            return (addError("TRKPT end did not start element"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -660,14 +646,9 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="rtept")			// end of a RTEPT element
     {
-        if (mCurrentPoint==nullptr)			// check must have started
-        {
-            return (addError("RTEPT element not started"));
-        }
-
         if (dynamic_cast<TrackDataRoutepoint *>(mCurrentPoint)==nullptr)
         {						// check start element matched
-            return (addError("RTEPT end did not start element"));
+            return (addError("RTEPT element not started"));
         }
 
 #ifdef DEBUG_IMPORT
@@ -680,8 +661,8 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="wpt")				// end of a WPT element
     {
-        // TODO: combine the two tests
-        if (mCurrentPoint==nullptr)			// check must have started
+        TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mCurrentPoint);
+        if (tdw==nullptr)				// check must have started
         {
             return (addError("WPT element not started"));
         }
@@ -689,10 +670,6 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a WPT:" << mCurrentPoint->name();
 #endif
-
-        TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mCurrentPoint);
-        if (tdw==nullptr) return (addError("WPT end did not start element"));
-
         if (tdw->isMediaType())
         {
             // Only do this check if the "link" metadata has not already
