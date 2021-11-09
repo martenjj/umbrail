@@ -26,9 +26,8 @@
 #ifndef GPXIMPORTER_H
 #define GPXIMPORTER_H
 
-#include <QXmlDefaultHandler>
-
 #include "importerbase.h"
+#include "errorreporter.h"
 
 class TrackDataItem;
 class TrackDataTrack;
@@ -38,12 +37,15 @@ class TrackDataAbstractPoint;
 class TrackDataFolder;
 class TrackDataWaypoint;
 
+class QXmlStreamReader;
+class QXmlStreamAttributes;
 
-class GpxImporter : public ImporterBase, public QXmlDefaultHandler
+
+class GpxImporter : public ImporterBase
 {
 public:
     GpxImporter();
-    virtual ~GpxImporter();
+    virtual ~GpxImporter() = default;
 
     static QString filter();
 
@@ -51,30 +53,45 @@ public:
     bool loadFrom(QIODevice *dev) override;
     bool needsResave() const override;
 
-    // QXmlContentHandler
-    void setDocumentLocator(QXmlLocator *locator) override;
-    bool startDocument() override;
-    bool startElement(const QString &namespaceURI, const QString &localName, const QString &qName, const QXmlAttributes &atts) override;
-    bool characters(const QString &ch) override;
-    bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName) override;
-    bool endDocument() override;
+protected:
+    // All of these were originally return type 'bool' in QXmlContentHandler.
+    // Although the return value is now never used, the return type is kept
+    // so that the code sequence
+    //
+    //    if (there is a problem) return (addError("the error message"));
+    //
+    // can be used as a simpler alternative to
+    //
+    //    if (there is a problem)
+    //    {
+    //      addError("the error message");
+    //      return;
+    //    }
+    //
+    // with the slight cost of needing to end with an explicit 'return'.
+    bool startElement(const QByteArray &localName, const QByteArray &qName, const QXmlStreamAttributes &atts);
+    bool endElement(const QByteArray &localName, const QByteArray &qName);
+    bool characters(const QStringRef &ch);
+    bool startDocument(const QStringRef &version, const QStringRef &encoding);
+    bool endDocument();
 
-    // QXmlErrorHandler
-    bool error(const QXmlParseException &ex) override;
-    bool fatalError(const QXmlParseException &ex) override;
-    bool warning(const QXmlParseException &ex) override;
+    // Again the equivalents of these were originally return type 'bool'
+    // in QXmlErrorHandler.  To support the above, the return type is retained.
+    bool addError(const QString &msg);
+    bool addWarning(const QString &msg);
+    bool addFatal(const QString &msg);
 
 private:
     QByteArray indent() const;
-    inline bool parsing() const;
-    QXmlParseException makeXmlException(const QString &message, const QString &restartTag = QString());
     TrackDataItem *currentItem() const;
     TrackDataFolder *getFolder(const QString &path);
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
-    void getLatLong(TrackDataAbstractPoint *pnt, const QXmlAttributes &atts, const QString &localName);
+    void getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName);
+    QString elementContents();
 
-    bool hasElementContents() const		{ return (!mContainedChars.isEmpty()); }
-    QString elementContents()			{ QString cc = mContainedChars; mContainedChars.clear(); return (cc); }
+    void addMessage(ErrorReporter::Severity severity, const QString &msg);
+
+    void checkNamespace(const QStringRef &namespaceURI, const QStringRef &localName, const QStringRef &nsPrefix);
 
 private:
     TrackDataTrack *mCurrentTrack;
@@ -85,9 +102,9 @@ private:
     bool mWithinMetadata;
     bool mWithinExtensions;
 
+    QXmlStreamReader *mXmlReader;
     int mXmlIndent;
-    QString mRestartTag;
-    const QXmlLocator *mXmlLocator;
+
     QString mContainedChars;
 
     QStringList mUndefinedNamespaces;
