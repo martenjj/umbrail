@@ -845,7 +845,9 @@ void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
                                  const QStringRef &localName,
                                  const QStringRef &nsPrefix)
 {
-    if (!nsPrefix.isEmpty() && namespaceURI.isEmpty())	// element with undefined namespace
+    if (nsPrefix.isEmpty()) return;			// no namespace to check
+
+    if (namespaceURI.isEmpty())				// element with undefined namespace
     {
         const QString qName = nsPrefix+':'+localName;
         if (!mUndefinedNamespaces.contains(qName))	// only report each one once
@@ -853,5 +855,14 @@ void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
             addWarning(QString("Undefined namespace '%1' for element &lt;%2&gt;").arg(nsPrefix).arg(localName));
             mUndefinedNamespaces.append(qName);
         }
+    }
+    else						// namespace and URI are defined
+    {
+        // If the namespace prefix has a namespace URI associated
+        // already, then it must match the current one because the source
+        // of the earlier and current - the <gpx> element - is the same
+        // for both.  There is therefore no need to check for duplication
+        // here.
+        DataIndexer::setUriForNamespace(nsPrefix.toLatin1(), namespaceURI.toLatin1());
     }
 }

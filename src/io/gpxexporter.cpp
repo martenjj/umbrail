@@ -356,6 +356,14 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace(("http://www.keelhaul.me.uk/" PROJECT_NAME), DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
     str.writeNamespace("http://www.topografix.com/GPX/gpx_style/0/2", "topografix");
+    // any other namespaces seen in files
+    const QList<QByteArray> &namespaces = DataIndexer::namespacesWithUri();
+    for (const QByteArray &nsp : namespaces)
+    {
+        if (nsp==DataIndexer::applicationNamespace()) continue;	// already added above
+        if (nsp=="topografix") continue;			// already added above
+        str.writeNamespace(DataIndexer::uriForNamespace(nsp), nsp);
+    }
     str.writeCharacters("\n\n  ");
 
     // <metadata>

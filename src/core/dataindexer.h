@@ -26,6 +26,8 @@
 #ifndef DATAINDEXER_H
 #define DATAINDEXER_H
 
+#include <qlist.h>
+
 class QByteArray;
 
 
@@ -139,7 +141,31 @@ namespace DataIndexer
      * @return the namespace name
      **/
     QByteArray applicationNamespace();
-}
+
+    /**
+     * Remember the namespace URI corresponding to a namespace tag.
+     *
+     * @param nsp The XML namespace tag
+     * @param namespaceURI The associated namespace URI
+     **/
+    void setUriForNamespace(const QByteArray &nsp, const QByteArray &namespaceURI);
+
+    /**
+     * Get the namespace URI associated with a namespace tag.
+     *
+     * @param nsp The XML namespace tag
+     * @return The associated namespace URI, or a null string if there is none.
+     **/
+    QByteArray uriForNamespace(const QByteArray &nsp);
+
+    /**
+     * Get a list of all the namespace tags which have an associated URI
+     *
+     * @return a list of the tags
+     **/
+    QList<QByteArray> namespacesWithUri();
+
+} // namespace DataIndexer
 
  
 #endif							// DATAINDEXER_H

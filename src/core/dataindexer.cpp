@@ -34,6 +34,7 @@
 // so should be safe.
 static QHash<QByteArray,int> sIndexHash;
 static QHash<int,QByteArray> sNamespaceHash;
+static QHash<QByteArray,QByteArray> sUriHash;
 
 // The XML namespace prefix used by this application.
 // The namespace URI is only used by and is set in GpxExporter.
@@ -167,4 +168,30 @@ QByteArray DataIndexer::applicationNamespace()
 int DataIndexer::count()
 {
     return (sIndexHash.count());
+}
+
+
+void DataIndexer::setUriForNamespace(const QByteArray &nsp, const QByteArray &namespaceURI)
+{
+    if (sUriHash.contains(nsp))				// see if already associated
+    {
+        const QByteArray &curURI = sUriHash[nsp];	// duplication should never happen
+        if (curURI!=namespaceURI) qWarning() << "ignoring namespace URI" << namespaceURI << "because tag" << nsp << "already has" << curURI;
+        return;						// do nothing in any case
+    }
+
+    qDebug() << "namespace URI" << namespaceURI << "for tag" << nsp;
+    sUriHash.insert(nsp, namespaceURI);
+}
+
+
+QByteArray DataIndexer::uriForNamespace(const QByteArray &nsp)
+{
+    return (sUriHash.value(nsp));
+}
+
+
+QList<QByteArray> DataIndexer::namespacesWithUri()
+{
+    return (sUriHash.keys());
 }
