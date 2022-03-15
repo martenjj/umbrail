@@ -261,8 +261,14 @@ static bool withinDistance(const TrackDataAbstractPoint *tdp, double lat, double
 
 static void setStopData(TrackDataWaypoint *tdw, const QDateTime &dt, int dur)
 {
-    QString text1 = dt.toString("hh:mm:ss");
-    QString text2 = QString("%1:%2").arg(dur/60).arg(dur%60, 2, 10, QLatin1Char('0'));
+    const QString text1 = dt.toString("hh:mm:ss");	// start time
+							// duration...
+    const int hrs = dur/3600;				// hours, zero unless a very long stop
+    const int min = (dur/60) % 60;			// minutes
+    const int sec = dur % 60;				// seconds
+
+    const QString text2 = (hrs==0) ? QString("%1:%2").arg(min).arg(sec, 2, 10, QLatin1Char('0')) :
+                                     QString("%1:%2:%3").arg(hrs).arg(min, 2, 10, QLatin1Char('0')).arg(sec, 2, 10, QLatin1Char('0'));
 
     tdw->setName(i18n("Stop at %1 for %2", text1, text2), true);
     tdw->setMetadata("time", dt);
