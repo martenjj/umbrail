@@ -44,6 +44,7 @@
 #include <kmessagebox.h>
 #include <kactioncollection.h>
 #include <kxmlguiwindow.h>
+#include <kmessagewidget.h>
 
 #include <kfdialog/dialogstatewatcher.h>
 
@@ -142,6 +143,20 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mFolderSelect->setFolderPath(folderName, !folderExists);
     connect(mFolderSelect, &FolderSelectWidget::folderChanged, this, &StopDetectDialogue::slotSetButtonStates);
     fl->addRow(i18n("Destination folder:"), mFolderSelect);
+
+    // Warn if there is no time zone set for stop times
+    if (zoneName.isEmpty())
+    {							// float to bottom of column
+        fl->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+        KMessageWidget *msg = new KMessageWidget(this);
+        msg->setMessageType(KMessageWidget::Warning);
+        msg->setText(i18n("The file time zone is not set.  The stop descriptions may not show the correct time."));
+        msg->setIcon(QIcon::fromTheme("dialog-warning"));
+        msg->setCloseButtonVisible(false);
+        msg->setWordWrap(true);
+        fl->addRow(msg);
+    }
 
     // Middle: separator
     KSeparator *sep = new KSeparator(Qt::Vertical, w);
