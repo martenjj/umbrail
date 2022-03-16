@@ -513,6 +513,9 @@ void StopDetectDialogue::slotMergeStops()
         endTime = thisEndTime;				// end time of this point
     }
 
+    // Note the original name of the first point, for the merged sources list later
+    QStringList sourceList(firstPoint->name());
+
     // Update the first point item with the results, and delete all the others.
     // The start time of the merged point is the same as the start time of the
     // original first point.
@@ -520,12 +523,17 @@ void StopDetectDialogue::slotMergeStops()
     setStopData(firstPoint, firstPoint->metadata("time").toDateTime(), dur);
     firstPoint->setLatLong((avgLat/num), (avgLon/num));
 
-    // Remove the other points that were merged into the first one.
+    // Remove the other points that were merged into the first one,
+    // and note their names so that they can be recorded.
     for (int i = idx2; i>=idx1+1; --i)
     {
         const TrackDataWaypoint *tdw = mResultPoints.takeAt(i);
+        sourceList.append(tdw->name());
         delete tdw;
     }
+
+    // Record the former names of all the merged points
+    firstPoint->setMetadata("source", sourceList.join(';'));
 
     updateResults();
     // Select the merged point in the results list.
@@ -625,10 +633,22 @@ void StopDetectDialogue::slotCommitResults()
         Qt::CheckState check = static_cast<Qt::CheckState>(item->data(Qt::CheckStateRole).toInt());
         if (check!=Qt::Checked) continue;		// include this in results?
 
-        const TrackDataWaypoint *tdw = mResultPoints[i];
-							// source point - its metadata copied
+
+        // The source waypoint, whose metadata will be copied to the new point by
+        // in AddWaypointCommand::redo().  Its name does not actually set the added
+        // stop waypoint name - that is the 'sourceName' parameter to setData()
+        // below - but its name does set the "source" metadata of the added point.
+        // Therefore, set the name from the corresponding data of this point,
+        // regardless of whether it is empty or not, and AddWaypointCommand::redo()
+        // will set the "source" of the added point if it is not empty.
+        TrackDataWaypoint *tdw = const_cast<TrackDataWaypoint *>(mResultPoints[i]);
+        const QString sourceName = tdw->name();
+
+        const QString sources = tdw->metadata("source").toString();
+        tdw->setName(sources, true);			// present only for merged points
+
         AddWaypointCommand *cmd2 = new AddWaypointCommand(filesController(), cmd);
-        cmd2->setData(tdw->name(), tdw->latitude(), tdw->longitude(),
+        cmd2->setData(sourceName, tdw->latitude(), tdw->longitude(),
                       dynamic_cast<TrackDataFolder *>(destFolder), tdw);
     }
 

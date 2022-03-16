@@ -1129,7 +1129,13 @@ void AddWaypointCommand::redo()
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
             idx = DataIndexer::index("time");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
-            newWaypoint->setMetadata("source", mSourcePoint->name());
+
+            // Only set the source metadata if the mSourcePoint point has
+            // a name.  See StopDetectDialogue::slotCommitResults() for the
+            // situation where it may not.
+            const QString sourceName = mSourcePoint->name();
+            if (!sourceName.isEmpty()) newWaypoint->setMetadata("source", sourceName);
+
             const QVariant stopData = mSourcePoint->metadata("stop");
             if (!stopData.isNull()) newWaypoint->setMetadata("stop", stopData);
         }
