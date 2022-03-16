@@ -550,21 +550,31 @@ void StopDetectDialogue::updateResults()
 
     mapController()->view()->setStopLayerData(nullptr);	// clear any existing stops overlay
 
+    QHash<QString, bool> checkStates;			// current item check states
     QSignalBlocker block(mResultsList);			// block slotSetButtonStates() each time
     while (mResultsList->count()>0)			// clear existing results items
     {
         QListWidgetItem *item = mResultsList->takeItem(0);
+        checkStates[item->text()] = static_cast<Qt::CheckState>(item->data(Qt::CheckStateRole).toInt());
         delete item;
     }
 
     for (int i = 0; i<num; ++i)				// generate items for new results
     {
         const TrackDataWaypoint *tdw = mResultPoints[i];
+        const QString itemText = tdw->name();
 
-        QListWidgetItem *item = new QListWidgetItem(tdw->name());
+        QListWidgetItem *item = new QListWidgetItem(itemText);
         item->setFlags(item->flags()|Qt::ItemIsUserCheckable);
-        item->setData(Qt::CheckStateRole, Qt::Checked);
         item->setData(Qt::UserRole, i);
+
+        if (checkStates.contains(itemText))		// if unchanged from before,
+        {						// restore the check state
+            const bool wasChecked = checkStates.value(itemText);
+            item->setData(Qt::CheckStateRole, (wasChecked ? Qt::Checked : Qt::Unchecked));
+        }						// new stop, set to checked
+        else item->setData(Qt::CheckStateRole, Qt::Checked);
+
         mResultsList->addItem(item);
     }
 
@@ -632,7 +642,6 @@ void StopDetectDialogue::slotCommitResults()
         const QListWidgetItem *item = mResultsList->item(i);
         Qt::CheckState check = static_cast<Qt::CheckState>(item->data(Qt::CheckStateRole).toInt());
         if (check!=Qt::Checked) continue;		// include this in results?
-
 
         // The source waypoint, whose metadata will be copied to the new point by
         // in AddWaypointCommand::redo().  Its name does not actually set the added
