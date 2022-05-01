@@ -117,20 +117,21 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
     mContainerList->setModel(trackModel);
     mContainerList->expandToDepth(9);
 
-    // Try to preselect a destination for the new item.
-    // Firstly, if there is only a single selectable destination,
-    // then use that.
+    // Try to preselect a destination for the new item.  This may
+    // be overridden by setDestinationContainer() below.
     mCanCreate = true;					// assume so initially
     QModelIndex theItem;
     const int selectableItems = findSelectableItems(mContainerList->rootIndex(), trackModel, &theItem);
     if (selectableItems==1 && theItem.isValid())
     {
+        // Firstly, if there is only a single selectable destination,
+        // then use that.
         mContainerList->setCurrentIndex(theItem);
     }
-    // If there are no selectable destinations, then nothing can
-    // be created.
     else if (selectableItems==0)
     {
+        // If there are no selectable destinations, then nothing can
+        // be created.
         mCanCreate = false;
     }
     else
@@ -178,8 +179,16 @@ void CreatePointDialogue::setSourceLatLong(double lat, double lon)
 void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
 {
     Q_ASSERT(item!=nullptr);
-    qDebug() << item->name();
-    // nothing to do, it will be selected automatically via the source model
+
+    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
+    Q_ASSERT(filesModel!=nullptr);
+
+    QAbstractProxyModel *trackModel = qobject_cast<QAbstractProxyModel *>(mContainerList->model());
+    Q_ASSERT(trackModel!=nullptr);
+
+    const QModelIndex idx = trackModel->mapFromSource(filesModel->indexForItem(item));
+    qDebug() << item->name() << "-> idx" << idx;
+    if (idx.isValid()) mContainerList->setCurrentIndex(idx);
 }
 
 

@@ -1246,18 +1246,29 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
         return;
     }
 
-    QList<TrackDataItem *> items = view()->selectedItems();
-    const TrackDataAbstractPoint *selPoint = nullptr;
+    const QList<TrackDataItem *> items = view()->selectedItems();
 
-    if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
-    else if (items.count()==1)				// there is a selected item
-    {							// a source point?
-        selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
-        if (selPoint!=nullptr) d.setSourcePoint(selPoint);
-							// the destination route?
-        const TrackDataRoute *selRoute = dynamic_cast<const TrackDataRoute *>(items.first());
-        if (selRoute!=nullptr) d.setDestinationContainer(selRoute);
+    const TrackDataItem *sel = (items.count()==1 ? items.first() : nullptr);
+    const TrackDataAbstractPoint *selPoint = dynamic_cast<const TrackDataAbstractPoint *>(sel);
+    const TrackDataRoute *selRoute = dynamic_cast<const TrackDataRoute *>(sel);
+    const TrackDataRoutepoint *selRoutepoint = dynamic_cast<const TrackDataRoutepoint *>(sel);
+
+    // Select where the new route point is to be placed.  If a single
+    // route is selected, then add it to that route.  Otherwise, if a
+    // single route point is selected, then add it to its parent route.
+    // Otherwise, allow the user to select where it is to go.
+    if (selRoutepoint!=nullptr)
+    {
+        selRoute = dynamic_cast<const TrackDataRoute *>(sel->parent());
+        selPoint = nullptr;			// don't want this as source
     }
+    if (selRoute!=nullptr) d.setDestinationContainer(selRoute);
+
+    // Set the point coordinates.  Either from the parameters, if
+    // explicitly provided, or from the source point if it is not
+    // already a route point.
+    if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);
+    else if (selPoint!=nullptr) d.setSourcePoint(selPoint);
 
     if (!d.exec()) return;
 
