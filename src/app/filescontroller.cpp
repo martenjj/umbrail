@@ -1202,18 +1202,29 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
         return;
     }
 
-    QList<TrackDataItem *> items = view()->selectedItems();
-    const TrackDataAbstractPoint *selPoint = nullptr;
+    const QList<TrackDataItem *> items = view()->selectedItems();
 
-    if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);	// coordinates supplied
-    else if (items.count()==1)				// there is a selected item
-    {							// a source point?
-        selPoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
-        if (selPoint!=nullptr) d.setSourcePoint(selPoint);
-							// the destination folder?
-        const TrackDataFolder *selFolder = dynamic_cast<const TrackDataFolder *>(items.first());
-        if (selFolder!=nullptr) d.setDestinationContainer(selFolder);
+    const TrackDataItem *sel = (items.count()==1 ? items.first() : nullptr);
+    const TrackDataAbstractPoint *selPoint = dynamic_cast<const TrackDataAbstractPoint *>(sel);
+    const TrackDataFolder *selFolder = dynamic_cast<const TrackDataFolder *>(sel);
+    const TrackDataWaypoint *selWaypoint = dynamic_cast<const TrackDataWaypoint *>(sel);
+
+    // Select where the new waypoint is to be placed.  If a single
+    // folder is selected, then add it to that folder.  Otherwise, if a
+    // single waypoint is selected, then add it to its parent folder.
+    // Otherwise, allow the user to select where it is to go.
+    if (selWaypoint!=nullptr)
+    {
+        selFolder = dynamic_cast<const TrackDataFolder *>(sel->parent());
+        selPoint = nullptr;			// don't want this as source
     }
+    if (selFolder!=nullptr) d.setDestinationContainer(selFolder);
+
+    // Set the point coordinates.  Either from the parameters, if
+    // explicitly provided, or from the source point if it is not
+    // already a waypoint.
+    if (!ISNAN(lat)) d.setSourceLatLong(lat, lon);
+    else if (selPoint!=nullptr) d.setSourcePoint(selPoint);
 
     if (!d.exec()) return;
 
