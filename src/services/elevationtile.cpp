@@ -171,6 +171,8 @@ QUrl ElevationTile::sourceUrl() const
     query.addQueryItem("east", QString::number(mLongitudeBase+1));
 
     query.addQueryItem("outputFormat", DEM_FORMAT);
+    // Demo API key from web page as above
+    query.addQueryItem("API_Key", "demoapikeyot2022");
 
     QUrl u("http://portal.opentopography.org/API/globaldem", QUrl::StrictMode);
     u.setQuery(query);
