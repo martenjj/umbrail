@@ -128,8 +128,31 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         GeoDataCoordinates coord(tdw->longitude(), tdw->latitude(),
                                  0, GeoDataCoordinates::Degree);
 
+        // TEMPORARY (hopefully): Workaround for Qt 5.15.2/5.15.3
+        // painting bug, drawing a dashed line for bearing or
+        // range ring crashes:
+        //
+        // ASSERT: "dpos >= 0" in file src/gui/painting/qstroker.cpp, line 1192
+        //
+        // QDashStroker::processCurrentSubpath() at src/gui/painting/qstroker.cpp:1192
+        // QStrokerOps::end() at src/gui/painting/qstroker.cpp:221
+        // QDashStroker::end() at src/gui/painting/qstroker_p.h:397
+        // QPaintEngineEx::stroke() at src/gui/painting/qpaintengineex.cpp:535
+        // QPaintEngineEx::drawEllipse() at src/gui/painting/qpaintengineex.cpp:860
+        // QPainter::drawEllipse() at src/gui/painting/qpainter.cpp:4294
+        // QPainter::drawEllipse() at QtGui/qpainter.h:677
+        // WaypointsLayer::doPaintItem() at src/map/waypointslayer.cpp:192
+        // LayerBase::paintDataTree() at src/map/layerbase.cpp:191
+        // LayerBase::paintDataTree() at src/map/layerbase.cpp:202
+        // LayerBase::render() at src/core/filesmodel.h:60
+        // LayerBase::render() at src/map/layerbase.cpp:135
+        // Marble::LayerManager::renderLayers() at src/lib/marble/LayerManager.cpp:177
+        // Marble::MarbleMap::paint() at src/lib/marble/MarbleMap.cpp:856
+        // Marble::MarbleWidget::paintEvent() at src/lib/marble/MarbleWidget.cpp:720
+
         // Set pen for bearing and range lines, if required
-        painter->setPen(QPen(Qt::black, 2, Qt::DashLine));
+        //painter->setPen(QPen(Qt::black, 2, Qt::DashLine));
+        painter->setPen(QPen(Qt::darkGray, 2, Qt::SolidLine));
         painter->setBrush(QBrush());
 
         // First of all the bearing lines, if there are any
