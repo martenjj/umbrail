@@ -155,6 +155,7 @@ private:
     QComboBox *mBingBrowserCombo;
 #endif // ENABLE_OPEN_WITH_BING
     QLineEdit *mGeonamesUserEdit;
+    QLineEdit *mOpenTopoApiKeyEdit;
 };
 
 #endif							// SETTINGSDIALOGUE_H

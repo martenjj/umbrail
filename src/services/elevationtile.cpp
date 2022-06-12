@@ -35,6 +35,7 @@
 #include <qguiapplication.h>
 #include <qcursor.h>
 
+#include "settings.h"
 
 // generic tile handling here
 
@@ -171,8 +172,11 @@ QUrl ElevationTile::sourceUrl() const
     query.addQueryItem("east", QString::number(mLongitudeBase+1));
 
     query.addQueryItem("outputFormat", DEM_FORMAT);
+
+    QString apiKey = Settings::openTopoApiKey();
     // Demo API key from web page as above
-    query.addQueryItem("API_Key", "demoapikeyot2022");
+    if (apiKey.isEmpty()) apiKey = "demoapikeyot2022";
+    query.addQueryItem("API_Key", apiKey);
 
     QUrl u("http://portal.opentopography.org/API/globaldem", QUrl::StrictMode);
     u.setQuery(query);

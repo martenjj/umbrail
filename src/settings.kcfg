@@ -140,6 +140,10 @@
       <label>Bing Maps browser:</label>
       <tooltip>The web browser to use for viewing Bing Maps.</tooltip>
     </entry>
+    <entry name="OpenTopoApiKey" type="String">
+      <label>opentopography.org API key:</label>
+      <tooltip>The API key to use for access to opentopography.org. This web service is used for the Digital Elevation Model.</tooltip>
+    </entry>
   </group>
 
 </kcfg>

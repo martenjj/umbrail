@@ -492,6 +492,14 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
     mGeonamesUserEdit->setText(Settings::geonamesUser());
     fl->addRow(ski->label(), mGeonamesUserEdit);
 
+    ski = Settings::self()->openTopoApiKeyItem();
+    Q_ASSERT(ski!=nullptr);
+    mOpenTopoApiKeyEdit = new QLineEdit(w);
+    mOpenTopoApiKeyEdit->setToolTip(ski->toolTip());
+    mOpenTopoApiKeyEdit->setPlaceholderText(i18n("Use demo key"));
+    mOpenTopoApiKeyEdit->setText(Settings::openTopoApiKey());
+    fl->addRow(ski->label(), mOpenTopoApiKeyEdit);
+
     slotItemChanged();
 }
 
@@ -506,6 +514,7 @@ void SettingsServicesPage::slotSave()
     Settings::setMapBrowserBing(mBingBrowserCombo->currentData().toString());
 #endif // ENABLE_OPEN_WITH_BING
     Settings::setGeonamesUser(mGeonamesUserEdit->text());
+    Settings::setOpenTopoApiKey(mOpenTopoApiKeyEdit->text());
 }
 
 
@@ -519,5 +528,6 @@ void SettingsServicesPage::slotDefaults()
     mBingBrowserCombo->setCurrentIndex(0);
 #endif // ENABLE_OPEN_WITH_BING
     mGeonamesUserEdit->clear();
+    mOpenTopoApiKeyEdit->clear();
     slotItemChanged();
 }
