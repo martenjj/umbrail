@@ -450,6 +450,7 @@ default:				typeName = i18n("(Unknown)");	break;
         }
 
         QWidget *hb = new QWidget(this);
+        hb->setContentsMargins(0, 0, 0, 0);
         QHBoxLayout *hlay = new QHBoxLayout(hb);
         hlay->setMargin(0);
         hlay->setSpacing(DialogBase::horizontalSpacing());
