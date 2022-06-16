@@ -34,6 +34,8 @@
 #include <klocalizedstring.h>
 #include <kiconloader.h>
 #include <ktextedit.h>
+#include <kxmlguiwindow.h>
+#include <kactioncollection.h>
 
 #include <kfdialog/dialogbase.h>
 
@@ -483,10 +485,14 @@ case TrackData::WaypointPhoto:
 default:    break;
         }
 
-        if (actionButton!=nullptr)			// action button is present
-        {
-            // Synchronise with shortcut for "track_play_media" in MainWindow::setupActions()
-            actionButton->setShortcut(Qt::CTRL+Qt::Key_P);
+        if (actionButton!=nullptr)			// action button is present,
+        {						// give it the standard shortcut
+            KXmlGuiWindow *mainwin = qobject_cast<KXmlGuiWindow *>(mainWidget());
+            if (mainwin!=nullptr)
+            {
+                QAction *act = mainwin->actionCollection()->action("track_play_media");
+                if (act!=nullptr) actionButton->setShortcut(act->shortcut());
+            }
 
             hb->setFocusProxy(actionButton);
             hb->setFocusPolicy(Qt::StrongFocus);
