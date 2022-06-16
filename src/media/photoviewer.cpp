@@ -34,7 +34,6 @@
 #include <kactioncollection.h>
 #include <kstandardaction.h>
 #include <klocalizedstring.h>
-#include <kpluginloader.h>
 #include <kpluginfactory.h>
 #ifdef USE_KSERVICE
 #include <kservice.h>
@@ -74,9 +73,10 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
         // from https://techbase.kde.org/Development/Tutorials/Using_KParts
         mPart = service->createInstance<KParts::ReadOnlyPart>(this, nullptr, QVariantList(), &errorString);
 #else
-        KPluginLoader loader("kf5/parts/"+viewMode);
-        KPluginFactory *factory = loader.factory();
-        if (factory!=nullptr) mPart = factory->create<KParts::ReadOnlyPart>();
+        const KPluginMetaData pluginData("kf5/parts/"+viewMode);
+        auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(pluginData);
+        mPart = result.plugin;
+        if (mPart==nullptr) errorString = result.errorString;
 #endif
     }
     else
@@ -91,7 +91,6 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
 
     if (mPart==nullptr)
     {
-
         qWarning() << "Unable to create viewer part," << errorString;
         return;
     }
