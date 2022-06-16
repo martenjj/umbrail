@@ -438,7 +438,7 @@ static void fillBrowserCombo(QComboBox *combo, const QString &currentId)
     // redirect HTTP to HTTPS anyway, so the browser must eventually support HTTPS.
     KService::List services = KApplicationTrader::queryByMimeType("x-scheme-handler/https");
     if (services.isEmpty()) qWarning() << "No web browser services available";
-    for (const KService::Ptr service : services)
+    for (const KService::Ptr &service : services)
     {
         combo->addItem(QIcon::fromTheme(service->icon()), service->name(), service->storageId());
         if (service->storageId()==currentId) selectIndex = combo->count()-1;
