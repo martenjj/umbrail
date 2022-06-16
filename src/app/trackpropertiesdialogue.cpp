@@ -58,7 +58,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
 {
     setObjectName("TrackPropertiesDialogue");
 
-    setModal(true);
+    setWindowModality(Qt::WindowModal);
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Close);
     stateWatcher()->setSaveOnButton(buttonBox()->button(QDialogButtonBox::Close));
     mCloseButtonShown = true;
