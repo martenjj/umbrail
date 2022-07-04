@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="umbrail"
-     version="14"
+     version="15"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -28,11 +28,16 @@
       <Action name="map_move_points"/>
     </Menu>
 
-    <Menu name="data">
-      <text>Data</text>
+    <Menu name="view">
+      <Action name="settings_read_only"/>
+      <Action name="view_points_mode"/>
+      <Separator/>
       <Action name="track_expand_all"/>
       <Action name="track_collapse_all"/>
-      <Separator/>
+    </Menu>
+
+    <Menu name="data">
+      <text>Data</text>
       <Action name="map_go_selection"/>
       <Action name="track_play_media"/>
       <Action name="waypoint_status"/>
@@ -70,10 +75,6 @@
       <!-- and therefore the actions created in MainWindow::setupActions()	-->
       <Action name="map_open_google"/>
       <Action name="map_open_bing"/>
-    </Menu>
-
-    <Menu name="settings">
-      <Action name="settings_read_only"/>
     </Menu>
 
     <Menu name="help">

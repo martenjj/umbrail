@@ -39,12 +39,14 @@ class QUndoStack;
 class QUndoCommand;
 class QSplitter;
 class QAction;
+class QStackedWidget;
+class QTabWidget;
+class QUrl;
 
 class QCloseEvent;
 class QDragEnterEvent;
 class QDropEvent;
 class QMimeData;
-class QUrl;
 
 class KToggleAction;
 class KSelectAction;
@@ -80,6 +82,14 @@ protected:
     void dragEnterEvent(QDragEnterEvent *ev) override;
     void dropEvent(QDropEvent *ev) override;
 
+    enum ViewMode
+    {
+        ViewTree = 0,
+        ViewTabs = 1,
+    };
+
+    void setViewMode(MainWindow::ViewMode mode);
+
 protected slots:
     void slotNewProject();
     void slotOpenProject();
@@ -111,6 +121,7 @@ protected slots:
 
     void slotResetAndCancel();
     void slotReadOnly(bool on);
+    void slotViewPointsMode();
 
 private:
     void init();
@@ -177,7 +188,14 @@ private:
     QAction *mReadOnlyAction;
     KToggleAction *mMapDragAction;
 
-    QSplitter *mSplitter;
+    KToggleAction *mViewModeAction;
+
+    QSplitter *mTreeModeSplitter;
+    QTabWidget *mMainTabs;
+    QStackedWidget *mWidgetStack;
+    QStackedWidget *mMapTabPlaceholder;
+    QStackedWidget *mMapTreePlaceholder;
+
     QUndoStack *mUndoStack;
 
     const TrackDataItem *mSelectedContainer;

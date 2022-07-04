@@ -45,6 +45,8 @@
 #include <qmimetype.h>
 #include <qmimedatabase.h>
 #include <qtimer.h>
+#include <qstackedwidget.h>
+#include <qtabwidget.h>
 
 #include <klocalizedstring.h>
 #include <ktoggleaction.h>
@@ -95,9 +97,16 @@ void MainWindow::init()
 {
     setAcceptDrops(true);				// accept file drops
 
-    mSplitter = new QSplitter(Qt::Horizontal, this);
-    mSplitter->setChildrenCollapsible(false);
-    setCentralWidget(mSplitter);
+    mWidgetStack = new QStackedWidget(this);
+    setCentralWidget(mWidgetStack);
+
+    mTreeModeSplitter = new QSplitter(Qt::Horizontal, this);
+    mTreeModeSplitter->setChildrenCollapsible(false);
+    mWidgetStack->addWidget(mTreeModeSplitter);		// index 0
+
+    mMainTabs = new QTabWidget(this);
+    mMainTabs->setTabsClosable(false);
+    mWidgetStack->addWidget(mMainTabs);			// index 1
 
     mUndoStack = new QUndoStack(this);
     connect(mUndoStack, &QUndoStack::canUndoChanged, this, &MainWindow::slotCanUndoChanged);
@@ -130,8 +139,15 @@ void MainWindow::init()
     connect(mMapController->view(), &MapView::createWaypoint, mFilesController, &FilesController::slotAddWaypoint);
     connect(mMapController->view(), &MapView::createRoutepoint, mFilesController, &FilesController::slotAddRoutepoint);
 
-    mSplitter->addWidget(mFilesController->view());
-    mSplitter->addWidget(mMapController->view());
+    mMapTabPlaceholder = new QStackedWidget(this);
+    mMapTreePlaceholder = new QStackedWidget(this);
+
+    // TODO: temp - PointsView
+    mMainTabs->addTab(new QWidget(this), QIcon::fromTheme("view-list-text"), i18n("Points"));
+    mMainTabs->addTab(mMapTabPlaceholder, QIcon::fromTheme("marble"), i18n("Map"));
+
+    mTreeModeSplitter->addWidget(mFilesController->view());
+    mTreeModeSplitter->addWidget(mMapTreePlaceholder);
 
     setupStatusBar();
     setupActions();
@@ -148,6 +164,7 @@ void MainWindow::init()
 
 MainWindow::~MainWindow()
 {
+    mapController()->view()->setParent(nullptr);	// avoid double delete
     qDebug() << "done";
 }
 
@@ -205,8 +222,12 @@ void MainWindow::setupActions()
     mPasteAction->setEnabled(false);
     connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &MainWindow::slotUpdatePasteState);
 
+    mViewModeAction = new KToggleAction(i18n("Points List"), this);
+    connect(mViewModeAction, &QAction::triggered, this, &MainWindow::slotViewPointsMode);
+    ac->addAction("view_points_mode", mViewModeAction);
+
     a = ac->addAction("track_expand_all");
-    a->setText(i18n("Expand View"));
+    a->setText(i18n("Expand Tree"));
     a->setIcon(QIcon::fromTheme("application_side_tree"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Period);
     connect(a, &QAction::triggered, filesController()->view(), &FilesView::slotExpandAll);
@@ -217,7 +238,7 @@ void MainWindow::setupActions()
     connect(a, &QAction::triggered, filesController()->view(), &QTreeView::expandAll);
 
     a = ac->addAction("track_collapse_all");
-    a->setText(i18n("Collapse View"));
+    a->setText(i18n("Collapse Tree"));
     a->setIcon(QIcon::fromTheme("application_side_list"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Comma);
     connect(a, &QAction::triggered, filesController()->view(), &FilesView::slotCollapseAll);
@@ -555,7 +576,6 @@ default:						// cancelled
 }
 
 
-
 // TODO: only when last window closed
 // or to unique window/file ID
 void MainWindow::saveProperties(KConfigGroup &grp)
@@ -566,11 +586,11 @@ void MainWindow::saveProperties(KConfigGroup &grp)
     mapController()->saveProperties();
     filesController()->saveProperties();
 
-    Settings::setMainWindowSplitterState(mSplitter->saveState().toBase64());
+    Settings::setMainWindowSplitterState(mTreeModeSplitter->saveState().toBase64());
+    Settings::setMainWindowViewMode(mWidgetStack->currentIndex());
 
     Settings::self()->save();
 }
-
 
 
 void MainWindow::readProperties(const KConfigGroup &grp)
@@ -582,9 +602,12 @@ void MainWindow::readProperties(const KConfigGroup &grp)
     filesController()->readProperties();
 
     QString splitterState = Settings::mainWindowSplitterState();
-    if (!splitterState.isEmpty()) mSplitter->restoreState(QByteArray::fromBase64(splitterState.toLocal8Bit()));
-}
+    if (!splitterState.isEmpty()) mTreeModeSplitter->restoreState(QByteArray::fromBase64(splitterState.toLocal8Bit()));
 
+    int viewMode = Settings::mainWindowViewMode();
+    if (viewMode==-1) viewMode = 0;			// apply the default
+    setViewMode(static_cast<MainWindow::ViewMode>(viewMode));
+}
 
 
 // Error reporting and status messages are done in FilesController::exportFile()
@@ -1289,4 +1312,46 @@ void MainWindow::slotReadOnly(bool on)
 void MainWindow::openExternalMap(MapBrowser::MapProvider map)
 {
     mapController()->openExternalMap(map, filesController()->view()->selectedItems());
+}
+
+
+void MainWindow::slotViewPointsMode()
+{
+    const bool on = mViewModeAction->isChecked();
+    setViewMode(on ? MainWindow::ViewTabs : MainWindow::ViewTree);
+}
+
+
+void MainWindow::setViewMode(MainWindow::ViewMode mode)
+{
+    qDebug() << mode;
+
+    QWidget *oldWidget = mMapTreePlaceholder->widget(0);
+    if (oldWidget!=nullptr)
+    {
+        mMapTreePlaceholder->removeWidget(oldWidget);
+        oldWidget->setParent(nullptr);			// QStackedWidget retains ownership
+    }
+    Q_ASSERT(mMapTreePlaceholder->count()==0);		// placeholder should now be empty
+
+    oldWidget = mMapTabPlaceholder->widget(0);
+    if (oldWidget!=nullptr)
+    {
+        mMapTabPlaceholder->removeWidget(oldWidget);
+        oldWidget->setParent(nullptr);
+    }
+    Q_ASSERT(mMapTabPlaceholder->count()==0);
+
+    if (mode==MainWindow::ViewTree)
+    {
+        mMapTreePlaceholder->addWidget(mapController()->view());
+        mWidgetStack->setCurrentIndex(0);
+        mViewModeAction->setChecked(false);
+    }
+    else
+    {
+        mMapTabPlaceholder->addWidget(mapController()->view());
+        mWidgetStack->setCurrentIndex(1);
+        mViewModeAction->setChecked(true);
+    }
 }

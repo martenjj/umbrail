@@ -112,6 +112,9 @@
   <group name="MainWindow">
     <entry name="MainWindowSplitterState" key="SplitterState" type="String">
     </entry>
+    <entry name="MainWindowViewMode" key="ViewMode" type="Int">
+      <default>-1</default>
+    </entry>
   </group>
 
   <group name="FilesView">
