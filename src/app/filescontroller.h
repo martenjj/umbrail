@@ -40,9 +40,6 @@ class FilesView;
 class FilesModel;
 class TrackDataFile;
 class ErrorReporter;
-#ifdef SORTABLE_VIEW
-class QSortFilterProxyModel;
-#endif
 class TrackDataItem;
 
 
@@ -136,9 +133,6 @@ private slots:
 private:
     FilesView *mView;
     FilesModel *mDataModel;
-#ifdef SORTABLE_VIEW
-    QSortFilterProxyModel *mProxyModel;
-#endif
     bool mWarnedNoTimezone;
     bool mSettingTimeZone;
 };

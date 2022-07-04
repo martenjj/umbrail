@@ -30,11 +30,6 @@
 #									#
 #########################################################################
 
-#  The only sensible ordering for tracks, segments and points is by time
-#  (which is assumed to be the same as the original file order).  So there
-#  is not really need for a sortable view.
-option(SORTABLE_VIEW "Allow the tracks/points tree view to be sortable" OFF)
-
 #  These map services are useful, but the options are here to disable them
 #  in order that the application can be built without any dependency on or
 #  recommendation of closed map services.  Enabling them does not actually

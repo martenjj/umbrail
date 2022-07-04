@@ -56,18 +56,10 @@ FilesView::FilesView(QWidget *pnt)
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setAllColumnsShowFocus(true);
     setDropIndicatorShown(true);
+    setHeaderHidden(true);
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
-#ifdef SORTABLE_VIEW
-    setHeaderHidden(false);
-    header()->setStretchLastSection(true);
-    header()->setDefaultSectionSize(100);
-    header()->setResizeMode(QHeaderView::Interactive);
-#else
-    setHeaderHidden(true);
-#endif
     setItemDelegate(new AutoToolTipDelegate(this));
 
     mSelectedCount = 0;
@@ -104,22 +96,12 @@ FilesView::~FilesView()
 
 void FilesView::readProperties()
 {
-    qDebug();
-
-#ifdef SORTABLE_VIEW
-    QString colStates = Settings::filesViewColumnStates();
-    if (!colStates.isEmpty())
-    {
-        header()->restoreState(QByteArray::fromHex(colStates.toAscii()));
-    }
-#endif
 }
 
 
 void FilesView::saveProperties()
 {
     qDebug();
-
     Settings::setFilesViewColumnStates(header()->saveState().toHex());
 }
 

@@ -36,9 +36,6 @@
 #include <qmimetype.h>
 #include <qmimedatabase.h>
 #include <qtimer.h>
-#ifdef SORTABLE_VIEW
-#include <qsortfilterproxymodel.h>
-#endif
 #ifdef HAVE_KEXIV2
 #include <qtimezone.h>
 #endif
@@ -96,20 +93,15 @@ FilesController::FilesController(QObject *pnt)
     mDataModel = new FilesModel(this);
     connect(mDataModel, &FilesModel::dataChanged, this, [=](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
 
-#ifdef SORTABLE_VIEW
-    mProxyModel = new QSortFilterProxyModel(this);
-    mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    mProxyModel->setSortRole(Qt::UserRole);
-    mProxyModel->setSourceModel(mDataModel);
-    mProxyModel->setDynamicSortFilter(true);
-#endif
+//     mProxyModel = new QSortFilterProxyModel(this);
+//     mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+//     mProxyModel->setSortRole(Qt::UserRole);
+//     mProxyModel->setSourceModel(mDataModel);
+//     mProxyModel->setDynamicSortFilter(true);
 
     mView = new FilesView(mainWidget());
-#ifdef SORTABLE_VIEW
-    mView->setModel(mProxyModel);
-#else
     mView->setModel(mDataModel);
-#endif
+
     connect(mView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
 
     connect(mDataModel, &FilesModel::clickedItem, mView, &FilesView::slotClickedItem);
