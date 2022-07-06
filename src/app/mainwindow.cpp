@@ -226,6 +226,7 @@ void MainWindow::setupActions()
     mViewModeAction = new KToggleAction(i18n("Points List"), this);
     connect(mViewModeAction, &QAction::triggered, this, &MainWindow::slotViewPointsMode);
     ac->addAction("view_points_mode", mViewModeAction);
+    ac->setDefaultShortcut(mViewModeAction, Qt::CTRL+Qt::SHIFT+Qt::Key_P);
 
     a = ac->addAction("track_expand_all");
     a->setText(i18n("Expand Tree"));
