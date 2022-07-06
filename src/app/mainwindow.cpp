@@ -125,7 +125,7 @@ void MainWindow::init()
     connect(mFilesController, &FilesController::modified, this, [this]() { slotSetModified(true); });
     connect(mFilesController, &FilesController::updateActionState, this, &MainWindow::slotUpdateActionState);
 
-    mFilesView = filesController()->view();			// set in ApplicationData
+    mFilesView = filesController()->filesView();		// set in ApplicationData
     mPointsView = filesController()->pointsView();		// set in ApplicationData
 
     mMapController = new MapController(this);
@@ -147,7 +147,7 @@ void MainWindow::init()
     mMainTabs->addTab(mPointsView, QIcon::fromTheme("view-list-text"), i18n("Points"));
     mMainTabs->addTab(mMapTabPlaceholder, QIcon::fromTheme("marble"), i18n("Map"));
 
-    mTreeModeSplitter->addWidget(mFilesController->view());
+    mTreeModeSplitter->addWidget(mFilesController->filesView());
     mTreeModeSplitter->addWidget(mMapTreePlaceholder);
 
     setupStatusBar();
@@ -204,8 +204,8 @@ void MainWindow::setupActions()
     mPhotoAction->setIcon(QIcon::fromTheme("image-loading"));
     connect(mPhotoAction, &QAction::triggered, this, &MainWindow::slotImportPhoto);
 
-    mSelectAllAction = KStandardAction::selectAll(filesController()->view(), &FilesView::slotSelectAllSiblings, ac);
-    mClearSelectAction = KStandardAction::deselect(filesController()->view(), &QTreeView::clearSelection, ac);
+    mSelectAllAction = KStandardAction::selectAll(filesController()->filesView(), &FilesView::slotSelectAllSiblings, ac);
+    mClearSelectAction = KStandardAction::deselect(filesController()->filesView(), &QTreeView::clearSelection, ac);
     mClearSelectAction->setIcon(QIcon::fromTheme("edit-clear-list"));
 
     mUndoAction = KStandardAction::undo(mUndoStack, &QUndoStack::undo, ac);
@@ -231,23 +231,23 @@ void MainWindow::setupActions()
     a->setText(i18n("Expand Tree"));
     a->setIcon(QIcon::fromTheme("application_side_tree"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Period);
-    connect(a, &QAction::triggered, filesController()->view(), &FilesView::slotExpandAll);
+    connect(a, &QAction::triggered, filesController()->filesView(), &FilesView::slotExpandAll);
 
     a = ac->addAction("track_expand_complete");
     a->setText(i18n("Expand All"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Period);
-    connect(a, &QAction::triggered, filesController()->view(), &QTreeView::expandAll);
+    connect(a, &QAction::triggered, filesController()->filesView(), &QTreeView::expandAll);
 
     a = ac->addAction("track_collapse_all");
     a->setText(i18n("Collapse Tree"));
     a->setIcon(QIcon::fromTheme("application_side_list"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Comma);
-    connect(a, &QAction::triggered, filesController()->view(), &FilesView::slotCollapseAll);
+    connect(a, &QAction::triggered, filesController()->filesView(), &FilesView::slotCollapseAll);
 
     a = ac->addAction("track_collapse_complete");
     a->setText(i18n("Collapse All"));
     ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Comma);
-    connect(a, &QAction::triggered, filesController()->view(), &QTreeView::collapseAll);
+    connect(a, &QAction::triggered, filesController()->filesView(), &QTreeView::collapseAll);
 
     mAddTrackAction = ac->addAction("edit_add_track");
     mAddTrackAction->setText(i18n("Add Track"));
@@ -651,7 +651,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
         else mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
     }
 
-    filesController()->view()->expandToDepth(1);	// expand to show segments
+    filesController()->filesView()->expandToDepth(1);	// expand to show segments
     if (Settings::fileCheckTimezone())			// check time zone is set
     {
         QTimer::singleShot(0, filesController(), &FilesController::slotCheckTimeZone);
@@ -849,8 +849,8 @@ void MainWindow::slotSetModified(bool mod)
 
 void MainWindow::slotUpdateActionState()
 {
-    int selCount = filesController()->view()->selectedCount();
-    TrackData::Type selType = filesController()->view()->selectedType();
+    int selCount = filesController()->filesView()->selectedCount();
+    TrackData::Type selType = filesController()->filesView()->selectedType();
     qDebug() << "selected" << selCount << "type" << selType;
 
     bool copyEnabled = false;
@@ -885,7 +885,7 @@ case TrackData::Track:
         propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
-        selectedContainer = filesController()->view()->selectedItem();
+        selectedContainer = filesController()->filesView()->selectedItem();
         stopsEnabled = profileEnabled = true;
         break;
 
@@ -893,7 +893,7 @@ case TrackData::Route:
         propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
-        selectedContainer = filesController()->view()->selectedItem();
+        selectedContainer = filesController()->filesView()->selectedItem();
         profileEnabled = true;
         mergeEnabled = (selCount>1);
         mergeText = i18nc("@action:inmenu", "Merge Routes");
@@ -914,7 +914,7 @@ case TrackData::Point:
         propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
-        selectedContainer = filesController()->view()->selectedItem()->parent();
+        selectedContainer = filesController()->filesView()->selectedItem()->parent();
         stopsEnabled = profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
@@ -925,7 +925,7 @@ case TrackData::Routepoint:
         propsText = i18ncp("@action:inmenu", "Route Point Properties...", "Route Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
-        selectedContainer = filesController()->view()->selectedItem()->parent();
+        selectedContainer = filesController()->filesView()->selectedItem()->parent();
         profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
@@ -936,7 +936,7 @@ case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
-        selectedContainer = filesController()->view()->selectedItem();
+        selectedContainer = filesController()->filesView()->selectedItem();
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Folder...");
         break;
@@ -947,13 +947,13 @@ case TrackData::Waypoint:
         delText = i18ncp("@action:inmenu", "Delete Waypoint", "Delete Waypoints", selCount);
         moveEnabled = true;
         moveText = i18ncp("@action:inmenu", "Move Waypoint...", "Move Waypoints...", selCount);
-        selectedContainer = filesController()->view()->selectedItem()->parent();
+        selectedContainer = filesController()->filesView()->selectedItem()->parent();
         statusEnabled = true;
         copyEnabled = true;
 
         if (selCount==1)
         {
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
             if (tdw!=nullptr)
             {
                 switch (tdw->waypointType())
@@ -1035,7 +1035,7 @@ default:
 
     if (selCount==1 && selType==TrackData::Point)
     {							// not first point in segment
-        const QModelIndex idx = filesController()->model()->indexForItem(filesController()->view()->selectedItem());
+        const QModelIndex idx = filesController()->model()->indexForItem(filesController()->filesView()->selectedItem());
         mAddPointAction->setEnabled(idx.row()>0 && !isReadOnly());
     }
     else mAddPointAction->setEnabled(false);
@@ -1105,7 +1105,7 @@ void MainWindow::slotMapZoomChanged(bool canZoomIn, bool canZoomOut)
 
 void MainWindow::slotMapGotoSelection()
 {
-    mapController()->gotoSelection(filesController()->view()->selectedItems());
+    mapController()->gotoSelection(filesController()->filesView()->selectedItems());
 }
 
 
@@ -1120,7 +1120,7 @@ void MainWindow::slotMapMovePoints()
 {
     const bool on = mMapDragAction->isChecked();
     mapController()->view()->setMovePointsMode(on);
-    filesController()->view()->setMovePointsMode(on);
+    filesController()->filesView()->setMovePointsMode(on);
 }
 
 
@@ -1150,7 +1150,7 @@ void MainWindow::slotTrackStatistics()
 // TODO: status messages from player
 void MainWindow::slotPlayMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
     switch (tdw->waypointType())
     {
@@ -1170,7 +1170,7 @@ default:				break;
 
 void MainWindow::slotOpenMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
     if (tdw->isMediaType()) MediaPlayer::openMediaFile(tdw);
 }
@@ -1178,7 +1178,7 @@ void MainWindow::slotOpenMedia()
 
 void MainWindow::slotSaveMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
     if (tdw->isMediaType()) MediaPlayer::saveMediaFile(tdw);
 }
@@ -1290,7 +1290,7 @@ void MainWindow::slotTrackStopDetect()
 void MainWindow::slotResetAndCancel()
 {
     mapController()->view()->cancelDrag();
-    filesController()->view()->clearSelection();
+    filesController()->filesView()->clearSelection();
 }
 
 
@@ -1312,7 +1312,7 @@ void MainWindow::slotReadOnly(bool on)
 
 void MainWindow::openExternalMap(MapBrowser::MapProvider map)
 {
-    mapController()->openExternalMap(map, filesController()->view()->selectedItems());
+    mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
 }
 
 

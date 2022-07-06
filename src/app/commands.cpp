@@ -185,7 +185,7 @@ void ImportFileCommand::redo()
         Q_ASSERT(mImportData->childCount()==0);		// should have taken all tracks
     }
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     controller()->doUpdateMap();
 }
 
@@ -217,7 +217,7 @@ void ImportFileCommand::undo()
 
     qDebug() << "saved" << mImportData->name() << "children" << mImportData->childCount();
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     controller()->doUpdateMap();
 }
 
@@ -352,7 +352,7 @@ void SplitSegmentCommand::redo()
     Q_ASSERT(mParentSegment!=nullptr);
     Q_ASSERT(mSplitIndex>0 && mSplitIndex<(mParentSegment->childCount()-1));
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataAbstractPoint *splitPoint = dynamic_cast<TrackDataAbstractPoint *>(mParentSegment->childAt(mSplitIndex));
@@ -409,8 +409,8 @@ void SplitSegmentCommand::redo()
     parentItem->addChildItem(newSegment, parentIndex);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mParentSegment);
-    controller()->view()->selectItem(newSegment, true);
+    controller()->filesView()->selectItem(mParentSegment);
+    controller()->filesView()->selectItem(newSegment, true);
     controller()->doUpdateMap();
 }
 
@@ -420,7 +420,7 @@ void SplitSegmentCommand::undo()
     Q_ASSERT(mParentSegment!=nullptr);
     Q_ASSERT(mNewSegmentContainer->childCount()==0);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     // mParentSegment is the original segment that the split items are to be
@@ -450,7 +450,7 @@ void SplitSegmentCommand::undo()
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mParentSegment);
+    controller()->filesView()->selectItem(mParentSegment);
     controller()->doUpdateMap();
 }
 
@@ -497,7 +497,7 @@ void MergeSegmentsCommand::redo()
     Q_ASSERT(mMasterSegment!=nullptr);
     Q_ASSERT(!mSourceSegments.isEmpty());
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     if (mSavedSegmentContainer==nullptr) mSavedSegmentContainer = new ItemContainer;
@@ -538,7 +538,7 @@ void MergeSegmentsCommand::redo()
     Q_ASSERT(mSavedSegmentContainer->childCount()==num);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mMasterSegment);
+    controller()->filesView()->selectItem(mMasterSegment);
     controller()->doUpdateMap();
 }
 
@@ -554,7 +554,7 @@ void MergeSegmentsCommand::undo()
     Q_ASSERT(mSourceIndexes.count()==segCount);
     Q_ASSERT(mSourceParents.count()==segCount);
 
-    controller()->view()->selectItem(mMasterSegment);
+    controller()->filesView()->selectItem(mMasterSegment);
     model()->startLayoutChange();
 
     for (int i = segCount-1; i>=0; --i)
@@ -594,7 +594,7 @@ void MergeSegmentsCommand::undo()
     for (int i = 0; i<segCount; ++i)
     {
         const TrackDataItem *item = mSourceSegments[i];
-        controller()->view()->selectItem(item, true);
+        controller()->filesView()->selectItem(item, true);
     }
     controller()->doUpdateMap();
 }
@@ -637,7 +637,7 @@ void AddContainerCommand::setData(TrackData::Type type, TrackDataItem *pnt)
 
 void AddContainerCommand::redo()
 {
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     if (mNewItemContainer==nullptr)			// need to create new container
@@ -669,7 +669,7 @@ void AddContainerCommand::redo()
     mParent->addChildItem(newItem);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(newItem);
+    controller()->filesView()->selectItem(newItem);
 }
 
 
@@ -679,7 +679,7 @@ void AddContainerCommand::undo()
     Q_ASSERT(mNewItemContainer->childCount()==0);
     Q_ASSERT(mParent!=nullptr);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *newItem = mParent->takeLastChildItem();
@@ -722,7 +722,7 @@ void AddPointCommand::redo()
 {
     Q_ASSERT(mAtPoint!=nullptr);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *parent = mAtPoint->parent();
@@ -752,7 +752,7 @@ void AddPointCommand::redo()
     parent->addChildItem(newPoint, parent->childIndex(mAtPoint));
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(newPoint);
+    controller()->filesView()->selectItem(newPoint);
     controller()->doUpdateMap();
 }
 
@@ -762,7 +762,7 @@ void AddPointCommand::undo()
     Q_ASSERT(mAtPoint!=nullptr);
     Q_ASSERT(mNewPointContainer->childCount()==0);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *parent = mAtPoint->parent();
@@ -776,7 +776,7 @@ void AddPointCommand::undo()
     Q_ASSERT(mNewPointContainer->childCount()==1);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mAtPoint);
+    controller()->filesView()->selectItem(mAtPoint);
     controller()->doUpdateMap();
 }
 
@@ -814,7 +814,7 @@ void MoveItemCommand::redo()
     Q_ASSERT(mDestinationParent!=nullptr);
     Q_ASSERT(!mItems.isEmpty());
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     const int num = mItems.count();
@@ -885,7 +885,7 @@ void MoveItemCommand::redo()
         qDebug() << "  ->" << mDestinationParent->name() << "index" << destRow;
         mDestinationParent->addChildItem(item, destRow);
         if (destRow!=-1) ++destRow;
-        controller()->view()->selectItem(item, true);
+        controller()->filesView()->selectItem(item, true);
     }
 
     model()->endLayoutChange();
@@ -905,7 +905,7 @@ void MoveItemCommand::undo()
     // is done in three passes so as to handle the case where they are being
     // moved within a single parent correctly.
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     // First pass:  Remove all of the items from their current parent.
@@ -935,7 +935,7 @@ void MoveItemCommand::undo()
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
-        controller()->view()->selectItem(item, true);
+        controller()->filesView()->selectItem(item, true);
     }
 
     model()->endLayoutChange();
@@ -975,7 +975,7 @@ void DeleteItemsCommand::redo()
 {
     Q_ASSERT(!mItems.isEmpty());
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new ItemContainer;
@@ -1009,7 +1009,7 @@ void DeleteItemsCommand::undo()
     Q_ASSERT(mParentItems.count()==num);
     Q_ASSERT(mParentIndexes.count()==num);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     for (int i = num-1; i>=0; --i)
@@ -1018,7 +1018,7 @@ void DeleteItemsCommand::undo()
         TrackDataItem *parent = mParentItems[i];
         parent->addChildItem(item, mParentIndexes[i]);
 
-        controller()->view()->selectItem(item, true);
+        controller()->filesView()->selectItem(item, true);
     }
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
@@ -1113,7 +1113,7 @@ void AddWaypointCommand::redo()
 {
     Q_ASSERT(mWaypointFolder!=nullptr);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     if (mNewWaypointContainer==nullptr)			// need to create new waypoint
@@ -1148,7 +1148,7 @@ void AddWaypointCommand::redo()
     mWaypointFolder->addChildItem(newPoint);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(newPoint);
+    controller()->filesView()->selectItem(newPoint);
     controller()->doUpdateMap();
 }
 
@@ -1159,7 +1159,7 @@ void AddWaypointCommand::undo()
     Q_ASSERT(mNewWaypointContainer->childCount()==0);
     Q_ASSERT(mWaypointFolder!=nullptr);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *newPoint = mWaypointFolder->takeLastChildItem();
@@ -1167,7 +1167,7 @@ void AddWaypointCommand::undo()
     Q_ASSERT(mNewWaypointContainer->childCount()==1);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mWaypointFolder);
+    controller()->filesView()->selectItem(mWaypointFolder);
     controller()->doUpdateMap();
 }
 
@@ -1211,7 +1211,7 @@ void AddRoutepointCommand::redo()
 {
     Q_ASSERT(mRoutepointRoute!=nullptr);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     if (mNewRoutepointContainer==nullptr)		// need to create new routepoint
@@ -1231,7 +1231,7 @@ void AddRoutepointCommand::redo()
     mRoutepointRoute->addChildItem(newPoint);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(newPoint);
+    controller()->filesView()->selectItem(newPoint);
     controller()->doUpdateMap();
 }
 
@@ -1242,7 +1242,7 @@ void AddRoutepointCommand::undo()
     Q_ASSERT(mNewRoutepointContainer->childCount()==0);
     Q_ASSERT(mRoutepointRoute!=nullptr);
 
-    controller()->view()->clearSelection();
+    controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
     TrackDataItem *newPoint = mRoutepointRoute->takeLastChildItem();
@@ -1250,7 +1250,7 @@ void AddRoutepointCommand::undo()
     Q_ASSERT(mNewRoutepointContainer->childCount()==1);
 
     model()->endLayoutChange();
-    controller()->view()->selectItem(mRoutepointRoute);
+    controller()->filesView()->selectItem(mRoutepointRoute);
     controller()->doUpdateMap();
 }
 

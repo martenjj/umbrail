@@ -147,13 +147,13 @@ FilesController::~FilesController()
 
 void FilesController::readProperties()
 {
-    view()->readProperties();
+    filesView()->readProperties();
     pointsView()->readProperties();
 }
 
 void FilesController::saveProperties()
 {
-    view()->saveProperties();
+    filesView()->saveProperties();
     pointsView()->saveProperties();
 }
 
@@ -495,7 +495,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
         }
     }
 
-    if (options & ImporterExporterBase::SelectionOnly) exp->setSelectionId(view()->selectionId());
+    if (options & ImporterExporterBase::SelectionOnly) exp->setSelectionId(filesView()->selectionId());
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->save(exportTo, tdf, options);
@@ -764,8 +764,8 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
 void FilesController::slotUpdateActionState()
 {
-    TrackData::Type selType = view()->selectedType();
-    int selCount = view()->selectedCount();
+    TrackData::Type selType = filesView()->selectedType();
+    int selCount = filesView()->selectedCount();
 
     if (selType==TrackData::None)
     {
@@ -777,7 +777,7 @@ void FilesController::slotUpdateActionState()
     }
     else
     {
-        const TrackDataItem *tdi = view()->selectedItem();
+        const TrackDataItem *tdi = filesView()->selectedItem();
         const QString name = tdi->name();
         QString msg = "";
 
@@ -864,10 +864,10 @@ void FilesController::slotTrackProperties()
 {
     qDebug();
 
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()==0) return;
 
-    TrackPropertiesDialogue d(&items, view());
+    TrackPropertiesDialogue d(&items, filesView());
     QString actText = CommandBase::senderText(sender());
     d.setWindowTitle(actText);
 
@@ -877,7 +877,7 @@ void FilesController::slotTrackProperties()
     // If setting the time zone, which automatically selected the
     // root file item before getting here, then clear the selection
     // even if the dialogue was cancelled.
-    if (wasSettingTimeZone) view()->selectItem(nullptr);
+    if (wasSettingTimeZone) filesView()->selectItem(nullptr);
 
     mSettingTimeZone = false;				// reset for next time
     if (!status) return;				// finish now if cancelled
@@ -990,7 +990,7 @@ void FilesController::slotSetWaypointStatus()
 
     ChangeItemDataCommand *cmd = new ChangeItemDataCommand(this);
     cmd->setText(i18n("Waypoint Status %1", CommandBase::senderText(sender())));
-    cmd->setDataItems(view()->selectedItems());
+    cmd->setDataItems(filesView()->selectedItems());
     cmd->setData("status", (newStatus==0) ? "" : QString::number(newStatus));
     executeCommand(cmd);
 }
@@ -998,7 +998,7 @@ void FilesController::slotSetWaypointStatus()
 
 void FilesController::slotSplitSegment()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
     const TrackDataItem *item = items.first();
 
@@ -1048,7 +1048,7 @@ void FilesController::slotMergeSegments()
     // Routes and route points do not have associated times.  In this case,
     // they are simply merged in file order.
 
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()<2) return;
 
     if (dynamic_cast<const TrackDataSegment *>(items.first())!=nullptr)
@@ -1087,11 +1087,11 @@ void FilesController::slotMergeSegments()
 
 void FilesController::slotMoveItem()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     //if (items.count()!=1) return;
     const TrackDataItem *item = items.first();
 
-    MoveItemDialogue d(view());
+    MoveItemDialogue d(filesView());
     d.setSource(&items);
 
     QString capt;
@@ -1112,7 +1112,7 @@ void FilesController::slotMoveItem()
 
 void FilesController::slotAddTrack()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
     TrackDataItem *pnt = items.first();			// parent item (must be file)
     Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr);
@@ -1126,7 +1126,7 @@ void FilesController::slotAddTrack()
 
 void FilesController::slotAddRoute()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
     TrackDataItem *pnt = items.first();			// parent item (must be file)
     Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr);
@@ -1140,7 +1140,7 @@ void FilesController::slotAddRoute()
 
 void FilesController::slotAddFolder()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
     TrackDataItem *pnt = items.first();			// parent item (file or folder)
     Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr || dynamic_cast<TrackDataFolder *>(pnt)!=nullptr);
@@ -1154,7 +1154,7 @@ void FilesController::slotAddFolder()
 
 void FilesController::slotAddPoint()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
 
     AddPointCommand *cmd = new AddPointCommand(this);
@@ -1168,7 +1168,7 @@ void FilesController::slotAddPoint()
 
 void FilesController::slotDeleteItems()
 {
-    QList<TrackDataItem *> items = view()->selectedItems();
+    QList<TrackDataItem *> items = filesView()->selectedItems();
     int num = items.count();
     if (num==0) return;
 
@@ -1223,7 +1223,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
         return;
     }
 
-    const QList<TrackDataItem *> items = view()->selectedItems();
+    const QList<TrackDataItem *> items = filesView()->selectedItems();
 
     const TrackDataItem *sel = (items.count()==1 ? items.first() : nullptr);
     const TrackDataAbstractPoint *selPoint = dynamic_cast<const TrackDataAbstractPoint *>(sel);
@@ -1278,7 +1278,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
         return;
     }
 
-    const QList<TrackDataItem *> items = view()->selectedItems();
+    const QList<TrackDataItem *> items = filesView()->selectedItems();
 
     const TrackDataItem *sel = (items.count()==1 ? items.first() : nullptr);
     const TrackDataAbstractPoint *selPoint = dynamic_cast<const TrackDataAbstractPoint *>(sel);
@@ -1345,7 +1345,7 @@ void FilesController::slotMapDraggedPoints(qreal latOff, qreal lonOff)
 
     MovePointsCommand *cmd = new MovePointsCommand(this);
     cmd->setText(i18n("Move Points"));
-    cmd->setDataItems(view()->selectedItems());
+    cmd->setDataItems(filesView()->selectedItems());
     cmd->setData(latOff, lonOff);
     executeCommand(cmd);
 }
@@ -1398,7 +1398,7 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
 void FilesController::slotSetTimeZone()
 {
     // Select the top-level file item.
-    view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
+    filesView()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
                                  QItemSelectionModel::ClearAndSelect);
 
     // Set for this one shot operation, so that the selection

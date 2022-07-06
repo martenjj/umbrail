@@ -248,7 +248,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     setButtons(QDialogButtonBox::Close);
 
     // Get the selected points.
-    filesController()->view()->selectedPoints().swap(mPoints);
+    filesController()->filesView()->selectedPoints().swap(mPoints);
     Q_ASSERT(!mPoints.isEmpty());
 
     // See if the first of those is a route point.  If so, assume that all of them are

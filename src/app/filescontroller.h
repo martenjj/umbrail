@@ -74,7 +74,7 @@ public:
     FilesController(QObject *pnt = nullptr);
     virtual ~FilesController();
 
-    FilesView *view() const			{ return (mFilesView); }
+    FilesView *filesView() const		{ return (mFilesView); }
     PointsView *pointsView() const		{ return (mPointsView); }
     FilesModel *model() const			{ return (mDataModel); }
     bool isSettingTimeZone() const		{ return (mSettingTimeZone); }

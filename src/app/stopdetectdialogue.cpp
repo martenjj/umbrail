@@ -89,7 +89,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     setButtonEnabled(QDialogButtonBox::Ok, false);
     setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Commit"));
 
-    filesController()->view()->selectedPoints().swap(mInputPoints);
+    filesController()->filesView()->selectedPoints().swap(mInputPoints);
 
     mTimeZone = QTimeZone::utc();			// a sensible default
     QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone").toString();

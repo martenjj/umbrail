@@ -58,7 +58,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     mWithGpsHeading = 0;
 
     QVector<const TrackDataAbstractPoint *> points;
-    filesController()->view()->selectedPoints().swap(points);
+    filesController()->filesView()->selectedPoints().swap(points);
     for (const TrackDataAbstractPoint *tdp : qAsConst(points)) getPointData(tdp);
 
     mWidget = new QWidget(this);
