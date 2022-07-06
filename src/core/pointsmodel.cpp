@@ -27,46 +27,29 @@ enum COLUMN
 #define SIZE_HINT		QSize(18, 18)
 
 
-
-
 PointsModel::PointsModel(QObject *pnt)
-    : QSortFilterProxyModel(pnt)
+    : QAbstractItemModel(pnt)
 {
     qDebug();
-
-    //    setRecursiveFilteringEnabled(true);
 }
 
 
-PointsModel::~PointsModel()
+QModelIndex PointsModel::index(int row, int col, const QModelIndex &pnt) const
 {
-    qDebug() << "done";
+    return (createIndex(row, col, row));
 }
 
 
-// QModelIndex PointsModel::index(int row, int col, const QModelIndex &pnt) const
-// {
-//     return (createIndex(row, col, row));
-// }
-// 
-// 
-// QModelIndex PointsModel::parent(const QModelIndex &idx) const
-// {
-//     return (QModelIndex());
-// }
-// 
-// 
-// int PointsModel::rowCount(const QModelIndex &pnt) const
-// {
-// 
-//     int c = sourceModel()->rowCount(mapToSource(pnt));
-//     qDebug() << "########## idx" << pnt << "=" << c;
-//     return (c);
-// 
-// 
-// 
-// 
-// }
+QModelIndex PointsModel::parent(const QModelIndex &idx) const
+{
+    return (QModelIndex());
+}
+
+
+int PointsModel::rowCount(const QModelIndex &pnt) const
+{
+    return (mPoints.count());
+}
 
 
 int PointsModel::columnCount(const QModelIndex &pnt) const
@@ -77,72 +60,72 @@ int PointsModel::columnCount(const QModelIndex &pnt) const
 
 QVariant PointsModel::data(const QModelIndex &idx, int role) const
 {
-    return (sourceModel()->data(mapToSource(idx), role));
+    const TrackDataItem *item = mPoints.value(idx.row());
+    if (item==nullptr) return (QVariant());
 
-//     const PointData *p = &mPoints.at(idx.row());
-// 
-//     switch (role)
-//     {
-// case Qt::DisplayRole:
-//         switch (idx.column())
-//         {
-// case COL_NAME:     return (p->displayName());
+    switch (role)
+    {
+case Qt::DisplayRole:
+        switch (idx.column())
+        {
+case COL_NAME:     return (item->name());
 // case COL_SOURCE:   return (p->sources()->join(", "));
 // case COL_COORDS:   return (p->displayLatLong());
 // case COL_ADDRESS:  return (p->displayAddress(", "));
 // case COL_CATS:     return (p->categories()->join(", "));
-//         }
-//         break;
-// 
-// case Qt::DecorationRole:
+        }
+return QString("R%1 C%2").arg(idx.row()).arg(idx.column());
+        break;
+
+case Qt::DecorationRole:
 //         switch (idx.column())
 //         {
 // case COL_SYM:      const QImage *img = controller()->iconsManager()->iconForName(p->symbol());
 //                    if (img!=NULL) return (img->scaled(SIZE_ICON));
 //                    break;
 //         }
-//         break;
-// 
-// case Qt::FontRole:
-//         switch (idx.column())
-//         {
-// case COL_COORDS:   return (QFontDatabase::systemFont(QFontDatabase::FixedFont));
-//         }
-//         break;
-// 
-// case Qt::ForegroundRole:
+        break;
+
+case Qt::FontRole:
+        switch (idx.column())
+        {
+case COL_COORDS:   return (QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        }
+        break;
+
+case Qt::ForegroundRole:
 //         switch (idx.column())
 //         {
 // case COL_NAME:     if (p->flags() & PointData::NewlyImported) return (QColor(Qt::green));
 //                    if (p->flags() & PointData::NoExport) return (QColor(Qt::red));
 //         };
-//         break;
-// 
-// case Qt::ToolTipRole:
+        break;
+
+case Qt::ToolTipRole:
 //         switch (idx.column())
 //         {
 // case COL_SYM:      return (p->symbol());
 // case COL_SOURCE:   return (p->sources()->join("<br/>"));
 //         }
-//         break;
-// 
-// case Qt::UserRole:					// data for sorting
-//         switch (idx.column())
-//         {
+        break;
+
+case Qt::UserRole:					// data for sorting
+        switch (idx.column())
+        {
 // case COL_SYM:      return (p->symbol());
-// default:           return (data(idx, Qt::DisplayRole));
-//         }
-//         break;
-// 
-// case Qt::SizeHintRole:
-//         switch (idx.column())
-//         {
-// case COL_SYM:      return (SIZE_HINT);
-//         }
-//         break;
-//     }
-// 
-//     return (QVariant());
+default:           return (data(idx, Qt::DisplayRole));
+        }
+        break;
+
+case Qt::SizeHintRole:
+        switch (idx.column())
+        {
+case COL_SYM:      return (SIZE_HINT);
+        }
+        break;
+    }
+
+    return (QVariant());
 }
 
 
@@ -167,23 +150,45 @@ default:		return (QVariant());
 
 Qt::ItemFlags PointsModel::flags(const QModelIndex &idx) const
 {
-    return (Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+    return (Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemNeverHasChildren);
 }
 
 
-bool PointsModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+void PointsModel::setSourceModel(QAbstractItemModel *srcModel)
 {
-    QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
-//     qDebug() << "---------------- si" << sourceIndex;
+    qDebug();
 
-    QAbstractProxyModel *sm = qobject_cast<QAbstractProxyModel *>(sourceModel());
-//     qDebug() << "---------------- sm" << sm;
+    mSourceModel = srcModel;
+    connect(srcModel, &QAbstractItemModel::modelReset, this, &PointsModel::slotRebuildPointsList);
+    connect(srcModel, &QAbstractItemModel::layoutChanged, this, &PointsModel::slotRebuildPointsList);
 
-    QModelIndex si2 = sm->mapToSource(sourceIndex);
-//     qDebug() << "---------------- si2" << si2;
+    slotRebuildPointsList();
+}
 
-    const TrackDataItem *item = FilesModel::itemForIndex(si2);
-    Q_ASSERT(item!=nullptr);
 
-    return (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr);
+void PointsModel::slotRebuildPointsList()
+{
+    qDebug();
+    beginResetModel();
+
+    mPoints.clear();
+
+    FilesModel *filesModel = qobject_cast<FilesModel *>(mSourceModel);
+    Q_ASSERT(filesModel!=nullptr);
+    const TrackDataItem *root = filesModel->rootFileItem();
+    if (root!=nullptr) buildPointsList(root);		// may not have been set yet
+
+    endResetModel();
+    qDebug() << "total points" << mPoints.count();
+}
+
+
+void PointsModel::buildPointsList(const TrackDataItem *item)
+{
+    if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr) mPoints.append(item);
+    else
+    {
+        const int n = item->childCount();
+        for (int i = 0; i<n; ++i) buildPointsList(item->childAt(i));
+    }
 }

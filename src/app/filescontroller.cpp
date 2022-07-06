@@ -36,9 +36,7 @@
 #include <qmimetype.h>
 #include <qmimedatabase.h>
 #include <qtimer.h>
-#ifdef SORTABLE_VIEW
 #include <qsortfilterproxymodel.h>
-#endif
 #ifdef HAVE_KEXIV2
 #include <qtimezone.h>
 #endif
@@ -46,7 +44,6 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kactioncollection.h>
-#include <kdescendantsproxymodel.h>
 
 #include <kio/statjob.h>
 #include <kio/filecopyjob.h>
@@ -99,36 +96,21 @@ FilesController::FilesController(QObject *pnt)
 
     mDataModel = new FilesModel(this);
 
-    KDescendantsProxyModel *descModel = new KDescendantsProxyModel(this);
-    descModel->setSourceModel(mDataModel);
-    descModel->setDisplayAncestorData(true);
-    descModel->setAncestorSeparator(QString(" - "));
-
     mPointsModel = new PointsModel(this);
-    mPointsModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    mPointsModel->setSortRole(Qt::UserRole);
-    mPointsModel->setDynamicSortFilter(true);
-    mPointsModel->setSourceModel(descModel);
+    mPointsModel->setSourceModel(mDataModel);
+
+    QSortFilterProxyModel *sortModel = new QSortFilterProxyModel(this);
+    sortModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    sortModel->setSortRole(Qt::UserRole);
+    sortModel->setDynamicSortFilter(true);
+    sortModel->setSourceModel(mPointsModel);
 
     mFilesView = new FilesView(mainWidget());
     mFilesView->setModel(mDataModel);
     connect(mFilesView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
 
     mPointsView = new PointsView(mainWidget());
-    mPointsView->setModel(mPointsModel);
-
-    connect(mPointsView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, [this](const QItemSelection start, const QItemSelection &end)
-            {
-                qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 1" << start << end;
-            });
-
-    connect(mPointsView->selectionModel(), &QItemSelectionModel::currentRowChanged,
-            this, [this](const QModelIndex &cur, const QModelIndex &prev)
-            {
-                qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 2" << cur << prev;
-                qDebug() << mPointsView->selectionModel()->selectedIndexes();
-            });
+    mPointsView->setModel(sortModel);
 
     connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end) { slotUpdateActionState(); });
     connect(mDataModel, &FilesModel::clickedItem, mFilesView, &FilesView::slotClickedItem);
