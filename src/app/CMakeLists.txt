@@ -70,6 +70,7 @@ target_link_libraries(${PN}
   KF5::I18n
   KF5::XmlGui
   KF5::Crash
+  KF5::ItemModels
   ${PN}core
   ${PN}settings
   ${PN}gui

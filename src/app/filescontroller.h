@@ -37,12 +37,11 @@ class QDateTime;
 class QUrl;
 
 class FilesView;
+class PointsView;
 class FilesModel;
+class PointsModel;
 class TrackDataFile;
 class ErrorReporter;
-#ifdef SORTABLE_VIEW
-class QSortFilterProxyModel;
-#endif
 class TrackDataItem;
 
 
@@ -75,7 +74,8 @@ public:
     FilesController(QObject *pnt = nullptr);
     virtual ~FilesController();
 
-    FilesView *view() const			{ return (mView); }
+    FilesView *view() const			{ return (mFilesView); }
+    PointsView *pointsView() const		{ return (mPointsView); }
     FilesModel *model() const			{ return (mDataModel); }
     bool isSettingTimeZone() const		{ return (mSettingTimeZone); }
 
@@ -134,11 +134,11 @@ private slots:
     void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
 
 private:
-    FilesView *mView;
+    FilesView *mFilesView;
+    PointsView *mPointsView;
     FilesModel *mDataModel;
-#ifdef SORTABLE_VIEW
-    QSortFilterProxyModel *mProxyModel;
-#endif
+    PointsModel *mPointsModel;
+
     bool mWarnedNoTimezone;
     bool mSettingTimeZone;
 };

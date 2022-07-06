@@ -33,6 +33,7 @@ class QUndoCommand;
 class ApplicationData;
 class FilesController;
 class FilesView;
+class PointsView;
 class MapController;
  
 
@@ -64,6 +65,7 @@ protected:
 
     FilesController *filesController() const;
     FilesView *filesView() const;
+    PointsView *pointsView() const;
     MapController *mapController() const;
     QWidget *mainWidget() const;
 

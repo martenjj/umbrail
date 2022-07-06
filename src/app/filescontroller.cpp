@@ -46,6 +46,8 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kactioncollection.h>
+#include <kdescendantsproxymodel.h>
+
 #include <kio/statjob.h>
 #include <kio/filecopyjob.h>
 
@@ -56,6 +58,8 @@ using namespace KExiv2Iface;
 
 #include "filesmodel.h"
 #include "filesview.h"
+#include "pointsmodel.h"
+#include "pointsview.h"
 #include "commands.h"
 #include "gpximporter.h"
 #include "gpxexporter.h"
@@ -94,25 +98,40 @@ FilesController::FilesController(QObject *pnt)
     qDebug();
 
     mDataModel = new FilesModel(this);
-    connect(mDataModel, &FilesModel::dataChanged, this, [=](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
 
-#ifdef SORTABLE_VIEW
-    mProxyModel = new QSortFilterProxyModel(this);
-    mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    mProxyModel->setSortRole(Qt::UserRole);
-    mProxyModel->setSourceModel(mDataModel);
-    mProxyModel->setDynamicSortFilter(true);
-#endif
+    KDescendantsProxyModel *descModel = new KDescendantsProxyModel(this);
+    descModel->setSourceModel(mDataModel);
+    descModel->setDisplayAncestorData(true);
+    descModel->setAncestorSeparator(QString(" - "));
 
-    mView = new FilesView(mainWidget());
-#ifdef SORTABLE_VIEW
-    mView->setModel(mProxyModel);
-#else
-    mView->setModel(mDataModel);
-#endif
-    connect(mView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
+    mPointsModel = new PointsModel(this);
+    mPointsModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    mPointsModel->setSortRole(Qt::UserRole);
+    mPointsModel->setDynamicSortFilter(true);
+    mPointsModel->setSourceModel(descModel);
 
-    connect(mDataModel, &FilesModel::clickedItem, mView, &FilesView::slotClickedItem);
+    mFilesView = new FilesView(mainWidget());
+    mFilesView->setModel(mDataModel);
+    connect(mFilesView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
+
+    mPointsView = new PointsView(mainWidget());
+    mPointsView->setModel(mPointsModel);
+
+    connect(mPointsView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, [this](const QItemSelection start, const QItemSelection &end)
+            {
+                qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 1" << start << end;
+            });
+
+    connect(mPointsView->selectionModel(), &QItemSelectionModel::currentRowChanged,
+            this, [this](const QModelIndex &cur, const QModelIndex &prev)
+            {
+                qDebug() << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 2" << cur << prev;
+                qDebug() << mPointsView->selectionModel()->selectedIndexes();
+            });
+
+    connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end) { slotUpdateActionState(); });
+    connect(mDataModel, &FilesModel::clickedItem, mFilesView, &FilesView::slotClickedItem);
     connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
     mWarnedNoTimezone = false;
@@ -129,11 +148,13 @@ FilesController::~FilesController()
 void FilesController::readProperties()
 {
     view()->readProperties();
+    pointsView()->readProperties();
 }
 
 void FilesController::saveProperties()
 {
     view()->saveProperties();
+    pointsView()->saveProperties();
 }
 
 
@@ -1324,7 +1345,7 @@ void FilesController::slotMapDraggedPoints(qreal latOff, qreal lonOff)
 
     MovePointsCommand *cmd = new MovePointsCommand(this);
     cmd->setText(i18n("Move Points"));
-    cmd->setDataItems(filesController()->view()->selectedItems());
+    cmd->setDataItems(view()->selectedItems());
     cmd->setData(latOff, lonOff);
     executeCommand(cmd);
 }
@@ -1378,7 +1399,7 @@ void FilesController::slotSetTimeZone()
 {
     // Select the top-level file item.
     view()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
-                            QItemSelectionModel::ClearAndSelect);
+                                 QItemSelectionModel::ClearAndSelect);
 
     // Set for this one shot operation, so that the selection
     // can be cleared afterwards.

@@ -32,6 +32,7 @@ class QWidget;
 
 class FilesController;
 class FilesView;
+class PointsView;
 class MapController;
 
 
@@ -166,6 +167,13 @@ public:
     FilesView *filesView() const		{ Q_ASSERT(mFilesView!=nullptr); return (mFilesView); }
 
     /**
+     * Get the PointsView for the document.
+     *
+     * @return the @c PointsView object
+     **/
+    PointsView *pointsView() const		{ Q_ASSERT(mPointsView!=nullptr); return (mPointsView); }
+
+    /**
      * Get the MapController for the document.
      *
      * @return the @c MapController object
@@ -193,6 +201,13 @@ protected:
      * Needs to be set by the MainWindow which inherits ApplicationData.
      **/
     FilesView *mFilesView;
+
+    /**
+     * The PointsView object.
+     *
+     * Needs to be set by the MainWindow which inherits ApplicationData.
+     **/
+    PointsView *mPointsView;
 
     /**
      * The MapController object.

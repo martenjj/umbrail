@@ -41,6 +41,7 @@ set(core_SRCS
   trackfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
+  pointsmodel.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})

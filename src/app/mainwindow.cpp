@@ -63,6 +63,7 @@
 #include "filescontroller.h"
 #include "filesview.h"
 #include "filesmodel.h"
+#include "pointsview.h"
 #include "dataindexer.h"
 #include "mapcontroller.h"
 #include "mapview.h"
@@ -124,7 +125,8 @@ void MainWindow::init()
     connect(mFilesController, &FilesController::modified, this, [this]() { slotSetModified(true); });
     connect(mFilesController, &FilesController::updateActionState, this, &MainWindow::slotUpdateActionState);
 
-    mFilesView = filesController()->view();		// set in ApplicationData
+    mFilesView = filesController()->view();			// set in ApplicationData
+    mPointsView = filesController()->pointsView();		// set in ApplicationData
 
     mMapController = new MapController(this);
     connect(mMapController, &MapController::statusMessage, this, &MainWindow::slotStatusMessage);
@@ -142,8 +144,7 @@ void MainWindow::init()
     mMapTabPlaceholder = new QStackedWidget(this);
     mMapTreePlaceholder = new QStackedWidget(this);
 
-    // TODO: temp - PointsView
-    mMainTabs->addTab(new QWidget(this), QIcon::fromTheme("view-list-text"), i18n("Points"));
+    mMainTabs->addTab(mPointsView, QIcon::fromTheme("view-list-text"), i18n("Points"));
     mMainTabs->addTab(mMapTabPlaceholder, QIcon::fromTheme("marble"), i18n("Map"));
 
     mTreeModeSplitter->addWidget(mFilesController->view());

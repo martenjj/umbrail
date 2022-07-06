@@ -61,6 +61,12 @@ FilesView *ApplicationDataInterface::filesView() const
 }
 
 
+PointsView *ApplicationDataInterface::pointsView() const
+{
+    return (mApplicationData->pointsView());
+}
+
+
 MapController *ApplicationDataInterface::mapController() const
 {
     return (mApplicationData->mapController());
