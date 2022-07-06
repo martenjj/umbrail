@@ -122,6 +122,11 @@
     </entry>
   </group>
 
+  <group name="PointsView">
+    <entry name="PointsViewColumnStates" key="ColumnStates" type="String">
+    </entry>
+  </group>
+
   <group name="Services">
     <entry name="GeonamesUser" type="String">
       <label>geonames.org user name:</label>

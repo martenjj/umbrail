@@ -8,17 +8,11 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kconfig.h>
-#include <kconfiggroup.h>
 #include <kxmlguiwindow.h>
 #include <kxmlguifactory.h>
 
+#include "settings.h"
 #include "autotooltipdelegate.h"
-
-
-// #define GROUP_POINTSVIEW	"PointsView"
-// #define CONFIG_COLSTATES	"ColumnStates"
-
 
 
 PointsView::PointsView(QWidget *pnt)
@@ -55,35 +49,28 @@ PointsView::~PointsView()
 
 void PointsView::readProperties()
 {
-//     KConfigGroup ourGroup = grp.config()->group(GROUP_POINTSVIEW);
-//     qDebug() << "from" << ourGroup.name();
-// 
-//     QString colStates = ourGroup.readEntry(CONFIG_COLSTATES, QString());
-//     if (!colStates.isEmpty())
-//     {
-//         qDebug() << "have col states size" << QByteArray::fromHex(colStates.toLocal8Bit()).size();
-//         qDebug() << "restored?" << header()->restoreState(QByteArray::fromHex(colStates.toLocal8Bit()));
-//     }
+    QString colStates = Settings::pointsViewColumnStates();
+    if (!colStates.isEmpty())
+    {
+        header()->restoreState(QByteArray::fromHex(colStates.toLatin1()));
+    }
 }
 
 
 void PointsView::saveProperties()
 {
-//     KConfigGroup ourGroup = grp.config()->group(GROUP_POINTSVIEW);
-//     qDebug() << "to" << ourGroup.name();
-// 
-//     const int viewportWidth = viewport()->width();
-//     const int headerLength = header()->length();
-//     if (headerLength>(viewportWidth+10))
-//     {
-//         qDebug() << "header length" << headerLength << "inconsistent with viewport width" << viewportWidth;
-//         qDebug() << "not saving column states";
-//         return;
-//     }
-// 
-//     qDebug() << "save col states size" << header()->saveState().size();
-//     ourGroup.writeEntry(CONFIG_COLSTATES, header()->saveState().toHex());
-//     ourGroup.sync();
+    // Not sure why this workaround was needed,
+    // but it doesn't seem to happen now.
+    const int viewportWidth = viewport()->width();
+    const int headerLength = header()->length();
+    if (headerLength>(viewportWidth+10))
+    {
+        qWarning() << "header length" << headerLength << "inconsistent with viewport width" << viewportWidth;
+        qWarning() << "not saving column states";
+        return;
+    }
+
+    Settings::setPointsViewColumnStates(header()->saveState().toHex());
 }
 
 
