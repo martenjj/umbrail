@@ -73,6 +73,7 @@ FilesView::FilesView(QWidget *pnt)
     mSelectedCount = 0;
     mSelectedType = TrackData::None;
     mSelectedItem = nullptr;
+    mSelectionInhibit = false;
 
     // The selection ID is a value which is incremented each time the selection
     // changes.  Selected items have the current selection ID stored within them,
@@ -192,9 +193,11 @@ void FilesView::selectionChanged(const QItemSelection &sel,
         }
     }
 
-// TODO: more selective region updating
-// emit a different signal, remove connection in MainWindow
+    // Tell the points view to make the same selection.
+    if (!mSelectionInhibit) emit filesSelectionChanged(mSelectionId);
 
+    // TODO: more selective region updating
+    // emit a different signal, remove connection in MainWindow
     emit updateActionState();				// actions and status
 }
 
@@ -319,6 +322,29 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine)
     if (!combine) selectionModel()->clear();
     selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
     scrollTo(idx);					// also expand if necessary
+}
+
+
+void FilesView::slotSelectItems(const QList<const TrackDataItem *> &items)
+{
+    const int num = items.count();
+    qDebug() << "count" << num;
+
+    // This slot is intended to be called via the interconnection signal
+    // pointsViewSelectionChanged().  So as not to recursively call each
+    // other, emitting the filesViewSelectionChanged() signal is blocked
+    // while the selection is changed.  FilesView::selectionChanged() will
+    // still be called to update the selection ID and GUI actions.
+    mSelectionInhibit = true;
+
+    selectionModel()->clear();				// clear current selection
+    if (num==1) selectItem(items.first());		// optimise this case
+    else if (num>1)					// multiple items
+    {
+        for (const TrackDataItem *item : items) selectItem(item, true);
+    }
+
+    mSelectionInhibit = false;
 }
 
 

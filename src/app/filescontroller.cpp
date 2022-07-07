@@ -116,6 +116,10 @@ FilesController::FilesController(QObject *pnt)
     connect(mDataModel, &FilesModel::clickedItem, mFilesView, &FilesView::slotClickedItem);
     connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
+    // Synchronising the selection between the points list and the tree view
+    connect(mPointsView, &PointsView::pointsSelectionChanged, mFilesView, &FilesView::slotSelectItems);
+    connect(mFilesView, &FilesView::filesSelectionChanged, mPointsView, &PointsView::slotSelectPoints);
+
     mWarnedNoTimezone = false;
     mSettingTimeZone = false;
 }
@@ -553,7 +557,6 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     // Local time needs to be converted to UTC (using the time zone of the file)
     // in order to correspond with the recording times.  This means that a
     // time zone needs to be set for meaningful results.
-
     QByteArray zone = model()->rootFileItem()->timeZone().toLocal8Bit();
     if (zone.isEmpty()) return (false);			// if none, can't convert
 
@@ -1144,8 +1147,6 @@ void FilesController::slotAddPoint()
     cmd->setData(items.first());
     executeCommand(cmd);
 }
-
-
 
 
 void FilesController::slotDeleteItems()

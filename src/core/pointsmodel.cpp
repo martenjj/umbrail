@@ -192,3 +192,9 @@ void PointsModel::buildPointsList(const TrackDataItem *item)
         for (int i = 0; i<n; ++i) buildPointsList(item->childAt(i));
     }
 }
+
+
+const TrackDataItem *PointsModel::itemAt(int row)
+{
+    return (mPoints.value(row));
+}

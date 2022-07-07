@@ -61,12 +61,15 @@ public slots:
     void slotCollapseAll();
     void slotExpandAll();
 
+    void slotSelectItems(const QList<const TrackDataItem *> &items);
+
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel) override;
     void contextMenuEvent(QContextMenuEvent *ev) override;
 
 signals:
     void updateActionState();
+    void filesSelectionChanged(unsigned long selectionId);
 
 private:
     void expandItem(const QModelIndex &idx);
@@ -76,6 +79,8 @@ private:
     TrackData::Type mSelectedType;
     const TrackDataItem *mSelectedItem;
     unsigned long mSelectionId;
+
+    bool mSelectionInhibit;
 };
  
 #endif							// FILESVIEW_H

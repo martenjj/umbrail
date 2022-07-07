@@ -26,6 +26,7 @@ public:
     virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
     void setSourceModel(QAbstractItemModel *srcModel);
+    const TrackDataItem *itemAt(int row);
 
 private:
     void buildPointsList(const TrackDataItem *item);
