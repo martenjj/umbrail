@@ -70,9 +70,15 @@ case Qt::DisplayRole:
         {
 case COL_NAME:     return (item->name());
 // case COL_SOURCE:   return (p->sources()->join(", "));
-// case COL_COORDS:   return (p->displayLatLong());
+
+case COL_COORDS:   {
+                       const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+                       if (tdp==nullptr) return (QVariant());
+                       return (tdp->formattedPosition());
+                   }
+
 // case COL_ADDRESS:  return (p->displayAddress(", "));
-// case COL_CATS:     return (p->categories()->join(", "));
+case COL_CATS:     return (item->metadata("category"));
         }
 return QString("R%1 C%2").arg(idx.row()).arg(idx.column());
         break;

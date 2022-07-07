@@ -365,9 +365,20 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     }
     else if (qName=="gpxx:Category")
     {
-        // Ignore this, covered by CATEGORY/TYPE above
+        // This may already be included in CATEGORY/TYPE above, so
+        // only combine with the existing category if it is not already present.
         elementText = mXmlReader->readElementText();
-        return (true);
+        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        if (item!=nullptr)
+        {
+            QStringList cats = item->metadata("category").toString().split(',');
+            if (!cats.contains(elementText))
+            {
+                cats.append(elementText);
+                item->setMetadata("category", cats.join(','));
+            }
+        }
+        else addError("GPXX:CATEGORY not within WPT");
     }
     else if (localName=="color")			// start of a COLOR element, which
     {							// should be within EXTENSIONS
