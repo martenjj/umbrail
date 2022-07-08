@@ -144,8 +144,8 @@ void MainWindow::init()
     mMapTabPlaceholder = new QStackedWidget(this);
     mMapTreePlaceholder = new QStackedWidget(this);
 
-    mMainTabs->addTab(mPointsView, QIcon::fromTheme("view-list-text"), i18n("Points"));
-    mMainTabs->addTab(mMapTabPlaceholder, QIcon::fromTheme("marble"), i18n("Map"));
+    mMainTabs->addTab(mPointsView, QIcon::fromTheme("view-list-text"), i18n("Points"));	// index 0
+    mMainTabs->addTab(mMapTabPlaceholder, QIcon::fromTheme("marble"), i18n("Map"));	// index 1
 
     mTreeModeSplitter->addWidget(mFilesController->filesView());
     mTreeModeSplitter->addWidget(mMapTreePlaceholder);
@@ -1107,6 +1107,9 @@ void MainWindow::slotMapZoomChanged(bool canZoomIn, bool canZoomOut)
 void MainWindow::slotMapGotoSelection()
 {
     mapController()->gotoSelection(filesController()->filesView()->selectedItems());
+
+    // If the points view is active, ensure that the map tab is shown.
+    if (mViewModeAction->isChecked()) mMainTabs->setCurrentIndex(1);
 }
 
 
