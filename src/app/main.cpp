@@ -56,6 +56,8 @@
  
 int main(int argc,char *argv[])
 {
+    KLocalizedString::setApplicationDomain(PROJECT_NAME);
+
     KAboutData aboutData(PROJECT_NAME,			// componentName
                          i18n("Umbrail"),		// displayName
 #if VCS_AVAILABLE
