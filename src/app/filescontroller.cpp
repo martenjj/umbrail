@@ -917,11 +917,8 @@ void FilesController::slotTrackProperties()
         if (name=="name") continue;			// these handled specially above
         if (name=="latitude" || name=="longitude") continue;
 
-        const QVariant oldData = item->metadata(idx);
-        QVariant newData = model->data(idx);
-        if (newData==oldData) continue;			// data has not changed
-
-        qDebug() << "index" << idx << name << oldData << "->" << newData;
+        if (!model->isChanged(idx)) continue;		// data not changed in dialogue
+        QVariant newData = model->data(idx);		// the new changed data
 
         if (name=="status")				// changing waypoint status
         {						// ignore if "No change"
@@ -933,9 +930,9 @@ void FilesController::slotTrackProperties()
             // Alpha value encodes the inherit flag, see TrackItemStylePage
             QColor col = newData.value<QColor>();
             if (col.alpha()==0) newData = QVariant();	// here null colour means inherit
-            qDebug() << "index" << idx << name << oldData << "->" << newData;
         }
 
+        qDebug() << "index" << idx << name << "->" << newData;
         ChangeItemDataCommand *cmd3 = new ChangeItemDataCommand(this, cmd);
         cmd3->setDataItems(items);
         // TODO: overload setData() to take an index

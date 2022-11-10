@@ -186,7 +186,7 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
 {
     mTypeCombo = new ItemTypeCombo(this);
 
-    if (items->count()==1)
+    if (!items->isEmpty())
     {
         const TrackDataItem *tdi = items->first();
         Q_ASSERT(tdi!=nullptr);
