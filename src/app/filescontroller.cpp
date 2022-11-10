@@ -593,7 +593,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         if (!importFrom.isLocalFile())
         {
             const QString messageText = xi18nc("@info", "<filename>%1</filename> is not a local file", importFrom.toDisplayString());
-            if (!multiple) KMessageBox::sorry(mainWidget(), messageText, i18n("Cannot Import"));
+            if (!multiple) KMessageBox::error(mainWidget(), messageText, i18n("Cannot Import"));
             else
             {
                 q = KMessageBox::warningContinueCancel(mainWidget(),
@@ -977,7 +977,7 @@ void FilesController::slotSplitSegment()
     int idx = pnt->childIndex(item);
     if (idx==0 || idx>=(pnt->childCount()-1))
     {
-        KMessageBox::sorry(mainWidget(),
+        KMessageBox::error(mainWidget(),
                            xi18nc("@info", "Cannot split the segment or route here<nl/>(at its start or end point)"),
                            i18n("Cannot split segment"));
         return;
@@ -1034,7 +1034,7 @@ void FilesController::slotMergeSegments()
 
             if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
             {						// all apart from first
-                KMessageBox::sorry(mainWidget(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
+                KMessageBox::error(mainWidget(), xi18nc("@info", "Cannot merge these segments<nl/><nl/>Start time of segment \"%1\"<nl/>overlaps the previous \"%2\"",
                                                         tds->name(), items[i-1]->name()),
                                    i18n("Cannot merge segments"));
                 return;
@@ -1185,7 +1185,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     CreatePointDialogue d(false, mainWidget());		// waypoint mode
     if (!d.canCreate())
     {
-        KMessageBox::sorry(mainWidget(),
+        KMessageBox::error(mainWidget(),
                            i18n("There are no folders where a waypoint can be created."),
                            i18n("Cannot Create Waypoint"));
         return;
@@ -1240,7 +1240,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     CreatePointDialogue d(true, mainWidget());		// route point mode
     if (!d.canCreate())
     {
-        KMessageBox::sorry(mainWidget(),
+        KMessageBox::error(mainWidget(),
                            i18n("There are no routes where a point can be created."),
                            i18n("Cannot Create Routepoint"));
         return;

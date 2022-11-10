@@ -276,7 +276,7 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
     BoundingArea bb = TrackData::unifyBoundingAreas(&items);
     if (!bb.isValid())					// empty container
     {
-        KMessageBox::sorry(mainWidget(),
+        KMessageBox::error(mainWidget(),
                            i18n("No valid position to show"),
                            i18n("No Position"));
         return;

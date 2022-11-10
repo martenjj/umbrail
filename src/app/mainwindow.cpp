@@ -1108,7 +1108,7 @@ void MainWindow::slotTrackProfile()
     w->setModal(false);
     w->show();
 #else // HAVE_QCUSTOMPLOT
-    KMessageBox::sorry(this, i18n("The application is not built with QCustomPlot, profile is not available."));
+    KMessageBox::error(this, i18n("The application is not built with QCustomPlot, profile is not available."));
 #endif // HAVE_QCUSTOMPLOT
 }
 
@@ -1200,7 +1200,7 @@ bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 
     if (validUrls.isEmpty())				// no usable URLs found
     {
-        KMessageBox::sorry(this, i18n("Don't know what to do with any of the pasted or dropped URLs"));
+        KMessageBox::error(this, i18n("Don't know what to do with any of the pasted or dropped URLs"));
         return (false);
     }
 
