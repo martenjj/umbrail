@@ -113,7 +113,7 @@ case QXmlStreamReader::Characters:
             break;
 
 case QXmlStreamReader::Comment:
-            qDebug() << "ignored Comment";
+            //qDebug() << "ignored Comment";
             break;
 
 case QXmlStreamReader::DTD:

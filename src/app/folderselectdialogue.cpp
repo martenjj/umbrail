@@ -78,7 +78,7 @@ void FolderSelectDialogue::slotNewFolder()
     TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, item);
     if (foundFolder!=nullptr)
     {
-        KMessageBox::sorry(this,
+        KMessageBox::error(this,
                            i18n("A folder named <resource>%1</resource> already exists here.", name),
                            i18n("Folder Exists"));
         return;

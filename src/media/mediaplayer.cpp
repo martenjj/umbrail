@@ -36,7 +36,7 @@
 
 #include <kio/job.h>
 #include <kio/applicationlauncherjob.h>
-#include <kio/jobuidelegate.h>
+#include <kio/jobuidelegatefactory.h>
 
 #ifdef HAVE_PHONON
 #include <phonon/mediaobject.h>
@@ -143,7 +143,7 @@ void MediaPlayer::openMediaFile(const TrackDataWaypoint *item)
     if (file.isEmpty()) return;
 
     auto *job = new KIO::ApplicationLauncherJob(nullptr);
-    job->setUiDelegate(new KIO::JobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
+    job->setUiDelegate(KIO::createDefaultJobUiDelegate(KJobUiDelegate::AutoHandlingEnabled, nullptr));
 
     QList<QUrl> urls;
     urls << file;

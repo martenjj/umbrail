@@ -27,6 +27,7 @@
 
 #include <qdebug.h>
 #include <qtimezone.h>
+#include <qcolor.h>
 
 #include <klocalizedstring.h>
 
@@ -53,6 +54,7 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     {
         QVariant v = item->metadata(i);
         if (!v.isNull()) mItemData[i] = v;		// only if present and meaningful
+        mItemChanged[i] = false;			// nothing changed yet
     }
 
     // TODO: a static function to access internal index list
@@ -110,6 +112,10 @@ QVariant MetadataModel::data(const QModelIndex &idx, int role) const
 case Qt::UserRole:					// raw unformatted data
         return (v);
 
+case Qt::ForegroundRole:
+        if (isChanged(row)) return (QColor(Qt::red));
+        return (QVariant());
+
 case Qt::DisplayRole:					// formatted display data
         switch (idx.column())
         {
@@ -124,6 +130,7 @@ case QMetaType::QDateTime:
 default:        return (v);
             }
         }						// fall through for other roles
+        Q_FALLTHROUGH();
 
 default:
         return (QVariant());
@@ -134,6 +141,12 @@ default:
 const QVariant MetadataModel::data(int idx) const
 {
     return (mItemData.value(idx));
+}
+
+
+bool MetadataModel::isChanged(int idx) const
+{
+    return (mItemChanged.value(idx));
 }
 
 
@@ -148,6 +161,7 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
     if (role!=Qt::EditRole) return (false);
 
     mItemData[idx.row()] = value;
+    mItemChanged[idx.row()] = true;
     // QAbstractItemModel::setData() API documentation says that we have to
     // emit this signal explicitly.
     emit dataChanged(idx, idx);
@@ -158,6 +172,7 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 void MetadataModel::setData(int idx, const QVariant &value)
 {
     mItemData[idx] = value;
+    mItemChanged[idx] = true;
 
     if (idx==DataIndexer::index("timezone")) resolveTimeZone();
 							// update time zone data

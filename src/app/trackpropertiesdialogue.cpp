@@ -142,13 +142,13 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     addPage(page, i18nc("@title:tab", "Details"));
 
     page = propif->createPropertiesStylePage(items, this);
-    addPage(page, i18nc("@title:tab", "Style"), (items->count()==1));
+    addPage(page, i18nc("@title:tab", "Style"));
 
     page = propif->createPropertiesPlotPage(items, this);
     addPage(page, i18nc("@title:tab", "Plot"), (items->count()==1));
 
     page = propif->createPropertiesMetadataPage(items, this);
-    addPage(page, i18nc("@title:tab", "Metadata"), (items->count()==1));
+    addPage(page, i18nc("@title:tab", "Metadata"));
 
     setButtonEnabled(QDialogButtonBox::Ok, false);	// no data changed yet
 

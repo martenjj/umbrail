@@ -77,8 +77,9 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
     Q_ASSERT(tdi!=nullptr);
     const TrackDataItem *pnt = tdi->parent();
     int row = (pnt==nullptr ? 0 : pnt->childIndex(tdi));
-    // static_cast will not work here due to const'ness
-    return (row==-1 ? QModelIndex() : createIndex(row, 0, (void *) tdi));
+    // The two casts are necessary, the only alternative
+    // is an old-style cast.
+    return (row==-1 ? QModelIndex() : createIndex(row, 0, const_cast<void *>(static_cast<const void *>(tdi))));
 }
 
 

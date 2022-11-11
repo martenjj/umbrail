@@ -176,7 +176,7 @@ void LatLongWidget::slotPasteCoordinates()
     qDebug() << text;
     if (text.isEmpty())					// nothing to paste
     {
-        KMessageBox::sorry(this, i18n("Nothing (or not text) to paste"));
+        KMessageBox::error(this, i18n("Nothing (or not text) to paste"));
         return;
     }
 
@@ -214,5 +214,5 @@ void LatLongWidget::slotPasteCoordinates()
         return;
     }
 
-    KMessageBox::sorry(this, i18n("Coordinate format not recognised"));
+    KMessageBox::error(this, i18n("Coordinate format not recognised"));
 }

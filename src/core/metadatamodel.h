@@ -50,6 +50,7 @@ public:
     const QVariant data(int idx) const;
     const QVariant data(const QString &nm) const;
     void setData(int idx, const QVariant &value);
+    bool isChanged(int idx) const;
 
     const QTimeZone *timeZone() const			{ return (mTimeZone); }
     double latitude() const;
@@ -63,6 +64,7 @@ private:
 
 private:
     QMap<int,QVariant> mItemData;
+    QMap<int,bool> mItemChanged;
 
     QString mParentTimeZone;
     bool mUseParentTimeZone;
