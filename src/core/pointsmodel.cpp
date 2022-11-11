@@ -1,4 +1,5 @@
 
+
 #include "pointsmodel.h"
 
 #include <qfontdatabase.h>
@@ -16,9 +17,7 @@ enum COLUMN
 {
     COL_NAME,						// name
     COL_SYM,						// symbol
-    // TODO: maybe rename "Source" -> "Origin" since we already have
-    // metadata "source" used for something else
-    COL_SOURCE,						// data source ID
+    COL_ORIGIN,						// data source ID
     COL_COORDS,						// lat/long coordinates
     COL_ADDRESS,					// street address
     COL_CATS,						// catgeories
@@ -121,11 +120,10 @@ case Qt::DisplayRole:
         switch (idx.column())
         {
 case COL_NAME:     return (item->name());
-    // TODO:  sources not in GPX exported from NavMarks
-// case COL_SOURCE:   return (p->sources()->join(", "));
+case COL_ORIGIN:   return (item->metadata("origin").toString().split(',').join(", "));
 case COL_COORDS:   return (formatCoordinates(item));
 case COL_ADDRESS:  return (formatAddress(item));
-case COL_CATS:     return (item->metadata("category"));
+case COL_CATS:     return (item->metadata("category").toString().split(',').join(", "));
         }
         break;
 
@@ -163,7 +161,7 @@ case Qt::ToolTipRole:
             // symbols manager too.  Maybe need a separate NamedIcon type subclassing a
             // QIcon with the option to set the name appropriately.
 case COL_SYM:      return (item->icon().name());
-// case COL_SOURCE:   return (p->sources()->join("<br/>"));
+case COL_ORIGIN:   return (item->metadata("origin").toString().split(',').join("<br/>"));
         }
         break;
 
@@ -196,7 +194,7 @@ QVariant PointsModel::headerData(int section, Qt::Orientation orientation, int r
     {
 case COL_NAME:		return (i18n("Name"));
 case COL_SYM:		return (i18n("Sym"));
-case COL_SOURCE:	return (i18n("Source"));
+case COL_ORIGIN:	return (i18n("Origin"));
 case COL_COORDS:	return (i18n("Lat/Long"));
 case COL_ADDRESS:	return (i18n("Address"));
 case COL_CATS:		return (i18n("Categories"));
