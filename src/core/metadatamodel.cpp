@@ -127,7 +127,8 @@ case COL_VALUE:
 case QMetaType::QDateTime:
                 return (v.toDateTime().toString(Qt::ISODate));
 
-default:        return (v);
+default:        if (DataIndexer::name(row)=="flags") return (QString("0x%1").arg(v.toInt(), 2, 16, QLatin1Char('0')));
+                return (v);
             }
         }						// fall through for other roles
         Q_FALLTHROUGH();
