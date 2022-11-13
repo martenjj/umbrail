@@ -31,6 +31,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qdatetime.h>
+#include <qcolor.h>
 
 #include <kconfig.h>
 #include <kconfiggroup.h>
@@ -42,6 +43,7 @@
 #define MARKS_FOLDER_NAME	"Marks"
 #define GROUP_CREATOR		"Creator"
 #define GROUP_MAP		"Map"
+#define GROUP_CATEGORIES	"Categories"
 #define GROUP_POINT		"Point_"
 
 
@@ -86,8 +88,25 @@ bool MarksImporter::loadFrom(QIODevice *dev)
     source += '_';
     source += QDateTime::currentDateTime().toString(Qt::ISODate);
 
-    // TODO; build the colour/category map from the [Categories] group
-    // and use it to set the "pointcolor" data for the waypoint
+    // Build the category->colour map from the [Categories] group,
+    // which will later be used to set the "pointcolor" data for
+    // imported waypoints.
+    QMap<QString, QColor> categoryMap;			// map category -> colour
+    grp = conf.group(GROUP_CATEGORIES);
+
+    for (int i = 0; ; ++i)
+    {
+        QString nameKey = "Name"+QString::number(i);	// key for category name
+        if (!grp.hasKey(nameKey)) break;		// no such key => end of map
+        QString nameVal = grp.readEntry(nameKey, "");	// get category name
+        if (nameVal.isEmpty()) continue;		// blank name, should never happen
+
+        QString colKey = "Colour"+QString::number(i);	// key for category colour
+        QColor colVal = grp.readEntry(colKey, QColor());
+						        // get colour for category
+        categoryMap[nameVal] = colVal;			// save in category map
+    }
+    qDebug() << "category map" << categoryMap.count() << "entries";
 
     int num = 0;
     const QStringList groups = conf.groupList();
@@ -123,20 +142,22 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         if (!l.isEmpty())
         {
             // Values from 'enum AddressTag' in navmarks/src/pointdata.h
-            s = l.value(0);
-            if (!s.isEmpty()) pnt->setMetadata(DataIndexer::indexWithNamespace("StreetAddress", "gpxx"), s);
-            s = l.value(1);
-            if (!s.isEmpty()) pnt->setMetadata(DataIndexer::indexWithNamespace("City", "gpxx"), s);
-            s = l.value(2);
-            if (!s.isEmpty()) pnt->setMetadata(DataIndexer::indexWithNamespace("State", "gpxx"), s);
-            s = l.value(3);
-            if (!s.isEmpty()) pnt->setMetadata(DataIndexer::indexWithNamespace("PostalCode", "gpxx"), s);
-            s = l.value(4);
-            if (!s.isEmpty()) pnt->setMetadata(DataIndexer::indexWithNamespace("Country", "gpxx"), s);
+            // No metadata item will be set if the string valus is empty.
+            pnt->setMetadata(DataIndexer::indexWithNamespace("StreetAddress", "gpxx"), l.value(0));
+            pnt->setMetadata(DataIndexer::indexWithNamespace("City", "gpxx"), l.value(1));
+            pnt->setMetadata(DataIndexer::indexWithNamespace("State", "gpxx"), l.value(2));
+            pnt->setMetadata(DataIndexer::indexWithNamespace("PostalCode", "gpxx"), l.value(3));
+            pnt->setMetadata(DataIndexer::indexWithNamespace("Country", "gpxx"), l.value(4));
         }
 
         l = grp.readEntry("Categories", QStringList());
-        if (!l.isEmpty()) pnt->setMetadata("category", l.join(','));
+        if (!l.isEmpty())
+        {
+            pnt->setMetadata("category", l.join(','));
+            QColor col = categoryMap.value(l.first());
+            if (col.isValid()) pnt->setMetadata("pointcolor", col.name());
+        }
+
         l = grp.readEntry("Sources", (QStringList() << source));
         if (!l.isEmpty()) pnt->setMetadata("origin", l.join(','));
 
