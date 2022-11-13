@@ -41,6 +41,7 @@
 
 #define MARKS_FOLDER_NAME	"Marks"
 #define GROUP_CREATOR		"Creator"
+#define GROUP_MAP		"Map"
 #define GROUP_POINT		"Point_"
 
 
@@ -73,6 +74,12 @@ bool MarksImporter::loadFrom(QIODevice *dev)
     }
 
     mDataRoot->setMetadata("creator", grp.readEntry("AppName", ""));
+
+    // Set the current map position/zoom from the settings saved
+    // in the import file.  The other map settings - home point,
+    // overlays and theme - use the global application settings.
+    grp = conf.group(GROUP_MAP);
+    mDataRoot->setMetadata("position", grp.readEntry("Current", ""));
 
     // from MainWindow::importFile() in navmarks/src/mainwindow.cpp
     QString source = QFileInfo(filePath).baseName();	// generate default source tag
