@@ -127,7 +127,12 @@ case COL_VALUE:
 case QMetaType::QDateTime:
                 return (v.toDateTime().toString(Qt::ISODate));
 
-default:        if (DataIndexer::name(row)=="flags") return (QString("0x%1").arg(v.toInt(), 2, 16, QLatin1Char('0')));
+default:        if (DataIndexer::name(row)=="flags")	// display as hex value
+                {
+                    const int f = v.toInt();		// not needed as flags value
+                    if (f==0) return (QVariant());	// no flags to display
+                    return (QString("0x%1").arg(f, 2, 16, QLatin1Char('0')));
+                }
                 return (v);
             }
         }						// fall through for other roles
