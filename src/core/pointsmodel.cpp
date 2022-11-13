@@ -8,6 +8,7 @@
 #include <qicon.h>
 
 #include <klocalizedstring.h>
+#include <kcolorscheme.h>
 
 #include "trackdata.h"
 #include "filesmodel.h"
@@ -72,10 +73,6 @@ static QVariant formatCoordinates(const TrackDataItem *item)
 static QVariant formatAddress(const TrackDataItem *item)
 {
     QStringList result;
-
-    // Using QList::value() here in preference to QList::at().
-    // The latter will assert if the indexed entry does not exist;
-    // the former will simply return a default-constructed value.
 
     // "StreetAddress", which may be multiple lines
     const QString street = item->metadata("StreetAddress").toString();
@@ -145,12 +142,14 @@ case COL_COORDS:   return (QFontDatabase::systemFont(QFontDatabase::FixedFont));
         break;
 
 case Qt::ForegroundRole:
-//         switch (idx.column())
-//         {
-    // TODO:  'flags' not in GPX exported from NavMarks
-// case COL_NAME:     if (p->flags() & PointData::NewlyImported) return (QColor(Qt::green));
-//                    if (p->flags() & PointData::NoExport) return (QColor(Qt::red));
-//         };
+        if (idx.column()==COL_NAME)
+        {
+            const KColorScheme sch;
+            const TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(item->metadata("flags").toInt());
+
+            if (flags & TrackData::NewlyImported) return (sch.foreground(KColorScheme::PositiveText));
+            if (flags & TrackData::NoExport) return (sch.foreground(KColorScheme::NegativeText));
+        }
         break;
 
 case Qt::ToolTipRole:
