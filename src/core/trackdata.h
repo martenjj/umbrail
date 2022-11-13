@@ -185,6 +185,17 @@ namespace TrackData
         StatusUnwanted,
     };
 
+    // User flags for waypoints, from navmarks/src/pointdata.h
+    enum WaypointFlag
+    {
+        NoFlags = 0x00,
+        HomePoint = 0x01,
+        NoExport = 0x02,
+        NewlyImported = 0x04,
+        NoChange = 0x80
+    };
+    Q_DECLARE_FLAGS(WaypointFlags, WaypointFlag)
+
     BoundingArea unifyBoundingAreas(const QList<TrackDataItem *> *items);
     TimeRange unifyTimeSpans(const QList<TrackDataItem *> *items);
     unsigned sumTotalChildCount(const QList<TrackDataItem *> *items);

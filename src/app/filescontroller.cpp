@@ -60,6 +60,7 @@ using namespace KExiv2Iface;
 #include "commands.h"
 #include "gpximporter.h"
 #include "gpxexporter.h"
+#include "marksimporter.h"
 #include "mainwindow.h"
 #include "trackpropertiesdialogue.h"
 #include "moveitemdialogue.h"
@@ -326,6 +327,10 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
     if (importType=="GPX")				// import from GPX file
     {
         imp.reset(new GpxImporter);
+    }
+    else if (importType=="MARKS")			// import from POI marks file
+    {
+        imp.reset(new MarksImporter);
     }
 
     if (imp.isNull())					// could not create importer
@@ -1351,6 +1356,7 @@ QString FilesController::allImportFilters()
 {
     QStringList filters;
     filters << GpxImporter::filter();
+    filters << MarksImporter::filter();
     filters << allFilter;
     return (filters.join(";;"));
 }

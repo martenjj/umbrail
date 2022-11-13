@@ -35,6 +35,7 @@ set(io_SRCS
   exporterbase.cpp
   gpxexporter.cpp
   gpximporter.cpp
+  marksimporter.cpp
   importerexporterbase.cpp
   importerbase.cpp
 )
