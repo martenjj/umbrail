@@ -437,6 +437,13 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
         if (!val.value<QColor>().isValid()) val.clear();
     }
 
+    // And also to a string list.  No other sort of list is ever
+    // stored in item metadata.
+    if (val.type()==QVariant::StringList)
+    {
+        if (val.toStringList().isEmpty()) val.clear();
+    }
+
     mMetadata->replace(idx, val);				// set value of variant
 }
 
