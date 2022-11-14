@@ -163,50 +163,6 @@ TrackDataItem *GpxImporter::currentItem() const
 }
 
 
-TrackDataFolder *GpxImporter::getFolder(const QString &path)
-{
-#ifdef DEBUG_IMPORT
-    qDebug() << path;
-#endif
-
-    const QStringList folders = path.split('/');
-    Q_ASSERT(!folders.isEmpty());
-    TrackDataItem *cur = mDataRoot;
-    TrackDataFolder *foundFolder = nullptr;
-
-    for (const QString &name : folders)			// look for existing subfolder
-    {
-        foundFolder = TrackData::findFolderByPath(name, cur);
-        if (foundFolder==nullptr)			// nothing existing found
-        {
-            qDebug() << "creating" << name << "under" << cur->name();
-            foundFolder = new TrackDataFolder;
-            foundFolder->setName(name, true);
-            cur->addChildItem(foundFolder);
-        }
-
-        cur = foundFolder;
-    }
-
-    return (foundFolder);
-}
-
-
-TrackDataFolder *GpxImporter::waypointFolder(const TrackDataWaypoint *tdw)
-{
-    Q_ASSERT(tdw!=nullptr);
-
-    // If the waypoint has a folder defined, then that folder is used.
-    // Otherwise, an appropriately named top level folder is used, or
-    // created if necessary.
-
-    const QVariant path = tdw->metadata("folder");	// waypoint folder, if it has one
-    if (!path.isNull()) return (getFolder(path.toString()));
-							// find or create folder
-    return (getFolder(tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME));
-}
-
-
 void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName)
 {
     double lat = NAN;					// coordinates found
@@ -714,7 +670,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         //      return (addError("Waypoint not complete"));
         //    }
 
-        TrackDataFolder *folder = waypointFolder(tdw);
+        TrackDataFolder *folder = waypointFolder(tdw, tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME);
         Q_ASSERT(folder!=nullptr);
 
         // Clear the folder name metadata, it will be regenerated

@@ -84,8 +84,6 @@ protected:
 private:
     QByteArray indent() const;
     TrackDataItem *currentItem() const;
-    TrackDataFolder *getFolder(const QString &path);
-    TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
     void getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName);
     QString elementContents();
 

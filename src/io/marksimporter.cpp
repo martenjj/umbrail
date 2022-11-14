@@ -122,10 +122,8 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         QString s = grp.readEntry("Name", "");
         if (!s.isEmpty()) pnt->setName(s, true);
 
-        s = grp.readEntry("Symbol", "");
-        if (!s.isEmpty()) pnt->setMetadata("sym", s);
-        s = grp.readEntry("Desc", "");
-        if (!s.isEmpty()) pnt->setMetadata("desc", s);
+        pnt->setMetadata("sym", grp.readEntry("Symbol", ""));
+        pnt->setMetadata("desc", grp.readEntry("Desc", ""));
 
         TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(grp.readEntry("Flags", static_cast<int>(TrackData::NoFlags)));
         pnt->setMetadata("flags", static_cast<int>(flags));
@@ -163,7 +161,7 @@ bool MarksImporter::loadFrom(QIODevice *dev)
 
         // This will always use the default folder, because none
         // is ever saved in the file.
-        TrackDataFolder *folder = waypointFolder(pnt);
+        TrackDataFolder *folder = waypointFolder(pnt, MARKS_FOLDER_NAME);
         Q_ASSERT(folder!=nullptr);
         // Clear the folder name metadata, it will be regenerated
         // when the file is exported.
@@ -184,47 +182,3 @@ QString MarksImporter::filter()
 }
 
 
-// TODO: move to ImporterBase
-TrackDataFolder *MarksImporter::getFolder(const QString &path)
-{
-#ifdef DEBUG_IMPORT
-    qDebug() << path;
-#endif
-
-    const QStringList folders = path.split('/');
-    Q_ASSERT(!folders.isEmpty());
-    TrackDataItem *cur = mDataRoot;
-    TrackDataFolder *foundFolder = nullptr;
-
-    for (const QString &name : folders)			// look for existing subfolder
-    {
-        foundFolder = TrackData::findFolderByPath(name, cur);
-        if (foundFolder==nullptr)			// nothing existing found
-        {
-            qDebug() << "creating" << name << "under" << cur->name();
-            foundFolder = new TrackDataFolder;
-            foundFolder->setName(name, true);
-            cur->addChildItem(foundFolder);
-        }
-
-        cur = foundFolder;
-    }
-
-    return (foundFolder);
-}
-
-
-// TODO: move to ImporterBase with default name as parameter
-TrackDataFolder *MarksImporter::waypointFolder(const TrackDataWaypoint *tdw)
-{
-    Q_ASSERT(tdw!=nullptr);
-
-    // If the waypoint has a folder defined, then that folder is used.
-    // Otherwise, an appropriately named top level folder is used, or
-    // created if necessary.
-
-    const QVariant path = tdw->metadata("folder");	// waypoint folder, if it has one
-    if (!path.isNull()) return (getFolder(path.toString()));
-							// find or create folder
-    return (getFolder(MARKS_FOLDER_NAME));
-}

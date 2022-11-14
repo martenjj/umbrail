@@ -43,10 +43,6 @@ public:
 
     // ImporterBase
     bool loadFrom(QIODevice *dev) override;
-
-private:
-    TrackDataFolder *getFolder(const QString &path);
-    TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw = nullptr);
 };
 
 #endif							// MARKSIMPORTER_H

@@ -42,6 +42,7 @@
 
 
 #define DEBUG_IMPORT
+#undef DEBUG_DETAILED
 
 
 ImporterBase::ImporterBase()
@@ -181,4 +182,47 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
     }
 
     return (mDataRoot);
+}
+
+
+TrackDataFolder *ImporterBase::getFolder(const QString &path)
+{
+#ifdef DEBUG_DETAILED
+    qDebug() << path;
+#endif
+
+    const QStringList folders = path.split('/');
+    Q_ASSERT(!folders.isEmpty());
+    TrackDataItem *cur = mDataRoot;
+    TrackDataFolder *foundFolder = nullptr;
+
+    for (const QString &name : folders)			// look for existing subfolder
+    {
+        foundFolder = TrackData::findFolderByPath(name, cur);
+        if (foundFolder==nullptr)			// nothing existing found
+        {
+            qDebug() << "creating" << name << "under" << cur->name();
+            foundFolder = new TrackDataFolder;
+            foundFolder->setName(name, true);
+            cur->addChildItem(foundFolder);
+        }
+
+        cur = foundFolder;
+    }
+
+    return (foundFolder);
+}
+
+
+TrackDataFolder *ImporterBase::waypointFolder(const TrackDataWaypoint *tdw, const QString &defaultName)
+{
+    Q_ASSERT(tdw!=nullptr);
+
+    // If the waypoint has a folder defined, then that folder is used.
+    // Otherwise, an appropriately named top level folder is used, or
+    // created if necessary.
+
+    const QVariant path = tdw->metadata("folder");	// waypoint folder, if it has one
+    if (!path.isNull()) return (getFolder(path.toString()));
+    return (getFolder(defaultName));			// find or create folder
 }

@@ -28,10 +28,11 @@
 
 #include "importerexporterbase.h"
 
-class QFile;
 class QUrl;
-class TrackDataFile;
 class QIODevice;
+class TrackDataFile;
+class TrackDataFolder;
+class TrackDataWaypoint;
 
 
 class ImporterBase : public ImporterExporterBase
@@ -44,11 +45,17 @@ public:
     virtual bool needsResave() const			{ return (false); }
 
 protected:
+    // TODO: private with accessor
+    TrackDataFile *mDataRoot;
+
+protected:
     virtual bool loadFrom(QIODevice *dev) = 0;
 
 protected:
-    // TODO: private with accessor
-    TrackDataFile *mDataRoot;
+    TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw, const QString &defaultName);
+
+private:
+    TrackDataFolder *getFolder(const QString &path);
 };
 
 #endif							// IMPORTERBASE_H
