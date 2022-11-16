@@ -223,9 +223,7 @@ void PointsModel::setSourceModel(QAbstractItemModel *srcModel)
 
 void PointsModel::slotRebuildPointsList()
 {
-    qDebug();
     beginResetModel();
-
     mPoints.clear();
 
     FilesModel *filesModel = qobject_cast<FilesModel *>(mSourceModel);

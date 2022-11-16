@@ -29,9 +29,6 @@
 #include "importerbase.h"
 #include "errorreporter.h"
 
-class TrackDataFolder;
-class TrackDataWaypoint;
-
 
 class MarksImporter : public ImporterBase
 {

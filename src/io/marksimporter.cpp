@@ -130,9 +130,9 @@ bool MarksImporter::loadFrom(QIODevice *dev)
 
         double lat = grp.readEntry("Latitude", NAN);
         double lon = grp.readEntry("Longtitude", NAN);
-        if (lat!=NAN && lon!=NAN) pnt->setLatLong(lat, lon);
+        if (!ISNAN(lat) && !ISNAN(lon)) pnt->setLatLong(lat, lon);
         double ele = grp.readEntry("Elevation", NAN);
-        if (ele!=NAN) pnt->setMetadata("ele", s);
+        if (!ISNAN(ele)) pnt->setMetadata("ele", ele);
 
         // The address saved here is a 5-element list:
         // StreetAddress, City, State, PostalCode, Country

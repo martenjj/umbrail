@@ -34,8 +34,6 @@ class TrackDataTrack;
 class TrackDataRoute;
 class TrackDataSegment;
 class TrackDataAbstractPoint;
-class TrackDataFolder;
-class TrackDataWaypoint;
 
 class QXmlStreamReader;
 class QXmlStreamAttributes;
