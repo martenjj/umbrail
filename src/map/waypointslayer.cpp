@@ -39,6 +39,7 @@
 #include "mapview.h"
 #include "dataindexer.h"
 #include "trackdata.h"
+#include "pointicon.h"
 #include "units.h"
 
 
@@ -223,7 +224,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         }
 
         // Then the waypoint icon image
-        const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
+        const QPixmap img = tdw->icon()->pixmap(KIconLoader::SizeSmall);
         if (!img.isNull())				// icon image available
         {
             painter->drawPixmap(coord, img);

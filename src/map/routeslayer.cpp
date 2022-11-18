@@ -28,7 +28,6 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
-#include <kcolorscheme.h>
 #include <kiconloader.h>
 
 #include <marble/GeoPainter.h>
@@ -37,6 +36,7 @@
 #include "mapcontroller.h"
 #include "mapview.h"
 #include "trackdata.h"
+#include "pointicon.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -134,7 +134,6 @@ void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
         // Again, routes will not likely be so extensive as tracks, so an arrow
         // is drawn on every line segment unless it is less than ARROW_MIN_LENGTH
         // pixels long.
-
         for (int i = 0; i<(cnt-1); ++i)			// scan along each line segment
         {
             const TrackDataRoutepoint *p1 = static_cast<const TrackDataRoutepoint *>(item->childAt(i));
@@ -142,21 +141,15 @@ void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
 
             qreal x1, y1;				// coordinates of this point
             qreal x2, y2;				// coordinates of next point
-//             // Route segments can be relatively long, so don't bother checking whether
-//             // both end points are on screen.
-
-            bool onScreen = mapController()->view()->screenCoordinates(p1->longitude(), p1->latitude(), x1, y1) &&
-                mapController()->view()->screenCoordinates(p2->longitude(), p2->latitude(), x2, y2);
-            if (!onScreen) continue;			// map to screen coordinates
-
-            int len = qRound((qAbs(x1-x2)+qAbs(y1-y2))/2);
+							// map to screen coordinates
+            mapController()->view()->screenCoordinates(p1->longitude(), p1->latitude(), x1, y1);
+            mapController()->view()->screenCoordinates(p2->longitude(), p2->latitude(), x2, y2);
 							// length of this segment
+            int len = qRound((qAbs(x1-x2)+qAbs(y1-y2))/2);
             if (len<ARROW_MIN_LENGTH) continue;		// is the segment long enough?
-
 #ifdef DEBUG_PAINTING
             qDebug() << "arrow at" << i << "length" << len;
 #endif
-
             // Draw the arrow at the midpoint of this line segment,
             // in the line colour with no outline.
 
@@ -209,11 +202,11 @@ void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bo
         }
 
         // Then the routepoint icon image
-        const QPixmap img = KIconLoader::global()->loadIcon(tdp->iconName(), KIconLoader::NoGroup, KIconLoader::SizeSmall,
-                                                            KIconLoader::DefaultState, QStringList(), nullptr, true);
-        if (!img.isNull())				// icon image available
+        const PointIcon *ic = tdp->icon();
+        if (ic->isValid())				// icon image available
         {
-            painter->drawPixmap(coord, img);
+            const QPixmap &pix = ic->pixmap(KIconLoader::SizeSmall);
+            painter->drawPixmap(coord, pix);
         }
         else						// draw our own marker
         {

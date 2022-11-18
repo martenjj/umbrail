@@ -73,6 +73,7 @@
 #include "statisticswidget.h"
 #include "mediaplayer.h"
 #include "stopdetectdialogue.h"
+#include "pointiconprovider.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -543,6 +544,8 @@ void MainWindow::setupStatusBar()
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
+    PointIconProvider::self()->aboutToQuit();		// dump cache statistics
+
     KConfigGroup grp = Settings::self()->config()->group(CONFIG_GROUP);
     saveProperties(grp);
     grp.sync();

@@ -23,30 +23,49 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef WAYPOINTIMAGEPROVIDER_H
-#define WAYPOINTIMAGEPROVIDER_H
+#ifndef POINTICON_H
+#define POINTICON_H
 
+#include <qicon.h>
 
 class QColor;
-class QIcon;
 
-class WaypointImageProviderPrivate;
+/**
+ * @short Provide icons for the GUI and for plotting on the map.
+ *
+ *
+ * @see QIcon
+ **/
 
-
-class WaypointImageProvider
+class PointIcon
 {
 public:
-    ~WaypointImageProvider();
+    enum IconNamespace
+    {
+        NamespaceAuto,
+        NamespaceImage,
+        NamespaceSystem,
+        NamespaceGarmin,
+        NamespaceOsmand
+    };
 
-    QIcon icon(const QColor &col);
+    ~PointIcon() = default;
 
-    static WaypointImageProvider *self();
+    QString name() const			{ return (mName); }
+    QIcon icon() const				{ return (mIcon); }
+    QPixmap pixmap(int size) const		{ return (mIcon.pixmap(size)); }
+    bool isValid() const			{ return (!mIcon.isNull()); }
 
 protected:
-    explicit WaypointImageProvider();
+    // Only the PointIconProvider may construct a PointIcon.
+    friend class PointIconProvider;
+    explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto);
+    explicit PointIcon(const QString &name, const QColor &col);
 
 private:
-    WaypointImageProviderPrivate *d;
+    QString mName;
+    PointIcon::IconNamespace mNsp;
+    QIcon mIcon;
 };
 
-#endif							// WAYPOINTIMAGEPROVIDER_H
+#endif							// POINTICON_H

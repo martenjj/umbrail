@@ -52,6 +52,7 @@
 #include "filesview.h"
 #include "filesmodel.h"
 #include "trackdata.h"
+#include "pointicon.h"
 #include "variableunitcombo.h"
 #include "units.h"
 #include "elevationmanager.h"
@@ -206,7 +207,7 @@ void WaypointLayerable::draw(QCPPainter *painter)
         painter->drawLine(QPointF(pos.x(), axisRect.top()), QPointF(pos.x(), axisRect.bottom()-2));
 
         // Then the waypoint icon image, if available
-        const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
+        const QPixmap img = tdw->icon()->pixmap(KIconLoader::SizeSmall);
         if (!img.isNull())				// icon image available
         {
             QPointF coord(pos.x()-(img.width()/2), pos.y()-(img.height()/2));

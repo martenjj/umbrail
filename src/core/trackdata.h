@@ -42,10 +42,10 @@
 
 class QWidget;
 class QTimeZone;
-class QIcon;
 class TrackDataItem;
 class TrackDataFolder;
 class TrackPropertiesPage;
+class PointIcon;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -232,7 +232,7 @@ public:
     void setName(const QString &newName, bool explicitName);
     bool hasExplicitName() const			{ return (mExplicitName); }
 
-    virtual QIcon icon() const;
+    virtual const PointIcon *icon() const;
 
     int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
     TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
@@ -275,7 +275,6 @@ private:
     QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
-    // Style *mStyle;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -457,7 +456,7 @@ public:
 
     TrackData::Type type() const override		{ return (TrackData::Waypoint); }
 
-    QIcon icon() const override;
+    const PointIcon *icon() const override;
 
     TrackData::WaypointType waypointType() const;
     bool isMediaType() const;
@@ -486,13 +485,14 @@ public:
 
     TrackData::Type type() const override		{ return (TrackData::Route); }
 
-    QString iconName() const override			{ return ("chart_route"); }
-
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
     DEFINE_PROPERTIES_PAGE(Style)
     DEFINE_PROPERTIES_PAGE(Plot)
     DEFINE_PROPERTIES_PAGE(Metadata)
+
+protected:
+    QString iconName() const override			{ return ("chart_route"); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -509,16 +509,17 @@ public:
 
     TrackData::Type type() const override		{ return (TrackData::Routepoint); }
 
-    // There is a "chart_routepoint" icon (present for completeness),
-    // but the flag looks better on the map and plot.  So use it in the
-    // data model also.
-    QString iconName() const override			{ return ("flag"); }
-
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
     DEFINE_PROPERTIES_PAGE(Style)
     DEFINE_PROPERTIES_PAGE(Plot)
     DEFINE_PROPERTIES_PAGE(Metadata)
+
+protected:
+    // There is a "chart_routepoint" icon (present for completeness),
+    // but the flag looks better on the map and plot.  So use it in the
+    // data model also.
+    QString iconName() const override			{ return ("flag"); }
 };
 
 #endif							// TRACKDATA_H

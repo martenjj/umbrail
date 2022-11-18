@@ -35,13 +35,14 @@ set(core_SRCS
   dataindexer.cpp
   pluginmanager.cpp
   units.cpp
-  waypointimageprovider.cpp
   metadatamodel.cpp
   filesmodel.cpp
   trackfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
   pointsmodel.cpp
+  pointicon.cpp
+  pointiconprovider.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})

@@ -37,7 +37,8 @@
 #include <kio/global.h>
 
 #include "dataindexer.h"
-#include "waypointimageprovider.h"
+#include "pointicon.h"
+#include "pointiconprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -47,6 +48,7 @@
 
 #undef MEMORY_TRACKING
 #undef DEBUG_ICONS
+#define DEBUG_ICONS
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -497,9 +499,9 @@ QString TrackDataItem::timeZone() const
 }
 
 
-QIcon TrackDataItem::icon() const
+const PointIcon *TrackDataItem::icon() const
 {
-    return (QIcon::fromTheme(this->iconName()));
+    return (PointIconProvider::self()->icon(this->iconName(), PointIcon::NamespaceSystem));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -765,7 +767,7 @@ TrackData::WaypointType TrackDataWaypoint::waypointType() const
     n = metadata("link");				// then get saved link name
     // TODO: eliminate "media" here and in MediaPlayer, translate in importer
     if (n.isNull()) n = metadata("media");		// compatibility with old metadata
-    if (n.isNull()) n = name();				// lastly try our waypoint name
+    if (n.isNull() && hasExplicitName()) n = name();	// lastly try our waypoint name
     if (n.isNull()) return (TrackData::WaypointNormal);	// no media data present
 
     QString ns = n.toString();
@@ -801,19 +803,42 @@ bool TrackDataWaypoint::isMediaType() const
 }
 
 
-QIcon TrackDataWaypoint::icon() const
+// Special icons for waypoints.
+//
+// Falling back to the base TrackDataItem::icon() will
+// look for a system icon with the name as returned
+// by TrackDataWaypoint::iconName() above.
+
+const PointIcon *TrackDataWaypoint::icon() const
 {
+    // First priority: special waypoint type
     if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
 
-    const QColor col = metadata("pointcolor").value<QColor>();
-    if (!col.isValid()) return (TrackDataItem::icon());
+    // Second priority: named symbol
+    const QString sym = metadata("sym").toString();
+    if (!sym.isEmpty())
+    {
 #ifdef DEBUG_ICONS
-    qDebug() << "need icon for waypoint" << name() << "colour" << col.name();
+        qDebug() << "for waypoint" << name() << "sym" << sym;
 #endif
+        const PointIcon *ic = PointIconProvider::self()->icon(sym);
+        if (ic->isValid()) return (ic);
+    }
 
-    QIcon ic = WaypointImageProvider::self()->icon(col);
-    if (ic.isNull()) return (TrackDataItem::icon());	// icon image not available
-    return (ic);
+    // Third priority: point colour
+    const QColor col = metadata("pointcolor").value<QColor>();
+    if (col.isValid())
+    {
+#ifdef DEBUG_ICONS
+        qDebug() << "for waypoint" << name() << "colour" << col.name();
+#endif
+        const PointIcon *ic = PointIconProvider::self()->icon(col);
+        if (ic->isValid()) return (ic);
+    }
+
+    // Lowest priority: default icon
+    // waypointType() must be TrackData::WaypointNormal here
+    return (TrackDataItem::icon());
 }
 
 //////////////////////////////////////////////////////////////////////////

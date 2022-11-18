@@ -35,6 +35,7 @@
 #include <marble/GeoDataCoordinates.h>
 #include <marble/GeoPainter.h>
 
+#include "pointicon.h"
 #include "trackdata.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,7 +87,7 @@ bool StopsLayer::render(GeoPainter *painter, ViewportParams *viewport,
                                  0, GeoDataCoordinates::Degree);
 
         // First the icon image
-        const QPixmap img = tdw->icon().pixmap(KIconLoader::SizeSmall);
+        const QPixmap img = tdw->icon()->pixmap(KIconLoader::SizeSmall);
         if (!img.isNull())				// icon image available
         {
             painter->drawPixmap(coord, img);

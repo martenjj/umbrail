@@ -34,6 +34,7 @@
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
 
+#include "pointicon.h"
 #include "trackdata.h"
 
 
@@ -142,7 +143,7 @@ case COL_NAME:     return (tdi->name());
 case Qt::DecorationRole:
         switch (idx.column())
         {
-case COL_NAME:     return (tdi->icon());
+case COL_NAME:     return (tdi->icon()->icon());
         }
         break;
 
