@@ -33,7 +33,6 @@ class QColor;
 /**
  * @short Provide icons for the GUI and for plotting on the map.
  *
- *
  * @see QIcon
  **/
 
@@ -53,8 +52,8 @@ public:
 
     QString name() const			{ return (mName); }
     QIcon icon() const				{ return (mIcon); }
-    QPixmap pixmap(int size) const		{ return (mIcon.pixmap(size)); }
     bool isValid() const			{ return (!mIcon.isNull()); }
+    QPixmap pixmap(int size) const;
 
 protected:
     // Only the PointIconProvider may construct a PointIcon.

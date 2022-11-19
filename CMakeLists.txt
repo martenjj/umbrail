@@ -82,6 +82,7 @@ set(PN ${CMAKE_PROJECT_NAME})
 add_subdirectory(src)
 add_subdirectory(desktop)
 add_subdirectory(pics)
+add_subdirectory(icons)
 
 #########################################################################
 #									#
