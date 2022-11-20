@@ -37,6 +37,19 @@
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#undef DEBUG_GARMIN
+#undef DEBUG_ICONS
+
+#ifdef DEBUG_GARMIN
+#include <iostream>
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  Colour key for provided colour - must agree with colour used in	//
 //  master images.							//
 //									//
@@ -281,7 +294,9 @@ static const char *garminNames[] =
     "Triangle, Blue",					// 219
     "Triangle, Green",					// 220
     "Triangle, Red",					// 221
-    "Contact, Blonde",					// 222
+    // Named as "Contact, Blond" in the forum post,
+    // but the GPS device writes this value instead.
+    "Contact, BlondWoman",				// 222
     "Contact, Clown",					// 223
     "Contact, Glasses",					// 224
     "Contact, Panda",					// 225
@@ -315,6 +330,15 @@ static const int numGarminNames = sizeof(garminNames)/sizeof(char *);
 
 static const int garminNumPerFile = 40;			// images per file
 static const int garminNumPerRow = 8;			// images per row in file
+
+static const int garminBaseX = 6;			// offset to first image
+static const int garminBaseY = 5;
+
+static const int garminStepX = 35;			// offset between columns/rows
+static const int garminStepY = 35;
+
+static const int garminSizeX = 24;			// size of actual image
+static const int garminSizeY = 24;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -411,26 +435,115 @@ static QImage &masterGarminImage(int fileNo)
 
 static void setGarminPixmap(QIcon *icon, int idx)
 {
-    const int fileNo = (idx-1)/garminNumPerFile;
-    const int i = (idx-1) % garminNumPerFile;
-    const int x = i % garminNumPerRow;
-    const int y = i / garminNumPerRow;
+    const int fileNo = (idx-1)/garminNumPerFile;	// image file number
+    const int i = (idx-1) % garminNumPerFile;		// index within that file
+    const int xi = i % garminNumPerRow;			// position within that file
+    const int yi = i / garminNumPerRow;
 
     const QImage &img = masterGarminImage(fileNo);	// just as a reference
     if (img.isNull()) return;				// no image to use
-							// assuming symbols are square
-    const int pixPerSym = img.width()/garminNumPerRow;
 
-    // Trim factors obtained by experiment
-    QImage sym = img.copy(x*pixPerSym+6, y*pixPerSym+5, pixPerSym-12, pixPerSym-11);
+    // Copy the required symbol out of the combined source image.
+    QImage sym = img.copy(garminBaseX+xi*garminStepX,
+                          garminBaseY+yi*garminStepY,
+                          garminSizeX, garminSizeY);
 
-    // TODO: does this do anything when stored in an icon?
-    QBitmap mask = QBitmap::fromImage(sym.createHeuristicMask());
+    const int xs = sym.width()-1;
+    const int ys = sym.height()-1;
+
+#ifdef DEBUG_GARMIN
+    qDebug() << "extracted symbol size" << sym.size();
+    for (int y = 0; y<=ys; ++y)
+    {
+        QString l;
+        for (int x = 0; x<=ys; ++x)
+        {
+            const QColor col = sym.pixelColor(x, y);
+            l += " "+QString("%1").arg(col.rgb() & 0x00FFFFFF, 6, 16, QLatin1Char('0'));
+        }
+        std::cout << qPrintable(l) << std::endl;
+    }
+#endif // DEBUG_GARMIN
+
+    // Unfortunately the source images are not clean enough to do
+    // a QImage::createHeuristicMask() directly on them - the
+    // background is not solid and Qt applies no pixel value
+    // tolerance for that operation.  So examine each pixel of
+    // the symbol image in turn, and if it appears to be a light
+    // enough grey (but not completely white, because that is more
+    // likely to be a border around the symbol) then set the
+    // corresponding pixel in a separate 'greyMask' image.  A
+    // black/white output will be sufficient for this, in which
+    // case it may appear wasteful to create an RGB32 image but
+    // createHeuristicMask() converts the image to this format
+    // anyway if it is not so already.
+    //
+    // Although advised in the Qt API documentation, it is not
+    // necessary to clear or fill the image because every pixel
+    // of it will be set.
+    QImage greyMask(sym.size(), QImage::Format_RGB32);
+
+#ifdef DEBUG_GARMIN
+    qDebug() << "grey mask";
+#endif // DEBUG_GARMIN
+    for (int y = 0; y<=ys; ++y)
+    {
+        QString l;
+        for (int x = 0; x<=xs; ++x)
+        {
+            const QColor col = sym.pixelColor(x, y);
+            const QRgb rgb = col.rgb() & 0x00FFFFFF;
+
+            bool isg = (rgb!=0xFFFFFF) &&		// not pure white
+                       (rgb>0xE00000) &&		// grey bright enough
+                       (col.red()==col.green()) &&	// red same as green
+                       (col.red()==col.blue());		// and also same as blue
+
+            // Ensure that the corners of the image count as mask
+            // pixels, because createHeuristicMask() starts to
+            // detect from there.
+            if ((x==0 && y==0) || (x==xs && y==ys)) isg = true;
+
+#ifdef DEBUG_GARMIN
+            l += " "+QString("%1").arg(isg, 1, 16, QLatin1Char('0'));
+#endif // DEBUG_GARMIN
+            greyMask.setPixel(x, y, (isg ? Qt::black : Qt::white));
+        }
+#ifdef DEBUG_GARMIN
+        std::cout << qPrintable(l) << std::endl;
+#endif // DEBUG_GARMIN
+    }
+
+    // Now the black/white image generated above is clean enough to
+    // generate a mask.  There is no point converting the image to
+    // a QPixmap first, as QPixmap::createHeuristicMask() immediately
+    // converts the QPixmap back to a QImage.
+    QBitmap mask = QBitmap::fromImage(greyMask.createHeuristicMask());
+#ifdef DEBUG_GARMIN
+    const QImage im = mask.toImage();
+    qDebug() << "heuristic mask format" << im.format();
+    for (int y = 0; y<=ys; ++y)
+    {
+        QString l;
+        for (int x = 0; x<=xs; ++x)
+        {
+            l += " "+QString("%1").arg(im.pixelColor(x, y).value()>0x80, 1, 16, QLatin1Char('0'));
+        }
+        std::cout << qPrintable(l) << std::endl;
+    }
+#endif // DEBUG_GARMIN
+
+    // Finally generate a QPixmap from the scaled image, add the mask
+    // and store it at that size for the icon.
     QPixmap pix = QPixmap::fromImage(sym);
     pix.setMask(mask);
-
-    //icon->addPixmap(QPixmap::fromImage(sym));
     icon->addPixmap(pix);
+
+    // While we have the masked pixmap available, scale it to the sizes
+    // that will be used by the application - 32x32 and 16x16 - and store
+    // them for the icon also.
+    icon->addPixmap(pix.scaled(KIconLoader::SizeMedium, KIconLoader::SizeMedium, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    icon->addPixmap(pix.scaled(KIconLoader::SizeSmall, KIconLoader::SizeSmall, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -441,19 +554,24 @@ static void setGarminPixmap(QIcon *icon, int idx)
 
 PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
 {
-    qDebug() << "named" << name << "in nsp" << nsp;
-
     mName = name;
     mNsp = nsp;
+#ifdef DEBUG_ICONS
+    qDebug() << "named" << name << "in nsp" << nsp;
+#endif // DEBUG_ICONS
 
     // First try: system and application icons
     if (nsp==PointIcon::NamespaceAuto || nsp==PointIcon::NamespaceSystem)
     {
-        qDebug() << "try system";
+#ifdef DEBUG_ICONS
+        qDebug() << "  trying system";
+#endif // DEBUG_ICONS
         if (QIcon::hasThemeIcon(name))			// only if name known, so that
         {						// this will find an icon which
             mIcon = QIcon::fromTheme(name);		// should never be "unknown"
-            qDebug() << "found in theme null?" << mIcon.isNull();
+#ifdef DEBUG_ICONS
+            qDebug() << "  found in theme null?" << mIcon.isNull();
+#endif // DEBUG_ICONS
             if (!mIcon.isNull()) return;		// should always be true
         }
     }
@@ -461,7 +579,9 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
     // Second try: Garmin icons
     if (nsp==PointIcon::NamespaceAuto || nsp==PointIcon::NamespaceGarmin)
     {
-        qDebug() << "try Garmin";
+#ifdef DEBUG_ICONS
+        qDebug() << "  trying Garmin";
+#endif // DEBUG_ICONS
         const QByteArray cData = name.toLocal8Bit();	// do not combine these, can't
         const char *cName = cData.constData();		// keep pointer into temporary!
 
@@ -477,35 +597,30 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
 
         if (idx>0)					// name was found
         {
-            qDebug() << "found" << name << "at index" << idx;
+#ifdef DEBUG_ICONS
+            qDebug() << "  found at index" << idx;
+#endif // DEBUG_ICONS
             setGarminPixmap(&mIcon, idx);
             if (!mIcon.isNull()) return;		// always true unless load error
         }
     }
 
+#ifdef DEBUG_ICONS
+    qDebug() << "  name not found";
+#endif // DEBUG_ICONS
     mIcon = QIcon::fromTheme("unknown");		// last resort fallback
 }
 
 
 PointIcon::PointIcon(const QString &name, const QColor &col)
 {
-    qDebug() << "for colour" << col << "named" << name;
-
     mName = name;
     mNsp = PointIcon::NamespaceImage;
+#ifdef DEBUG_ICONS
+    qDebug() << "for colour" << col << "named" << name;
+#endif // DEBUG_ICONS
 
     // originally from WaypointImageProvider::icon()
     setIconPixmap(&mIcon, col, KIconLoader::SizeSmall);
     setIconPixmap(&mIcon, col, KIconLoader::SizeMedium);
-}
-
-
-QPixmap PointIcon::pixmap(int size) const
-{
-    // TODO: may be a relatively expensive operation, so cache result
-    // Only ever called for map/profile with KIconLoader::SizeSmall
-    QPixmap pix = mIcon.pixmap(size);
-    QBitmap mask = pix.createHeuristicMask();
-    pix.setMask(mask);
-    return (pix);
 }

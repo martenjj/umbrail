@@ -53,7 +53,7 @@ public:
     QString name() const			{ return (mName); }
     QIcon icon() const				{ return (mIcon); }
     bool isValid() const			{ return (!mIcon.isNull()); }
-    QPixmap pixmap(int size) const;
+    QPixmap pixmap(int size) const		{ return (mIcon.pixmap(size)); }
 
 protected:
     // Only the PointIconProvider may construct a PointIcon.
