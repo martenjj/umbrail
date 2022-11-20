@@ -85,7 +85,12 @@ static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
     if (DataIndexer::isApplicationTag(name)) return (true);
 							// application tag - always in extensions
     if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
-    {							// point - these not in extensions
+    {
+        if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr)
+        {						// waypoint - these not in extensions
+            if (name=="link"|| name=="sym") return (false);
+        }
+							// point - these not in extensions
         return (!(name=="name" || name=="ele" || name=="time" || name=="hdop"));
     }
     else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
@@ -99,10 +104,6 @@ static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
     else if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr)
     {							// segment - all in extensions
         return (true);
-    }
-    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr)
-    {							// waypoint - these not in extensions
-        return (!(name=="link"));
     }
     else return (false);				// other - assume not in extensions
 }
