@@ -97,8 +97,6 @@ public:
 
     TimeRange united(const TimeRange &other) const;
 
-    static const TimeRange null;
-
 private:
     QDateTime mStart;
     QDateTime mFinish;
@@ -127,8 +125,6 @@ public:
     bool isValid() const				{ return (!ISNAN(mLatNorth) && !ISNAN(mLonWest)); }
 
     BoundingArea united(const BoundingArea &other) const;
-
-    static const BoundingArea null;
 
 private:
     double mLatNorth;

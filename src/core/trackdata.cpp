@@ -50,15 +50,6 @@
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Internal constants							//
-//									//
-//////////////////////////////////////////////////////////////////////////
-
-const TimeRange TimeRange::null = TimeRange();
-const BoundingArea BoundingArea::null = BoundingArea();
-
-//////////////////////////////////////////////////////////////////////////
-//									//
 //  Internal static							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -132,9 +123,9 @@ BoundingArea BoundingArea::united(const BoundingArea &other) const
 
 TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> *items)
 {
-    if (items==nullptr) return (TimeRange::null);
+    if (items==nullptr) return (TimeRange());
     int num = items->count();
-    if (num==0) return (TimeRange::null);
+    if (num==0) return (TimeRange());
 
     const TrackDataItem *first = items->first();
     TimeRange result = first->timeSpan();
@@ -151,9 +142,9 @@ TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> *items)
 
 BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 {
-    if (items==nullptr) return (BoundingArea::null);
+    if (items==nullptr) return (BoundingArea());
     int num = items->count();
-    if (num==0) return (BoundingArea::null);
+    if (num==0) return (BoundingArea());
 
     const TrackDataItem *first = items->first();
     BoundingArea result = first->boundingArea();
@@ -562,7 +553,7 @@ TrackDataSegment::TrackDataSegment()
 TimeRange TrackDataSegment::timeSpan() const
 {
     int num = childCount();
-    if (num==0) return (TimeRange::null);
+    if (num==0) return (TimeRange());
 
     const TrackDataTrackpoint *firstPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(0));
     Q_ASSERT(firstPoint!=nullptr);
