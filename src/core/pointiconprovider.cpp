@@ -35,7 +35,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #undef DEBUG_CACHE
-#define DEBUG_CACHE
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -53,9 +52,7 @@ static QCache<QString, PointIcon> sIconCache;
 
 PointIconProvider::PointIconProvider()
 {
-#ifdef DEBUG_CACHE
     qDebug() << "cache size" << sIconCache.maxCost();
-#endif
 }
 
 
@@ -64,9 +61,7 @@ void PointIconProvider::aboutToQuit() const
     // Dump statistics.  Done in a separate function called when
     // the main window is closed, to ensure that they are shown
     // before the debug streams are closed.
-#ifdef DEBUG_CACHE
     qDebug() << "cache used" << sIconCache.size() << "total cost" << sIconCache.totalCost();
-#endif
 }
 
 
