@@ -279,6 +279,48 @@ default:				return (i18n("(Unknown %1)", status));
     }
 }
 
+
+QVariant TrackData::valueOrNull(const QVariant &value)
+{
+    QVariant val = value;				// provided new value
+
+    // Strings are a special case;  setting a null string item sets a null QVariant
+    // as the value.  This is so that QVariant::isNull() can be used to test the
+    // metadata value, without having to convert it to a string, and will give the
+    // expected result.  In this application an empty string is always considered
+    // to be equivalent to there being no metadata value.
+    //
+    // Results obtained by experimentation:
+    //
+    //   QVariant()		->	isValid()=false		isNull()=true
+    //   QVariant("str")	->	isValid()=true		isNull()=false
+    //   QVariant("")		->	isValid()=true		isNull()=false
+    //   QVariant(QString())	->	isValid()=true		isNull()=true
+    //
+    // Do not do this test with QVariant::canConvert(QMetaType::QString),
+    // there are many types that can be converted to a QString but we
+    // want to make sure that the value really is a string.
+    if (val.type()==QVariant::String || val.type()==QVariant::ByteArray)
+    {
+        if (val.toString().isEmpty()) val.clear();
+    }
+
+    // The same reasoning as above applies to a colour value.
+    if (val.type()==QVariant::Color)
+    {
+        if (!val.value<QColor>().isValid()) val.clear();
+    }
+
+    // And also to a string list.  No other sort of list is ever
+    // stored in item metadata.
+    if (val.type()==QVariant::StringList)
+    {
+        if (val.toStringList().isEmpty()) val.clear();
+    }
+
+    return (val);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataItem							//
@@ -398,44 +440,8 @@ void TrackDataItem::setMetadata(int idx, const QVariant &value)
 
     const int cnt = mMetadata->count();			// current size of array
     if (idx>=cnt) mMetadata->resize(idx+1);		// need to allocate more
-
-    QVariant val = value;				// provided new value
-
-    // Strings are a special case;  setting a null string item sets a null QVariant
-    // as the value.  This is so that QVariant::isNull() can be used to test the
-    // metadata value, without having to convert it to a string, and will give the
-    // expected result.  In this application an empty string is always considered
-    // to be equivalent to there being no metadata value.
-    //
-    // Results obtained by experimentation:
-    //
-    //   QVariant()		->	isValid()=false		isNull()=true
-    //	 QVariant("str")	->	isValid()=true		isNull()=false
-    //	 QVariant("")		->	isValid()=true		isNull()=false
-    //	 QVariant(QString())	->	isValid()=true		isNull()=true
-    //
-    // Do not do this test with QVariant::canConvert(QMetaType::QString),
-    // there are many types that can be converted to a QString but we
-    // want to make sure that the value really is a string.
-    if (val.type()==QVariant::String || val.type()==QVariant::ByteArray)
-    {
-        if (val.toString().isEmpty()) val.clear();
-    }
-
-    // The same reasoning as above applies to a colour value.
-    if (val.type()==QVariant::Color)
-    {
-        if (!val.value<QColor>().isValid()) val.clear();
-    }
-
-    // And also to a string list.  No other sort of list is ever
-    // stored in item metadata.
-    if (val.type()==QVariant::StringList)
-    {
-        if (val.toStringList().isEmpty()) val.clear();
-    }
-
-    mMetadata->replace(idx, val);				// set value of variant
+							// set value of variant
+    mMetadata->replace(idx, TrackData::valueOrNull(value));
 }
 
 

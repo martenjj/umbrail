@@ -164,8 +164,9 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 {
     if (role!=Qt::EditRole) return (false);
 
-    mItemData[idx.row()] = value;
-    mItemChanged[idx.row()] = true;
+    const int row = idx.row();
+    mItemData[row] = TrackData::valueOrNull(value);
+    mItemChanged[row] = true;
     // QAbstractItemModel::setData() API documentation says that we have to
     // emit this signal explicitly.
     emit dataChanged(idx, idx);
@@ -175,7 +176,9 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 
 void MetadataModel::setData(int idx, const QVariant &value)
 {
-    mItemData[idx] = value;
+    if (value==mItemData[idx]) return;			// no change to existing
+
+    mItemData[idx] = TrackData::valueOrNull(value);
     mItemChanged[idx] = true;
 
     if (idx==DataIndexer::index("timezone")) resolveTimeZone();

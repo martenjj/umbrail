@@ -198,6 +198,8 @@ namespace TrackData
      * @return The specified folder if it exists, otherwise, @c nullptr
      **/
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
+
+    QVariant valueOrNull(const QVariant &value);
 }
 
 //////////////////////////////////////////////////////////////////////////
