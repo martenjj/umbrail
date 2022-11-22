@@ -26,6 +26,7 @@
 #include "trackpropertiesdetailpages.h"
 
 #include <qformlayout.h>
+#include <qpushbutton.h>
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
@@ -42,7 +43,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-unsigned sumTotalTravelTime2(const TrackDataItem *item)
+static unsigned sumTotalTravelTime2(const TrackDataItem *item)
 {
     const int num = item->childCount();
     if (num==0) return (0);				// no children
@@ -80,7 +81,7 @@ unsigned sumTotalTravelTime2(const TrackDataItem *item)
 }
 
 
-unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
+static unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
 {
     // Sum the total travel time over all selected items, recursively.
 
@@ -120,7 +121,7 @@ unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
 }
 
 
-double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly)
+static double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly)
 {
     const int num = item->childCount();
     if (num==0) return (0.0);				// no children
@@ -165,7 +166,7 @@ double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly)
 }
 
 
-double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
+static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
 {
     // Sum the total travel distance over all selected items, recursively.
 
@@ -302,6 +303,7 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
     setObjectName("TrackItemDetailPage");
 
     mPositionLabel = nullptr;
+    mAddressLabel = nullptr;
     mTimeLabel = nullptr;
     mTimeStartLabel = mTimeEndLabel = nullptr;
     mElevationLabel = nullptr;
@@ -540,6 +542,39 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
             mFormLayout->addRow(i18nc("@label:textbox", "Straight line distance:"), vl);
         }
     }
+
+    // Address, usually for a waypoint
+    if (disp & DisplayAddress)
+    {
+        if (num==1 && tdp!=nullptr)			// a single point selected
+        {
+            addSeparatorField();
+
+            QWidget *hb = new QWidget(this);
+            QGridLayout *hlay = new QGridLayout(hb);
+            hlay->setMargin(0);
+
+            mAddressLabel = new QLabel(this);
+            mAddressLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+            hlay->addWidget(mAddressLabel, 0, 0, Qt::AlignTop);
+            hlay->setColumnStretch(0, 1);
+
+            QPushButton *b = new QPushButton(i18nc("@action:button", "Edit..."), this);
+            b->setIcon(QIcon::fromTheme("document-edit"));
+            b->setToolTip(i18nc("@info:tooltip", "Edit the address"));
+            b->setEnabled(!isReadOnly());
+            //connect(b, &QAbstractPushButton::clicked, this, &TrackWaypointDetailPage::slotEditAddress);
+
+            hb->setFocusProxy(b);
+            hb->setFocusPolicy(Qt::StrongFocus);
+            hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
+
+            mFormLayout->addRow(i18nc("@label:textbox", "Address:"), hb);
+            // Align the form label to the top, to line up with the address field
+            QLabel *al = qobject_cast<QLabel *>(mFormLayout->labelForField(hb));
+            if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
+        }
+    }
 }
 
 
@@ -576,6 +611,16 @@ void TrackItemDetailPage::refreshData()
     {
         const QString pos = TrackData::formattedLatLong(dataModel()->latitude(), dataModel()->longitude());
         mPositionLabel->setText(pos);
+    }
+
+    if (mAddressLabel!=nullptr)
+    {
+        const QStringList addr = TrackData::formattedAddress(dataModel()->data("StreetAddress"),
+                                                             dataModel()->data("City"),
+                                                             dataModel()->data("State"),
+                                                             dataModel()->data("Country"),
+                                                             dataModel()->data("PostalCode"));
+        mAddressLabel->setText(addr.join('\n'));
     }
 
     const QTimeZone *tz = dataModel()->timeZone();
@@ -840,6 +885,8 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
         TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(tdp->parent());
         Q_ASSERT(folderItem!=nullptr);
         pathDisplay->setText(folderItem->path());
+
+        addDisplayFields(items, DisplayAddress);
     }
     else						// multiple selection
     {

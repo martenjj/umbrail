@@ -204,7 +204,8 @@ namespace TrackData
     QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const QTimeZone *tz = nullptr);
     QString formattedWaypointStatus(TrackData::WaypointStatus status, bool blankForNone = false);
-
+    QStringList formattedAddress(const QVariant &street, const QVariant &city,
+                                 const QVariant &state, const QVariant &cntry, const QVariant &pcode);
     /**
      * Find a folder by name or path.
      *

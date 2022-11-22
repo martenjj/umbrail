@@ -39,6 +39,7 @@
 #include "dataindexer.h"
 #include "pointicon.h"
 #include "pointiconprovider.h"
+#include "metadatamodel.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -289,6 +290,43 @@ default:				return (i18n("(Unknown %1)", status));
     }
 }
 
+
+// based on NavMarks PointData::displayAddress()
+QStringList TrackData::formattedAddress(const QVariant &street,
+                                        const QVariant &city,
+                                        const QVariant &state,
+                                        const QVariant &cntry,
+                                        const QVariant &pcode)
+{
+    QStringList result;
+
+    // "StreetAddress", which may be multiple lines
+    if (!street.isNull()) result.append(street.toString().split("\n", Qt::SkipEmptyParts));
+
+    // "City"
+    if (!city.isNull()) result.append(city.toString());
+
+    // "State", if not the same as "City"
+    // and not the same as the first two of "PostalCode" (France département)
+    const QString s = state.toString();
+    const QString p = pcode.toString();
+    if (!s.isEmpty() && s!=city && !(s.length()==2 && s==p.left(2))) result.append(s);
+
+    if (!p.isEmpty() && !cntry.isNull())
+    {
+        // "PostalCode - Country" if both are present
+        result.append(p+" - "+cntry.toString());
+    }
+    else
+    {
+        // "PostalCode" or "Country"
+        if (!p.isEmpty()) result.append(p);
+        if (!cntry.isNull()) result.append(cntry.toString());
+    }
+
+    return (result);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataItem							//
@@ -500,6 +538,8 @@ QString TrackDataItem::timeZone() const
 
 const PointIcon *TrackDataItem::icon() const
 {
+    // Named item type icons are always taken from the "system"
+    // (which includes our application) namespace.
     return (PointIconProvider::self()->icon(this->iconName(), PointIcon::NamespaceSystem));
 }
 

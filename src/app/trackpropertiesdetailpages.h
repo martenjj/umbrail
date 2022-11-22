@@ -58,6 +58,7 @@ public:
         DisplayStraightLine = 0x040,			// straight line distance
         DisplayTravelTime = 0x080,			// total travel time
         DisplayRouteLength = 0x100,			// total route length
+        DisplayAddress = 0x200,				// waypoint address
     };
     Q_DECLARE_FLAGS(DisplayItems, DisplayItem)
 
@@ -70,10 +71,12 @@ protected:
 
 private:
     QLabel *mPositionLabel;
+    QLabel *mAddressLabel;
     TrackDataLabel *mTimeLabel;
     TrackDataLabel *mTimeStartLabel;
     TrackDataLabel *mTimeEndLabel;
     VariableUnitDisplay *mElevationLabel;
+
     QMap<int,QWidget *> mMetadataMap;
 };
 

@@ -238,6 +238,7 @@ void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items
     hlay->addStretch(1);
 
     QPushButton *b = new QPushButton(i18nc("@action:button", "Change..."), this);
+    b->setIcon(QIcon::fromTheme("document-edit"));
     b->setToolTip(i18nc("@info:tooltip", "Change the latitude/longitude position"));
     b->setEnabled(!isReadOnly());
     connect(b, &QAbstractButton::clicked, this, &TrackItemGeneralPage::slotChangePosition);

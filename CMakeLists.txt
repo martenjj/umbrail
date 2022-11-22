@@ -33,7 +33,7 @@ message(STATUS "Configuring for project '${CMAKE_PROJECT_NAME}' version ${VERSIO
 #									#
 #########################################################################
 
-set(QT_MIN_VERSION "5.10.0")
+set(QT_MIN_VERSION "5.14.0")
 set(KF5_MIN_VERSION "5.69.0")
 set(ECM_MIN_VERSION "5.69.0")
 set(EXIV2_MIN_VERSION "0.24")
