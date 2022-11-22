@@ -153,12 +153,6 @@ bool DataIndexer::isApplicationTag(const QByteArray &nm)
 }
 
 
-bool DataIndexer::isInternalTag(const QByteArray &nm)
-{
-    return (nm=="name" || nm=="latitude" || nm=="longitude");
-}
-
-
 QByteArray DataIndexer::applicationNamespace()
 {
     return (sApplicationNamespace);

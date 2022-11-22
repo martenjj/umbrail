@@ -57,14 +57,12 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
         mItemChanged[i] = false;			// nothing changed yet
     }
 
-    // TODO: a static function to access internal index list
-
     // Copy and record data which is not stored by item metadata.
     //
     // These names are only used here for internal data;  they are not
     // used anywhere outside of this model.  If any are added here then
-    // they also need to be ignored in FilesController::slotTrackProperties()
-    // and in isInternalTag() in gpxexporter.cpp
+    // they also need to be ignored in isInternaltag() below.  Any checks
+    // for these names elsewhere must use isInternalTag().
     mItemData[DataIndexer::index("name")] = item->name();
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
     if (tdp!=nullptr)
@@ -81,6 +79,12 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     qDebug() << "parent time zone" << mParentTimeZone << "use parent?" << mUseParentTimeZone;
     mTimeZone = nullptr;
     resolveTimeZone();
+}
+
+
+/* static */ bool MetadataModel::isInternalTag(const QByteArray &nm)
+{
+    return (nm=="name" || nm=="latitude" || nm=="longitude");
 }
 
 
@@ -150,9 +154,9 @@ bool MetadataModel::isChanged(int idx) const
 }
 
 
-const QVariant MetadataModel::data(const QString &nm) const
+const QVariant MetadataModel::data(const QByteArray &nm) const
 {
-    return (data(DataIndexer::index(nm.toLocal8Bit())));
+    return (data(DataIndexer::index(nm)));
 }
 
 

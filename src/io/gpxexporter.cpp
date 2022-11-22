@@ -40,6 +40,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
+#include "metadatamodel.h"
 
 // GPX specification: http://www.topografix.com/GPX/1/1/
 
@@ -118,7 +119,7 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
         //         << "=" << item->metadata(idx);
 
         const QByteArray name = DataIndexer::name(idx);
-        if (DataIndexer::isInternalTag(name)) continue;
+        if (MetadataModel::isInternalTag(name)) continue;
 							// ignore internally used tags
         if (isExtensionTag(item, name) ^ wantExtensions) continue;
 							// check matches extension state

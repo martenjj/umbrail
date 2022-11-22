@@ -48,13 +48,21 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
     const QVariant data(int idx) const;
-    const QVariant data(const QString &nm) const;
+    const QVariant data(const QByteArray &nm) const;
     void setData(int idx, const QVariant &value);
     bool isChanged(int idx) const;
 
     const QTimeZone *timeZone() const			{ return (mTimeZone); }
     double latitude() const;
     double longitude() const;
+
+    /**
+     * Check whether the tag is internal to this application only.
+     *
+     * @param nm The plain internal name
+     * @return @c true if this is an internal tag
+     **/
+    static bool isInternalTag(const QByteArray &nm);
 
 signals:
     void metadataChanged(int idx);

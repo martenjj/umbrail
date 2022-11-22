@@ -913,10 +913,9 @@ void FilesController::slotTrackProperties()
     const int num = model->rowCount();			// same as DataIndexer::count()
     for (int idx = 0; idx<num; ++idx)
     {
-        const QString name = DataIndexer::name(idx);
-        if (name=="name") continue;			// these handled specially above
-        if (name=="latitude" || name=="longitude") continue;
-
+        const QByteArray name = DataIndexer::name(idx);
+        if (MetadataModel::isInternalTag(name)) continue;
+							// these handled specially above
         if (!model->isChanged(idx)) continue;		// data not changed in dialogue
         QVariant newData = model->data(idx);		// the new changed data
 
