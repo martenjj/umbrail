@@ -108,12 +108,10 @@ void PointsView::selectionChanged(const QItemSelection &sel,
 
 void PointsView::contextMenuEvent(QContextMenuEvent *ev)
 {
-    qDebug() << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$";
-
     KXmlGuiWindow *xmlwin = qobject_cast<KXmlGuiWindow *>(mainWidget());
     Q_ASSERT(xmlwin!=nullptr);
     QMenu *popup = static_cast<QMenu *>(xmlwin->factory()->container("pointsview_contextmenu", xmlwin));
-    if (popup!=NULL) popup->exec(ev->globalPos());
+    if (popup!=nullptr) popup->exec(ev->globalPos());
 }
 
 

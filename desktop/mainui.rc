@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="umbrail"
-     version="15"
+     version="16"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -91,7 +91,6 @@
     <Action name="waypoint_status"/>
     <Action name="track_properties"/>
   </Menu>
-
  
   <Menu name="mapview_contextmenu">
     <Action name="map_go_home"/>
@@ -103,6 +102,10 @@
     <Action name="map_add_routepoint"/>
   </Menu>
 
+  <Menu name="pointsview_contextmenu">
+    <Action name="map_go_selection"/>
+    <Action name="track_properties"/>
+  </Menu>
  
   <ToolBar name="mainToolBar" noMerge="1">
     <text>Main Toolbar</text>
