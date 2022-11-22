@@ -49,6 +49,7 @@ set(gui_SRCS
   moveitemdialogue.cpp
   waypointselectdialogue.cpp
   pointsview.cpp
+  addresseditdialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})

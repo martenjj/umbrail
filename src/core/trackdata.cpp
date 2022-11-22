@@ -295,8 +295,8 @@ default:				return (i18n("(Unknown %1)", status));
 QStringList TrackData::formattedAddress(const QVariant &street,
                                         const QVariant &city,
                                         const QVariant &state,
-                                        const QVariant &cntry,
-                                        const QVariant &pcode)
+                                        const QVariant &pcode,
+                                        const QVariant &cntry)
 {
     QStringList result;
 
@@ -308,20 +308,21 @@ QStringList TrackData::formattedAddress(const QVariant &street,
 
     // "State", if not the same as "City"
     // and not the same as the first two of "PostalCode" (France département)
-    const QString s = state.toString();
-    const QString p = pcode.toString();
-    if (!s.isEmpty() && s!=city && !(s.length()==2 && s==p.left(2))) result.append(s);
+    const QString &s = state.toString();
+    const QString &p = pcode.toString();
+    if (!s.isEmpty() && state!=city && !(s.length()==2 && s==p.left(2))) result.append(s);
 
-    if (!p.isEmpty() && !cntry.isNull())
+    const QString &c = cntry.toString();
+    if (!p.isEmpty() && !c.isEmpty())
     {
         // "PostalCode - Country" if both are present
-        result.append(p+" - "+cntry.toString());
+        result.append(p+" - "+c);
     }
     else
     {
         // "PostalCode" or "Country"
         if (!p.isEmpty()) result.append(p);
-        if (!cntry.isNull()) result.append(cntry.toString());
+        if (!c.isEmpty()) result.append(c);
     }
 
     return (result);

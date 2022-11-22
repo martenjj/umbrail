@@ -36,6 +36,7 @@
 #include "variableunitdisplay.h"
 #include "dataindexer.h"
 #include "metadatamodel.h"
+#include "addresseditdialogue.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -563,7 +564,7 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
             b->setIcon(QIcon::fromTheme("document-edit"));
             b->setToolTip(i18nc("@info:tooltip", "Edit the address"));
             b->setEnabled(!isReadOnly());
-            //connect(b, &QAbstractPushButton::clicked, this, &TrackWaypointDetailPage::slotEditAddress);
+            connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditAddress);
 
             hb->setFocusProxy(b);
             hb->setFocusPolicy(Qt::StrongFocus);
@@ -618,8 +619,8 @@ void TrackItemDetailPage::refreshData()
         const QStringList addr = TrackData::formattedAddress(dataModel()->data("StreetAddress"),
                                                              dataModel()->data("City"),
                                                              dataModel()->data("State"),
-                                                             dataModel()->data("Country"),
-                                                             dataModel()->data("PostalCode"));
+                                                             dataModel()->data("PostalCode"),
+                                                             dataModel()->data("Country"));
         mAddressLabel->setText(addr.join('\n'));
     }
 
@@ -666,6 +667,13 @@ void TrackItemDetailPage::refreshData()
             ql->setText(dataModel()->data(idx).toString());
         }
     }
+}
+
+
+void TrackItemDetailPage::slotEditAddress()
+{
+    AddressEditDialogue d(dataModel(), this);
+    if (d.exec()) refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////

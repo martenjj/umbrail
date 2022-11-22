@@ -69,6 +69,9 @@ protected:
     void addChildCountField(const QList<TrackDataItem *> *items, const QString &labelText);
     void addMetadataField(const QByteArray &key, const QString &label);
 
+protected slots:
+    void slotEditAddress();
+
 private:
     QLabel *mPositionLabel;
     QLabel *mAddressLabel;
