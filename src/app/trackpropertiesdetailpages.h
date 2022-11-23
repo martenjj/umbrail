@@ -71,10 +71,12 @@ protected:
 
 protected slots:
     void slotEditAddress();
+    void slotEditCategories();
 
 private:
     QLabel *mPositionLabel;
     QLabel *mAddressLabel;
+    QLabel *mCategoriesLabel;
     TrackDataLabel *mTimeLabel;
     TrackDataLabel *mTimeStartLabel;
     TrackDataLabel *mTimeEndLabel;
