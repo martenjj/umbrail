@@ -43,6 +43,7 @@ public:
 
 protected slots:
     void slotAccept();
+    void slotReset();
     void slotTextChanged();
 
 private:

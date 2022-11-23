@@ -47,9 +47,10 @@ AddressEditDialogue::AddressEditDialogue(MetadataModel *model, QWidget *pnt)
     setObjectName("AddressEditDialogue");
     setModal(true);
     setWindowTitle(i18n("Edit Address"));
-    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Reset);
 
     connect(this, &QDialog::accepted, this, &AddressEditDialogue::slotAccept);
+    connect(buttonBox()->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, this, &AddressEditDialogue::slotReset);
 
     mModel = model;
 
@@ -57,32 +58,27 @@ AddressEditDialogue::AddressEditDialogue(MetadataModel *model, QWidget *pnt)
     QFormLayout *lay = new QFormLayout(w);
 
     mStreetEdit = new QLineEdit(w);
-    mStreetEdit->setText(model->data("StreetAddress").toString());
     mStreetEdit->setClearButtonEnabled(true);
     connect(mStreetEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
     lay->addRow(i18n("Street:"), mStreetEdit);
 
     mCityEdit = new QLineEdit(w);
-    mCityEdit->setText(model->data("City").toString());
     mCityEdit->setClearButtonEnabled(true);
     connect(mCityEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
     lay->addRow(i18n("City:"), mCityEdit);
 
     mStateEdit = new QLineEdit(w);
-    mStateEdit->setText(model->data("State").toString());
     mStateEdit->setClearButtonEnabled(true);
     connect(mStateEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
     lay->addRow(i18n("State:"), mStateEdit);
 
     mPostCodeEdit = new QLineEdit(w);
-    mPostCodeEdit->setText(model->data("PostalCode").toString());
     mPostCodeEdit->setClearButtonEnabled(true);
     connect(mPostCodeEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
     lay->addRow(i18n("Post Code:"), mPostCodeEdit);
 
     // TODO: country a dropdown of known ones
     mCountryEdit = new QLineEdit(w);
-    mCountryEdit->setText(model->data("Country").toString());
     mCountryEdit->setClearButtonEnabled(true);
     connect(mCountryEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
     lay->addRow(i18n("Country:"), mCountryEdit);
@@ -100,8 +96,9 @@ AddressEditDialogue::AddressEditDialogue(MetadataModel *model, QWidget *pnt)
     setMainWidget(w);
     w->setMinimumWidth(300);
 
-    slotTextChanged();					// update preview
-}
+    slotReset();					// set fields from data
+}    							// and update the preview
+
 
 
 void AddressEditDialogue::slotAccept()
@@ -111,6 +108,18 @@ void AddressEditDialogue::slotAccept()
     mModel->setData(DataIndexer::index("State"), mStateEdit->text());
     mModel->setData(DataIndexer::index("PostalCode"), mPostCodeEdit->text());
     mModel->setData(DataIndexer::index("Country"), mCountryEdit->text());
+}
+
+
+void AddressEditDialogue::slotReset()
+{
+    mStreetEdit->setText(mModel->data("StreetAddress").toString());
+    mCityEdit->setText(mModel->data("City").toString());
+    mStateEdit->setText(mModel->data("State").toString());
+    mPostCodeEdit->setText(mModel->data("PostalCode").toString());
+    mCountryEdit->setText(mModel->data("Country").toString());
+
+    slotTextChanged();					// update the preview
 }
 
 
