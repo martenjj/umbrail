@@ -862,7 +862,7 @@ const PointIcon *TrackDataWaypoint::icon() const
         if (ic->isValid()) return (ic);
     }
 
-    // Third priority: point colour
+    // Third priority: explicit point colour
     const QColor col = metadata("pointcolor").value<QColor>();
     if (col.isValid())
     {
@@ -872,6 +872,8 @@ const PointIcon *TrackDataWaypoint::icon() const
         const PointIcon *ic = PointIconProvider::self()->icon(col);
         if (ic->isValid()) return (ic);
     }
+
+    // TODO: Fourth priority: category colour
 
     // Lowest priority: default icon
     // waypointType() must be TrackData::WaypointNormal here

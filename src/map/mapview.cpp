@@ -319,18 +319,18 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 }
 
 
-QColor MapView::resolvePointColour(const TrackDataItem *tdi)
-{
-    // Currently point colour is not inherited.  If set on the point item
-    // then it will be used, otherwise waypoints will use the default icon
-    // and other sorts of points will use the application setting.
-
-    //return (resolveColour(tdi, "pointcolour", Settings::pointColour()));
-
-    const QVariant v = tdi->metadata("pointcolor");	// metadata from this item
-    if (!v.isNull()) return (v.value<QColor>());	// colour value from that
-    return (QColor());					// no colour set
-}
+// QColor MapView::resolvePointColour(const TrackDataItem *tdi)
+// {
+//     // Currently point colour is not inherited.  If set on the point item
+//     // then it will be used, otherwise waypoints will use the default icon
+//     // and other sorts of points will use the application setting.
+// 
+//     //return (resolveColour(tdi, "pointcolour", Settings::pointColour()));
+// 
+//     const QVariant v = tdi->metadata("pointcolor");	// metadata from this item
+//     if (!v.isNull()) return (v.value<QColor>());	// colour value from that
+//     return (QColor());					// no colour set
+// }
 
 
 void MapView::setMovePointsMode(bool on)

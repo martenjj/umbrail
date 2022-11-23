@@ -83,14 +83,17 @@ bool MarksImporter::loadFrom(QIODevice *dev)
     grp = conf.group(GROUP_MAP);
     mDataRoot->setMetadata("position", grp.readEntry("Current", ""));
 
-    // from MainWindow::importFile() in navmarks/src/mainwindow.cpp
+    // from Navmarks MainWindow::importFile() in src/mainwindow.cpp
     QString source = QFileInfo(filePath).baseName();	// generate default source tag
     source += '_';
     source += QDateTime::currentDateTime().toString(Qt::ISODate);
 
     // Build the category->colour map from the [Categories] group,
-    // which will later be used to set the "pointcolor" data for
-    // imported waypoints.
+    // which may be needed later to resolve the point colour data for
+    // imported waypoints.  Do not set the "pointcolor" metadata for
+    // the imported points directly, because that would result in the
+    // points being exported with an explicit colour instead of it
+    // being determined by category.
     QMap<QString, QColor> categoryMap;			// map category -> colour
     grp = conf.group(GROUP_CATEGORIES);
 
@@ -149,12 +152,7 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         }
 
         l = grp.readEntry("Categories", QStringList());
-        if (!l.isEmpty())
-        {
-            pnt->setMetadata("category", l.join(','));
-            QColor col = categoryMap.value(l.first());
-            if (col.isValid()) pnt->setMetadata("pointcolor", col.name());
-        }
+        if (!l.isEmpty()) pnt->setMetadata("category", l.join(','));
 
         l = grp.readEntry("Sources", (QStringList() << source));
         if (!l.isEmpty()) pnt->setMetadata("origin", l.join(','));

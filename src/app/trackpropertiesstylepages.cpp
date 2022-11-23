@@ -277,7 +277,7 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
     qDebug();
     setObjectName("TrackWaypointStylePage");
 
-    addPointColourButton(i18n("Use waypoint icon"));
+    addPointColourButton(i18n("Use waypoint icon or category colour"));
 }
 
 //////////////////////////////////////////////////////////////////////////
