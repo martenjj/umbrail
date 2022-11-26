@@ -43,6 +43,7 @@ set(core_SRCS
   pointsmodel.cpp
   pointicon.cpp
   pointiconprovider.cpp
+  categoriesmanager.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})

@@ -39,6 +39,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
+#include "categoriesmanager.h"
 
 #define MARKS_FOLDER_NAME	"Marks"
 #define GROUP_CREATOR		"Creator"
@@ -94,9 +95,7 @@ bool MarksImporter::loadFrom(QIODevice *dev)
     // the imported points directly, because that would result in the
     // points being exported with an explicit colour instead of it
     // being determined by category.
-    QMap<QString, QColor> categoryMap;			// map category -> colour
     grp = conf.group(GROUP_CATEGORIES);
-
     for (int i = 0; ; ++i)
     {
         QString nameKey = "Name"+QString::number(i);	// key for category name
@@ -107,9 +106,9 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         QString colKey = "Colour"+QString::number(i);	// key for category colour
         QColor colVal = grp.readEntry(colKey, QColor());
 						        // get colour for category
-        categoryMap[nameVal] = colVal;			// save in category map
+        mCategoryMap[nameVal] = colVal;			// save in category map
     }
-    qDebug() << "category map" << categoryMap.count() << "entries";
+    qDebug() << "category map" << mCategoryMap.count() << "entries";
 
     int num = 0;
     const QStringList groups = conf.groupList();

@@ -26,6 +26,9 @@
 #ifndef IMPORTERBASE_H
 #define IMPORTERBASE_H
 
+#include <qmap.h>
+#include <qcolor.h>
+
 #include "importerexporterbase.h"
 
 class QUrl;
@@ -42,7 +45,8 @@ public:
     virtual ~ImporterBase() = default;
 
     TrackDataFile *load(const QUrl &file);
-    virtual bool needsResave() const			{ return (false); }
+    virtual bool needsResave() const				{ return (false); }
+    virtual const QMap<QString, QColor> *categoryMap() const	{ return (nullptr); }
 
 protected:
     // TODO: private with accessor

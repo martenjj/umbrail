@@ -23,29 +23,48 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef MARKSIMPORTER_H
-#define MARKSIMPORTER_H
+#ifndef CATEGORIESMANAGER_H
+#define CATEGORIESMANAGER_H
 
 #include <qmap.h>
+#include <qcolor.h>
 
-#include "importerbase.h"
-#include "errorreporter.h"
+// #include "categorydata.h"
 
 
-class MarksImporter : public ImporterBase
+class QColor;
+// class KConfig;
+// 
+// class PointsModel;
+
+
+class CategoriesManager
 {
+
 public:
-    MarksImporter();
-    virtual ~MarksImporter() = default;
+    static CategoriesManager *self();
 
-    static QString filter();
+    void addCategory(const QString &cat, const QColor &colour, bool overwrite = true);
 
-    // ImporterBase
-    bool loadFrom(QIODevice *dev) override;
-    const QMap<QString, QColor> *categoryMap() const override 	{ return (&mCategoryMap); }
+//     QString save(KConfig *conf);
+//     QString load(const KConfig *conf);
+
+//     void scanForNew(const PointsModel *model);
+//     void clear();
+
+//     void setCategories(const Category::List &cats) 		{ mCategories = cats; }
+//     const Category::List *categories() const			{ return (&mCategories); }
+
+    QColor colourFor(const QString &cat) const			{ return (mCategoryMap.value(cat)); }
+    QStringList allCategories() const				{ return (mCategoryMap.keys()); }
+
+private:
+    CategoriesManager();
+    ~CategoriesManager() = default;
 
 private:
     QMap<QString, QColor> mCategoryMap;
 };
 
-#endif							// MARKSIMPORTER_H
+ 
+#endif							// CATEGORIESMANAGER_H
