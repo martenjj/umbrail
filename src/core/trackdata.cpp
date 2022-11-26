@@ -40,6 +40,7 @@
 #include "pointicon.h"
 #include "pointiconprovider.h"
 #include "metadatamodel.h"
+#include "categoriesmanager.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -856,24 +857,41 @@ const PointIcon *TrackDataWaypoint::icon() const
     if (!sym.isEmpty())
     {
 #ifdef DEBUG_ICONS
-        qDebug() << "for waypoint" << name() << "sym" << sym;
+        qDebug() << "for" << name() << "sym" << sym;
 #endif
         const PointIcon *ic = PointIconProvider::self()->icon(sym);
         if (ic->isValid()) return (ic);
     }
 
     // Third priority: explicit point colour
-    const QColor col = metadata("pointcolor").value<QColor>();
+    QColor col = metadata("pointcolor").value<QColor>();
     if (col.isValid())
     {
 #ifdef DEBUG_ICONS
-        qDebug() << "for waypoint" << name() << "colour" << col.name();
+        qDebug() << "for" << name() << "colour" << col.name();
 #endif
         const PointIcon *ic = PointIconProvider::self()->icon(col);
         if (ic->isValid()) return (ic);
     }
 
-    // TODO: Fourth priority: category colour
+    // Fourth priority: colour for category
+    const QString cat = metadata("category").toString().section(',', 0, 0);
+    if (!cat.isEmpty())					// first (primary) category only
+    {
+        col = CategoriesManager::self()->colourFor(cat);
+        if (col.isValid())				// colour is defined for category
+        {
+#ifdef DEBUG_ICONS
+            qDebug() << "for" << name() << "category" << cat << "->" << col.name();
+#endif
+            const PointIcon *ic = PointIconProvider::self()->icon(col);
+            if (ic->isValid()) return (ic);
+        }
+    }
+    // TODO: make the category list accessible from the top level
+    // TrackDataFile item, and search upwards from this waypoint to
+    // find it.  That would allow the categories to be stored and
+    // managed on a per-file basis.
 
     // Lowest priority: default icon
     // waypointType() must be TrackData::WaypointNormal here
