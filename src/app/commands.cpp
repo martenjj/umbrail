@@ -35,6 +35,7 @@
 #include "filesmodel.h"
 #include "filesview.h"
 #include "dataindexer.h"
+#include "categorieslist.h"
 
 
 #undef DEBUG_ITEMS
@@ -181,6 +182,28 @@ void ImportFileCommand::redo()
             if (tdi!=nullptr) root->addChildItem(tdi);
         }
 
+        // Merge any categories defined in the import data with the existing
+        // categories on the root file item.  Do not supersede any already
+        // existing categories.
+        CategoriesList *newMap = mImportData->categories();
+        if (newMap!=nullptr)				// import data has categories
+        {
+            CategoriesList *catMap = root->categories();
+            if (catMap==nullptr)			// but root does not so far
+            {
+                qDebug() << "adopting imported categories";
+                root->setCategories(newMap);
+                catMap = root->categories();		// update pointer to as set
+            }
+            else
+            {
+                qDebug() << "merging" << newMap->count() << "imported categories";
+                catMap->addCategories(newMap, false);	// merge with current, no overwrite
+            }
+
+            qDebug() << "have" << catMap->count() << "categories";
+        }
+
         model()->endLayoutChange();
         Q_ASSERT(mImportData->childCount()==0);		// should have taken all tracks
     }
@@ -210,6 +233,8 @@ void ImportFileCommand::undo()
             if (item==nullptr) continue;		// and re-add to saved file item
             mImportData->addChildItem(item, 0);		// in the original order
         }
+
+        // TODO: should undo the merge of the category maps?  And if so, how?
 
         model()->endLayoutChange();
         Q_ASSERT(mImportData->childCount()==mSavedCount);

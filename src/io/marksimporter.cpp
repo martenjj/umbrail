@@ -39,7 +39,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
-#include "categoriesmanager.h"
+#include "categorieslist.h"
 
 #define MARKS_FOLDER_NAME	"Marks"
 #define GROUP_CREATOR		"Creator"
@@ -89,7 +89,12 @@ bool MarksImporter::loadFrom(QIODevice *dev)
     source += '_';
     source += QDateTime::currentDateTime().toString(Qt::ISODate);
 
-    // Build the category->colour map from the [Categories] group,
+    // Allocate the category map and set it on the root file item.
+    // The user of that root item takes ownership of it.
+    CategoriesList *catMap = new CategoriesList;
+    mDataRoot->setCategories(catMap);
+
+    // Load the category->colour map from the [Categories] group,
     // which may be needed later to resolve the point colour data for
     // imported waypoints.  Do not set the "pointcolor" metadata for
     // the imported points directly, because that would result in the
@@ -106,9 +111,9 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         QString colKey = "Colour"+QString::number(i);	// key for category colour
         QColor colVal = grp.readEntry(colKey, QColor());
 						        // get colour for category
-        mCategoryMap[nameVal] = colVal;			// save in category map
+        catMap->addCategory(nameVal, colVal);		// save in category map
     }
-    qDebug() << "category map" << mCategoryMap.count() << "entries";
+    qDebug() << "category map" << catMap->count() << "entries";
 
     int num = 0;
     const QStringList groups = conf.groupList();

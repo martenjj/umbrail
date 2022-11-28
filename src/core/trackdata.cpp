@@ -40,7 +40,7 @@
 #include "pointicon.h"
 #include "pointiconprovider.h"
 #include "metadatamodel.h"
-#include "categoriesmanager.h"
+#include "categorieslist.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -381,15 +381,17 @@ void TrackDataItem::init()
     mParent = nullptr;					// not attached to parent
     mMetadata = nullptr;				// no metadata yet
     mSelectionId = 1;					// nothing selected yet
-    mExplicitName = false;
+    mExplicitName = false;				// explicit name not set
+    mCategories = nullptr;				// categories not yet set
 }
 
 
 TrackDataItem::~TrackDataItem()
 {
-    if (mChildren!=nullptr) qDeleteAll(*mChildren);
-    delete mChildren;
-    delete mMetadata;
+    if (mChildren!=nullptr) qDeleteAll(*mChildren);	// delete children if any
+    delete mChildren;					// delete child list if present
+    delete mMetadata;					// delete metadata if present
+    delete mCategories;					// delete categories if present
 }
 
 
@@ -878,20 +880,35 @@ const PointIcon *TrackDataWaypoint::icon() const
     const QString cat = metadata("category").toString().section(',', 0, 0);
     if (!cat.isEmpty())					// first (primary) category only
     {
-        col = CategoriesManager::self()->colourFor(cat);
-        if (col.isValid())				// colour is defined for category
+        // Find the root file item that this waypoint belongs to.
+        const TrackDataItem *item = this;
+        const TrackDataFile *root = nullptr;
+        while (item!=nullptr)
         {
+            root = dynamic_cast<const TrackDataFile *>(item);
+            if (root!=nullptr) break;
+            item = item->parent();
+        }
+
+        if (root!=nullptr)				// should always have been found
+        {
+            // If the file has categories available, then get the colour for
+            // the waypoint category.
+            const CategoriesList *catMap = root->categories();
+            if (catMap!=nullptr)			// categories set for file
+            {
+                col = catMap->colourFor(cat);
+                if (col.isValid())			// colour is defined for category
+                {
 #ifdef DEBUG_ICONS
-            qDebug() << "for" << name() << "category" << cat << "->" << col.name();
+                    qDebug() << "for" << name() << "category" << cat << "->" << col.name();
 #endif
-            const PointIcon *ic = PointIconProvider::self()->icon(col);
-            if (ic->isValid()) return (ic);
+                    const PointIcon *ic = PointIconProvider::self()->icon(col);
+                    if (ic->isValid()) return (ic);
+                }
+            }
         }
     }
-    // TODO: make the category list accessible from the top level
-    // TrackDataFile item, and search upwards from this waypoint to
-    // find it.  That would allow the categories to be stored and
-    // managed on a per-file basis.
 
     // Lowest priority: default icon
     // waypointType() must be TrackData::WaypointNormal here

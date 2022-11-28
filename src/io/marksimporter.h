@@ -26,8 +26,6 @@
 #ifndef MARKSIMPORTER_H
 #define MARKSIMPORTER_H
 
-#include <qmap.h>
-
 #include "importerbase.h"
 #include "errorreporter.h"
 
@@ -42,10 +40,6 @@ public:
 
     // ImporterBase
     bool loadFrom(QIODevice *dev) override;
-    const QMap<QString, QColor> *categoryMap() const override 	{ return (&mCategoryMap); }
-
-private:
-    QMap<QString, QColor> mCategoryMap;
 };
 
 #endif							// MARKSIMPORTER_H

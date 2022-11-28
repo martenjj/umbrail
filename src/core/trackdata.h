@@ -46,6 +46,7 @@ class TrackDataItem;
 class TrackDataFolder;
 class TrackPropertiesPage;
 class PointIcon;
+class CategoriesList;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -247,6 +248,9 @@ public:
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
+    CategoriesList *categories() const			{ return (mCategories); }
+    void setCategories(CategoriesList *list)		{ mCategories = list; }
+
     QVariant metadata(int idx) const;
     QVariant metadata(const QByteArray &key) const;
     void setMetadata(int idx, const QVariant &value);
@@ -274,6 +278,7 @@ private:
     QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
+    CategoriesList *mCategories;
 };
 
 //////////////////////////////////////////////////////////////////////////

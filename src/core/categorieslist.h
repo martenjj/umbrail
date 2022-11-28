@@ -23,48 +23,28 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef CATEGORIESMANAGER_H
-#define CATEGORIESMANAGER_H
+#ifndef CATEGORIESLIST_H
+#define CATEGORIESLIST_H
 
 #include <qmap.h>
 #include <qcolor.h>
 
-// #include "categorydata.h"
 
-
-class QColor;
-// class KConfig;
-// 
-// class PointsModel;
-
-
-class CategoriesManager
+class CategoriesList
 {
-
 public:
-    static CategoriesManager *self();
+    CategoriesList() = default;
+    ~CategoriesList() = default;
 
     void addCategory(const QString &cat, const QColor &colour, bool overwrite = true);
-
-//     QString save(KConfig *conf);
-//     QString load(const KConfig *conf);
-
-//     void scanForNew(const PointsModel *model);
-//     void clear();
-
-//     void setCategories(const Category::List &cats) 		{ mCategories = cats; }
-//     const Category::List *categories() const			{ return (&mCategories); }
+    void addCategories(const CategoriesList *cats, bool overwrite = true);
 
     QColor colourFor(const QString &cat) const			{ return (mCategoryMap.value(cat)); }
+    int count() const						{ return (mCategoryMap.count()); }
     QStringList allCategories() const				{ return (mCategoryMap.keys()); }
 
-private:
-    CategoriesManager();
-    ~CategoriesManager() = default;
-
-private:
-    QMap<QString, QColor> mCategoryMap;
+protected:
+    QMap<QString,QColor> mCategoryMap;
 };
 
- 
-#endif							// CATEGORIESMANAGER_H
+#endif							// CATEGORIESLIST_H
