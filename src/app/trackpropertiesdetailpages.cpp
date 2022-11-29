@@ -314,18 +314,7 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
 
     if (!items->isEmpty())
     {
-        // Find the root file item that this item belongs to.
-        // Any item will do to start with.
-        // TODO: move to TrackData, common with TrackDataWaypoint::icon()
-        const TrackDataItem *item = items->first();
-        const TrackDataFile *root = nullptr;
-        while (item!=nullptr)
-        {
-            root = dynamic_cast<const TrackDataFile *>(item);
-            if (root!=nullptr) break;
-            item = item->parent();
-        }
-
+        const TrackDataFile *root = items->first()->root();
         if (root!=nullptr) mAllCategories = root->categories();
     }
 

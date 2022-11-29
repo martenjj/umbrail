@@ -542,6 +542,23 @@ const PointIcon *TrackDataItem::icon() const
     return (PointIconProvider::self()->icon(this->iconName(), PointIcon::NamespaceSystem));
 }
 
+
+const TrackDataFile *TrackDataItem::root() const
+{
+    // Find the root file item that this item belongs to, or NULL
+    // if the item is not part of the data tree.
+    const TrackDataItem *item = this;
+    const TrackDataFile *root = nullptr;
+    while (item!=nullptr)
+    {
+        root = dynamic_cast<const TrackDataFile *>(item);
+        if (root!=nullptr) break;
+        item = item->parent();
+    }
+
+    return (root);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFile							//
@@ -885,16 +902,7 @@ const PointIcon *TrackDataWaypoint::icon() const
     const QString cat = metadata("category").toString().section(',', 0, 0);
     if (!cat.isEmpty())					// first (primary) category only
     {
-        // Find the root file item that this waypoint belongs to.
-        const TrackDataItem *item = this;
-        const TrackDataFile *root = nullptr;
-        while (item!=nullptr)
-        {
-            root = dynamic_cast<const TrackDataFile *>(item);
-            if (root!=nullptr) break;
-            item = item->parent();
-        }
-
+        const TrackDataFile *root = this->root();	// go up to the root file item
         if (root!=nullptr)				// should always have been found
         {
             // If the file has categories available, then get the colour for

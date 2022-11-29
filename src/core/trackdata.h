@@ -43,6 +43,7 @@
 class QWidget;
 class QTimeZone;
 class TrackDataItem;
+class TrackDataFile;
 class TrackDataFolder;
 class TrackPropertiesPage;
 class PointIcon;
@@ -238,6 +239,7 @@ public:
     TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
     int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=nullptr); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
     TrackDataItem *parent() const			{ return (mParent); }
+    const TrackDataFile *root() const;
 
     void addChildItem(TrackDataItem *data, int idx = -1);
     TrackDataItem *takeFirstChildItem();
