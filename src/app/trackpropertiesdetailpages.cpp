@@ -661,9 +661,7 @@ void TrackItemDetailPage::refreshData()
 
     if (mCategoriesLabel!=nullptr)
     {
-        QString c = dataModel()->data("category").toString();
-        c.replace(',', '\n');
-        mCategoriesLabel->setText(c);
+        mCategoriesLabel->setText(dataModel()->data("category").toStringList().join('\n'));
     }
 
     const QTimeZone *tz = dataModel()->timeZone();
@@ -722,12 +720,12 @@ void TrackItemDetailPage::slotEditAddress()
 void TrackItemDetailPage::slotEditCategories()
 {
     const int idx = DataIndexer::index("category");
-    QStringList cats = dataModel()->data(idx).toString().split(',');
+    QStringList cats = dataModel()->data(idx).toStringList();
 
     CategoriesEditDialogue d(&cats, mAllCategories, this);
     if (!d.exec()) return;
 
-    dataModel()->setData(idx, d.categories().join(','));
+    dataModel()->setData(idx, d.categories());
     refreshData();
 }
 

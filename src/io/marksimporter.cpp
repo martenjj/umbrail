@@ -155,11 +155,8 @@ bool MarksImporter::loadFrom(QIODevice *dev)
             pnt->setMetadata(DataIndexer::indexWithNamespace("Country", "gpxx"), l.value(4));
         }
 
-        l = grp.readEntry("Categories", QStringList());
-        if (!l.isEmpty()) pnt->setMetadata("category", l.join(','));
-
-        l = grp.readEntry("Sources", (QStringList() << source));
-        if (!l.isEmpty()) pnt->setMetadata("origin", l.join(','));
+        pnt->setMetadata("category", grp.readEntry("Categories", QStringList()));
+        pnt->setMetadata("origin", grp.readEntry("Sources", (QStringList() << source)));
 
         // This will always use the default folder, because none
         // is ever saved in the file.

@@ -131,6 +131,9 @@ case COL_VALUE:
 case QMetaType::QDateTime:
                 return (v.toDateTime().toString(Qt::ISODate));
 
+case QMetaType::QStringList:
+                return (v.toStringList().join(", "));
+
 default:        if (DataIndexer::name(row)=="flags")	// display as hex value
                 {
                     const int f = v.toInt();		// not needed as flags value

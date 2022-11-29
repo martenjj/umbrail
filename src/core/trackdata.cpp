@@ -877,31 +877,40 @@ const PointIcon *TrackDataWaypoint::icon() const
     if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
 
     // Second priority: named symbol
-    const QString sym = metadata("sym").toString();
-    if (!sym.isEmpty())
+    QVariant v = metadata("sym");
+    if (!v.isNull())
     {
+        const QString sym = v.toString();
+        if (!sym.isEmpty())				// should always be the case
+        {
 #ifdef DEBUG_ICONS
-        qDebug() << "for" << name() << "sym" << sym;
+            qDebug() << "for" << name() << "sym" << sym;
 #endif
-        const PointIcon *ic = PointIconProvider::self()->icon(sym);
-        if (ic->isValid()) return (ic);
+            const PointIcon *ic = PointIconProvider::self()->icon(sym);
+            if (ic->isValid()) return (ic);
+        }
     }
 
     // Third priority: explicit point colour
-    QColor col = metadata("pointcolor").value<QColor>();
-    if (col.isValid())
+    v = metadata("pointcolor");
+    if (!v.isNull())
     {
+        const QColor col = v.value<QColor>();
+        if (col.isValid())
+        {
 #ifdef DEBUG_ICONS
-        qDebug() << "for" << name() << "colour" << col.name();
+            qDebug() << "for" << name() << "colour" << col.name();
 #endif
-        const PointIcon *ic = PointIconProvider::self()->icon(col);
-        if (ic->isValid()) return (ic);
+            const PointIcon *ic = PointIconProvider::self()->icon(col);
+            if (ic->isValid()) return (ic);
+        }
     }
 
     // Fourth priority: colour for category
-    const QString cat = metadata("category").toString().section(',', 0, 0);
-    if (!cat.isEmpty())					// first (primary) category only
+    v = metadata("category");
+    if (!v.isNull())
     {
+        const QString cat = v.toStringList().first();	// first (primary) category only
         const TrackDataFile *root = this->root();	// go up to the root file item
         if (root!=nullptr)				// should always have been found
         {
@@ -910,7 +919,7 @@ const PointIcon *TrackDataWaypoint::icon() const
             const CategoriesList *catMap = root->categories();
             if (catMap!=nullptr)			// categories set for file
             {
-                col = catMap->colourFor(cat);
+                const QColor col = catMap->colourFor(cat);
                 if (col.isValid())			// colour is defined for category
                 {
 #ifdef DEBUG_ICONS

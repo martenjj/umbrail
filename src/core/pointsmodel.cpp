@@ -118,10 +118,10 @@ case Qt::DisplayRole:
         switch (idx.column())
         {
 case COL_NAME:     return (item->name());
-case COL_ORIGIN:   return (item->metadata("origin").toString().split(',').join(", "));
+case COL_ORIGIN:   return (item->metadata("origin").toStringList().join(", "));
 case COL_COORDS:   return (formatCoordinates(item));
 case COL_ADDRESS:  return (formatAddress(item));
-case COL_CATS:     return (item->metadata("category").toString().split(',').join(", "));
+case COL_CATS:     return (item->metadata("category").toStringList().join(", "));
         }
         break;
 
@@ -154,7 +154,7 @@ case Qt::ToolTipRole:
         switch (idx.column())
         {
 case COL_SYM:      return (item->icon()->name());
-case COL_ORIGIN:   return (item->metadata("origin").toString().split(',').join("<br/>"));
+case COL_ORIGIN:   return (item->metadata("origin").toStringList().join("<br/>"));
         }
         break;
 

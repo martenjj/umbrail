@@ -329,11 +329,11 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
         if (item!=nullptr)
         {
-            QStringList cats = item->metadata("category").toString().split(',');
+            QStringList cats = item->metadata("category").toStringList();
             if (!cats.contains(elementText))
             {
                 cats.append(elementText);
-                item->setMetadata("category", cats.join(','));
+                item->setMetadata("category", cats);
             }
         }
         else addError("GPXX:CATEGORY not within WPT");

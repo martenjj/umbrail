@@ -157,13 +157,21 @@ static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool
                 }
             }
         }
-        else if (name=="time")				// point or file time
+        else
         {
-            data = v.toDateTime().toString(Qt::ISODate);
-        }
-        else						// all other items
-        {
-            data = v.toString();			// default string format
+            switch (v.type())
+            {
+case QMetaType::QDateTime:				// date in ISO format
+                data = v.toDateTime().toString(Qt::ISODate);
+                break;
+
+case QMetaType::QStringList:				// comma separated list
+                data = v.toStringList().join(',');
+                break;
+
+default:        data = v.toString();			// default string format
+                break;
+            }
         }
 
         if (name=="link")				// special format for this
