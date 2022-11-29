@@ -41,6 +41,7 @@
 #include "dataindexer.h"
 #include "errorreporter.h"
 #include "metadatamodel.h"
+#include "categorieslist.h"
 
 // GPX specification: http://www.topografix.com/GPX/1/1/
 
@@ -368,7 +369,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     }
     str.writeCharacters("\n\n  ");
 
-    // <metadata>
+    // file <metadata>
     str.writeStartElement("metadata");
     writeMetadata(item, str, false);
 //    // <link href="http://www.garmin.com"><text>Garmin International</text></link>
@@ -379,6 +380,28 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     // <time>2011-11-29T14:39:05Z</time>
     str.writeEndElement();				// </metadata>
 
+    // file <extensions>, category list if present
+    const CategoriesList *catList = item->categories();
+    if (catList!=nullptr)
+    {
+        str.writeCharacters("\n\n  ");
+        startExtensions(str);
+
+        str.writeStartElement(DataIndexer::applicationNamespace()+":catmap");
+
+        const QStringList catNames = catList->allCategories();
+        for (const QString &cat : catNames)
+        {
+            str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
+            str.writeAttribute("name", cat);
+            const QColor col = catList->colourFor(cat);
+            if (col.isValid()) str.writeAttribute("color", col.name());
+        }
+
+        str.writeEndElement();				// </catmap>
+        endExtensions(str);
+    }
+
     int num = item->childCount();			// write out child elements
     for (int i = 0; i<num; ++i)
     {
@@ -387,7 +410,6 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 
     str.writeCharacters("\n\n");
     str.writeEndElement();				// </gpx>
-
     str.writeEndDocument();
 
     if (str.hasError())
@@ -400,7 +422,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 }
 
 
-QString GpxExporter::filter()
+/* static */ QString GpxExporter::filter()
 {
     return ("GPX files (*.gpx)");
 }
