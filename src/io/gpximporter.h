@@ -97,6 +97,7 @@ private:
 
     bool mWithinMetadata;
     bool mWithinExtensions;
+    bool mWithinCategories;
 
     QXmlStreamReader *mXmlReader;
     int mXmlIndent;

@@ -36,6 +36,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
+#include "categorieslist.h"
 
 #ifdef DEBUG_DETAILED
 #include <iostream>
@@ -61,6 +62,7 @@ bool GpxImporter::loadFrom(QIODevice *dev)
 
     mWithinMetadata = false;
     mWithinExtensions = false;
+    mWithinCategories = false;
     mCurrentTrack = nullptr;
     mCurrentRoute = nullptr;
     mCurrentSegment = nullptr;
@@ -415,12 +417,21 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             addError("nested EXTENSIONS elements");
         }
 
-        if (currentItem()==nullptr)			// must be within element
+        mWithinExtensions = true;			// just note for contents
+    }
+    else if (localName=="catmap")			// start of a CATMAP element
+    {
+        if (mWithinCategories)				// check not nested
         {
-            return (addError("EXTENSIONS not expected here"));
+            addError("nested CATMAP elements");
         }
 
-        mWithinExtensions = true;			// just note for contents
+        if (!mWithinExtensions)				// should be within EXTENSIONS
+        {
+            addWarning("CATMAP not within EXTENSIONS");
+        }
+
+        mWithinCategories = true;			// just note for contents
     }
     else if (localName=="trk")				// start of a TRK element
     {
@@ -512,6 +523,37 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName), link.toString());
         else addWarning("missing LINK/HREF attribute on LINK element");
     }
+    else if (localName=="catentry")			// start of a CATENTRY element
+    {
+        if (!mWithinCategories)
+        {
+            return (addError("CATENTRY not within CATMAP"));
+        }
+
+        QStringRef name = atts.value("name");
+        if (name.isEmpty()) return (addWarning("missing NAME attribute on CATENTRY element"));
+        QColor col;
+        QString rgbString = atts.value("color").toString();
+        if (!rgbString.isEmpty())
+        {
+            if (!rgbString.startsWith('#')) rgbString.prepend('#');
+            col = QColor(rgbString);
+            if (!col.isValid()) return (addError("invalid value for COLOR"));
+        }
+
+        // The first time that a valid category has been found,
+        // allocate the category map and set it on the root file item.
+        // The user of that root item will eventually take ownership of it.
+        CategoriesList *catMap = mDataRoot->categories();
+        if (catMap==nullptr)
+        {
+            qDebug() << "new category map";
+            catMap = new CategoriesList;
+            mDataRoot->setCategories(catMap);
+        }
+
+        catMap->addCategory(name.toString(), col);	// add entry to categories
+    }
 
     mContainedChars.clear();				// clear element contents
     return (true);
@@ -547,6 +589,12 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     if (localName=="extensions")			// end of an EXTENSIONS element
     {
         mWithinExtensions = false;			// just note it finished
+        return (true);
+    }
+
+    if (localName=="catmap")				// end of a CATMAP element
+    {
+        mWithinCategories = false;			// just note it finished
         return (true);
     }
 
