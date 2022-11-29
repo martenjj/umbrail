@@ -25,7 +25,7 @@
 
 #ifndef CATEGORIESEDITDIALOGUE_H
 #define CATEGORIESEDITDIALOGUE_H
- 
+
 
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>

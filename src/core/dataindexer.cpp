@@ -52,6 +52,8 @@ static const char *sApplicationTags[] =
     "pointcolor",
     "bearingline",
     "rangering",
+    "origin",
+    "flags",
     nullptr
 };
 
