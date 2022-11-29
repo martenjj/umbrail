@@ -248,9 +248,6 @@ public:
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
-    CategoriesList *categories() const			{ return (mCategories); }
-    void setCategories(CategoriesList *list)		{ mCategories = list; }
-
     QVariant metadata(int idx) const;
     QVariant metadata(const QByteArray &key) const;
     void setMetadata(int idx, const QVariant &value);
@@ -278,7 +275,6 @@ private:
     QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
-    CategoriesList *mCategories;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -291,12 +287,14 @@ class TrackDataFile : public TrackDataItem, public TrackPropertiesInterface
 {
 public:
     explicit TrackDataFile();
-    virtual ~TrackDataFile() = default;
+    virtual ~TrackDataFile();
 
     TrackData::Type type() const override		{ return (TrackData::File); }
 
     QUrl fileName() const				{ return (mFileName); }
     void setFileName(const QUrl &file);
+    CategoriesList *categories() const			{ return (mCategories); }
+    void setCategories(CategoriesList *list)		{ mCategories = list; }
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -309,6 +307,7 @@ protected:
 
 private:
     QUrl mFileName;
+    CategoriesList *mCategories;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -382,7 +382,6 @@ void TrackDataItem::init()
     mMetadata = nullptr;				// no metadata yet
     mSelectionId = 1;					// nothing selected yet
     mExplicitName = false;				// explicit name not set
-    mCategories = nullptr;				// categories not yet set
 }
 
 
@@ -391,7 +390,6 @@ TrackDataItem::~TrackDataItem()
     if (mChildren!=nullptr) qDeleteAll(*mChildren);	// delete children if any
     delete mChildren;					// delete child list if present
     delete mMetadata;					// delete metadata if present
-    delete mCategories;					// delete categories if present
 }
 
 
@@ -556,6 +554,13 @@ TrackDataFile::TrackDataFile()
 #ifdef MEMORY_TRACKING
     ++allocFile;
 #endif
+    mCategories = nullptr;				// categories not yet set
+}
+
+
+TrackDataFile::~TrackDataFile()
+{
+    delete mCategories;					// delete categories if present
 }
 
 

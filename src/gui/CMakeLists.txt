@@ -50,6 +50,7 @@ set(gui_SRCS
   waypointselectdialogue.cpp
   pointsview.cpp
   addresseditdialogue.cpp
+  categorieseditdialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})
