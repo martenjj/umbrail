@@ -25,21 +25,14 @@
 
 #include "gpxexporter.h"
 
-#include <errno.h>
-#include <string.h>
-
-#include <qfile.h>
-#include <qdatetime.h>
 #include <qcolor.h>
 #include <qdebug.h>
+#include <qqueue.h>
 
 #include <QXmlStreamWriter>
 
-#include <klocalizedstring.h>
-
 #include "trackdata.h"
 #include "dataindexer.h"
-#include "errorreporter.h"
 #include "metadatamodel.h"
 #include "categorieslist.h"
 
@@ -52,31 +45,77 @@
 #undef EXTENSIONS_AFTER_CHILDREN
 
 
-
-GpxExporter::GpxExporter()
-    : ExporterBase()
+// A class to store a tag name and value pair.
+class TagValue : protected QPair<QByteArray,QString>
 {
-    qDebug();
+public:
+    TagValue(const QByteArray &name, const QString &val) : QPair(name, val) 	{}
+    ~TagValue() = default;
+
+    QByteArray name() const					{ return (first); }
+    QString value() const					{ return (second); }
+};
+
+
+// A class to store a first-in-first-out queue of
+// tag name and value pairs.
+class TagQueue : protected QQueue<TagValue>
+{
+public:
+    explicit TagQueue() = default;
+    ~TagQueue() = default;
+
+    bool isEmpty() const 					{ return (QQueue::isEmpty()); }
+    void enqueue(const QByteArray &name, const QString &val)	{ QQueue::enqueue(TagValue(name, val)); }
+    TagValue dequeue()						{ return (QQueue::dequeue()); }
+};
+
+
+static void writeValue(const QByteArray &name, const QString &val, QXmlStreamWriter &str)
+{
+    if (name=="link")					// special format for this
+    {
+        str.writeEmptyElement(name);
+        str.writeAttribute("link", val);
+    }
+    else
+    {
+        str.writeTextElement(DataIndexer::nameWithNamespace(name), val);
+    }
 }
 
 
-static bool startedExtensions = false;
-
-
-
-static void startExtensions(QXmlStreamWriter &str)
+static void writeValue(const TagValue &tv, QXmlStreamWriter &str)
 {
-    if (startedExtensions) return;			// already started
-    str.writeStartElement("extensions");
-    startedExtensions = true;
+    writeValue(tv.name(), tv.value(), str);
 }
 
 
-static void endExtensions(QXmlStreamWriter &str)
+static void writeQueue(TagQueue *queue, QXmlStreamWriter &str)
 {
-    if (!startedExtensions) return;			// not started
-    str.writeEndElement();
-    startedExtensions = false;
+    while (!queue->isEmpty()) writeValue(queue->dequeue(), str);
+}
+
+
+static QString valueString(const QVariant &v)
+{
+    QString data;
+    switch (v.type())
+    {
+case QMetaType::QDateTime:				// date in ISO format
+        data = v.toDateTime().toString(Qt::ISODate);
+        break;
+
+case QMetaType::QStringList:				// comma separated list
+        data = v.toStringList().join(',');
+        break;
+
+default:
+        data = v.toString();				// default string format
+        break;
+    }
+
+    return (data);
 }
 
 
@@ -90,18 +129,18 @@ static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
     {
         if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr)
         {						// waypoint - these not in extensions
-            if (name=="link"|| name=="sym") return (false);
+            if (name=="link"|| name=="sym" || name=="category" || name =="type") return (false);
         }
 							// point - these not in extensions
-        return (!(name=="name" || name=="ele" || name=="time" || name=="hdop"));
+        return (!(name=="ele" || name=="time" || name=="hdop"));
     }
     else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
     {							// track - these not in extensions
-        return (!(name=="name" || name=="desc" || name=="type"));
+        return (!(name=="desc" || name=="type"));
     }
     else if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
     {							// route - these not in extensions
-        return (!(name=="name" || name=="desc" || name=="type"));
+        return (!(name=="desc" || name=="type"));
     }
     else if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr)
     {							// segment - all in extensions
@@ -111,82 +150,22 @@ static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 }
 
 
-static void writeMetadata(const TrackDataItem *item, QXmlStreamWriter &str, bool wantExtensions)
+static bool isAddressTag(const QByteArray &name)
 {
-    for (int idx = 0; idx<DataIndexer::count(); ++idx)
-    {
-        //qDebug() << "metadata" << idx
-        //         << "name" << DataIndexer::name(idx)
-        //         << "=" << item->metadata(idx);
-
-        const QByteArray name = DataIndexer::name(idx);
-        if (MetadataModel::isInternalTag(name)) continue;
-							// ignore internally used tags
-        if (isExtensionTag(item, name) ^ wantExtensions) continue;
-							// check matches extension state
-        const QVariant &v = item->metadata(idx);	// get metadata from item
-        if (v.isNull()) continue;			// no data to output
-
-        if (wantExtensions) startExtensions(str);	// start extensions if needed
-
-        QString data;					// string form to output
-
-        // Our internal LINECOLOR/POINTCOLOR data is namespaced and only for
-        // our own purposes.  The COLOR attribute of the item is also set
-        // for use by other GPX applications.
-
-        if (name=="linecolor" || name =="pointcolor")	// line or point colour
-        {
-            const QColor col = v.value<QColor>();
-            // An alpha value of 0 means this item has no colour.
-            // See TrackItemStylePage and FilesController::slotTrackProperties().
-            if (col.alpha()==0) continue;
-
-            data = col.name();				// in format "#rrggbb"
-            if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
-            {						// no COLOR at top level
-                if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
-                {					// a point element
-                    // OsmAnd: <color>#c0c0c0</color>
-                    str.writeTextElement("color", data);
-                }
-                else					// a container element
-                {
-                    // GPX: <topografix:color>c0c0c0</topografix:color>
-                    str.writeTextElement("topografix:color", data.mid(1));
-                }
-            }
-        }
-        else
-        {
-            switch (v.type())
-            {
-case QMetaType::QDateTime:				// date in ISO format
-                data = v.toDateTime().toString(Qt::ISODate);
-                break;
-
-case QMetaType::QStringList:				// comma separated list
-                data = v.toStringList().join(',');
-                break;
-
-default:        data = v.toString();			// default string format
-                break;
-            }
-        }
-
-        if (name=="link")				// special format for this
-        {
-            str.writeEmptyElement(name);
-            str.writeAttribute("link", data);
-        }
-        else
-        {
-            str.writeTextElement(DataIndexer::nameWithNamespace(name), data);
-        }
-    }
+    return (name=="StreetAddress" || name=="City" || name=="State" || name=="PostalCode" || name=="Country");
 }
 
 
+// The GPX exporter main class.
+GpxExporter::GpxExporter()
+    : ExporterBase()
+{
+    qDebug();
+    mCategoriesList = nullptr;
+}
+
+
+// This cannot be file-static because it calls writeItem().
 bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const
 {
     int num = item->childCount();
@@ -199,154 +178,283 @@ bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str
 }
 
 
+// This cannot be file-static because it needs to be able to
+// access ExporterBase::isSelected().
 bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const
 {
-    bool status = true;
+    // If the item is not selected for export, then simply look inside
+    // and process its child items.
+    if (!isSelected(item)) return (writeChildren(item, str));
 
-    // what sort of element?
+    // What sort of element?
     const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
-    const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
     const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
+    const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
     const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
+
+    const TrackDataAbstractPoint *tda = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
-    const TrackDataRoutepoint *tdm = dynamic_cast<const TrackDataRoutepoint *>(item);
 
-    const bool isSel = isSelected(item);		// is the item selected?
-    if (isSel)
+    // Output queues for each tag type.  This one if for is top level
+    // items which appear immediately under the element tag.
+    TagQueue toplevelQueue;
+    // Items which appear within <extensions>
+    TagQueue extensionsQueue;
+    // Items which appear also inside <gpxx:WaypointExtensions> and <gpxx:Categories>
+    TagQueue categoriesQueue;
+    // Items which appear also inside <gpxx:WaypointExtensions> and <gpxx:Address>
+    TagQueue addressQueue;
+
+    // Write out the appropriate element start tag, and any attributes
+    // belonging to that.  Add any other data, including the item name,
+    // to the appropriate queue.
+    if (tdt!=nullptr)					// element TRK
     {
-        // start tag
-        if (tdt!=nullptr)				// element TRK
+        str.writeCharacters("\n\n  ");
+        str.writeStartElement("trk");
+        if (item->hasExplicitName()) toplevelQueue.enqueue("name", item->name());
+    }
+    else if (tdr!=nullptr)				// element RTE
+    {
+        str.writeCharacters("\n\n  ");
+        str.writeStartElement("rte");
+        if (item->hasExplicitName()) toplevelQueue.enqueue("name", item->name());
+    }
+    else if (tds!=nullptr)				// element TRKSEG
+    {
+        str.writeStartElement("trkseg");
+        if (item->hasExplicitName()) extensionsQueue.enqueue("name", item->name());
+    }
+    else if (tda!=nullptr)				// element TRKPT, WPT or RTEPT
+    {
+        if (tdp!=nullptr)				// element TRKPT
+        {
+            str.writeStartElement("trkpt");
+        }
+        else if (tdw!=nullptr)				// element WPT
         {
             str.writeCharacters("\n\n  ");
-            str.writeStartElement("trk");
-            // <name> xsd:string </name>
-            if (item->hasExplicitName()) str.writeTextElement("name", tdt->name());
-            // <desc> xsd:string </desc>
-            // <type> xsd:string </type>
-            writeMetadata(tdt, str, false);
-            // <cmt> xsd:string </cmt>
+            str.writeStartElement("wpt");
         }
-        else if (tdr!=nullptr)				// element RTE
+        else						// element RTEPT
         {
-            str.writeCharacters("\n\n  ");
-            str.writeStartElement("rte");
-            // <name> xsd:string </name>
-            if (item->hasExplicitName()) str.writeTextElement("name", tdr->name());
-            // <desc> xsd:string </desc>
-            // <type> xsd:string </type>
-            writeMetadata(tdr, str, false);
-            // <cmt> xsd:string </cmt>
+            str.writeCharacters("\n\n    ");
+            str.writeStartElement("rtept");
         }
-        else if (tds!=nullptr)				// element TRKSEG
-        {
-            str.writeStartElement("trkseg");
-            writeMetadata(tds, str, false);
-        }
-        else if (tdp!=nullptr || tdw!=nullptr || tdm!=nullptr)
-        {						// element TRKPT, WPT or RTEPT
-            const TrackDataAbstractPoint *p;
-            if (tdp!=nullptr)				// element TRKPT
-            {
-                p = tdp;
-                str.writeStartElement("trkpt");
-            }
-            else if (tdw!=nullptr)			// element WPT
-            {
-                p = tdw;
-                str.writeCharacters("\n\n  ");
-                str.writeStartElement("wpt");
-            }
-            else					// element RTEPT
-            {
-                p = tdm;
-                str.writeCharacters("\n\n    ");
-                str.writeStartElement("rtept");
-            }
 
-            // lat="latitudeType"
-            // lon="longitudeType"
-            str.writeAttribute("lat", QString::number(p->latitude(), 'f'));
-            str.writeAttribute("lon", QString::number(p->longitude(), 'f'));
+        // lat="latitudeType"
+        // lon="longitudeType"
+        str.writeAttribute("lat", QString::number(tda->latitude(), 'f'));
+        str.writeAttribute("lon", QString::number(tda->longitude(), 'f'));
 
-            // <name> xsd:string </name>
-            if (item->hasExplicitName()) str.writeTextElement("name", p->name());
-            // <cmt> xsd:string </cmt>
-            // <desc> xsd:string </desc>
-            // <sym> xsd:string </sym>
-
-            // <hdop> xsd:decimal </hdop>
-            writeMetadata(p, str, false);
-        }
-        else if (tdf!=nullptr)				// Folder
-        {						// write nothing, but recurse for children
-        }
-        else						// anything else
-        {
-            qDebug() << "unknown item type" << item << item->name();
-            return (true);				// warning only, don't abort
-        }
+        // <name> xsd:string </name>
+        if (item->hasExplicitName()) toplevelQueue.enqueue("name", item->name());
+    }
+    else if (tdf!=nullptr)				// Folder
+    {							// write nothing, but recurse for children
+    }
+    else						// anything else
+    {
+        qWarning() << "unknown item type" << item << item->name();
+        return (true);					// warning only, don't abort
     }
 
 #ifdef EXTENSIONS_AFTER_CHILDREN
-    writeChildren(item, str);				// write child items
+    // Strictly according to the GPX specification, an item's children
+    // should be output before its extensions.  However, in the interests
+    // of clarity, unless EXTENSIONS_AFTER_CHILDREN is defined the extensions
+    // are output first and then the children follow.
+    writeChildren(item, str);
 #endif
 
-    if (isSel)
+    // The colour explicitly set in item metadata.
+    QColor explicitColour;
+    // The colour resolved from an item category.
+    QColor categoryColour;
+
+    // Look at the item metadata, ignoring any which is not to be exported.
+    // Format each of the other values and add it to the appropriate queue.
+    for (int idx = 0; idx<DataIndexer::count(); ++idx)
     {
-        // <extensions> extensionsType </extensions>
-        if (tdt!=nullptr)				// extensions for TRK
+        const QByteArray name = DataIndexer::name(idx);
+
+        // Always ignore tags which are only used internally.
+        if (MetadataModel::isInternalTag(name)) continue;
+
+        // Get the item metadata value, and ignore it if the value is null.
+        const QVariant &v = item->metadata(idx);
+        if (v.isNull()) continue;
+
+        // The queue that will be used to store the tags and values,
+        // except in the category and address special cases.
+        TagQueue &toQueue = (isExtensionTag(item, name) ? extensionsQueue : toplevelQueue);
+
+        // Our internal LINECOLOR/POINTCOLOR data is namespaced and only for
+        // our own purposes.  The COLOR attribute of the item is also set
+        // for use by other GPX applications.
+        if (name=="linecolor" || name =="pointcolor")
         {
-            writeMetadata(tdt, str, true);
+            const QColor col = v.value<QColor>();
+            // An alpha value of 0 means this item has no colour.
+            // See TrackItemStylePage and FilesController::slotTrackProperties().
+            if (col.alpha()==0) continue;
+            // Note the colour and that an explicit colour has been set.
+            explicitColour = col;
+
+            // Save the explicit item colour unconditionally.
+            toQueue.enqueue(name, col.name());
         }
-        else if (tdr!=nullptr)				// extensions for RTE
+        else if (name=="category")			// category, may be multiple
         {
-            writeMetadata(tdr, str, true);
+            const QStringList cats = v.toStringList();
+
+            // OsmAnd+ does not understand the official extension <gpxx:Category>
+            // tag, but does accept a single category in a <category> tag (for older
+            // versions) or a <type> tag (currently).  Originally, in order to not
+            // lose information, we wrote this as a comma separated string of all
+            // the categories in alphabetical order, but with "Address Book" (the
+            // Garmin default category) eliminated if it was present.
+            // See http://comments.gmane.org/gmane.comp.gis.openstreetmap.osmand/949
+            //
+            // However, this causes duplication of categories in OsmAnd+ and
+            // potentially needing to search through multiple folders to find a
+            // point.  Trying an alternative strategy here, where there is a
+            // distinction between "primary" and "secondary" categories - internally,
+            // the primary one is always the first in the list - and only the
+            // "primary" is written out for OsmAnd+ in the <category> and <type> tags.
+            QStringList cats2 = cats;			// copy the original list
+            cats2.removeAll("Address Book");		// remove Garmin default category
+            if (!cats2.isEmpty())			// more categories remain
+            {
+                const QString &primaryCategory = cats2.first();
+                // <category>Shopping</category>
+                toQueue.enqueue(name, primaryCategory);
+                // <type>Shopping</type>
+                toQueue.enqueue("type", primaryCategory);
+
+                // Get the colour defined for the primary category,
+                // which will be output later if no explicit colour
+                // is defined.
+                if (mCategoriesList!=nullptr) categoryColour = mCategoriesList->colourFor(primaryCategory);
+            }
+
+            // For Garmin, the full list of categories is written out inside
+            // the <gpxx:WaypointExtensions> block, along with the address.
+            for (const QString &cat : cats) categoriesQueue.enqueue("gpxx:Category", cat);
         }
-        else if (tds!=nullptr)				// extensions for TRKSEG
+        else if (isAddressTag(name))
         {
-            // <name> xsd:string </name>
-            startExtensions(str);
-            if (item->hasExplicitName()) str.writeTextElement("name", tds->name());
-            writeMetadata(tds, str, true);
+            // For Garmin, the address is written out inside the
+            // <gpxx:WaypointExtensions> block, along with the categories.
+            addressQueue.enqueue(name, v.toString());
         }
-        else if (tdp!=nullptr)				// extensions for TRKPT
+        else						// any other tag
         {
-            writeMetadata(tdp, str, true);
+            toQueue.enqueue(name, valueString(v));
         }
-        else if (tdw!=nullptr)				// extensions for WPT
+    }
+
+    // All of the item data has been added to the appropriate queue.
+    //
+    // Now resolve the final point or line colour - either one that
+    // has been explicitly set, or the category colour if there is one.
+    if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
+    {							// no COLOR at top level
+        QColor col = explicitColour;
+        if (!col.isValid()) col = categoryColour;
+        if (col.isValid())
         {
-            writeMetadata(tdw, str, true);
-            const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
-            if (fold!=nullptr)				// within a folder?
-            {						// save the folder path
-                startExtensions(str);
-                str.writeTextElement(DataIndexer::nameWithNamespace("folder"), fold->path());
+            // NavMarks applied a workaround for OsmAnd+ (as of version 2.0.4)
+            // which seemed to have a problem managing colours set for waypoints.
+            // If the colour specification (in the form #RRGGBB) had a small RR
+            // component then it was saved to the favourites.gpx file without
+            // leading zeros, and then failed to read back in.  To get around this,
+            // if the colour set here only has a small red component then we force
+            // a dummy component of 10 (hex), which should have minimal effect on
+            // the displayed colour.
+            //
+            // Reported as https://github.com/osmandapp/Osmand/issues/1321, and
+            // now appears to be resolved.
+            //if (col.red()<0x10) col.setRed(0x10);
+
+            TagQueue &toQueue = (isExtensionTag(item, "color") ? extensionsQueue : toplevelQueue);
+
+            const QString data = col.name();		// in format "#rrggbb"
+            if (tda!=nullptr)				// a point element
+            {
+                // OsmAnd: <color>#c0c0c0</color>
+                toQueue.enqueue("color", data);
+            }
+            else					// some other container element
+            {
+                // GPX: <topografix:color>c0c0c0</topografix:color>
+                toQueue.enqueue("topografix:color", data.mid(1));
             }
         }
+    }
 
-        endExtensions(str);
+    // Look at each of the queues and see which ones need to be processed
+    // and output.  The top level queue is assumed to always need to be
+    // output, but nothing (and no enclosing elements) will be written out
+    // if it really is empty.
+    const bool haveExtensions = !extensionsQueue.isEmpty();
+    const bool haveCategories = !categoriesQueue.isEmpty();
+    const bool haveAddress = !addressQueue.isEmpty();
+
+    // The top level entries
+    writeQueue(&toplevelQueue, str);
+
+    // Extensions block
+    if (haveExtensions || haveCategories || haveAddress)
+    {
+        str.writeStartElement("extensions");
+
+        // The extensions entries
+        writeQueue(&extensionsQueue, str);
+
+        // Garmin waypoint extensions block
+        if (haveCategories || haveAddress)
+        {
+            str.writeStartElement("gpxx:WaypointExtension");
+
+            // Categories
+            if (haveCategories)
+            {
+                str.writeStartElement("gpxx:Categories");
+                writeQueue(&categoriesQueue, str);
+                str.writeEndElement();			// </gpxx:Categories>
+            }
+
+            // Address
+            if (haveAddress)
+            {
+                str.writeStartElement("gpxx:Address");
+                writeQueue(&addressQueue, str);
+                str.writeEndElement();			// </gpxx:Address>
+            }
+
+            str.writeEndElement();			// </gpxx:WaypointExtension>
+        }
+
+        str.writeEndElement();				// </extensions>
     }
 
 #ifndef EXTENSIONS_AFTER_CHILDREN
-    writeChildren(item, str);				// write child items
+    // Finally write out the item's children, if any.
+    writeChildren(item, str);
 #endif
 
-    if (isSel)
-    {
-        // end tag
-        if (tdf==nullptr) str.writeEndElement();	// nothing was started for this
-    }
+    // And at last the element end tag.
+    if (tdf==nullptr) str.writeEndElement();		// nothing was started for folder
 
-    return (status);
+    return (true);
 }
 
 
 bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 {
     qDebug() << "item" << item->name();
-
-    startedExtensions = false;
 
     QXmlStreamWriter str(dev);
     str.setAutoFormatting(true);
@@ -377,44 +485,43 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     }
     str.writeCharacters("\n\n  ");
 
-    // file <metadata>
+    // File <metadata> to be written out.  There is no complication with
+    // extensions or namespace here, so a simple loop will do.
     str.writeStartElement("metadata");
-    writeMetadata(item, str, false);
-//    // <link href="http://www.garmin.com"><text>Garmin International</text></link>
-//    str.writeStartElement("link");
-//    str.writeAttribute("href", "http://www.garmin.com");
-//    str.writeTextElement("text", "Garmin International");
-//    str.writeEndElement();				// </link>
-    // <time>2011-11-29T14:39:05Z</time>
+    for (int idx = 0; idx<DataIndexer::count(); ++idx)
+    {
+        const QByteArray name = DataIndexer::name(idx);
+        if (MetadataModel::isInternalTag(name)) continue;
+        const QVariant &v = item->metadata(idx);
+        if (v.isNull()) continue;
+        // <link href="http://www.garmin.com"><text>Garmin International</text></link>
+        // <time>2011-11-29T14:39:05Z</time>
+        writeValue(name, valueString(v), str);
+    }
     str.writeEndElement();				// </metadata>
 
     // file <extensions>, category list if present
-    const CategoriesList *catList = item->categories();
-    if (catList!=nullptr)
+    mCategoriesList = item->categories();
+    if (mCategoriesList!=nullptr)
     {
         str.writeCharacters("\n\n  ");
-        startExtensions(str);
-
+        str.writeStartElement("extensions");
         str.writeStartElement(DataIndexer::applicationNamespace()+":catmap");
 
-        const QStringList catNames = catList->allCategories();
+        const QStringList catNames = mCategoriesList->allCategories();
         for (const QString &cat : catNames)
         {
             str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
             str.writeAttribute("name", cat);
-            const QColor col = catList->colourFor(cat);
+            const QColor col = mCategoriesList->colourFor(cat);
             if (col.isValid()) str.writeAttribute("color", col.name());
         }
 
         str.writeEndElement();				// </catmap>
-        endExtensions(str);
+        str.writeEndElement();				// </extensions>
     }
 
-    int num = item->childCount();			// write out child elements
-    for (int i = 0; i<num; ++i)
-    {
-        if (!writeItem(item->childAt(i), str)) break;
-    }
+    writeChildren(item, str);				// write out child elements
 
     str.writeCharacters("\n\n");
     str.writeEndElement();				// </gpx>

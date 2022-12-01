@@ -30,6 +30,7 @@
 
 class TrackDataFile;
 class QXmlStreamWriter;
+class CategoriesList;
 
 
 class GpxExporter : public ExporterBase
@@ -47,6 +48,8 @@ private:
     bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const;
     bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const;
 
+private:
+    const CategoriesList *mCategoriesList;
 };
 
 #endif							// GPXEXPORTER_H

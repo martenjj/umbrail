@@ -133,6 +133,7 @@ int DataIndexer::indexWithNamespace(const QByteArray &qnm)
 
 QByteArray DataIndexer::nameWithNamespace(const QByteArray &nm)
 {
+    if (nm.contains(':')) return (nm);			// already has namespace
     return (nameWithNamespace(index(nm)));
 }
 
