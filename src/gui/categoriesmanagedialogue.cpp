@@ -68,6 +68,7 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const QColor &co
     setMainWidget(w);
     w->setMinimumWidth(250);
     slotUpdateButtonStates();
+    mNameEdit->setFocus(Qt::OtherFocusReason);
 }
 
 
