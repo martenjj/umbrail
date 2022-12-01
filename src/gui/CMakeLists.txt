@@ -51,6 +51,7 @@ set(gui_SRCS
   pointsview.cpp
   addresseditdialogue.cpp
   categorieseditdialogue.cpp
+  categoriesmanagedialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})

@@ -110,6 +110,7 @@ public slots:
     void slotSetWaypointStatus();
     void slotCheckTimeZone();
     void slotSetTimeZone();
+    void slotManageCategories();
 
     void slotMapDraggedPoints(qreal latOff, qreal lonOff);
 

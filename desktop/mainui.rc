@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="umbrail"
-     version="16"
+     version="17"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -51,6 +51,7 @@
       <Action name="track_statistics"/>
       <Separator/>
       <Action name="track_time_zone"/>
+      <Action name="track_manage_categories"/>
       <Action name="track_properties"/>
     </Menu>
 

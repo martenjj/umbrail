@@ -71,6 +71,7 @@ using namespace KExiv2Iface;
 #include "settings.h"
 #include "metadatamodel.h"
 #include "dataindexer.h"
+#include "categoriesmanagedialogue.h"
 
 #define GROUP_FILES		"Files"
 
@@ -1406,4 +1407,28 @@ void FilesController::slotSetTimeZone()
     QAction *act = mainwin->actionCollection()->action("track_properties");
     Q_ASSERT(act!=nullptr);
     QTimer::singleShot(0, act, &QAction::trigger);
+}
+
+
+void FilesController::slotManageCategories()
+{
+    CategoriesList *cats = model()->rootFileItem()->categories();
+    CategoriesManageDialogue d(cats, mainWidget());	// existing categories, may be none
+    if (!d.exec()) return;
+
+    // TODO: maybe should be undo'able
+
+    const CategoriesList *newCats = d.categories();	// updated categories from dialogue
+    Q_ASSERT(newCats!=nullptr);
+
+    if (cats==nullptr)					// no categories previously set
+    {
+        if (newCats->count()==0) return;		// none to add, nothing to do
+        cats = new CategoriesList;			// allocate new and set on root
+        model()->rootFileItem()->setCategories(cats);
+    }
+
+    cats->clear();
+    cats->addCategories(newCats);
+    emit modified();
 }

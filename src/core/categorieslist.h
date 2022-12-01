@@ -39,6 +39,8 @@ public:
     void addCategory(const QString &cat, const QColor &colour, bool overwrite = true);
     void addCategories(const CategoriesList *cats, bool overwrite = true);
 
+    void clear()						{ mCategoryMap.clear(); }
+
     QColor colourFor(const QString &cat) const			{ return (mCategoryMap.value(cat)); }
     int count() const						{ return (mCategoryMap.count()); }
     QStringList allCategories() const				{ return (mCategoryMap.keys()); }

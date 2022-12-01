@@ -318,6 +318,11 @@ void MainWindow::setupActions()
     mStopDetectAction->setIcon(QIcon::fromTheme("media-playback-stop"));
     connect(mStopDetectAction, &QAction::triggered, this, &MainWindow::slotTrackStopDetect);
 
+    a = ac->addAction("track_manage_categories");
+    a->setText(i18n("Manage Categories..."));
+    a->setIcon(QIcon::fromTheme("folder-green"));
+    connect(a, &QAction::triggered, filesController(), &FilesController::slotManageCategories);
+
     mPropertiesAction = ac->addAction("track_properties");
     // text set in slotUpdateActionState() below
     QList<QKeySequence> cuts;
@@ -861,7 +866,7 @@ void MainWindow::slotUpdateActionState()
     bool propsEnabled = false;
     bool profileEnabled = false;
     bool stopsEnabled = false;
-    QString propsText = i18nc("@action:inmenu", "Properties...");
+    QString propsText = i18nc("@action:inmenu", "Item Properties...");
     bool delEnabled = true;
     QString delText = i18nc("@action:inmenu", "Delete");
     bool moveEnabled = false;
