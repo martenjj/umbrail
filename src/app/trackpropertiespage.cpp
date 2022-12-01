@@ -37,6 +37,7 @@
 #include "trackdata.h"
 
 
+// This constructor cannot use dataModel(), because it has not been set yet.
 TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QWidget *pnt)
     : QWidget(pnt),
       ApplicationDataInterface(pnt)

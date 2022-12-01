@@ -58,24 +58,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
     mPointColourButton = nullptr;
     mPointInheritCheck = nullptr;
 
-    const TrackDataItem *item = items->first();
-    mIsTopLevel = (item->parent()==nullptr);
-
-    const QVariant v = item->metadata("color");		// get old compatibility value
-    if (!v.isNull())
-    {
-        qWarning() << "item" << item->name() << "uses old COLOR data";
-        if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
-        {						// colour for a point
-            dataModel()->setData(DataIndexer::index("pointcolor"), v);
-            dataModel()->setData(DataIndexer::index("color"), QVariant());
-        }
-        else						// colour for a line/container
-        {
-            dataModel()->setData(DataIndexer::index("linecolor"), v);
-            dataModel()->setData(DataIndexer::index("color"), QVariant());
-        }
-    }
+    mIsTopLevel = (items->first()->parent()==nullptr);
 }
 
 
@@ -144,12 +127,20 @@ static inline const char *colourKey(bool isLine)
 
 QColor TrackItemStylePage::getColourData(bool isLine)
 {
-    return (dataModel()->data(colourKey(isLine)).value<QColor>());
+    QColor col = dataModel()->data(colourKey(isLine)).value<QColor>();
+    // TODO: Not sure if we really want to do this.  It's definitely the
+    // right thing to do to fall back to the COLOR value for rendering,
+    // but questionable whether it should be shown here as if it were
+    // our application setting.
+    if (!col.isValid()) col = dataModel()->data("color").value<QColor>();
+    return (col);
 }
 
 
 void TrackItemStylePage::setColourData(bool isLine, const QColor &col)
 {
+    // This always sets our application setting colour value, never the
+    // compatibility COLOR value.
     dataModel()->setData(DataIndexer::index(colourKey(isLine)), col);
 }
 

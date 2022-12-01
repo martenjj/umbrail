@@ -350,20 +350,12 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             QColor col(rgbString);
             if (!col.isValid()) return (addError("invalid value for COLOR"));
 
-            // The COLOR attribute will only set our internal LINECOLOR/POINTCOLOR
-            // attributes if they are not already set.
-            if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
-            {						// colour for a point
-                const int idx2 = DataIndexer::index("pointcolor");
-                const QVariant &v = item->metadata(idx2);
-                if (v.isNull()) item->setMetadata(idx2, col);
-            }
-            else					// colour for a line/container
-            {
-                const int idx2 = DataIndexer::index("linecolor");
-                const QVariant &v = item->metadata(idx2);
-                if (v.isNull()) item->setMetadata(idx2, col);
-            }
+            // The COLOR attribute is recorded as it it is, it will not set
+            // our internal LINECOLOR/POINTCOLOR attributes so that it does
+            // not become permanent if the file is re-exported.  COLOR will
+            // be looked up when needed if LINECOLOR/POINTCOLOR is not
+            // available.
+            item->setMetadata(localName, col);
         }
         else addError("COLOR not within TRK, TRKSEG, TRKPT, WPT, RTE or RTEPT");
     }

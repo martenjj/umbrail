@@ -891,8 +891,15 @@ const PointIcon *TrackDataWaypoint::icon() const
         }
     }
 
-    // Third priority: explicit point colour
+    // Third priority: explicit point colour or fallback colour
+    //
+    // As originally noted for MapView::resolvePointColour(), point colour
+    // is currently not inherited.  If set on this item then it will be used,
+    // otherwise waypoints will use the category colour or the default icon.
+    // The top level file item colour or the application default waypoint
+    // colour is never actually used.
     v = metadata("pointcolor");
+    if (v.isNull()) v = metadata("color");
     if (!v.isNull())
     {
         const QColor col = v.value<QColor>();

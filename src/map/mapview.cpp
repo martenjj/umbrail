@@ -304,7 +304,8 @@ static QColor resolveColour(const TrackDataItem *item, const char *key, const QC
 
     while (item!=nullptr)				// search to root of tree
     {
-        const QVariant v = item->metadata(key);		// metadata from this item
+        QVariant v = item->metadata(key);		// our colour from this item
+        if (v.isNull()) v = item->metadata("color");	// fallback colour from item
         if (!v.isNull()) return (v.value<QColor>());	// colour value from that
         item = item->parent();				// up to parent item
     }
