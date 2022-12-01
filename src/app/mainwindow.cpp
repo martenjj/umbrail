@@ -165,7 +165,7 @@ void MainWindow::setupActions()
 
     mSaveProjectCopyAction = ac->addAction("file_save_copy");
     mSaveProjectCopyAction->setText(i18n("Save Copy As..."));
-    mSaveProjectCopyAction->setIcon(QIcon::fromTheme("folder-new"));
+    mSaveProjectCopyAction->setIcon(QIcon::fromTheme("document-save-all"));
     connect(mSaveProjectCopyAction, &QAction::triggered, this, &MainWindow::slotSaveCopy);
 
     mImportAction = ac->addAction("file_import");
@@ -234,7 +234,7 @@ void MainWindow::setupActions()
 
     mAddFolderAction = ac->addAction("edit_add_folder");
     mAddFolderAction->setText(i18n("Add Folder"));
-    mAddFolderAction->setIcon(QIcon::fromTheme("bookmark-new-list"));
+    mAddFolderAction->setIcon(QIcon::fromTheme("folder-new"));
     connect(mAddFolderAction, &QAction::triggered, filesController(), &FilesController::slotAddFolder);
 
     mAddPointAction = ac->addAction("edit_add_point");
