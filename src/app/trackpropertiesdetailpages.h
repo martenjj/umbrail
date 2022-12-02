@@ -59,7 +59,8 @@ public:
         DisplayStraightLine = 0x040,			// straight line distance
         DisplayTravelTime = 0x080,			// total travel time
         DisplayRouteLength = 0x100,			// total route length
-        DisplayAddress = 0x200,				// waypoint address
+        DisplayAddress = 0x200,				// waypoint address/categories
+        DisplayFlags = 0x400,				// waypoint flags
     };
     Q_DECLARE_FLAGS(DisplayItems, DisplayItem)
 
@@ -73,11 +74,13 @@ protected:
 protected slots:
     void slotEditAddress();
     void slotEditCategories();
+    void slotEditFlags();
 
 private:
     QLabel *mPositionLabel;
     QLabel *mAddressLabel;
     QLabel *mCategoriesLabel;
+    QLabel *mFlagsLabel;
     TrackDataLabel *mTimeLabel;
     TrackDataLabel *mTimeStartLabel;
     TrackDataLabel *mTimeEndLabel;

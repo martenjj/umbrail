@@ -190,7 +190,6 @@ namespace TrackData
         HomePoint = 0x01,
         NoExport = 0x02,
         NewlyImported = 0x04,
-        NoChange = 0x80
     };
     Q_DECLARE_FLAGS(WaypointFlags, WaypointFlag)
 

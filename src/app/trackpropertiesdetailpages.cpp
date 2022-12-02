@@ -322,6 +322,35 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
 }
 
 
+static QPushButton *addDisplayEditField(QLabel **label,
+                                        const QString &caption,
+                                        QFormLayout *layout,
+                                        QWidget *pnt)
+{
+    QWidget *hb = new QWidget(pnt);
+    QGridLayout *hlay = new QGridLayout(hb);
+    hlay->setMargin(0);
+
+    QLabel *l = new QLabel(pnt);
+    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
+    hlay->addWidget(l, 0, 0, Qt::AlignTop);
+    hlay->setColumnStretch(0, 1);
+
+    QPushButton *b = new QPushButton(i18nc("@action:button", "Edit..."), pnt);
+    b->setIcon(QIcon::fromTheme("document-edit"));
+    hb->setFocusProxy(b);
+    hb->setFocusPolicy(Qt::StrongFocus);
+    hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
+
+    layout->addRow(caption, hb);
+    QLabel *al = qobject_cast<QLabel *>(layout->labelForField(hb));
+    if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
+
+    *label = l;
+    return (b);
+}
+
+
 void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
                                            DisplayItems disp)
 {
@@ -561,55 +590,35 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
             addSeparatorField();
 
             // Categories
-            QWidget *hb = new QWidget(this);
-            QGridLayout *hlay = new QGridLayout(hb);
-            hlay->setMargin(0);
-
-            mCategoriesLabel = new QLabel(this);
-            mCategoriesLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-            hlay->addWidget(mCategoriesLabel, 0, 0, Qt::AlignTop);
-            hlay->setColumnStretch(0, 1);
-
-            QPushButton *b = new QPushButton(i18nc("@action:button", "Edit..."), this);
-            b->setIcon(QIcon::fromTheme("document-edit"));
+            QPushButton *b = addDisplayEditField(&mCategoriesLabel,
+                                                 i18nc("@label:textbox", "Categories:"),
+                                                 mFormLayout, this);
             b->setToolTip(i18nc("@info:tooltip", "Edit the categories"));
             b->setEnabled(!isReadOnly() && mAllCategories!=nullptr);
             connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditCategories);
-            hb->setFocusProxy(b);
-            hb->setFocusPolicy(Qt::StrongFocus);
-            hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
-
-            mFormLayout->addRow(i18nc("@label:textbox", "Categories:"), hb);
-            QLabel *al = qobject_cast<QLabel *>(mFormLayout->labelForField(hb));
-            if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
 
             if (num==1)					// a single point selected
             {
                 // Address
-                hb = new QWidget(this);
-                hlay = new QGridLayout(hb);
-                hlay->setMargin(0);
-
-                mAddressLabel = new QLabel(this);
-                mAddressLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-                hlay->addWidget(mAddressLabel, 0, 0, Qt::AlignTop);
-                hlay->setColumnStretch(0, 1);
-
-                b = new QPushButton(i18nc("@action:button", "Edit..."), this);
-                b->setIcon(QIcon::fromTheme("document-edit"));
+                b = addDisplayEditField(&mAddressLabel,
+                                        i18nc("@label:textbox", "Address:"),
+                                        mFormLayout, this);
                 b->setToolTip(i18nc("@info:tooltip", "Edit the address"));
                 b->setEnabled(!isReadOnly());
                 connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditAddress);
-                hb->setFocusProxy(b);
-                hb->setFocusPolicy(Qt::StrongFocus);
-                hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
-
-                mFormLayout->addRow(i18nc("@label:textbox", "Address:"), hb);
-                // Align the form label to the top, to line up with the address field
-                al = qobject_cast<QLabel *>(mFormLayout->labelForField(hb));
-                if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
             }
         }
+    }
+
+    // Flags, usually for a waypoint
+    if (disp & DisplayFlags)
+    {
+        QPushButton *b = addDisplayEditField(&mFlagsLabel,
+                                             i18nc("@label:textbox", "Flags:"),
+                                             mFormLayout, this);
+        b->setToolTip(i18nc("@info:tooltip", "Edit the waypoint flags"));
+        b->setEnabled(!isReadOnly());
+        connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditFlags);
     }
 }
 
@@ -662,6 +671,17 @@ void TrackItemDetailPage::refreshData()
     if (mCategoriesLabel!=nullptr)
     {
         mCategoriesLabel->setText(dataModel()->data("category").toStringList().join('\n'));
+    }
+
+    if (mFlagsLabel!=nullptr)
+    {
+        const TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(dataModel()->data("flags").toInt());
+        QStringList setFlags;
+
+        if (flags & TrackData::HomePoint) setFlags.append(i18n("Home"));
+        if (flags & TrackData::NoExport) setFlags.append(i18n("NoExport"));
+        if (flags & TrackData::NewlyImported) setFlags.append(i18n("NewImport"));
+        mFlagsLabel->setText(setFlags.join('\n'));
     }
 
     const QTimeZone *tz = dataModel()->timeZone();
@@ -721,12 +741,23 @@ void TrackItemDetailPage::slotEditCategories()
 {
     const int idx = DataIndexer::index("category");
     QStringList cats = dataModel()->data(idx).toStringList();
-
     CategoriesEditDialogue d(&cats, mAllCategories, this);
     if (!d.exec()) return;
 
     dataModel()->setData(idx, d.categories());
     refreshData();
+}
+
+
+void TrackItemDetailPage::slotEditFlags()
+{
+    const int idx = DataIndexer::index("flags");
+    TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(dataModel()->data("flags").toInt());
+//     WaypointFlagssEditDialogue d(flags, this);
+//     if (!d.exec()) return;
+// 
+//     dataModel()->setData(idx, d.flags());
+//     refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -953,7 +984,8 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     {
         addDisplayFields(items, DisplayElevation|DisplayStraightLine|DisplayRelativeBearing);
     }
-    addDisplayFields(items, DisplayAddress);
+
+    addDisplayFields(items, DisplayAddress|DisplayFlags);
 }
 
 //////////////////////////////////////////////////////////////////////////
