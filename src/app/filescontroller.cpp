@@ -949,12 +949,12 @@ void FilesController::slotTrackProperties()
             const TrackData::WaypointStatus wptstatus = static_cast<TrackData::WaypointStatus>(newData.toInt());
             if (wptstatus==TrackData::StatusInvalid) continue;
         }
-        else if (name=="linecolor" || name=="pointcolor")
-        {						// changing item colour
-            // Alpha value encodes the inherit flag, see TrackItemStylePage
-            QColor col = newData.value<QColor>();
-            if (col.alpha()==0) newData = QVariant();	// here null colour means inherit
-        }
+        //else if (name=="linecolor" || name=="pointcolor")
+        //{						// changing item colour
+        //    // Alpha value encodes the inherit flag, see TrackItemStylePage
+        //    QColor col = newData.value<QColor>();
+        //    if (col.alpha()!=255) newData = QVariant();	// here null colour means inherit
+        //}
 
         qDebug() << "index" << idx << name << "->" << newData;
         ChangeItemDataCommand *cmd3 = new ChangeItemDataCommand(this, cmd);

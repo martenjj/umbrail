@@ -903,7 +903,7 @@ const PointIcon *TrackDataWaypoint::icon() const
     if (!v.isNull())
     {
         const QColor col = v.value<QColor>();
-        if (col.isValid())
+        if (col.isValid() && col.alpha()==255)		// valid colour and not inherit
         {
 #ifdef DEBUG_ICONS
             qDebug() << "for" << name() << "colour" << col.name();

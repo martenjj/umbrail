@@ -296,14 +296,26 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         if (name=="linecolor" || name =="pointcolor")
         {
             const QColor col = v.value<QColor>();
-            // An alpha value of 0 means this item has no colour.
+            // An alpha value not 255 means this item has no colour (inherit).
             // See TrackItemStylePage and FilesController::slotTrackProperties().
-            if (col.alpha()==0) continue;
+            // However, we write out the value (with the alpha) so that the
+            // colour value will be retained.
+            //if (col.alpha()!=255) continue;
             // Note the colour and that an explicit colour has been set.
             explicitColour = col;
 
-            // Save the explicit item colour unconditionally.
-            toQueue.enqueue(name, col.name());
+            // Save the explicit item colour unconditionally.  Use this form
+            // of QColor::name() to ensure that the alpha is included in
+            // the string value if it is not "full".  This does not appear to
+            // be necessary for the colour display (via MetadataModel), this
+            // automatically formats ARGB if necessary.
+            toQueue.enqueue(name, col.name(col.alpha()==255 ? QColor::HexRgb : QColor::HexArgb));
+        }
+        else if (name=="color")
+        {
+            // Do not do anything for now, maybe will output this below
+            // if there is no explicit colour as above.
+            continue;
         }
         else if (name=="category")			// category, may be multiple
         {
@@ -361,9 +373,12 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     // has been explicitly set, or the category colour if there is one.
     if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
     {							// no COLOR at top level
+        TagQueue &toQueue = (isExtensionTag(item, "color") ? extensionsQueue : toplevelQueue);
+
         QColor col = explicitColour;
         if (!col.isValid()) col = categoryColour;
-        if (col.isValid())
+        if (!col.isValid()) col = item->metadata("color").value<QColor>();
+        if (col.isValid() && col.alpha()==255)
         {
             // NavMarks applied a workaround for OsmAnd+ (as of version 2.0.4)
             // which seemed to have a problem managing colours set for waypoints.
@@ -377,8 +392,6 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             // Reported as https://github.com/osmandapp/Osmand/issues/1321, and
             // now appears to be resolved.
             //if (col.red()<0x10) col.setRed(0x10);
-
-            TagQueue &toQueue = (isExtensionTag(item, "color") ? extensionsQueue : toplevelQueue);
 
             const QString data = col.name();		// in format "#rrggbb"
             if (tda!=nullptr)				// a point element
