@@ -53,6 +53,7 @@ set(gui_SRCS
   categorieseditdialogue.cpp
   categoriesmanagedialogue.cpp
   flagseditdialogue.cpp
+  iconselector.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})

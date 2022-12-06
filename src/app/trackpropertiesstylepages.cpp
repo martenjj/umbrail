@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -28,9 +28,12 @@
 #include <qformlayout.h>
 #include <qcheckbox.h>
 #include <qdebug.h>
+#include <qevent.h>
+#include <qtimer.h>
 
 #include <klocalizedstring.h>
 #include <kcolorbutton.h>
+#include <kiconbutton.h>
 
 #include "trackdata.h"
 #include "trackdatalabel.h"
@@ -38,6 +41,8 @@
 #include "mapview.h"
 #include "metadatamodel.h"
 #include "dataindexer.h"
+#include "iconselector.h"
+#include "pointiconprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -57,6 +62,7 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
     mLineInheritCheck = nullptr;
     mPointColourButton = nullptr;
     mPointInheritCheck = nullptr;
+    mIconButton = nullptr;
 
     mIsTopLevel = (items->first()->parent()==nullptr);
 }
@@ -196,6 +202,48 @@ void TrackItemStylePage::setColourButtons(KColorButton *colBut, QCheckBox *inher
 }
 
 
+void TrackItemStylePage::addIconButton()
+{
+    mIconButton = new KIconButton(this);
+    mIconButton->setIconSize(KIconLoader::SizeMedium);
+    mIconButton->setButtonIconSize(KIconLoader::SizeMedium);
+    mIconButton->installEventFilter(this);
+    mFormLayout->addRow(i18n("Symbol:"), mIconButton);
+
+    // TODO: also a label for symbol name and namespace
+}
+
+
+bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
+{
+    // We do not want the KIconButton to open the standard KIconDialog
+    // on a click, but rather to replace it with our own IconSelector
+    // with the repertoire of GPS icons.  Therefore we intercept the
+    // button click and handle it here, without passing the event on.
+    if (obj!=mIconButton) return (false);
+    if (ev->type()!=QEvent::MouseButtonRelease) return (false);
+    QMouseEvent *mev = static_cast<QMouseEvent *>(ev);
+    if (mev->button()!=Qt::LeftButton) return (false);
+
+    // To avoid any potential problems with nested event loops,
+    // execute the dialogue outside of tne event filter.
+    QTimer::singleShot(0, this, [this]()
+    {
+        const int idx = DataIndexer::index("sym");
+        IconSelector d(dataModel()->data(idx).toString(), this);
+        if (!d.exec()) return;
+
+        const QString symName = d.selectedIconName();
+        dataModel()->setData(idx, symName);
+        if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!symName.isEmpty());
+
+        refreshData();
+    });
+
+    return (true);					// have handled the event
+}
+
+
 void TrackItemStylePage::refreshData()
 {
     if (mLineColourButton!=nullptr)
@@ -208,6 +256,15 @@ void TrackItemStylePage::refreshData()
     {
         Q_ASSERT(mPointInheritCheck!=nullptr);
         setColourButtons(mPointColourButton, mPointInheritCheck, false);
+    }
+
+    if (mIconButton!=nullptr)
+    {
+        const QVariant v = dataModel()->data("sym");
+        if (!v.isNull()) mIconButton->setIcon(PointIconProvider::self()->icon(v.toString())->icon());
+        // Set an explicit icon so that the button will initially
+        // show at the specified size.
+        else mIconButton->setIcon("symbol-blank");
     }
 }
 
@@ -270,7 +327,13 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
     qDebug();
     setObjectName("TrackWaypointStylePage");
 
-    addPointColourButton(i18n("Use waypoint icon or category colour"));
+    addIconButton();
+    addSeparatorField();
+    addPointColourButton(i18n("No point colour"));
+
+    // TODO: permanently closeable information message regarding priority
+    // save state in group, see FilesController::resetAllFileWarnings()
+
 }
 
 //////////////////////////////////////////////////////////////////////////

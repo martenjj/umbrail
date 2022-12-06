@@ -23,50 +23,39 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef POINTICON_H
-#define POINTICON_H
+#ifndef ICONSELECTOR_H
+#define ICONSELECTOR_H
 
-#include <qicon.h>
+#include <kfdialog/dialogbase.h>
 
-class QColor;
+#include "pointicon.h"
 
-/**
- * @short Provide icons for the GUI and for plotting on the map.
- *
- * @see QIcon
- **/
 
-class PointIcon
+class QListWidget;
+class QComboBox;
+
+
+class IconSelector : public DialogBase
 {
+    Q_OBJECT
+
 public:
-    enum IconNamespace
-    {
-        NamespaceAuto,
-        NamespaceImage,
-        NamespaceSystem,
-        NamespaceGarmin,
-        NamespaceOsmand
-    };
+    explicit IconSelector(const QString &sym, QWidget *pnt = nullptr);
+    virtual ~IconSelector() = default;
 
-    ~PointIcon() = default;
+    QString selectedIconName() const;
+    PointIcon::IconNamespace selectedNamespace() const;
 
-    QString name() const			{ return (mName); }
-    QIcon icon() const				{ return (mIcon); }
-    bool isValid() const			{ return (!mIcon.isNull()); }
-    QPixmap pixmap(int size) const		{ return (mIcon.pixmap(size)); }
-
-    static QStringList allNames(PointIcon::IconNamespace nsp);
-
-protected:
-    // Only the PointIconProvider may construct a PointIcon.
-    friend class PointIconProvider;
-    explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto);
-    explicit PointIcon(const QString &name, const QColor &col);
+private slots:
+    void slotSourceChanged();
+    void slotSelectionChanged();
+    void slotClearIcon();
 
 private:
-    QString mName;
-    PointIcon::IconNamespace mNsp;
-    QIcon mIcon;
+    QListWidget *mList;
+    QComboBox *mSourceCombo;
+
+    QString mSelectedName;
 };
 
-#endif							// POINTICON_H
+#endif							// ICONSELECTOR_H

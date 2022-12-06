@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -31,6 +31,7 @@
 
 class QCheckBox;
 class KColorButton;
+class KIconButton;
 class TrackDataItem;
 
 
@@ -47,6 +48,9 @@ protected:
 
     void addLineColourButton(const QString &text = QString());
     void addPointColourButton(const QString &text = QString());
+    void addIconButton();
+
+    virtual bool eventFilter(QObject *obj, QEvent *ev) override;
 
 protected:
     KColorButton *mLineColourButton;
@@ -54,6 +58,8 @@ protected:
 
     KColorButton *mPointColourButton;
     QCheckBox *mPointInheritCheck;
+
+    KIconButton *mIconButton;
 
     bool mIsTopLevel;
 

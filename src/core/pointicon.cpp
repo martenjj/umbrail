@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -410,11 +410,15 @@ static void setIconPixmap(QIcon *icon, const QColor &col, int size)
 static QImage &masterGarminImage(int fileNo)
 {
     QImage img;
-    if (!sMasterImages.contains(fileNo))			// master not found already
+    if (!sMasterImages.contains(fileNo))		// master not found already
     {
+        const int i1 = fileNo*garminNumPerFile+1;	// first icon in image set
+        int i2 = (fileNo+1)*garminNumPerFile;		// last icon in image set
+        if (i2==280) i2 = 248;				// last file is smaller
+
         QString picFile = QString("icons/garmin/Waypoints_%1-%2.png")
-                                  .arg(fileNo*garminNumPerFile+1, 3, 10, QLatin1Char('0'))
-                                  .arg((fileNo+1)*garminNumPerFile, 3, 10, QLatin1Char('0'));
+                                  .arg(i1, 3, 10, QLatin1Char('0'))
+                                  .arg(i2, 3, 10, QLatin1Char('0'));
         QString imgFile = QStandardPaths::locate(QStandardPaths::AppDataLocation, picFile);
         if (!imgFile.isEmpty())				// look for master image file
         {
@@ -623,4 +627,18 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
     // originally from WaypointImageProvider::icon()
     setIconPixmap(&mIcon, col, KIconLoader::SizeSmall);
     setIconPixmap(&mIcon, col, KIconLoader::SizeMedium);
+}
+
+
+/* static */ QStringList PointIcon::allNames(PointIcon::IconNamespace nsp)
+{
+    QStringList result;
+
+    if (nsp==PointIcon::NamespaceGarmin)
+    {
+        for (int i = 0; i<numGarminNames; ++i) result.append(garminNames[i]);
+    }
+    else qWarning() << "requested for invalid namespace" << nsp;
+
+    return (result);
 }
