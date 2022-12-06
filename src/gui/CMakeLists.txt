@@ -4,7 +4,7 @@
 ##									##
 ##########################################################################
 ##									##
-##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	##
 ##  Home and download page:  <http://github.com/martenjj/umbrail>	##
 ##									##
 ##  This program is free software;  you can redistribute it and/or	##
@@ -52,6 +52,7 @@ set(gui_SRCS
   addresseditdialogue.cpp
   categorieseditdialogue.cpp
   categoriesmanagedialogue.cpp
+  flagseditdialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})

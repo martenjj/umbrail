@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -38,6 +38,7 @@
 #include "metadatamodel.h"
 #include "addresseditdialogue.h"
 #include "categorieseditdialogue.h"
+#include "flagseditdialogue.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -670,7 +671,8 @@ void TrackItemDetailPage::refreshData()
 
     if (mCategoriesLabel!=nullptr)
     {
-        mCategoriesLabel->setText(dataModel()->data("category").toStringList().join('\n'));
+        const QStringList cats = dataModel()->data("category").toStringList();
+        mCategoriesLabel->setText(!cats.isEmpty() ? cats.join('\n') : i18nc("no categories set", "(None)"));
     }
 
     if (mFlagsLabel!=nullptr)
@@ -681,7 +683,7 @@ void TrackItemDetailPage::refreshData()
         if (flags & TrackData::HomePoint) setFlags.append(i18n("Home"));
         if (flags & TrackData::NoExport) setFlags.append(i18n("NoExport"));
         if (flags & TrackData::NewlyImported) setFlags.append(i18n("NewImport"));
-        mFlagsLabel->setText(setFlags.join('\n'));
+        mFlagsLabel->setText(!setFlags.isEmpty() ? setFlags.join('\n') : i18nc("no flags set", "(None)"));
     }
 
     const QTimeZone *tz = dataModel()->timeZone();
@@ -753,11 +755,11 @@ void TrackItemDetailPage::slotEditFlags()
 {
     const int idx = DataIndexer::index("flags");
     TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(dataModel()->data("flags").toInt());
-//     WaypointFlagssEditDialogue d(flags, this);
-//     if (!d.exec()) return;
-// 
-//     dataModel()->setData(idx, d.flags());
-//     refreshData();
+    FlagsEditDialogue d(flags, this);
+    if (!d.exec()) return;
+
+    dataModel()->setData(idx, static_cast<int>(d.flags()));
+    refreshData();
 }
 
 //////////////////////////////////////////////////////////////////////////
