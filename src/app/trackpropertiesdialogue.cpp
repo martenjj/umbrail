@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -201,13 +201,9 @@ void TrackPropertiesDialogue::slotModelDataChanged(int idx)
 }
 
 
-static void blockChildSignals(const QObjectList &widgets, bool block)
+static void blockChildSignals(const QObjectList &objects, bool block)
 {
-    for (QObjectList::const_iterator it = widgets.begin(); it!=widgets.end(); ++it)
-    {
-        QWidget *w = qobject_cast<QWidget *>(*it);
-        if (w!=nullptr) w->blockSignals(block);
-    }
+    for (QObject *obj : objects) if (obj!=nullptr) obj->blockSignals(block);
 }
 
 

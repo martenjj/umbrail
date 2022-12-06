@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -270,9 +270,8 @@ void ChangeItemDataCommand::redo()
     mSavedValues.clear();
 
     const int idx = DataIndexer::index(mKey);
-    for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
+    for (TrackDataItem *item : qAsConst(mDataItems))
     {
-        TrackDataItem *item = (*it);
         Q_ASSERT(item!=nullptr);
         qDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
 
@@ -290,9 +289,8 @@ void ChangeItemDataCommand::undo()
     Q_ASSERT(mSavedValues.count()==mDataItems.count());
 
     const int idx = DataIndexer::index(mKey);
-    for (QList<TrackDataItem *>::const_iterator it = mDataItems.constBegin(); it!=mDataItems.constEnd(); ++it)
+    for (TrackDataItem *item : qAsConst(mDataItems))
     {
-        TrackDataItem *item = (*it);
         Q_ASSERT(item!=nullptr);
         QVariant savedValue = mSavedValues.takeFirst();
         qDebug() << "item" << item->name() << "data" << mKey << "back to" << savedValue;
@@ -300,7 +298,7 @@ void ChangeItemDataCommand::undo()
         model()->changedItem(item);
     }
 
-    Q_ASSERT(mSavedValues.count()==0);
+    Q_ASSERT(mSavedValues.isEmpty());
 }
 
 //////////////////////////////////////////////////////////////////////////
