@@ -308,6 +308,7 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
     mPositionLabel = nullptr;
     mAddressLabel = nullptr;
     mCategoriesLabel = nullptr;
+    mFlagsLabel = nullptr;
     mTimeLabel = nullptr;
     mTimeStartLabel = mTimeEndLabel = nullptr;
     mElevationLabel = nullptr;
