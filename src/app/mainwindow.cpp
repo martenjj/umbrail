@@ -636,9 +636,11 @@ bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
     tdf->setMetadata("creator", QApplication::applicationDisplayName());
     tdf->setMetadata("time", QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
 
+    // metadata for view mode
+    tdf->setMetadata("viewmode", mViewModeAction->isChecked() ? "list" : "tree");
+
     return (filesController()->exportFile(to, tdf, options)==FilesController::StatusOk);
 }
-
 
 
 // Error reporting and status messages are done in FilesController::importFile()
@@ -658,6 +660,10 @@ FilesController::Status MainWindow::load(const QUrl &from)
         QSignalBlocker block(mapController()->view());	// no status bar update from zooming
         if (!s.isNull()) mapController()->view()->setCurrentPosition(s.toString());
         else mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
+
+        s = tdf->metadata("viewmode");
+        qDebug() << "view mode metadata" << s;
+        if (!s.isNull()) setViewMode(s.toString()=="list" ? MainWindow::ViewTabs : MainWindow::ViewTree);
     }
 
     filesController()->filesView()->expandToDepth(1);	// expand to show segments
@@ -669,13 +675,11 @@ FilesController::Status MainWindow::load(const QUrl &from)
 }
 
 
-
 void MainWindow::slotStatusMessage(const QString &text)
 {
     mStatusMessage->setText(text);
     mStatusMessage->repaint();				// show new message immediately
 }
-
 
 
 void MainWindow::slotNewProject()
@@ -684,7 +688,6 @@ void MainWindow::slotNewProject()
     w->filesController()->initNew();
     w->show();
 }
-
 
 
 void MainWindow::slotOpenProject()
