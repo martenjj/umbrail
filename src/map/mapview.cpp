@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -191,13 +191,10 @@ void MapView::slotAddRoutepoint()
 QStringList MapView::allOverlays(bool visibleOnly) const
 {
     QStringList result;
-    QList<AbstractFloatItem *> items = floatItems();
-    for (QList<AbstractFloatItem *>::const_iterator it = items.constBegin();
-         it!=items.constEnd(); ++it)
+    const QList<AbstractFloatItem *> items = floatItems();
+    for (const AbstractFloatItem *item : items)
     {
-        AbstractFloatItem *item = (*it);
         if (item==nullptr) continue;
-
         if (!visibleOnly || item->visible()) result.append(item->nameId());
     }
 
@@ -210,12 +207,11 @@ QStringList MapView::allLayers(bool visibleOnly) const
 {
     QStringList result;
 
-    QStringList itemIds = mLayers.keys();
-    foreach (const QString &itemId, itemIds)
+    const QStringList itemIds = mLayers.keys();
+    for (const QString &itemId : itemIds)
     {
         const LayerBase *layer = mLayers.value(itemId);
         if (layer==nullptr) continue;
-
         if (!visibleOnly || layer->isVisible()) result.append(itemId);
     }
 
@@ -226,11 +222,9 @@ QStringList MapView::allLayers(bool visibleOnly) const
 
 void MapView::showOverlays(const QStringList &list)
 {
-    QList<AbstractFloatItem *> items = floatItems();
-    for (QList<AbstractFloatItem *>::const_iterator it = items.constBegin();
-         it!=items.constEnd(); ++it)
+    const QList<AbstractFloatItem *> items = floatItems();
+    for (AbstractFloatItem *item : items)
     {
-        AbstractFloatItem *item = (*it);
         if (item!=nullptr) item->setVisible(list.contains(item->nameId()));
     }
 }

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -156,12 +156,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
 #ifdef DEBUG_DRAGGING
         qDebug() << className(this).constData() << "paint for drag";
 #endif
-        for (QList<SelectionRun>::const_iterator it = mDraggingPoints->constBegin();
-             it!=mDraggingPoints->constEnd(); ++it)
-        {
-            const SelectionRun &run = (*it);
-            this->doPaintDrag(&run, painter);
-        }
+        for (const SelectionRun &run : qAsConst(*mDraggingPoints)) this->doPaintDrag(&run, painter);
     }
 
     return (true);
