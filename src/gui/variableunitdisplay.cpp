@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -166,20 +166,9 @@ void VariableUnitDisplay::showEvent(QShowEvent *ev)
     // Run through the sibling chain, and find the longest display
     // width of all their combo boxes.
     int maxSize = 0;
-    for (QList<VariableUnitDisplay *>::iterator it = siblings.begin();
-         it!=siblings.end(); ++it)
-    {
-        VariableUnitDisplay *vud = (*it);
-        maxSize = qMax(maxSize, vud->mUnitCombo->width());
-    }
-
+    for (const VariableUnitDisplay *vud : qAsConst(siblings)) maxSize = qMax(maxSize, vud->mUnitCombo->width());
     // Set all of the combo boxes to that as their minimum width.
-    for (QList<VariableUnitDisplay *>::iterator it = siblings.begin();
-         it!=siblings.end(); ++it)
-    {
-        VariableUnitDisplay *vud = (*it);
-        vud->mUnitCombo->setMinimumWidth(maxSize);
-    }
+    for (VariableUnitDisplay *vud : qAsConst(siblings)) vud->mUnitCombo->setMinimumWidth(maxSize);
 }
 
 

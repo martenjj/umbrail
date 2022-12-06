@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -184,7 +184,7 @@ void MainWindow::setupActions()
 
     mSaveProjectCopyAction = ac->addAction("file_save_copy");
     mSaveProjectCopyAction->setText(i18n("Save Copy As..."));
-    mSaveProjectCopyAction->setIcon(QIcon::fromTheme("folder-new"));
+    mSaveProjectCopyAction->setIcon(QIcon::fromTheme("document-save-all"));
     connect(mSaveProjectCopyAction, &QAction::triggered, this, &MainWindow::slotSaveCopy);
 
     mImportAction = ac->addAction("file_import");
@@ -258,7 +258,7 @@ void MainWindow::setupActions()
 
     mAddFolderAction = ac->addAction("edit_add_folder");
     mAddFolderAction->setText(i18n("Add Folder"));
-    mAddFolderAction->setIcon(QIcon::fromTheme("bookmark-new-list"));
+    mAddFolderAction->setIcon(QIcon::fromTheme("folder-new"));
     connect(mAddFolderAction, &QAction::triggered, filesController(), &FilesController::slotAddFolder);
 
     mAddPointAction = ac->addAction("edit_add_point");
@@ -1035,12 +1035,8 @@ default:
                                                      selType==TrackData::Waypoint) && !isReadOnly());
 
     mWaypointStatusAction->setEnabled(statusEnabled && !isReadOnly());
-    QList<QAction *> acts = mWaypointStatusAction->actions();
-    for (QList<QAction *>::const_iterator it = acts.constBegin(); it!=acts.constEnd(); ++it)
-    {
-        QAction *act = (*it);
-        act->setChecked(statusValue==act->data().toInt());
-    }
+    const QList<QAction *> acts = mWaypointStatusAction->actions();
+    for (QAction *act : acts) act->setChecked(statusValue==act->data().toInt());
 
     if (selCount==1 && selType==TrackData::Point)
     {							// not first point in segment

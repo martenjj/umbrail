@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -173,9 +173,8 @@ int ErrorReporter::messageCount() const
 {
     int count = 0;
 
-    for (QList<ErrorRecord *>::const_iterator it = mList.constBegin(); it!=mList.constEnd(); ++it)
+    for (const ErrorRecord *record : qAsConst(mList))
     {
-        const ErrorRecord *record = (*it);
         if (dynamic_cast<const ErrorRecordMessage *>(record)!=nullptr) ++count;
     }
 
@@ -187,11 +186,6 @@ QStringList ErrorReporter::messageList() const
 {
     QStringList result;
 
-    for (QList<ErrorRecord *>::const_iterator it = mList.constBegin(); it!=mList.constEnd(); ++it)
-    {
-        const ErrorRecord *record = (*it);
-        result.append(record->format());
-    }
-
+    for (const ErrorRecord *record : qAsConst(mList)) result.append(record->format());
     return (result);
 }

@@ -702,11 +702,11 @@ void TrackItemDetailPage::refreshData()
         mElevationLabel->setValue(v.isValid() ? v.toDouble() : NAN);
     }
 
-    for (QMap<int,QWidget *>::iterator it = mMetadataMap.begin(); it!=mMetadataMap.end(); ++it)
+    const QList<int> indexes = mMetadataMap.keys();
+    for (int idx : indexes)
     {
-        const int idx = it.key();
         const QVariant &v = dataModel()->data(idx);
-        QWidget *l = it.value();
+        QWidget *l = mMetadataMap[idx];
 
         if (idx==DataIndexer::index("time"))	// special conversion for this
         {
