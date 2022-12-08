@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -419,7 +419,7 @@ static void fillBrowserCombo(QComboBox *combo, const QString &currentId)
 {
     int selectIndex = -1;
     combo->clear();
-    combo->addItem(QIcon::fromTheme("preferences-system"), i18n("(Configured default)"));
+    combo->addItem(QIcon::fromTheme("preferences-system"), i18n("(System default)"));
 
     // The selection query used by the "Component Chooser" KCM (before it was
     // converted to QML) and referred to in https://phabricator.kde.org/D27948
