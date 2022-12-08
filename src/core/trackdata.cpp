@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -238,7 +238,7 @@ TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDat
     const QStringList names = path.split('/');		// list of folder names
 
     const TrackDataItem *item = root;
-    foreach (const QString &name, names)		// descend through path names
+    for (const QString &name : names)			// descend through path names
     {
         const int cnt = item->childCount();
         if (cnt==0) return (nullptr);			// no children under this item
