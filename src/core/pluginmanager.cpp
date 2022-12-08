@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -93,7 +93,7 @@ default:    qWarning() << "Unknown plugin type" << type;
         // Scan all of the library paths for plugins of the requested type
         const QStringList pluginPaths = QCoreApplication::libraryPaths();
         QStringList pluginLibs;
-        foreach (const QString &path, pluginPaths)
+        for (const QString &path : pluginPaths)
         {
             QDir dir(path);
             qDebug() << "  searching" << dir.absolutePath();
@@ -101,7 +101,7 @@ default:    qWarning() << "Unknown plugin type" << type;
 
             const QStringList files = dir.entryList((QStringList() << filter),
                                                     QDir::Files|QDir::NoDotAndDotDot);
-            foreach (const QString &file, files)
+            for (const QString &file : files)
             {
                 qDebug() << "    file" << file;
                 // Ignore "libabstractcoordinate.so*" in build directory
@@ -122,7 +122,7 @@ default:    qWarning() << "Unknown plugin type" << type;
         qDebug() << "pluginLibs" << pluginLibs;
 
         auto *pluginList = new QList<QPluginLoader *>;
-        foreach (const QString &pluginLib, pluginLibs)
+        for (const QString &pluginLib : qAsConst(pluginLibs))
         {
             qDebug() << "loading plugin" << pluginLib;
             QPluginLoader *loader = new QPluginLoader(pluginLib);
@@ -136,7 +136,7 @@ default:    qWarning() << "Unknown plugin type" << type;
     qDebug() << "have" << pluginList->count() << "plugins";
 
     QList<QObject *> pluginObjects;
-    foreach (QPluginLoader *loader, *pluginList)
+    for (QPluginLoader *loader : qAsConst(*pluginList))
     {
         QObject *obj = loader->instance();
         if (obj==nullptr)

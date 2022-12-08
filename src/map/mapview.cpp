@@ -321,20 +321,14 @@ QColor MapView::resolveLineColour(const TrackDataItem *tdi)
 void MapView::setMovePointsMode(bool on)
 {
     qDebug() << on;
-    foreach (LayerBase *layer, mLayers)
-    {
-        layer->setMovePointsMode(on);
-    }
+    for (LayerBase *layer : qAsConst(mLayers)) layer->setMovePointsMode(on);
 }
 
 
 void MapView::cancelDrag()
 {
     qDebug();
-    foreach (LayerBase *layer, mLayers)
-    {
-        layer->cancelDrag();
-    }
+    for (LayerBase *layer : qAsConst(mLayers)) layer->cancelDrag();
 }
 
 

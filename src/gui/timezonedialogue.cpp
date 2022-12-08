@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -65,9 +65,9 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     // much scrolling.  Accept only those zones which start with "Europe/"
     // or "UTC", and whose time offset is within 3 hours from UTC.
     // TODO: make this configurable, offset from current system time zone
-    QList<QByteArray> allZoneIds = QTimeZone::availableTimeZoneIds();
+    const QList<QByteArray> allZoneIds = QTimeZone::availableTimeZoneIds();
     QList<QByteArray> zoneIds;
-    foreach (const QByteArray &zone, allZoneIds)
+    for (const QByteArray &zone : allZoneIds)
     {
         if (zone.startsWith("Europe/") || zone.startsWith("UTC"))
         {

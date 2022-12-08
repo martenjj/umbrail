@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -89,8 +89,8 @@ void TimeZoneProvider::slotDataResult(KJob *job)
     QRegExp rx1("<timezoneId>(\\S+)</timezoneId>");
     QRegExp rx2("<status message=\"([^\"]+)\"");
 
-    QList<QByteArray> lines = mReceivedData.split('\n');
-    foreach (const QByteArray &l, lines)
+    const QList<QByteArray> lines = mReceivedData.split('\n');
+    for (const QByteArray &l : lines)
     {
         QString line = QString::fromUtf8(l);
         if (line.contains(rx1))				// look for time zone ID
