@@ -63,6 +63,8 @@ TrackItemStylePage::TrackItemStylePage(const QList<TrackDataItem *> *items, QWid
     mPointColourButton = nullptr;
     mPointInheritCheck = nullptr;
     mIconButton = nullptr;
+    mIconNameLabel = nullptr;
+    mIconNspLabel = nullptr;
 
     mIsTopLevel = (items->first()->parent()==nullptr);
 }
@@ -210,7 +212,11 @@ void TrackItemStylePage::addIconButton()
     mIconButton->installEventFilter(this);
     mFormLayout->addRow(i18n("Symbol:"), mIconButton);
 
-    // TODO: also a label for symbol name and namespace
+    mIconNameLabel = new QLabel(this);
+    mFormLayout->addRow(i18n("Name:"), mIconNameLabel);
+
+    mIconNspLabel = new QLabel(this);
+    mFormLayout->addRow(i18n("Symbol set:"), mIconNspLabel);
 }
 
 
@@ -260,11 +266,25 @@ void TrackItemStylePage::refreshData()
 
     if (mIconButton!=nullptr)
     {
+        Q_ASSERT(mIconNameLabel!=nullptr);
+        Q_ASSERT(mIconNspLabel!=nullptr);
+
         const QVariant v = dataModel()->data("sym");
-        if (!v.isNull()) mIconButton->setIcon(PointIconProvider::self()->icon(v.toString())->icon());
-        // Set an explicit icon so that the button will initially
-        // show at the specified size.
-        else mIconButton->setIcon("symbol-blank");
+        if (!v.isNull())
+        {
+            const PointIcon *pi = PointIconProvider::self()->icon(v.toString());
+            mIconButton->setIcon(pi->icon());
+            mIconNameLabel->setText(v.toString());
+            mIconNspLabel->setText(PointIcon::namespaceName(pi->nsp()));
+        }
+        else
+        {
+            // Set an explicit icon so that the button will initially
+            // show at the specified size.
+            mIconButton->setIcon("symbol-blank");
+            mIconNameLabel->setText("");
+            mIconNspLabel->setText("");
+        }
     }
 }
 

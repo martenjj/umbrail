@@ -29,6 +29,7 @@
 #include "trackpropertiespage.h"
 
 
+class QLabel;
 class QCheckBox;
 class KColorButton;
 class KIconButton;
@@ -60,6 +61,8 @@ protected:
     QCheckBox *mPointInheritCheck;
 
     KIconButton *mIconButton;
+    QLabel *mIconNameLabel;
+    QLabel *mIconNspLabel;
 
     bool mIsTopLevel;
 
