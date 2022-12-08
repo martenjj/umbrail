@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -171,11 +171,6 @@ public:
     QString typeText(int count) const override;
     void refreshData() override;
 
-protected slots:
-    void slotPlayAudioNote();
-    void slotPlayVideoNote();
-    void slotViewPhotoNote();
-
 private:
     void addStatusField(const QList<TrackDataItem *> *items);
 
@@ -183,7 +178,6 @@ private slots:
     void slotStatusChanged(int idx);
 
 private:
-    const TrackDataWaypoint *mWaypoint;
     QComboBox *mStatusCombo;
 };
 
