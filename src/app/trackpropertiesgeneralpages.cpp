@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -429,19 +429,21 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
 {
     setObjectName("TrackWaypointGeneralPage");
 
-    mWaypoint = nullptr;
     mStatusCombo = nullptr;
+
+    const TrackDataWaypoint *theWaypoint = nullptr;
+    bool showTime = false;
 
     if (items->count()==1)
     {
         // TODO: The "Media" field and the media that is output when the play
         // button is pressed is not automatically updated from the metadata.
 
-        mWaypoint = dynamic_cast<const TrackDataWaypoint *>(items->first());
-        Q_ASSERT(mWaypoint!=nullptr);
+        theWaypoint = dynamic_cast<const TrackDataWaypoint *>(items->first());
+        Q_ASSERT(theWaypoint!=nullptr);
 
         QString typeName;
-        switch (mWaypoint->waypointType())
+        switch (theWaypoint->waypointType())
         {
 case TrackData::WaypointNormal:		typeName = i18n("None");	break;
 case TrackData::WaypointAudioNote:	typeName = i18n("Audio Note");	break;
@@ -462,24 +464,40 @@ default:				typeName = i18n("(Unknown)");	break;
         hlay->addStretch(1);
 
         QPushButton *actionButton = nullptr;
-        switch (mWaypoint->waypointType())
+        switch (theWaypoint->waypointType())
         {
 case TrackData::WaypointAudioNote:
             actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
-            connect(actionButton, &QAbstractButton::clicked, this, &TrackWaypointGeneralPage::slotPlayAudioNote);
+            connect(actionButton, &QAbstractButton::clicked, this, [theWaypoint]()
+            {
+                MediaPlayer::playAudioNote(theWaypoint);
+            });
+            showTime = true;				// interested in the note time
             break;
 
 case TrackData::WaypointVideoNote:
             actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the video note"));
-            connect(actionButton, &QAbstractButton::clicked, this, &TrackWaypointGeneralPage::slotPlayVideoNote);
+            connect(actionButton, &QAbstractButton::clicked, this, [theWaypoint]()
+            {
+                MediaPlayer::playVideoNote(theWaypoint);
+            });
+            showTime = true;				// interested in the note time
             break;
 
 case TrackData::WaypointPhoto:
             actionButton = new QPushButton(QIcon::fromTheme("document-preview"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "View the photo"));
-            connect(actionButton, &QAbstractButton::clicked, this, &TrackWaypointGeneralPage::slotViewPhotoNote);
+            connect(actionButton, &QAbstractButton::clicked, this, [theWaypoint]()
+            {
+                MediaPlayer::viewPhotoNote(theWaypoint);
+            });
+            showTime = true;				// interested in the photo time
+            break;
+
+case TrackData::WaypointStop:
+            showTime = true;				// interested in the stop time
             break;
 
 default:    break;
@@ -505,10 +523,9 @@ default:    break;
     }
 
     addPositionFields(items);
-    addTimeField(items);
-    if (mWaypoint==nullptr) addTimeSpanFields(items);
-    addSeparatorField();
+    if (showTime) addTimeField(items);
 
+    addSeparatorField();
     addStatusField(items);
     addDescField(items);
 }
@@ -557,24 +574,6 @@ void TrackWaypointGeneralPage::slotStatusChanged(int idx)
 
     const int status = mStatusCombo->itemData(idx).toInt();
     dataModel()->setData(DataIndexer::index("status"), (status==0 ? QVariant() : status));
-}
-
-
-void TrackWaypointGeneralPage::slotPlayAudioNote()
-{
-    MediaPlayer::playAudioNote(mWaypoint);
-}
-
-
-void TrackWaypointGeneralPage::slotPlayVideoNote()
-{
-    MediaPlayer::playVideoNote(mWaypoint);
-}
-
-
-void TrackWaypointGeneralPage::slotViewPhotoNote()
-{
-    MediaPlayer::viewPhotoNote(mWaypoint);
 }
 
 //////////////////////////////////////////////////////////////////////////

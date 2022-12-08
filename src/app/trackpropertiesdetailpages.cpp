@@ -825,12 +825,12 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     qDebug();
     setObjectName("TrackWaypointDetailPage");
 
+    addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
     if (items->count()==1)				// single selection
     {
         const TrackDataWaypoint *tdp = dynamic_cast<const TrackDataWaypoint *>(items->first());
         Q_ASSERT(tdp!=nullptr);
 
-        addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
         addSeparatorField();
 
         QLabel *pathDisplay = new QLabel(this);
@@ -843,7 +843,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     }
     else						// multiple selection
     {
-        addDisplayFields(items, DisplayPosition|DisplayElevation|DisplayStraightLine|DisplayRelativeBearing);
+        addDisplayFields(items, DisplayStraightLine|DisplayRelativeBearing);
     }
 }
 
