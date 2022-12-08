@@ -449,8 +449,8 @@ void MainWindow::setupActions()
     KActionMenu *itemsMenu = new KActionMenu(this);
     // For consistency with "Waypoint Status" which is a KSelectAction
     itemsMenu->setPopupMode(QToolButton::InstantPopup);
-    QStringList layerIds = mapView->allLayers(false);
-    foreach (const QString &id, layerIds)
+    const QStringList layerIds = mapView->allLayers(false);
+    for (const QString &id : layerIds)
     {
         a = mapView->actionForLayer(id);
         if (a==nullptr) continue;
@@ -464,9 +464,9 @@ void MainWindow::setupActions()
 
     itemsMenu = new KActionMenu(this);
     itemsMenu->setPopupMode(QToolButton::InstantPopup);
-    QStringList notUseful = QString(notUsefulOverlays).split(',');
-    QStringList itemIds = mapView->allOverlays(false);
-    foreach (const QString &itemId, itemIds)
+    const QStringList notUseful = QString(notUsefulOverlays).split(',');
+    const QStringList itemIds = mapView->allOverlays(false);
+    for (const QString &itemId : itemIds)
     {
         if (notUseful.contains(itemId)) continue;
 
@@ -1176,13 +1176,13 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
 bool MainWindow::acceptMimeData(const QMimeData *mimeData)
 {
     if (!mimeData->hasUrls()) return (false);
-    QList<QUrl> urls = mimeData->urls();
+    const QList<QUrl> urls = mimeData->urls();
 
     QList<QByteArray> imageTypes = QImageReader::supportedMimeTypes();
 
     QMimeDatabase db;
     QList<QUrl> validUrls;
-    foreach (const QUrl &url, urls)
+    for (const QUrl &url : urls)
     {
         const QMimeType mime = db.mimeTypeForUrl(url);
         const QByteArray name = mime.name().toLatin1();
