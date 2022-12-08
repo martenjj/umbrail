@@ -32,6 +32,7 @@
 #include <qbitmap.h>
 
 #include <kiconloader.h>
+#include <klocalizedstring.h>
 
 #include "trackdata.h"
 
@@ -559,10 +560,10 @@ static void setGarminPixmap(QIcon *icon, int idx)
 PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
 {
     mName = name;
-    mNsp = nsp;
 #ifdef DEBUG_ICONS
     qDebug() << "named" << name << "in nsp" << nsp;
 #endif // DEBUG_ICONS
+    mNsp = PointIcon::NamespaceUnknown;
 
     // First try: system and application icons
     if (nsp==PointIcon::NamespaceAuto || nsp==PointIcon::NamespaceSystem)
@@ -576,7 +577,11 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
 #ifdef DEBUG_ICONS
             qDebug() << "  found in theme null?" << mIcon.isNull();
 #endif // DEBUG_ICONS
-            if (!mIcon.isNull()) return;		// should always be true
+            if (!mIcon.isNull())			// should always be true
+            {						// because of hasThemeIcon() above
+                mNsp = PointIcon::NamespaceSystem;
+                return;
+            }
         }
     }
 
@@ -605,7 +610,11 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
             qDebug() << "  found at index" << idx;
 #endif // DEBUG_ICONS
             setGarminPixmap(&mIcon, idx);
-            if (!mIcon.isNull()) return;		// always true unless load error
+            if (!mIcon.isNull())			// always true unless load error
+            {
+                mNsp = PointIcon::NamespaceGarmin;
+                return;
+            }
         }
     }
 
@@ -619,7 +628,7 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
 PointIcon::PointIcon(const QString &name, const QColor &col)
 {
     mName = name;
-    mNsp = PointIcon::NamespaceImage;
+    mNsp = PointIcon::NamespaceColour;
 #ifdef DEBUG_ICONS
     qDebug() << "for colour" << col << "named" << name;
 #endif // DEBUG_ICONS
@@ -641,4 +650,18 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
     else qWarning() << "requested for invalid namespace" << nsp;
 
     return (result);
+}
+
+
+/* static */ QString PointIcon::namespaceName(PointIcon::IconNamespace nsp)
+{
+    switch (nsp)
+    {
+case PointIcon::NamespaceColour:	return (i18n("Image"));
+case PointIcon::NamespaceSystem:	return (i18n("System"));
+case PointIcon::NamespaceGarmin:	return (i18n("Garmin"));
+case PointIcon::NamespaceOsmand:	return (i18n("OsmAnd"));
+case PointIcon::NamespaceAuto:		return (i18n("(error)"));
+default:				return (i18n("(unknown)"));
+    }
 }

@@ -42,7 +42,8 @@ public:
     enum IconNamespace
     {
         NamespaceAuto,
-        NamespaceImage,
+        NamespaceUnknown,
+        NamespaceColour,
         NamespaceSystem,
         NamespaceGarmin,
         NamespaceOsmand
@@ -51,11 +52,13 @@ public:
     ~PointIcon() = default;
 
     QString name() const			{ return (mName); }
+    PointIcon::IconNamespace nsp() const	{ return (mNsp); }
     QIcon icon() const				{ return (mIcon); }
     bool isValid() const			{ return (!mIcon.isNull()); }
     QPixmap pixmap(int size) const		{ return (mIcon.pixmap(size)); }
 
     static QStringList allNames(PointIcon::IconNamespace nsp);
+    static QString namespaceName(PointIcon::IconNamespace nsp);
 
 protected:
     // Only the PointIconProvider may construct a PointIcon.
