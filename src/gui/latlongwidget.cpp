@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -64,7 +64,7 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
     // Coordinate system tabs
     const QList<QObject *> plugins = PluginManager::self()->loadPlugins(PluginManager::CoordinatePlugin);
     qDebug() << "have" << plugins.count() << "coordinate plugins";
-    foreach (QObject *obj, plugins)
+    for (QObject *obj : plugins)
     {
         AbstractCoordinateHandler *handler = qobject_cast<AbstractCoordinateHandler *>(obj);
         if (handler==nullptr)				// should never happen
@@ -121,10 +121,7 @@ void LatLongWidget::setLatLong(double lat, double lon)
     mLatitude = lat;
     mLongitude = lon;
 
-    foreach (AbstractCoordinateHandler *handler, mHandlers)
-    {
-        handler->setLatLong(lat, lon);
-    }
+    for (AbstractCoordinateHandler *handler : qAsConst(mHandlers)) handler->setLatLong(lat, lon);
 }
 
 
@@ -140,7 +137,7 @@ void LatLongWidget::slotValueChanged()
     mLatitude = changedHandler->getLatitude();
     mLongitude = changedHandler->getLongitude();
 
-    foreach (AbstractCoordinateHandler *handler, mHandlers)
+    for (AbstractCoordinateHandler *handler : qAsConst(mHandlers))
     {
         // apart from the one just changed
         if (handler!=changedHandler) handler->setLatLong(mLatitude, mLongitude);
@@ -162,7 +159,7 @@ bool LatLongWidget::hasAcceptableInput() const
 {
     bool ok = true;					// assume so to start
 
-    foreach (AbstractCoordinateHandler *handler, mHandlers)
+    for (const AbstractCoordinateHandler *handler : qAsConst(mHandlers))
     {
         if (!handler->hasAcceptableInput()) ok = false;
     }

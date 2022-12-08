@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -111,7 +111,7 @@ WaypointSelectDialogue::WaypointSelectDialogue(QWidget *pnt)
 void WaypointSelectDialogue::setSelection(WaypointSelectDialogue::SelectionSet sel)
 {
     const QList<QAbstractButton *> buts = mGroup->buttons();
-    foreach (QAbstractButton *but, buts)
+    for (QAbstractButton *but : buts)
     {
         WaypointSelectDialogue::Selection buttonSel = static_cast<WaypointSelectDialogue::Selection>(mGroup->id(but));
         but->setChecked(sel & buttonSel);
@@ -123,7 +123,7 @@ WaypointSelectDialogue::SelectionSet WaypointSelectDialogue::selection() const
 {
     WaypointSelectDialogue::SelectionSet sel = WaypointSelectDialogue::SelectionSet();
     const QList<QAbstractButton *> buts = mGroup->buttons();
-    foreach (QAbstractButton *but, buts)
+    for (QAbstractButton *but : buts)
     {
         if (but->isChecked()) sel |= static_cast<WaypointSelectDialogue::Selection>(mGroup->id(but));
     }

@@ -4,9 +4,9 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Copyright (C) 2005, S.R.Haque <srhaque@iee.org>			//
 //  Copyright (C) 2009, David Faure <faure@kde.org>			//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -84,7 +84,7 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
         zonesByCity.insert(i18n(utc.id().constData()), utc);
     }
 
-    foreach (const QByteArray &zoneId, zoneIds)
+    for (const QByteArray &zoneId : qAsConst(zoneIds))
     {
         const QTimeZone zone(zoneId);
         const QString continentCity = zone.id();
@@ -102,7 +102,7 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
     }
     std::sort(cities.begin(), cities.end(), localeLessThan);
 
-    foreach (const QString &key, cities)
+    for (const QString &key : qAsConst(cities))
     {
         const QTimeZone zone = zonesByCity.value(key);
         const QByteArray tzName = zone.id();

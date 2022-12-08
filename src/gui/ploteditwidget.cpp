@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -100,7 +100,7 @@ void PlotEditWidget::setPlotData(const QString &newData)
 
     const QStringList items = newData.split(';', Qt::SkipEmptyParts);
     int row = 0;
-    foreach (const QString &item, items)
+    for (const QString &item : items)
     {							// get existing spin box
         // Create a spin box for each data item
         QSpinBox *box = createSpinBox(mType);		// create new spin box
@@ -188,7 +188,7 @@ QString PlotEditWidget::plotData() const
     qDebug() << "fields" << mFields.count();
 
     QStringList values;
-    foreach (const QSpinBox *box, mFields) values.append(QString::number(box->value()));
+    for (const QSpinBox *box : qAsConst(mFields)) values.append(QString::number(box->value()));
     return (values.join(';'));
 }
 
