@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -160,7 +160,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         if (!brg.isEmpty())
         {
             const QStringList brgs = brg.split(';', Qt::SkipEmptyParts);
-            foreach (const QString &brgVal, brgs)
+            for (const QString &brgVal : brgs)
             {
                 GeoDataCoordinates coord2 = coord.moveByBearing(DEGREES_TO_RADIANS(brgVal.toDouble()),
                                                                 Units::lengthToInternal(BEARING_LINE_LENGTH_KM,
@@ -181,7 +181,7 @@ void WaypointsLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter,
         if (!rng.isEmpty())
         {
             const QStringList rngs = rng.split(';', Qt::SkipEmptyParts);
-            foreach (const QString &rngVal, rngs)
+            for (const QString &rngVal : rngs)
             {
                 // To draw the range ring we convert all of the coordinates to screen
                 // pixels and use the underlying Marble::ClipPainter directly, bypassing
