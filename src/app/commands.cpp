@@ -1100,8 +1100,8 @@ void MovePointsCommand::undo()
 //									//
 //  Add Waypoint							//
 //									//
-//  We create the new point and store it.  We only refer to the		//
-//  input folder to identify where to create it.			//
+//  Create the new point and store it.  The input folder is only used	//
+//  as a reference to identify where to create it.			//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
@@ -1153,7 +1153,7 @@ void AddWaypointCommand::redo()
             idx = DataIndexer::index("time");
             newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
 
-            // Only set the source metadata if the mSourcePoint point has
+            // Only set the "source" metadata if the mSourcePoint point has
             // a name.  See StopDetectDialogue::slotCommitResults() for the
             // situation where it may not.
             const QString sourceName = mSourcePoint->name();
@@ -1162,6 +1162,13 @@ void AddWaypointCommand::redo()
             const QVariant stopData = mSourcePoint->metadata("stop");
             if (!stopData.isNull()) newWaypoint->setMetadata("stop", stopData);
         }
+
+        // Always set the "origin" metadata of the added point to reflect that
+        // it has been created manually.
+        //
+        // String format from NavMarks PointsController::slotNewPoint()
+        const QString orgData = "manual_"+QDateTime::currentDateTime().toString(Qt::ISODate);
+        newWaypoint->setMetadata("origin", orgData);
 
         mNewWaypointContainer->addChildItem(newWaypoint);
     }
