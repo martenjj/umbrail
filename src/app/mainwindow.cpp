@@ -884,6 +884,9 @@ void MainWindow::slotUpdateActionState()
     QString mergeText =  i18nc("@action:inmenu", "Merge");
 
     const TrackDataItem *selectedContainer = nullptr;
+    // This may be NULL; check that there is a selection before using it.
+    const TrackDataItem *selectedItem = filesController()->filesView()->selectedItem();
+
     switch (selType)
     {
 case TrackData::File:
@@ -897,7 +900,7 @@ case TrackData::Track:
         propsText = i18ncp("@action:inmenu", "Track Properties...", "Tracks Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
-        selectedContainer = filesController()->filesView()->selectedItem();
+        selectedContainer = selectedItem;
         stopsEnabled = profileEnabled = true;
         break;
 
@@ -905,7 +908,7 @@ case TrackData::Route:
         propsText = i18ncp("@action:inmenu", "Route Properties...", "Routes Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
-        selectedContainer = filesController()->filesView()->selectedItem();
+        selectedContainer = selectedItem;
         profileEnabled = true;
         mergeEnabled = (selCount>1);
         mergeText = i18nc("@action:inmenu", "Merge Routes");
@@ -926,7 +929,7 @@ case TrackData::Point:
         propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
-        selectedContainer = filesController()->filesView()->selectedItem()->parent();
+        selectedContainer = selectedItem->parent();
         stopsEnabled = profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
@@ -937,7 +940,7 @@ case TrackData::Routepoint:
         propsText = i18ncp("@action:inmenu", "Route Point Properties...", "Route Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
-        selectedContainer = filesController()->filesView()->selectedItem()->parent();
+        selectedContainer = selectedItem->parent();
         profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
@@ -948,7 +951,7 @@ case TrackData::Folder:
         propsText = i18ncp("@action:inmenu", "Folder Properties...", "Folders Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
-        selectedContainer = filesController()->filesView()->selectedItem();
+        selectedContainer = selectedItem;
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Folder...");
         break;
@@ -959,13 +962,13 @@ case TrackData::Waypoint:
         delText = i18ncp("@action:inmenu", "Delete Waypoint", "Delete Waypoints", selCount);
         moveEnabled = true;
         moveText = i18ncp("@action:inmenu", "Move Waypoint...", "Move Waypoints...", selCount);
-        selectedContainer = filesController()->filesView()->selectedItem()->parent();
+        selectedContainer = selectedItem->parent();
         statusEnabled = true;
         copyEnabled = true;
 
         if (selCount==1)
         {
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
+            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(selectedItem);
             if (tdw!=nullptr)
             {
                 switch (tdw->waypointType())
@@ -1001,9 +1004,57 @@ default:
         break;
     }
 
+    // If there is a selected container or point(s), then move points mode
+    // is allowed to be entered;  otherwise, it is disabled.
+    if (selectedContainer!=nullptr)
+    {
+        // If there is a selected container and it is the same as the currently
+        // selected container, then move points mode can stay at the same state
+        // as it currently is.  Otherwise, it is forced off.
+        if (selectedContainer!=mSelectedContainer)
+        {
+            mMapDragAction->setChecked(false);
+            slotMapMovePoints();
+        }
+        mMapDragAction->setEnabled(true);
+    }
+    else
+    {
+        mMapDragAction->setChecked(false);
+        slotMapMovePoints();
+        mMapDragAction->setEnabled(false);
+    }
+
+    // Record the currently selected container, for checking as above
+    // the next time we are called.
+    mSelectedContainer = selectedContainer;
+
+    // Update the waypoint status actions.  Their parent action will
+    // be disabled below if read-only.
+    const QList<QAction *> acts = mWaypointStatusAction->actions();
+    for (QAction *act : acts) act->setChecked(statusValue==act->data().toInt());
+
+    // No modifying actions are allowed in read-only mode, disable them
+    // and then there is no more to do.
+    if (isReadOnly())
+    {
+        mDeleteItemsAction->setEnabled(false);
+        mSplitTrackAction->setEnabled(false);
+        mMergeTrackAction->setEnabled(false);
+        mMoveItemAction->setEnabled(false);
+        mAddTrackAction->setEnabled(false);
+        mAddRouteAction->setEnabled(false);
+        mAddFolderAction->setEnabled(false);
+        mAddWaypointAction->setEnabled(false);
+        mAddRoutepointAction->setEnabled(false);
+        mWaypointStatusAction->setEnabled(false);
+        mMapDragAction->setEnabled(false);
+        return;
+    }
+
     mPropertiesAction->setEnabled(propsEnabled);
     mPropertiesAction->setText(propsText);
-    mDeleteItemsAction->setEnabled(delEnabled && !isReadOnly());
+    mDeleteItemsAction->setEnabled(delEnabled);
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
     mStatisticsAction->setEnabled(profileEnabled);
@@ -1019,59 +1070,44 @@ default:
     mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
     mCopyAction->setEnabled(copyEnabled);
 
-    mSplitTrackAction->setEnabled(splitEnabled && !isReadOnly());
+    mSplitTrackAction->setEnabled(splitEnabled);
     if (splitEnabled) mSplitTrackAction->setText(splitText);
-    mMergeTrackAction->setEnabled(mergeEnabled && !isReadOnly());
+    mMergeTrackAction->setEnabled(mergeEnabled);
     if (mergeEnabled) mMergeTrackAction->setText(mergeText);
 
-    mMoveItemAction->setEnabled(moveEnabled && !isReadOnly());
+    mMoveItemAction->setEnabled(moveEnabled);
     mMoveItemAction->setText(moveText);
-    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File && !isReadOnly());
-    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File && !isReadOnly());
-    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
-                                                 selType==TrackData::Folder) && !isReadOnly());
-    mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
-                                                   selType==TrackData::Point ||
-                                                   selType==TrackData::Waypoint) && !isReadOnly());
+    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File || selType==TrackData::Folder));
+
+    if (mViewModeAction->isChecked())			// points list view mode
+    {
+        mAddWaypointAction->setEnabled(true);		// always allowed in this mode
+    }
+    else						// tree view mode
+    {
+        // This will always be possible if a folder is selected.  If a point or
+        // waypoint is selected (to create at that position), then it may not
+        // be possible to actually create the waypoint if no folder exists
+        // to contain it.  Same for a route point below.
+        mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
+                                                       selType==TrackData::Point ||
+                                                       selType==TrackData::Waypoint));
+    }
+
     mAddRoutepointAction->setEnabled(selCount==1 && (selType==TrackData::Route ||
                                                      selType==TrackData::Point ||
-                                                     selType==TrackData::Waypoint) && !isReadOnly());
+                                                     selType==TrackData::Waypoint));
 
-    mWaypointStatusAction->setEnabled(statusEnabled && !isReadOnly());
-    const QList<QAction *> acts = mWaypointStatusAction->actions();
-    for (QAction *act : acts) act->setChecked(statusValue==act->data().toInt());
+    mWaypointStatusAction->setEnabled(statusEnabled);
 
     if (selCount==1 && selType==TrackData::Point)
     {							// not first point in segment
-        const QModelIndex idx = filesController()->model()->indexForItem(filesController()->filesView()->selectedItem());
-        mAddPointAction->setEnabled(idx.row()>0 && !isReadOnly());
+        const QModelIndex idx = filesController()->model()->indexForItem(selectedItem);
+        mAddPointAction->setEnabled(idx.row()>0);
     }
     else mAddPointAction->setEnabled(false);
-
-    // If there is a selected container or point(s), then move points mode
-    // is allowed to be entered;  otherwise, it is disabled.
-    //
-    // If there is a selected container and it is the same as the currently
-    // selected container, then move points mode can stay at the same state
-    // as it currently is.  Otherwise, it is forced off.
-
-    if (selectedContainer!=nullptr)
-    {
-        if (selectedContainer!=mSelectedContainer)
-        {
-            mMapDragAction->setChecked(false);
-            slotMapMovePoints();
-        }
-        mMapDragAction->setEnabled(true && !isReadOnly());
-    }
-    else
-    {
-        mMapDragAction->setChecked(false);
-        slotMapMovePoints();
-        mMapDragAction->setEnabled(false);
-    }
-
-    mSelectedContainer = selectedContainer;
 }
 
 
@@ -1366,4 +1402,6 @@ void MainWindow::setViewMode(MainWindow::ViewMode mode)
         mWidgetStack->setCurrentIndex(1);
         mViewModeAction->setChecked(true);
     }
+
+    slotUpdateActionState();				// action states may be mode-dependent
 }
