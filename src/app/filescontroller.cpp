@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -770,7 +770,7 @@ case TrackData::Route:      if (selCount==1) msg = i18n("Selected route '%1'", n
                             else msg = i18np("Selected %1 route", "Selected %1 routes", selCount);
                             break;
 
-case TrackData::Point:      if (selCount==1) msg = i18n("Selected point '%1'", name);
+case TrackData::Trackpoint: if (selCount==1) msg = i18n("Selected point '%1'", name);
                             else msg = i18np("Selected %1 point", "Selected %1 points", selCount);
                             break;
 
@@ -1119,12 +1119,12 @@ void FilesController::slotAddFolder()
 }
 
 
-void FilesController::slotAddPoint()
+void FilesController::slotAddTrackpoint()
 {
     QList<TrackDataItem *> items = view()->selectedItems();
     if (items.count()!=1) return;
 
-    AddPointCommand *cmd = new AddPointCommand(this);
+    AddTrackpointCommand *cmd = new AddTrackpointCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(items.first());
     executeCommand(cmd);

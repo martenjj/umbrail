@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -152,7 +152,7 @@ namespace TrackData
         Track,
         Route,
         Segment,
-        Point,
+        Trackpoint,
         Folder,
         Waypoint,
         Routepoint
@@ -418,7 +418,7 @@ public:
     explicit TrackDataTrackpoint();
     virtual ~TrackDataTrackpoint() = default;
 
-    TrackData::Type type() const override		{ return (TrackData::Point); }
+    TrackData::Type type() const override		{ return (TrackData::Trackpoint); }
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)

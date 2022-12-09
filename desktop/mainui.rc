@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="umbrail"
-     version="14"
+     version="15"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -20,7 +20,7 @@
       <Action name="edit_add_track"/>
       <Action name="edit_add_route"/>
       <Action name="edit_add_folder"/>
-      <Action name="edit_add_point"/>
+      <Action name="edit_add_trackpoint"/>
       <Action name="edit_add_waypoint"/>
       <Action name="edit_add_routepoint"/>
       <Action name="edit_delete_track"/>

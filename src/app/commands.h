@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -227,11 +227,11 @@ private:
 
 
 
-class AddPointCommand : public FilesCommandBase
+class AddTrackpointCommand : public FilesCommandBase
 {
 public:
-    AddPointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
-    virtual ~AddPointCommand();
+    AddTrackpointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
+    virtual ~AddTrackpointCommand();
 
     void redo() override;
     void undo() override;

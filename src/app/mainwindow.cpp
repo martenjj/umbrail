@@ -237,10 +237,10 @@ void MainWindow::setupActions()
     mAddFolderAction->setIcon(QIcon::fromTheme("folder-new"));
     connect(mAddFolderAction, &QAction::triggered, filesController(), &FilesController::slotAddFolder);
 
-    mAddPointAction = ac->addAction("edit_add_point");
-    mAddPointAction->setText(i18n("Add Point"));
-    mAddPointAction->setIcon(QIcon::fromTheme("list-add"));
-    connect(mAddPointAction, &QAction::triggered, filesController(), &FilesController::slotAddPoint);
+    mAddTrackpointAction = ac->addAction("edit_add_trackpoint");
+    mAddTrackpointAction->setText(i18n("Add Track Point"));
+    mAddTrackpointAction->setIcon(QIcon::fromTheme("list-add"));
+    connect(mAddTrackpointAction, &QAction::triggered, filesController(), &FilesController::slotAddTrackpoint);
 
     mAddWaypointAction = ac->addAction("edit_add_waypoint");
     mAddWaypointAction->setText(i18n("Add Waypoint..."));
@@ -886,7 +886,7 @@ case TrackData::Segment:
         mergeText = i18nc("@action:inmenu", "Merge Segments");
         break;
 
-case TrackData::Point:
+case TrackData::Trackpoint:
         propsText = i18ncp("@action:inmenu", "Point Properties...", "Points Properties...", selCount);
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
@@ -995,22 +995,22 @@ default:
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
                                                  selType==TrackData::Folder) && !isReadOnly());
     mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
-                                                   selType==TrackData::Point ||
+                                                   selType==TrackData::Trackpoint ||
                                                    selType==TrackData::Waypoint) && !isReadOnly());
     mAddRoutepointAction->setEnabled(selCount==1 && (selType==TrackData::Route ||
-                                                     selType==TrackData::Point ||
+                                                     selType==TrackData::Trackpoint ||
                                                      selType==TrackData::Waypoint) && !isReadOnly());
 
     mWaypointStatusAction->setEnabled(statusEnabled && !isReadOnly());
     const QList<QAction *> acts = mWaypointStatusAction->actions();
     for (QAction *act : acts) act->setChecked(statusValue==act->data().toInt());
 
-    if (selCount==1 && selType==TrackData::Point)
+    if (selCount==1 && selType==TrackData::Trackpoint)
     {							// not first point in segment
         const QModelIndex idx = filesController()->model()->indexForItem(filesController()->view()->selectedItem());
-        mAddPointAction->setEnabled(idx.row()>0 && !isReadOnly());
+        mAddTrackpointAction->setEnabled(idx.row()>0 && !isReadOnly());
     }
-    else mAddPointAction->setEnabled(false);
+    else mAddTrackpointAction->setEnabled(false);
 
     // If there is a selected container or point(s), then move points mode
     // is allowed to be entered;  otherwise, it is disabled.
