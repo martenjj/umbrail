@@ -44,6 +44,9 @@ set(pics_SRCS
   waypoint-32.png
   # used by TrackItemStylePage
   symbol-blank.png
+  # Symbol set provider logos, used by IconSelector
+  logo-garmin.png
+  logo-osmand.png
 )
 
 install(FILES ${pics_SRCS} DESTINATION ${KDE_INSTALL_DATADIR}/${PN}/pics)

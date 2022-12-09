@@ -52,9 +52,8 @@ IconSelector::IconSelector(const QString &sym, QWidget *pnt)
 
     mSourceCombo = new QComboBox(this);
     mSourceCombo->setSizePolicy(QSizePolicy::Expanding, mSourceCombo->sizePolicy().verticalPolicy());
-    // TODO: icons to identify vendor
-    mSourceCombo->addItem(i18nc("Name of symbol set", "Garmin"), PointIcon::NamespaceGarmin);
-    mSourceCombo->addItem(i18nc("Name of symbol set", "OsmAnd"), PointIcon::NamespaceOsmand);
+    mSourceCombo->addItem(QIcon::fromTheme("logo-garmin"), i18nc("Symbol set name", "Garmin"), PointIcon::NamespaceGarmin);
+    mSourceCombo->addItem(QIcon::fromTheme("logo-osmand"), i18nc("Symbol set name", "OsmAnd"), PointIcon::NamespaceOsmand);
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
 
     fl->addItem(DialogBase::verticalSpacerItem());
