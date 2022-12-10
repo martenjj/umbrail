@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -47,17 +47,19 @@ public:
     virtual bool needsResave() const				{ return (false); }
 
 protected:
-    // TODO: private with accessor
-    TrackDataFile *mDataRoot;
-
-protected:
     virtual bool loadFrom(QIODevice *dev) = 0;
+    TrackDataFile *dataRoot() const				{ return (mDataRoot); }
+    QString originId() const					{ return (mOriginId); }
 
 protected:
     TrackDataFolder *waypointFolder(const TrackDataWaypoint *tdw, const QString &defaultName);
 
 private:
     TrackDataFolder *getFolder(const QString &path);
+
+private:
+    TrackDataFile *mDataRoot;
+    QString mOriginId;
 };
 
 #endif							// IMPORTERBASE_H

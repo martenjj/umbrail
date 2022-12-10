@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -250,7 +250,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
 
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=nullptr) item->setName(elementText, true);	// assign its name
-        else if (mWithinMetadata) mDataRoot->setMetadata(localName, elementText);
+        else if (mWithinMetadata) dataRoot()->setMetadata(localName, elementText);
         else addError("NAME not within TRK, TRKSEG, TRKPT, WPT, RTE, RTEPT or METADATA");
     }
     else if (localName=="time")				// start of a TIME element
@@ -271,7 +271,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             // <wpt> ...
 
             if (!mWithinMetadata) addError("TIME not within TRK, TRKPT, WPT or METADATA");
-            item = mDataRoot;				// assume to be in metadata
+            item = dataRoot();				// assume to be in metadata
         }
 
         item->setMetadata(localName, dt);
@@ -389,9 +389,9 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     if (localName=="gpx")				// start of a GPX element
     {
         QStringRef val = atts.value("version");
-        if (!val.isEmpty()) mDataRoot->setMetadata(DataIndexer::index("version"), val.toString());
+        if (!val.isEmpty()) dataRoot()->setMetadata(DataIndexer::index("version"), val.toString());
         val = atts.value("creator");
-        if (!val.isEmpty()) mDataRoot->setMetadata(DataIndexer::index("creator"), val.toString());
+        if (!val.isEmpty()) dataRoot()->setMetadata(DataIndexer::index("creator"), val.toString());
     }
     else if (localName=="metadata")			// start of a METADATA element
     {
@@ -536,12 +536,12 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         // The first time that a valid category has been found,
         // allocate the category map and set it on the root file item.
         // The user of that root item will eventually take ownership of it.
-        CategoriesList *catMap = mDataRoot->categories();
+        CategoriesList *catMap = dataRoot()->categories();
         if (catMap==nullptr)
         {
             qDebug() << "new category map";
             catMap = new CategoriesList;
-            mDataRoot->setCategories(catMap);
+            dataRoot()->setCategories(catMap);
         }
 
         catMap->addCategory(name.toString(), col);	// add entry to categories
@@ -609,7 +609,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a TRK:" << mCurrentTrack->name();
 #endif
-        mDataRoot->addChildItem(mCurrentTrack);
+        dataRoot()->addChildItem(mCurrentTrack);
         mCurrentTrack = nullptr;			// finished with temporary
         return (true);
     }
@@ -653,7 +653,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a RTE:" << mCurrentRoute->name();
 #endif
-        mDataRoot->addChildItem(mCurrentRoute);
+        dataRoot()->addChildItem(mCurrentRoute);
         mCurrentRoute = nullptr;			// finished with temporary
         return (true);
     }
@@ -694,7 +694,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
                 // Using the GUI, it is possible to rename such a waypoint;  relying
                 // on the visible name to locate the media file would then fail.
                 // To get around this, we save the original name in the waypoint's
-                // metadata under a special key which will not get overwritten;  this
+                // metadata under the "link" key which will not get overwritten;  this
                 // will from then on be saved and loaded in the GPX file.
                 tdw->setMetadata(idx, tdw->name());
             }
@@ -717,6 +717,11 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         // when the file is exported.
         tdw->setMetadata("folder", QVariant());
 
+        // If the waypoint has no "origin" metadata already, then add it
+        // to reflect the file being loaded and time.
+        const int idx = DataIndexer::index("origin");
+        if (tdw->metadata(idx).isNull()) tdw->setMetadata(idx, originId());
+
         folder->addChildItem(tdw);			// add to destination folder
         mCurrentPoint = nullptr;			// finished with temporary
         return (true);
@@ -737,7 +742,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 
     TrackDataItem *item = currentItem();		// find innermost current element
     if (item!=nullptr) item->setMetadata(idx, elementText);
-    else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementText);
+    else if (mWithinMetadata) dataRoot()->setMetadata(idx, elementText);
     else addWarning("unrecognised "+localName.toUpper()+" not expected here");
 
     return (true);

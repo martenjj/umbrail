@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -76,23 +76,18 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         return (false);
     }
 
-    mDataRoot->setMetadata("creator", grp.readEntry("AppName", ""));
+    dataRoot()->setMetadata("creator", grp.readEntry("AppName", ""));
 
     // Set the current map position/zoom from the settings saved
     // in the import file.  The other map settings - home point,
     // overlays and theme - use the global application settings.
     grp = conf.group(GROUP_MAP);
-    mDataRoot->setMetadata("position", grp.readEntry("Current", ""));
-
-    // from Navmarks MainWindow::importFile() in src/mainwindow.cpp
-    QString source = QFileInfo(filePath).baseName();	// generate default source tag
-    source += '_';
-    source += QDateTime::currentDateTime().toString(Qt::ISODate);
+    dataRoot()->setMetadata("position", grp.readEntry("Current", ""));
 
     // Allocate the category map and set it on the root file item.
     // The user of that root item takes ownership of it.
     CategoriesList *catMap = new CategoriesList;
-    mDataRoot->setCategories(catMap);
+    dataRoot()->setCategories(catMap);
 
     // Load the category->colour map from the [Categories] group,
     // which may be needed later to resolve the point colour data for
@@ -156,7 +151,7 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         }
 
         pnt->setMetadata("category", grp.readEntry("Categories", QStringList()));
-        pnt->setMetadata("origin", grp.readEntry("Sources", (QStringList() << source)));
+        pnt->setMetadata("origin", grp.readEntry("Sources", (QStringList() << originId())));
 
         // This will always use the default folder, because none
         // is ever saved in the file.

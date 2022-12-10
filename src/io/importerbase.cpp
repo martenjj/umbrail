@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -141,6 +141,13 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
     // then it is returned to the caller which takes ownership of it.
     mDataRoot = new TrackDataFile;
     mDataRoot->setFileName(file);			// sets name from file's basename
+
+    // Generate the origin ID for any new waypoints that do not have
+    // one already.
+    //
+    // from Navmarks MainWindow::importFile() in src/mainwindow.cpp
+    mOriginId = (file.scheme()=="clipboard" ? "paste" : file.fileName());
+    mOriginId += '_'+QDateTime::currentDateTime().toString(Qt::ISODate);
 
     // Import from the file
     if (!loadFrom(&loadFile))
