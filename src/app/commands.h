@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -40,7 +40,7 @@ class ItemContainer;
 class CommandBase : public QUndoCommand
 {
 public:
-    virtual ~CommandBase()				{}
+    virtual ~CommandBase() = default;
     virtual void undo() override = 0;
     virtual void redo() override = 0;
 
@@ -59,7 +59,7 @@ protected:
 class FilesCommandBase : public CommandBase
 {
 public:
-    virtual ~FilesCommandBase()				{}
+    virtual ~FilesCommandBase() = default;
 
 protected:
     FilesCommandBase(FilesController *fc, QUndoCommand *parent = nullptr)
@@ -102,7 +102,7 @@ private:
 class ChangeItemCommand : public FilesCommandBase
 {
 public:
-    virtual ~ChangeItemCommand()			{}
+    virtual ~ChangeItemCommand() = default;
 
     void setDataItem(TrackDataItem *item)			{ mDataItems.clear(); mDataItems.append(item); }
     void setDataItems(const QList<TrackDataItem *> &items)	{ mDataItems = items; }
@@ -126,7 +126,7 @@ class ChangeItemNameCommand : public ChangeItemCommand
 public:
     ChangeItemNameCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : ChangeItemCommand(fc, parent)			{}
-    virtual ~ChangeItemNameCommand()			{}
+    virtual ~ChangeItemNameCommand() = default;
 
     void setData(const QString &name)			{ mNewName = name; }
 
@@ -147,7 +147,7 @@ class ChangeItemDataCommand : public ChangeItemCommand
 public:
     ChangeItemDataCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : ChangeItemCommand(fc, parent)			{}
-    virtual ~ChangeItemDataCommand()			{}
+    virtual ~ChangeItemDataCommand() = default;
 
     void setData(const QByteArray &key,
                  const QVariant &value)			{ mKey = key; mNewValue = value; }
@@ -218,11 +218,14 @@ public:
     void setData(TrackData::Type type, TrackDataItem *pnt = nullptr);
     void setName(const QString &name)			{ mAddName = name; }
 
+    TrackDataItem *addedItem() const;
+
 private:
     TrackData::Type mType;
     TrackDataItem *mParent;
     ItemContainer *mNewItemContainer;
     QString mAddName;
+    TrackDataItem *mAddedItem;
 };
 
 
@@ -292,7 +295,7 @@ class MovePointsCommand : public FilesCommandBase
 public:
     MovePointsCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : FilesCommandBase(fc, parent)			{}
-    virtual ~MovePointsCommand()			{}
+    virtual ~MovePointsCommand() = default;
 
     void setDataItems(const QList<TrackDataItem *> &items);
     void setData(qreal latOff, qreal lonOff)		{ mLatOff = latOff; mLonOff = lonOff; }
@@ -320,6 +323,8 @@ public:
     void redo() override;
     void undo() override;
 
+    TrackDataWaypoint *addedItem() const;
+
 protected:
     TrackDataFolder *mWaypointFolder;
 
@@ -329,6 +334,7 @@ private:
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
     ItemContainer *mNewWaypointContainer;
+    TrackDataWaypoint *mAddedWaypoint;
 };
 
 
@@ -363,7 +369,7 @@ class AddPhotoCommand : public AddWaypointCommand
 public:
     AddPhotoCommand(FilesController *fc, QUndoCommand *parent = nullptr)
         : AddWaypointCommand(fc, parent)		{}
-    virtual ~AddPhotoCommand()				{}
+    virtual ~AddPhotoCommand() = default;
 
     void setLink(const QUrl &link)			{ mLinkUrl = link; }
     void setTime(const QDateTime &dt)			{ mDateTime = dt; }

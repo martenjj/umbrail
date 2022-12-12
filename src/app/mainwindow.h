@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -66,6 +66,8 @@ public:
     virtual ~MainWindow();
 
     bool loadProject(const QUrl &loadFrom, bool readOnly = false);
+
+    bool isPointsListMode() const;
 
 public slots:               
     void slotStatusMessage(const QString &text);

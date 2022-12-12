@@ -1081,7 +1081,7 @@ default:
     mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
     mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File || selType==TrackData::Folder));
 
-    if (mViewModeAction->isChecked())			// points list view mode
+    if (isPointsListMode())				// in points list view mode?
     {
         mAddWaypointAction->setEnabled(true);		// always allowed in this mode
     }
@@ -1404,4 +1404,10 @@ void MainWindow::setViewMode(MainWindow::ViewMode mode)
     }
 
     slotUpdateActionState();				// action states may be mode-dependent
+}
+
+
+bool MainWindow::isPointsListMode() const
+{
+    return (mViewModeAction->isChecked());
 }

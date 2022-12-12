@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -604,10 +604,13 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
     const int total = urls.count();
     const bool multiple = (total>1);
     FilesController::Status result = FilesController::StatusOk;
-    bool containerCreated = false;
 
     QUndoCommand *cmd = new QUndoCommand();		// parent command
     cmd->setText(i18np("Import Photo", "Import %1 Photos", total));
+
+    // Find a folder to place the resulting waypoint in, but do not
+    // try to create it at this stage if it does not already exist.
+    TrackDataFolder *destFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, model()->rootFileItem());
 
     for (int i = 0; i<total; ++i)
     {
@@ -682,7 +685,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
                 }
                 else
                 {
-                    messageText = xi18nc("@info", "The image file <filename>%1</filename> had no GPS position, and its date/time did not match any points.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
+                    messageText = xi18nc("@info", "The image file <filename>%1</filename> had no GPS position,<nl/>and its date/time did not match any points.<nl/><nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
                 }
             }
         }
@@ -690,7 +693,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         if (!matched)
 #endif
         {
-            if (messageText.isEmpty()) messageText = xi18nc("@info", "The image file <filename>%1</filename> had no GPS position or date/time, or the application is not set to use them.<nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
+            if (messageText.isEmpty()) messageText = xi18nc("@info", "The image file <filename>%1</filename> had no GPS position or date/time,<nl/>or the application is not set to use them.<nl/><nl/>The waypoint will be created at the current map centre.", importFrom.fileName());
             statusText = xi18nc("@info", "Imported <filename>%1</filename> at map centre", importFrom.toDisplayString());
             lat = mapController()->view()->centerLatitude();
             lon = mapController()->view()->centerLongitude();
@@ -722,24 +725,25 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             continue;
         }
 
-        // Find or create a folder to place the resulting waypoint in
-        TrackDataFolder *foundFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, model()->rootFileItem());
-        if (foundFolder==nullptr)			// find where to store point
+        // The destination folder now needs to be immediately created if it does
+        // not already exist, see slotAddWaypoint().  Delayed until now so that we
+        // know that there is a valid and accepted waypoint to create.
+        if (destFolder==nullptr)
         {
-            if (containerCreated) qDebug() << "new folder already added";
-            else
-            {
-                qDebug() << "need to add new folder";
-                AddContainerCommand *cmd1 = new AddContainerCommand(this, cmd);
-                cmd1->setData(TrackData::Folder, model()->rootFileItem());
-                cmd1->setName(PHOTO_FOLDER_NAME);
-                containerCreated = true;
-            }
+            qDebug() << "need to add new folder";
+
+            AddContainerCommand *cmd1 = new AddContainerCommand(this);
+            cmd1->setText(i18n("Create Photo Folder"));
+            cmd1->setName(PHOTO_FOLDER_NAME);
+            cmd1->setData(TrackData::Folder, model()->rootFileItem());
+            executeCommand(cmd1);
+            destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
         }
+        Q_ASSERT(destFolder!=nullptr);
 
         // Create the waypoint
         AddPhotoCommand *cmd2 = new AddPhotoCommand(this, cmd);
-        cmd2->setData(importFrom.fileName(), lat, lon, foundFolder, sourcePoint);
+        cmd2->setData(importFrom.fileName(), lat, lon, destFolder, sourcePoint);
         cmd2->setLink(importFrom);
         cmd2->setTime(dt);
 
@@ -1205,13 +1209,28 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     //   3.	The user may enter the coordinates.
 
     CreatePointDialogue d(false, mainWidget());		// waypoint mode
-    if (!d.canCreate())
+    if (!d.canCreate())					// no folders available to create
     {
-        KMessageBox::error(mainWidget(),
-                           i18n("There are no folders where a waypoint can be created."),
-                           i18n("Cannot Create Waypoint"));
-        return;
+        // For creating a waypoint (but not a routepoint below), if there
+        // is no existing folder where the waypoint can be created then
+        // one is created automatically.  This is to handle the case of
+        // starting from an empty file in points list mode where this may
+        // not be obvious, but for simplicity it also works in tree view mode.
+
+        // Create a default named folder to contain the created waypoint.
+        AddContainerCommand *cmd1 = new AddContainerCommand(this);
+        // This assumes that the folder to be created is at the top level.
+        // Safe to assume this, see StopDetectDialogue::slotCommitResults()
+        // for why.
+        cmd1->setData(TrackData::Folder, model()->rootFileItem());
+        cmd1->setText(i18n("Create Waypoint Folder"));
+        executeCommand(cmd1);
+
+        TrackDataFolder *destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
+        Q_ASSERT(destFolder!=nullptr);			// should now have been created
+        d.setDestinationContainer(destFolder);
     }
+    Q_ASSERT(d.canCreate());				// must be possible now
 
     const QList<TrackDataItem *> items = filesView()->selectedItems();
 
@@ -1246,14 +1265,14 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
 
     qDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
 
-    AddWaypointCommand *cmd = new AddWaypointCommand(this);
+    AddWaypointCommand *cmd2 = new AddWaypointCommand(this);
 
     QObject *sdr = sender();				// may be called directly
-    if (qobject_cast<MapView *>(sdr)!=nullptr) cmd->setText(i18n("Create Waypoint on Map"));
-    else cmd->setSenderText(sdr);
+    if (qobject_cast<MapView *>(sdr)!=nullptr) cmd2->setText(i18n("Create Waypoint on Map"));
+    else cmd2->setSenderText(sdr);
 
-    cmd->setData(name, lat, lon, destFolder, selPoint);
-    executeCommand(cmd);
+    cmd2->setData(name, lat, lon, destFolder, selPoint);
+    executeCommand(cmd2);
 }
 
 

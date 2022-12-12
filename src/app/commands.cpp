@@ -627,14 +627,10 @@ void MergeSegmentsCommand::undo()
 //  Add Container (track, route or folder)				//
 //									//
 //  We create the new container, and store it when required.  The	//
-//  parent container is only referred to, and can be nullptr meaning	//
+//  parent container is only referred to, and can be NULL meaning	//
 //  the top level.							//
 //									//
 //////////////////////////////////////////////////////////////////////////
-
-// TODO: not thread safe!
-static TrackDataFolder *lastCreatedFolder = nullptr;
-
 
 AddContainerCommand::AddContainerCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
@@ -642,6 +638,7 @@ AddContainerCommand::AddContainerCommand(FilesController *fc, QUndoCommand *pare
     mNewItemContainer = nullptr;
     mParent = nullptr;
     mType = TrackData::None;
+    mAddedItem = nullptr;
 }
 
 
@@ -667,21 +664,16 @@ void AddContainerCommand::redo()
     {
         mNewItemContainer = new ItemContainer;
 
-        TrackDataItem *addedItem = nullptr;
-        if (mType==TrackData::Track) addedItem = new TrackDataTrack;
-        else if (mType==TrackData::Route) addedItem = new TrackDataRoute;
-        else if (mType==TrackData::Folder)
-        {
-            lastCreatedFolder = new TrackDataFolder;
-            addedItem = lastCreatedFolder;
-        }
+        if (mType==TrackData::Track) mAddedItem = new TrackDataTrack;
+        else if (mType==TrackData::Route) mAddedItem = new TrackDataRoute;
+        else if (mType==TrackData::Folder) mAddedItem = new TrackDataFolder;
 
-        Q_ASSERT(addedItem!=nullptr);
-        if (!mAddName.isEmpty()) addedItem->setName(mAddName, true);
-        addedItem->setMetadata("creator", QApplication::applicationDisplayName());
+        Q_ASSERT(mAddedItem!=nullptr);
+        if (!mAddName.isEmpty()) mAddedItem->setName(mAddName, true);
+        mAddedItem->setMetadata("creator", QApplication::applicationDisplayName());
 
-        qDebug() << "created" << addedItem->name();
-        mNewItemContainer->addChildItem(addedItem);
+        qDebug() << "created" << mAddedItem->name();
+        mNewItemContainer->addChildItem(mAddedItem);
     }
 
     Q_ASSERT(mNewItemContainer->childCount()==1);
@@ -709,6 +701,16 @@ void AddContainerCommand::undo()
     mNewItemContainer->addChildItem(newItem);
 
     model()->endLayoutChange();
+}
+
+
+// This is a direct pointer to the item, so it must not be reparented
+// or retained outside of the lifetime of this command object.  However,
+// undo/redo will work even if this item is immediately modified after
+// the command is first executed.
+TrackDataItem *AddContainerCommand::addedItem() const
+{
+    return (mAddedItem);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1143,24 +1145,24 @@ void AddWaypointCommand::redo()
     {
         mNewWaypointContainer = new ItemContainer;
 
-        TrackDataWaypoint *newWaypoint = new TrackDataWaypoint;
-        if (!mWaypointName.isEmpty()) newWaypoint->setName(mWaypointName, true);
-        newWaypoint->setLatLong(mLatitude, mLongitude);
+        mAddedWaypoint = new TrackDataWaypoint;
+        if (!mWaypointName.isEmpty()) mAddedWaypoint->setName(mWaypointName, true);
+        mAddedWaypoint->setLatLong(mLatitude, mLongitude);
         if (mSourcePoint!=nullptr)
         {
             int idx = DataIndexer::index("ele");
-            newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
+            mAddedWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
             idx = DataIndexer::index("time");
-            newWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
+            mAddedWaypoint->setMetadata(idx, mSourcePoint->metadata(idx));
 
             // Only set the "source" metadata if the mSourcePoint point has
             // a name.  See StopDetectDialogue::slotCommitResults() for the
             // situation where it may not.
             const QString sourceName = mSourcePoint->name();
-            if (!sourceName.isEmpty()) newWaypoint->setMetadata("source", sourceName);
+            if (!sourceName.isEmpty()) mAddedWaypoint->setMetadata("source", sourceName);
 
             const QVariant stopData = mSourcePoint->metadata("stop");
-            if (!stopData.isNull()) newWaypoint->setMetadata("stop", stopData);
+            if (!stopData.isNull()) mAddedWaypoint->setMetadata("stop", stopData);
         }
 
         // Always set the "origin" metadata of the added point to reflect that
@@ -1168,9 +1170,9 @@ void AddWaypointCommand::redo()
         //
         // String format from NavMarks PointsController::slotNewPoint()
         const QString orgData = "manual_"+QDateTime::currentDateTime().toString(Qt::ISODate);
-        newWaypoint->setMetadata("origin", orgData);
+        mAddedWaypoint->setMetadata("origin", orgData);
 
-        mNewWaypointContainer->addChildItem(newWaypoint);
+        mNewWaypointContainer->addChildItem(mAddedWaypoint);
     }
 
     Q_ASSERT(mNewWaypointContainer->childCount()==1);
@@ -1199,6 +1201,13 @@ void AddWaypointCommand::undo()
     model()->endLayoutChange();
     controller()->filesView()->selectItem(mWaypointFolder);
     controller()->doUpdateMap();
+}
+
+
+// See AddContainerCommand::addedItem() for more information.
+TrackDataWaypoint *AddWaypointCommand::addedItem() const
+{
+    return (mAddedWaypoint);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1295,18 +1304,15 @@ void AddRoutepointCommand::undo()
 
 void AddPhotoCommand::redo()
 {
-    if (mWaypointFolder==nullptr)			// no destination folder set
-    {
-        mWaypointFolder = lastCreatedFolder;		// use the one just created
-        Q_ASSERT(mWaypointFolder!=nullptr);
-    }
-
     AddWaypointCommand::redo();				// add the basic waypoint
 
-    TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mWaypointFolder->childAt(mWaypointFolder->childCount()-1));
+    TrackDataWaypoint *tdw = AddWaypointCommand::addedItem();
     Q_ASSERT(tdw!=nullptr);				// retrieve the just added point
     if (mLinkUrl.isValid()) tdw->setMetadata("link", mLinkUrl.toDisplayString());
     if (mDateTime.isValid()) tdw->setMetadata("time", mDateTime);
+							// note added as a photo
+    const QString orgData = "photo_"+QDateTime::currentDateTime().toString(Qt::ISODate);
+    tdw->setMetadata("origin", orgData);
 }
 
 

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -189,6 +189,7 @@ void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
     const QModelIndex idx = trackModel->mapFromSource(filesModel->indexForItem(item));
     qDebug() << item->name() << "-> idx" << idx;
     if (idx.isValid()) mContainerList->setCurrentIndex(idx);
+    mCanCreate = true;
 }
 
 

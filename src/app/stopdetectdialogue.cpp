@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -632,9 +632,10 @@ void StopDetectDialogue::slotCommitResults()
         // but unfortunately it is necessary because we need to
         // specify the destination folder for adding the waypoints.
         executeCommand(cmd1);
-        destFolder = TrackData::findFolderByPath(folderPath, root);
-        Q_ASSERT(destFolder!=nullptr);			// should now have been created
+
+        destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
     }
+    Q_ASSERT(destFolder!=nullptr);			// should now exist in any case
 
     // Create the waypoints
     for (int i = 0; i<mResultsList->count(); ++i)
@@ -643,22 +644,22 @@ void StopDetectDialogue::slotCommitResults()
         Qt::CheckState check = static_cast<Qt::CheckState>(item->data(Qt::CheckStateRole).toInt());
         if (check!=Qt::Checked) continue;		// include this in results?
 
-        // The source waypoint, whose metadata will be copied to the new point by
-        // in AddWaypointCommand::redo().  Its name does not actually set the added
-        // stop waypoint name - that is the 'sourceName' parameter to setData()
-        // below - but its name does set the "source" metadata of the added point.
-        // Therefore, set the name from the corresponding data of this point,
-        // regardless of whether it is empty or not, and AddWaypointCommand::redo()
-        // will set the "source" of the added point if it is not empty.
+        // The source waypoint, whose metadata will be copied to the new point
+        // by AddWaypointCommand::redo().
         TrackDataWaypoint *tdw = const_cast<TrackDataWaypoint *>(mResultPoints[i]);
         const QString sourceName = tdw->name();
 
+        // Its name does not actually set the added stop waypoint name - that
+        // is the 'sourceName' parameter to setData() below - but it does set
+        // the "source" metadata of the added point.  Therefore, set the name
+        // from the corresponding data of this point, regardless of whether it
+        // is empty or not, and AddWaypointCommand::redo() will set the "source"
+        // of the added point if it is not empty.
         const QString sources = tdw->metadata("source").toString();
         tdw->setName(sources, true);			// present only for merged points
 
         AddWaypointCommand *cmd2 = new AddWaypointCommand(filesController(), cmd);
-        cmd2->setData(sourceName, tdw->latitude(), tdw->longitude(),
-                      dynamic_cast<TrackDataFolder *>(destFolder), tdw);
+        cmd2->setData(sourceName, tdw->latitude(), tdw->longitude(), destFolder, tdw);
     }
 
     if (cmd->childCount()==0)				// anything to actually do?
