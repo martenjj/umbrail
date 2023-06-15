@@ -398,7 +398,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     l->setBuddy(mScaleRangeCombo);
     gl->addWidget(mScaleRangeCombo, 2, col);
 
-    QPushButton *waypointSelectButton = new QPushButton(i18n("Show..."), this);
+    QPushButton *waypointSelectButton = new QPushButton(QIcon::fromTheme("visibility"), i18n("Show..."), this);
     connect(waypointSelectButton, &QAbstractButton::clicked, this, &ProfileWidget::slotSelectWaypoints);
     gl->addWidget(waypointSelectButton, 3, col);
 
@@ -744,7 +744,9 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
 #endif
         const TrackDataAbstractPoint *closestPoint = nullptr;
         double closestDist = FLT_MAX;
-        int closestIndex;
+        // Should always get set because of the above,
+        // but initialise to avoid a compiler warning.
+        int closestIndex = -1;
 
         for (int i = 0; i<mPoints.count(); ++i)
         {

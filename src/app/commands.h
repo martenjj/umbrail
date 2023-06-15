@@ -230,11 +230,11 @@ private:
 
 
 
-class AddPointCommand : public FilesCommandBase
+class AddTrackpointCommand : public FilesCommandBase
 {
 public:
-    AddPointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
-    virtual ~AddPointCommand();
+    AddTrackpointCommand(FilesController *fc, QUndoCommand *parent = nullptr);
+    virtual ~AddTrackpointCommand();
 
     void redo() override;
     void undo() override;

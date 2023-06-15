@@ -164,7 +164,7 @@ private:
     QAction *mClearSelectAction;
     QAction *mAddTrackAction;
     QAction *mAddFolderAction;
-    QAction *mAddPointAction;
+    QAction *mAddTrackpointAction;
     QAction *mAddWaypointAction;
     QAction *mAddRoutepointAction;
     QAction *mAddRouteAction;

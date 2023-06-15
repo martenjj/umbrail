@@ -20,7 +20,7 @@
       <Action name="edit_add_track"/>
       <Action name="edit_add_route"/>
       <Action name="edit_add_folder"/>
-      <Action name="edit_add_point"/>
+      <Action name="edit_add_trackpoint"/>
       <Action name="edit_add_waypoint"/>
       <Action name="edit_add_routepoint"/>
       <Action name="edit_delete_track"/>

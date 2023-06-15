@@ -715,14 +715,14 @@ TrackDataItem *AddContainerCommand::addedItem() const
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Add Point								//
+//  Add Track Point							//
 //									//
 //  We create the new point and store it.  We only refer to the point	//
 //  identifying the add position.					//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-AddPointCommand::AddPointCommand(FilesController *fc, QUndoCommand *parent)
+AddTrackpointCommand::AddTrackpointCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
     mNewPointContainer = nullptr;
@@ -730,20 +730,20 @@ AddPointCommand::AddPointCommand(FilesController *fc, QUndoCommand *parent)
 }
 
 
-AddPointCommand::~AddPointCommand()
+AddTrackpointCommand::~AddTrackpointCommand()
 {
     delete mNewPointContainer;
 }
 
 
-void AddPointCommand::setData(TrackDataItem *item)
+void AddTrackpointCommand::setData(TrackDataItem *item)
 {
     mAtPoint = dynamic_cast<TrackDataTrackpoint *>(item);
     Q_ASSERT(mAtPoint!=nullptr);
 }
 
 
-void AddPointCommand::redo()
+void AddTrackpointCommand::redo()
 {
     Q_ASSERT(mAtPoint!=nullptr);
 
@@ -782,7 +782,7 @@ void AddPointCommand::redo()
 }
 
 
-void AddPointCommand::undo()
+void AddTrackpointCommand::undo()
 {
     Q_ASSERT(mAtPoint!=nullptr);
     Q_ASSERT(mNewPointContainer->childCount()==0);

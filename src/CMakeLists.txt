@@ -106,14 +106,29 @@ set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and dat
 
 add_definitions("-DQT_USE_FAST_CONCATENATION")
 add_definitions("-DQT_USE_FAST_OPERATOR_PLUS")
-add_definitions("-DQT_NO_CAST_FROM_BYTEARRAY")
 add_definitions("-DQT_NO_URL_CAST_FROM_STRING")
+add_definitions("-DQT_NO_CAST_FROM_BYTEARRAY")
 add_definitions("-DQT_NO_CAST_TO_ASCII")
 add_definitions("-DQT_NO_NARROWING_CONVERSIONS_IN_CONNECT")
 add_definitions("-DQT_DEPRECATED_WARNINGS")
 
 remove_definitions("-DQT_NO_CAST_FROM_ASCII")
 remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
+remove_definitions("-DQT_NO_KEYWORDS")
+
+# Using the QStringBuilder may well improvce performance, but it means that
+# expressions such as FunctionExpectingQString(FunctionReturningQByteArray()+"foo")
+# fail to compile:
+#
+# src/io/gpxexporter.cpp:522: error: no matching function for call
+#    to 'QXmlStreamWriter::writeStartElement(QStringBuilder<QByteArray, char [8]>)'
+# qxmlstream.h:517: note: candidate 'void QXmlStreamWriter::writeStartElement(const QString&)'
+# qxmlstream.h:517: note: no known conversion for argument 1
+#    from 'QStringBuilder<QByteArray, char [8]>' to 'const QString&'
+# qxmlstream.h:518: note: candidate 'void QXmlStreamWriter::writeStartElement(const QString&,
+#    const QString&)'
+# qxmlstream.h:518: note: candidate expects 2 arguments, 1 provided
+remove_definitions("-DQT_USE_QSTRINGBUILDER")
 
 #########################################################################
 #									#
