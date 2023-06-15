@@ -137,12 +137,13 @@ void MapController::slotSetHome()
     double lat = view()->centerLatitude();
     double lng = view()->centerLongitude();
 
-    if (KMessageBox::questionYesNo(mainWidget(),
-                                   xi18nc("@info", "Set home position to <emphasis strong=\"1\">%1</emphasis>?", TrackData::formattedLatLong(lat, lng)),
-                                   i18n("Set Home Position?"),
-                                   KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
-                                   KStandardGuiItem::cancel(),
-                                   "setHome")!=KMessageBox::Yes) return;
+    if (KMessageBox::questionTwoActions(mainWidget(),
+                                        xi18nc("@info", "Set home position to <emphasis strong=\"1\">%1</emphasis>?", TrackData::formattedLatLong(lat, lng)),
+                                        i18n("Set Home Position?"),
+                                        // KStandardGuiItem::yes() used same icon as ok()
+                                        KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
+                                        KStandardGuiItem::cancel(),
+                                        "setHome")!=KMessageBox::Yes) return;
     mHomeLat = lat;
     mHomeLong = lng;
     // TODO: do this here?
@@ -157,12 +158,12 @@ void MapController::slotSetZoom()
 {
     int zoom = view()->zoom();
 
-    if (KMessageBox::questionYesNo(mainWidget(),
-                                   xi18nc("@info", "Set standard zoom to <emphasis strong=\"1\">%1</emphasis>?", zoom),
-                                   i18n("Set Standard Zoom?"),
-                                   KGuiItem(i18n("Set"), KStandardGuiItem::yes().icon()),
-                                   KStandardGuiItem::cancel(),
-                                   "setZoom")!=KMessageBox::Yes) return;
+    if (KMessageBox::questionTwoActions(mainWidget(),
+                                        xi18nc("@info", "Set standard zoom to <emphasis strong=\"1\">%1</emphasis>?", zoom),
+                                        i18n("Set Standard Zoom?"),
+                                        KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
+                                        KStandardGuiItem::cancel(),
+                                        "setZoom")!=KMessageBox::Yes) return;
     mHomeZoom = zoom;
     emit statusMessage(i18n("Standard zoom set to %1", mHomeZoom));
     emit modified();

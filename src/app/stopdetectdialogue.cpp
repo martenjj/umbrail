@@ -487,25 +487,25 @@ void StopDetectDialogue::slotMergeStops()
         // Check that the stops to be merged are not too far apart in distance.
         if (!withinDistance(firstPoint, thisLat, thisLon, mergeMaxDistance))
         {
-            if (KMessageBox::questionYesNo(this,
-                                           xi18nc("@info", "The stops <emphasis strong=\"1\">%1</emphasis> and <emphasis strong=\"1\">%2</emphasis><nl/> are %3&nbsp;metres apart.<nl/><nl/>Really merge the stops?",
-                                                  firstPoint->name(), thisPoint->name(),
-                                                  qRound(Units::internalToLength(firstPoint->distanceTo(thisPoint), Units::LengthMetres))),
-                                           i18n("Merge Distance"),
-                                           KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")),
-                                           KStandardGuiItem::cancel())!=KMessageBox::Yes) return;
+            if (KMessageBox::questionTwoActions(this,
+                                                xi18nc("@info", "The stops <emphasis strong=\"1\">%1</emphasis> and <emphasis strong=\"1\">%2</emphasis><nl/> are %3&nbsp;metres apart.<nl/><nl/>Really merge the stops?",
+                                                       firstPoint->name(), thisPoint->name(),
+                                                       qRound(Units::internalToLength(firstPoint->distanceTo(thisPoint), Units::LengthMetres))),
+                                                i18n("Merge Distance"),
+                                                KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")),
+                                                KStandardGuiItem::cancel())!=KMessageBox::PrimaryAction) return;
         }
 
         // Check that there is not too long a gap between the stops to be merged.
         if ((thisStartTime-endTime)>mergeMaxTime)
         {
-            if (KMessageBox::questionYesNo(this,
-                                           xi18nc("@info", "The stops <emphasis strong=\"1\">%1</emphasis> and <emphasis strong=\"1\">%2</emphasis><nl/> are separated by %3&nbsp;seconds.<nl/><nl/>Really merge the stops?",
-                                                  firstPoint->name(), thisPoint->name(),
-                                                  thisStartTime-endTime),
-                                           i18n("Merge Time"),
-                                           KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")),
-                                           KStandardGuiItem::cancel())!=KMessageBox::Yes) return;
+            if (KMessageBox::questionTwoActions(this,
+                                                xi18nc("@info", "The stops <emphasis strong=\"1\">%1</emphasis> and <emphasis strong=\"1\">%2</emphasis><nl/> are separated by %3&nbsp;seconds.<nl/><nl/>Really merge the stops?",
+                                                       firstPoint->name(), thisPoint->name(),
+                                                       thisStartTime-endTime),
+                                                i18n("Merge Time"),
+                                                KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")),
+                                                KStandardGuiItem::cancel())!=KMessageBox::PrimaryAction) return;
         }
 
         avgLat += thisLat;				// sum for averaging later

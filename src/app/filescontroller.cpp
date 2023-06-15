@@ -675,23 +675,24 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
         if (multiple)
         {
-            q = KMessageBox::questionYesNoCancel(mainWidget(),
-                                                 messageText,
-                                                 i18n("Create Waypoint?"),
-                                                 KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
-                                                 KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()),
-                                                 KGuiItem(i18nc("@action:button", "Cancel All"), KStandardGuiItem::cancel().icon()));
+            q = KMessageBox::questionTwoActionsCancel(mainWidget(),
+                                                      messageText,
+                                                      i18n("Create Waypoint?"),
+                                                      KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::ok().icon()),
+                                                      KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::cancel().icon()),
+                                                      KGuiItem(i18nc("@action:button", "Cancel All"), KStandardGuiItem::stop().icon()));
         }
         else
         {
-            q = KMessageBox::questionYesNo(mainWidget(),
-                                           messageText,
-                                           i18n("Create Waypoint?"),
-                                           KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::yes().icon()),
-                                           KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::no().icon()));
+            q = KMessageBox::questionTwoActions(mainWidget(),
+                                                messageText,
+                                                i18n("Create Waypoint?"),
+                                                KGuiItem(i18nc("@action:button", "Accept"), KStandardGuiItem::ok().icon()),
+                                                // KStandardGuiItem::no() used same icon as cancel()
+                                                KGuiItem(i18nc("@action:button", "Reject"), KStandardGuiItem::cancel().icon()));
         }
         if (q==KMessageBox::Cancel) return (FilesController::StatusCancelled);
-        if (q==KMessageBox::No)
+        if (q==KMessageBox::SecondaryAction)		// "Reject"
         {
             if (result==FilesController::StatusOk) result = FilesController::StatusFailed;
             continue;
@@ -816,16 +817,16 @@ void FilesController::slotCheckTimeZone()
     bool notAgain = fileWarningIgnored(file, "timezone");
     if (notAgain) return;				// see if ignored for this file
 
-    KMessageBox::ButtonCode but = KMessageBox::questionYesNoCancel(mainWidget(),
+    KMessageBox::ButtonCode but = KMessageBox::questionTwoActionsCancel(mainWidget(),
         i18n("The file does not have a time zone set.\nDo you want to set or look up one?"),
 									// text
-        i18n("No Time Zone"),					 	// caption
-        KStandardGuiItem::yes(),				 	// buttonYes
-        KGuiItem(i18n("Never"), QIcon::fromTheme("edit-clear-list")), 	// buttonNo
-        KStandardGuiItem::no());					// buttonCancel
+        i18n("No Time Zone"),					 	// title
+        KGuiItem(i18n("Yes"), KStandardGuiItem::ok().icon()),		// primaryAction
+        KGuiItem(i18n("Never"), QIcon::fromTheme("edit-clear-list")), 	// secondaryAction
+        KGuiItem(i18n("No"), KStandardGuiItem::cancel().icon()));	// cancelAction
 
-    if (but==KMessageBox::No) setFileWarningIgnored(file, "timezone");
-    if (but!=KMessageBox::Yes) return;
+    if (but==KMessageBox::SecondaryAction) setFileWarningIgnored(file, "timezone");
+    if (but!=KMessageBox::PrimaryAction) return;
 
     slotSetTimeZone();					// set via file properties
 }

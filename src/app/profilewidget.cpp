@@ -743,7 +743,9 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
 #endif
         const TrackDataAbstractPoint *closestPoint = nullptr;
         double closestDist = FLT_MAX;
-        int closestIndex;
+        // Should always get set because of the above,
+        // but initialise to avoid a compiler warning.
+        int closestIndex = -1;
 
         for (int i = 0; i<mPoints.count(); ++i)
         {
