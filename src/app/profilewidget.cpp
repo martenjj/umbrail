@@ -397,7 +397,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     l->setBuddy(mScaleRangeCombo);
     gl->addWidget(mScaleRangeCombo, 2, col);
 
-    QPushButton *waypointSelectButton = new QPushButton(i18n("Show..."), this);
+    QPushButton *waypointSelectButton = new QPushButton(QIcon::fromTheme("visibility"), i18n("Show..."), this);
     connect(waypointSelectButton, &QAbstractButton::clicked, this, &ProfileWidget::slotSelectWaypoints);
     gl->addWidget(waypointSelectButton, 3, col);
 
