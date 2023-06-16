@@ -82,7 +82,11 @@ static const int sbModified = 0;
 
 static const char notUsefulOverlays[] = "elevationprofile,GpsInfo,routing,speedometer";
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Constructor, destructor and actions					//
+//									//
+//////////////////////////////////////////////////////////////////////////
  
 MainWindow::MainWindow(QWidget *pnt)
     : KXmlGuiWindow(pnt),
@@ -525,6 +529,11 @@ void MainWindow::setupActions()
     setAutoSaveSettings();
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Status bar								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MainWindow::setupStatusBar()
 {
@@ -545,6 +554,24 @@ void MainWindow::setupStatusBar()
 }
 
 
+void MainWindow::slotStatusMessage(const QString &text)
+{
+    mStatusMessage->setText(text);
+    mStatusMessage->repaint();				// show new message immediately
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Creating and closing windows					//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+void MainWindow::slotNewProject()
+{
+    MainWindow *w = new MainWindow(nullptr);
+    w->filesController()->initNew();
+    w->show();
+}
 
 
 void MainWindow::closeEvent(QCloseEvent *ev)
@@ -557,8 +584,6 @@ void MainWindow::closeEvent(QCloseEvent *ev)
 
     KMainWindow::closeEvent(ev);
 }
-
-
 
 
 bool MainWindow::queryClose()
@@ -585,6 +610,11 @@ default:						// "Cancel"
 
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Window properties							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 // TODO: only when last window closed
 // or to unique window/file ID
@@ -619,8 +649,23 @@ void MainWindow::readProperties(const KConfigGroup &grp)
     setViewMode(static_cast<MainWindow::ViewMode>(viewMode));
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Saving and export							//
+//									//
+//  Error reporting and status messages are done in			//
+//  FilesController::exportFile()					//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
-// Error reporting and status messages are done in FilesController::exportFile()
+//  "Save"			"Save As"	"Save Copy As"		"Export"
+//    |				   |		      |			   |
+//  slotSaveProject() --------> slotSaveAs()	slotSaveCopy()		slotExportFile()
+//    |                             |		      |			   |
+//  save() <------------------------+ <---------------+			(not implemented)
+//    |
+//  FilesController::exportFile()
+
 bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
 {
     qDebug() << "to" << to;
@@ -641,97 +686,6 @@ bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
 
     return (filesController()->exportFile(to, tdf, options)==FilesController::StatusOk);
 }
-
-
-// Error reporting and status messages are done in FilesController::importFile()
-FilesController::Status MainWindow::load(const QUrl &from)
-{
-    qDebug() << "from" << from;
-    if (!from.isValid()) return (FilesController::StatusFailed);
-
-    FilesController::Status status = filesController()->importFile(from);
-    if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
-
-    TrackDataFile *tdf = filesController()->model()->rootFileItem();
-    if (tdf!=nullptr)
-    {
-        QVariant s = tdf->metadata("position");
-        qDebug() << "pos metadata" << s;
-        QSignalBlocker block(mapController()->view());	// no status bar update from zooming
-        if (!s.isNull()) mapController()->view()->setCurrentPosition(s.toString());
-        else mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
-
-        s = tdf->metadata("viewmode");
-        qDebug() << "view mode metadata" << s;
-        if (!s.isNull()) setViewMode(s.toString()=="list" ? MainWindow::ViewTabs : MainWindow::ViewTree);
-    }
-
-    filesController()->filesView()->expandToDepth(1);	// expand to show segments
-    if (Settings::fileCheckTimezone())			// check time zone is set
-    {
-        QTimer::singleShot(0, filesController(), &FilesController::slotCheckTimeZone);
-    }
-    return (status);
-}
-
-
-void MainWindow::slotStatusMessage(const QString &text)
-{
-    mStatusMessage->setText(text);
-    mStatusMessage->repaint();				// show new message immediately
-}
-
-
-void MainWindow::slotNewProject()
-{
-    MainWindow *w = new MainWindow(nullptr);
-    w->filesController()->initNew();
-    w->show();
-}
-
-
-void MainWindow::slotOpenProject()
-{
-    RecentSaver saver("project");
-    QUrl file = QFileDialog::getOpenFileUrl(this,					// parent
-                                            i18n("Open Tracks File"),			// caption
-                                            saver.recentUrl(),				// dir
-                                            FilesController::allProjectFilters(true),	// filter
-                                            nullptr,					// selectedFilter,
-                                            QFileDialog::Options(),			// options
-                                            QStringList());				// supportedSchemes
-
-    if (!file.isValid()) return;			// didn't get a file name
-    saver.save(file);
-
-    if (filesController()->model()->isEmpty()) loadProject(file);
-    else
-    {
-        MainWindow *w = new MainWindow(nullptr);
-        const bool ok = w->loadProject(file);
-        if (ok) w->show();
-        else w->deleteLater();
-    }
-}
-
-
-bool MainWindow::loadProject(const QUrl &loadFrom, bool readOnly)
-{
-    if (!loadFrom.isValid()) return (false);
-    qDebug() << "from" << loadFrom << "readonly?" << readOnly;
-
-    FilesController::Status status = load(loadFrom);	// load in data file
-    if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (false);
-
-    setFileName(loadFrom);				// record file name
-    mUndoStack->clear();				// clear undo history
-    slotSetModified(status==FilesController::StatusResave);
-							// ensure window title updated
-    setReadOnly(readOnly);				// record read-only state
-    mReadOnlyAction->setChecked(isReadOnly());		// set state in GUI
-    return (true);
-}
-
 
 
 void MainWindow::slotSaveProject()
@@ -793,6 +747,102 @@ void MainWindow::slotSaveCopy()
     save(file, ImporterExporterBase::NoOption);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Loading and import							//
+//									//
+//  Error reporting and status messages are done in			//
+//  FilesController::importFile()					//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+// "Open"			"Import"
+//   |				   |
+// slotOpenProject()		slotImportFile()
+//   |                             |
+// loadProject()                   |
+//   |                             |
+// load()                          |
+//   |				   |
+//   + <---------------------------+
+//   |
+// FilesController::importFile()
+
+FilesController::Status MainWindow::load(const QUrl &from)
+{
+    qDebug() << "from" << from;
+    if (!from.isValid()) return (FilesController::StatusFailed);
+
+    FilesController::Status status = filesController()->importFile(from);
+    if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
+
+    TrackDataFile *tdf = filesController()->model()->rootFileItem();
+    if (tdf!=nullptr)
+    {
+        QVariant s = tdf->metadata("position");
+        qDebug() << "pos metadata" << s;
+        QSignalBlocker block(mapController()->view());	// no status bar update from zooming
+        if (!s.isNull()) mapController()->view()->setCurrentPosition(s.toString());
+        else mapController()->gotoSelection(QList<TrackDataItem *>() << tdf);
+
+        s = tdf->metadata("viewmode");
+        qDebug() << "view mode metadata" << s;
+        if (!s.isNull()) setViewMode(s.toString()=="list" ? MainWindow::ViewTabs : MainWindow::ViewTree);
+    }
+
+    filesController()->filesView()->expandToDepth(1);	// expand to show segments
+    if (Settings::fileCheckTimezone())			// check time zone is set
+    {
+        QTimer::singleShot(0, filesController(), &FilesController::slotCheckTimeZone);
+    }
+    return (status);
+}
+
+
+void MainWindow::slotOpenProject()
+{
+    RecentSaver saver("project");
+    QUrl file = QFileDialog::getOpenFileUrl(this,					// parent
+                                            i18n("Open Tracks File"),			// caption
+                                            saver.recentUrl(),				// dir
+                                            FilesController::allProjectFilters(true),	// filter
+                                            nullptr,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList());				// supportedSchemes
+
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
+
+    if (filesController()->model()->isEmpty()) loadProject(file);
+    else
+    {
+        MainWindow *w = new MainWindow(nullptr);
+        const bool ok = w->loadProject(file);
+        if (ok) w->show();
+        else w->deleteLater();
+    }
+}
+
+
+bool MainWindow::loadProject(const QUrl &loadFrom, bool readOnly)
+{
+    if (!loadFrom.isValid()) return (false);
+    qDebug() << "from" << loadFrom << "readonly?" << readOnly;
+
+    FilesController::Status status = load(loadFrom);	// load in data file
+    if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (false);
+
+    setFileName(loadFrom);				// record file name
+    mUndoStack->clear();				// clear undo history
+    slotSetModified(status==FilesController::StatusResave);
+							// ensure window title updated
+    setReadOnly(readOnly);				// record read-only state
+    mReadOnlyAction->setChecked(isReadOnly());		// set state in GUI
+    return (true);
+}
+
+
+
 
 void MainWindow::slotImportFile()
 {
@@ -846,18 +896,11 @@ void MainWindow::slotImportPhoto()
 }
 
 
-void MainWindow::slotSetModified(bool mod)
-{
-    setModified(mod);
-    mSaveProjectAction->setEnabled(mod && hasFileName());
-    mModifiedIndicator->setEnabled(mod);
-    setWindowTitle(documentName()+" [*]");
-    setWindowModified(mod);
-
-    mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
-    mSaveProjectCopyAction->setEnabled(!filesController()->model()->isEmpty());
-}
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Action states							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MainWindow::slotUpdateActionState()
 {
@@ -1136,6 +1179,24 @@ default:
     mSelectedContainer = selectedContainer;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Modification and undo						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+void MainWindow::slotSetModified(bool mod)
+{
+    setModified(mod);
+    mSaveProjectAction->setEnabled(mod && hasFileName());
+    mModifiedIndicator->setEnabled(mod);
+    setWindowTitle(documentName()+" [*]");
+    setWindowModified(mod);
+
+    mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
+    mSaveProjectCopyAction->setEnabled(!filesController()->model()->isEmpty());
+}
+
 
 void MainWindow::slotCanUndoChanged(bool can)
 {
@@ -1143,21 +1204,25 @@ void MainWindow::slotCanUndoChanged(bool can)
     mUndoAction->setEnabled(can && !isReadOnly());
 }
 
+
 void MainWindow::slotCanRedoChanged(bool can)
 {
     qDebug() << can;
     mRedoAction->setEnabled(can && !isReadOnly());
 }
 
+
 void MainWindow::slotUndoTextChanged(const QString &text)
 {
     mUndoAction->setText(text.isEmpty() ? mUndoText : i18n("%2: %1", text, mUndoText));
 }
 
+
 void MainWindow::slotRedoTextChanged(const QString &text)
 {
     mRedoAction->setText(text.isEmpty() ? mRedoText : i18n("%2: %1", text, mRedoText));
 }
+
 
 void MainWindow::slotCleanUndoChanged(bool clean)
 {
@@ -1165,6 +1230,18 @@ void MainWindow::slotCleanUndoChanged(bool clean)
     slotSetModified(!clean);
 }
 
+
+void MainWindow::slotExecuteCommand(QUndoCommand *cmd)
+{
+    if (mUndoStack!=nullptr) mUndoStack->push(cmd);	// do via undo system
+    else { cmd->redo(); delete cmd; }			// do directly (fallback)
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Miscellaneous slots and actions					//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MainWindow::slotMapZoomChanged(bool canZoomIn, bool canZoomOut)
 {
@@ -1257,12 +1334,46 @@ void MainWindow::slotSaveMedia()
 }
 
 
-void MainWindow::slotExecuteCommand(QUndoCommand *cmd)
+void MainWindow::slotTrackStopDetect()
 {
-    if (mUndoStack!=nullptr) mUndoStack->push(cmd);	// do via undo system
-    else { cmd->redo(); delete cmd; }			// do directly (fallback)
+    StopDetectDialogue *d = new StopDetectDialogue(this);
+    d->show();
 }
 
+
+void MainWindow::slotResetAndCancel()
+{
+    mapController()->view()->cancelDrag();
+    filesController()->filesView()->clearSelection();
+}
+
+
+void MainWindow::slotReadOnly(bool on)
+{
+    qDebug() << on;
+    setReadOnly(on);
+
+    slotUpdateActionState();
+    mPhotoAction->setEnabled(!on);
+    mImportAction->setEnabled(!on);
+
+    // Update these to reflect the current state,
+    // overriden if the file is read only.
+    slotCanUndoChanged(mUndoStack->canUndo());
+    slotCanRedoChanged(mUndoStack->canRedo());
+}
+
+
+void MainWindow::openExternalMap(MapBrowser::MapProvider map)
+{
+    mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Drag and drop							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *ev)
 {
@@ -1318,6 +1429,11 @@ void MainWindow::dropEvent(QDropEvent *ev)
     if (acceptMimeData(mimeData)) ev->accept();
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Copy/paste								//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MainWindow::slotCopy()
 {
@@ -1352,42 +1468,11 @@ void MainWindow::slotUpdatePasteState()
     mPasteAction->setEnabled(enable && !isReadOnly());
 }
 
-
-void MainWindow::slotTrackStopDetect()
-{
-    StopDetectDialogue *d = new StopDetectDialogue(this);
-    d->show();
-}
-
-
-void MainWindow::slotResetAndCancel()
-{
-    mapController()->view()->cancelDrag();
-    filesController()->filesView()->clearSelection();
-}
-
-
-void MainWindow::slotReadOnly(bool on)
-{
-    qDebug() << on;
-    setReadOnly(on);
-
-    slotUpdateActionState();
-    mPhotoAction->setEnabled(!on);
-    mImportAction->setEnabled(!on);
-
-    // Update these to reflect the current state,
-    // overriden if the file is read only.
-    slotCanUndoChanged(mUndoStack->canUndo());
-    slotCanRedoChanged(mUndoStack->canRedo());
-}
-
-
-void MainWindow::openExternalMap(MapBrowser::MapProvider map)
-{
-    mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
-}
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Display mode							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 void MainWindow::slotViewPointsMode()
 {
