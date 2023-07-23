@@ -114,6 +114,8 @@ add_definitions("-DQT_DEPRECATED_WARNINGS")
 
 remove_definitions("-DQT_NO_CAST_FROM_ASCII")
 remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
+remove_definitions("-DQT_NO_KEYWORDS")
+remove_definitions("-DQT_USE_QSTRINGBUILDER")
 
 #########################################################################
 #									#
