@@ -43,6 +43,8 @@
 #include "mainwindow.h"
 #include "filescontroller.h"
 
+#include "marble/MarbleGlobal.h"
+
 #include "vcsversion.h"
 #ifdef HAVE_QCUSTOMPLOT
 #include "qcustomplot.h"
@@ -82,6 +84,10 @@ int main(int argc,char *argv[])
                            i18n("Dialogue utility library"),
                            "",
                            "https://github.com/martenjj/libkfdialog");
+    aboutData.addComponent(i18n("Marble"),
+                           i18n("Map display library"),
+                           Marble::MARBLE_VERSION_STRING,
+                           "https://marble.kde.org");
 #ifdef HAVE_QCUSTOMPLOT
     aboutData.addComponent(i18n("QCustomPlot"),
                            i18n("Qt plotting and data visualization"),
