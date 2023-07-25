@@ -74,6 +74,7 @@
 #include "mediaplayer.h"
 #include "stopdetectdialogue.h"
 #include "pointiconprovider.h"
+#include "importfiledialogue.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -747,6 +748,24 @@ void MainWindow::slotSaveCopy()
     save(file, ImporterExporterBase::NoOption);
 }
 
+
+void MainWindow::slotExportFile()
+{
+    RecentSaver saver("project");
+    QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
+                                            i18n("Export File As"),			// caption
+                                            saver.recentUrl(documentName(true)),	// dir
+                                            FilesController::allExportFilters(),	// filter
+                                            nullptr,					// selectedFilter,
+                                            QFileDialog::Options(),			// options
+                                            QStringList());				// supportedSchemes
+
+    if (!file.isValid()) return;			// didn't get a file name
+    saver.save(file);
+//////// TODO: export selected item
+//    filesController()->exportFile(file);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Loading and import							//
@@ -773,7 +792,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
     qDebug() << "from" << from;
     if (!from.isValid()) return (FilesController::StatusFailed);
 
-    FilesController::Status status = filesController()->importFile(from);
+    FilesController::Status status = filesController()->importFile(from, ImporterExporterBase::NoOption);
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
@@ -842,10 +861,32 @@ bool MainWindow::loadProject(const QUrl &loadFrom, bool readOnly)
 }
 
 
-
-
 void MainWindow::slotImportFile()
 {
+#if 1
+    // TODO: maybe only use the dialogue if in points list mode?
+    ImportFileDialogue d(FilesController::allImportFilters(), this);
+
+    /////////////////////////////////////////
+    // TODO: if filesController()->model()->isEmpty() then
+    // disable "Merge" via an option passed to dialogue
+    /////////////////////////////////////////
+
+    ImporterExporterBase::Options opts = ImporterExporterBase::IgnoreHome;
+    if (isPointsListMode()) opts |= ImporterExporterBase::MergeWaypoints;
+    d.setOptions(opts);					// default options for dialogue
+
+    if (!d.exec()) return;
+    opts = d.options();					// actual options from dialogue
+							// do the import or merge
+    if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
+
+    if (opts & ImporterExporterBase::MergeWaypoints)	// did import with merge,
+    {							// cannot undo after that
+        qDebug() << "clearing undo stack after import with merge";
+        mUndoStack->clear();
+    }
+#else
     RecentSaver saver("import");
     QUrl file = QFileDialog::getOpenFileUrl(this,					// parent
                                             i18n("Import File"),			// caption
@@ -857,25 +898,7 @@ void MainWindow::slotImportFile()
 
     if (!file.isValid()) return;			// didn't get a file name
     saver.save(file);
-    filesController()->importFile(file);
-}
-
-
-void MainWindow::slotExportFile()
-{
-    RecentSaver saver("project");
-    QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
-                                            i18n("Export File As"),			// caption
-                                            saver.recentUrl(documentName(true)),	// dir
-                                            FilesController::allExportFilters(),	// filter
-                                            nullptr,					// selectedFilter,
-                                            QFileDialog::Options(),			// options
-                                            QStringList());				// supportedSchemes
-
-    if (!file.isValid()) return;			// didn't get a file name
-    saver.save(file);
-//////// TODO: export selected item
-//    filesController()->exportFile(file);
+#endif
 }
 
 
@@ -894,7 +917,6 @@ void MainWindow::slotImportPhoto()
     saver.save(files.first());
     filesController()->importPhoto(files);
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 //									//

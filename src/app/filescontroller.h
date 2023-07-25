@@ -61,6 +61,8 @@ class FilesController : public QObject, public ApplicationDataInterface
     Q_OBJECT
 
 public:
+    FilesController(QObject *pnt = nullptr);
+    virtual ~FilesController();
 
     // File loading or saving status
     enum Status
@@ -71,9 +73,6 @@ public:
         StatusCancelled
     };
 
-    FilesController(QObject *pnt = nullptr);
-    virtual ~FilesController();
-
     FilesView *filesView() const		{ return (mFilesView); }
     PointsView *pointsView() const		{ return (mPointsView); }
     FilesModel *model() const			{ return (mDataModel); }
@@ -82,7 +81,7 @@ public:
     void readProperties();
     void saveProperties();
 
-    FilesController::Status importFile(const QUrl &importFrom);
+    FilesController::Status importFile(const QUrl &importFrom, ImporterExporterBase::Options options);
     FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options);
     FilesController::Status importPhoto(const QList<QUrl> &urls);
     void initNew();

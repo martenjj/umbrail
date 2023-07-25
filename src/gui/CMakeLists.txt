@@ -54,6 +54,7 @@ set(gui_SRCS
   categoriesmanagedialogue.cpp
   flagseditdialogue.cpp
   iconselector.cpp
+  importfiledialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})
@@ -68,6 +69,7 @@ target_link_libraries(${PN}gui
   KF5::ItemViews
   KF5::XmlGui
   ${PN}core
+  ${PN}io
   ${PN}settings
   ${PN}services
   ${PN}coordinate

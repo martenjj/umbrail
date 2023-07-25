@@ -308,7 +308,7 @@ case ErrorReporter::Fatal:
 }
 
 
-FilesController::Status FilesController::importFile(const QUrl &importFrom)
+FilesController::Status FilesController::importFile(const QUrl &importFrom, ImporterExporterBase::Options options)
 {
     if (!importFrom.isValid()) return (FilesController::StatusFailed);
 
@@ -341,6 +341,11 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
         return (FilesController::StatusFailed);
     }
 
+//////////////////////////////////////////////////////////
+// TODO: pass 'options' to importer so that it can action
+// the "Ignore Home/Work" option.
+//////////////////////////////////////////////////////////
+
     emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
 
@@ -360,6 +365,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
     ImportFileCommand *cmd = new ImportFileCommand(this);
     cmd->setText(i18n("Import"));
     cmd->setData(tdf);					// takes ownership of tree
+    cmd->setOptions(options);				// user options for import
 
     if (model()->isEmpty())				// loading a new file?
     {
@@ -367,7 +373,19 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom)
         delete cmd;					// no need for this now
         emit statusMessage(xi18nc("@info", "Loaded <filename>%1</filename>", importFrom.toDisplayString()));
     }
-    else						// an import/merge operation
+    else if (options & ImporterExporterBase::MergeWaypoints)
+    {							// import with waypoint merge
+        // TODO: do not decide here, but call a slot from the command
+        // to clear the undo stack?
+
+        // Need to execute the command immediately
+        // (synchronously), so that the MainWindow can
+        // then clear its undo stack.
+        cmd->redo();					// do the import and merge
+        delete cmd;					// no need for this now
+        emit statusMessage(xi18nc("@info", "Merged <filename>%1</filename>", importFrom.toDisplayString()));
+    }
+    else						// an import without merge
     {
         executeCommand(cmd);				// make the operation undo'able
         emit statusMessage(xi18nc("@info", "Imported <filename>%1</filename>", importFrom.toDisplayString()));

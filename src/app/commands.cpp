@@ -161,11 +161,19 @@ void ImportFileCommand::redo()
 {
     Q_ASSERT(mImportData!=nullptr);
     mSavedCount = mImportData->childCount();		// how many tracks contained
-    qDebug() << "from" << mImportData->name() << "count" << mSavedCount;
+    qDebug() << "from" << mImportData->name() << "count" << mSavedCount << "opts" << mOptions;
+
+    // The "Ignore Home/Work" option will already have been
+    // actioned by the importer, so there is no need to take
+    // any account of it here.
 
     TrackDataFile *root = model()->rootFileItem();
     if (root==nullptr)					// no data in model yet
     {
+        // This option should be disabled by the GUI if the model
+        // is empty, so it should never be seen here.
+        if (mOptions & ImporterExporterBase::MergeWaypoints) qWarning() << "Ignoring merge option into empty model";
+
         // Set the top level imported file item as the model file root.
         model()->setRootFileItem(mImportData);		// use this as root item
         mImportData = nullptr;				// now owned by model
@@ -174,8 +182,41 @@ void ImportFileCommand::redo()
     {
         model()->startLayoutChange();
 
-        // Now, all items (expected to be tracks or folders) contained in
-        // the new file are set as children of the file root.
+        if (mOptions & ImporterExporterBase::MergeWaypoints)
+        {
+            // When merging in this mode, the undo stack will be cleared
+            // after the merge is complete.  This means that it is not
+            // necessary to record everything that is done so that it can
+            // be undone if requested.
+
+            // Recursively look through the imported data for any folders,
+            // and if the corresponding folders already exist then merge
+            // them.
+
+            // Merging means first comparing all of the imported waypoints
+            // with those in the existing folder.  Any that can be automatically
+            // merged with an existing waypoint are merged and then removed from
+            // the imported data.  Any that cannot be automatically merged are
+            // added to the existing folder and again removed from the imported
+            // data.  Any subfolders remaining after doing this are also added
+            // to the existing folder.  The imported folder should then be empty
+            // and is removed.
+
+
+
+
+
+
+
+
+
+
+
+        }
+
+        // Now, all remaining items (expected to be tracks, or folders if
+        // a waypoint merge is not being done) contained in the new file
+        // are set as children of the file root.
         while (mImportData->childCount()>0)
         {
             TrackDataItem *tdi = mImportData->takeFirstChildItem();

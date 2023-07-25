@@ -38,9 +38,13 @@ public:
 
     enum Option
     {
-        NoOption = 0x00,
-        ToClipboard = 0x01,
-        SelectionOnly = 0x02
+        NoOption = 0x0000,
+        // export
+        ToClipboard = 0x0001,
+        SelectionOnly = 0x0002,
+        // import
+        IgnoreHome = 0x0100,
+        MergeWaypoints = 0x0200
     };
     Q_DECLARE_FLAGS(Options, Option)
 

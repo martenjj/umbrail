@@ -31,6 +31,7 @@
 
 #include "trackdata.h"
 #include "filescontroller.h"
+#include "importerexporterbase.h"
 
 
 class ItemContainer;
@@ -85,7 +86,8 @@ public:
     ImportFileCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~ImportFileCommand();
 
-    void setData(TrackDataFile *tdf)			{ mImportData = tdf; }
+    void setData(TrackDataFile *tdf)				{ mImportData = tdf; }
+    void setOptions(ImporterExporterBase::Options options)	{ mOptions = options; }
 
     void redo() override;
     void undo() override;
@@ -93,6 +95,7 @@ public:
 private:
     TrackDataFile *mImportData;
     int mSavedCount;
+    ImporterExporterBase::Options mOptions;
 };
 
 
