@@ -43,10 +43,14 @@
 #include "mainwindow.h"
 #include "filescontroller.h"
 
+#include "marble/MarbleGlobal.h"
+
 #include "vcsversion.h"
 #ifdef HAVE_QCUSTOMPLOT
 #include "qcustomplot.h"
 #endif // HAVE_QCUSTOMPLOT
+
+#include <marble/MarbleDebug.h>
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -82,6 +86,10 @@ int main(int argc,char *argv[])
                            i18n("Dialogue utility library"),
                            "",
                            "https://github.com/martenjj/libkfdialog");
+    aboutData.addComponent(i18n("Marble"),
+                           i18n("Map display library"),
+                           Marble::MARBLE_VERSION_STRING,
+                           "https://marble.kde.org");
 #ifdef HAVE_QCUSTOMPLOT
     aboutData.addComponent(i18n("QCustomPlot"),
                            i18n("Qt plotting and data visualization"),
@@ -96,12 +104,21 @@ int main(int argc,char *argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription(aboutData.shortDescription());
 
+    parser.addOption(QCommandLineOption("marble-debug", i18n("Enable Marble debug messages (default).")));
+    parser.addOption(QCommandLineOption("no-marble-debug", i18n("Disable Marble debug messages.")));
+
     parser.addPositionalArgument("file", i18n("File to load"), i18n("[file...]"));
-    parser.addOption(QCommandLineOption((QStringList() << "r" << "readonly"), i18n("Open files as read-only")));
+    parser.addOption(QCommandLineOption((QStringList() << "r" << "readonly"), i18n("Open files as read-only.")));
 
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
+
+    // Unfortunately this sets the debug message state for our
+    // application's qDebug() messages as well as Marble's.
+    // Marble needs to be converted to use categorised logging.
+    if (parser.isSet("marble-debug")) Marble::MarbleDebug::setEnabled(true);
+    if (parser.isSet("no-marble-debug")) Marble::MarbleDebug::setEnabled(false);
 
     MainWindow *w = nullptr;
     QStringList args = parser.positionalArguments();

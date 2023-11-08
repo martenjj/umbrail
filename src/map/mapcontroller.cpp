@@ -143,7 +143,7 @@ void MapController::slotSetHome()
                                         // KStandardGuiItem::yes() used same icon as ok()
                                         KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
                                         KStandardGuiItem::cancel(),
-                                        "setHome")!=KMessageBox::Yes) return;
+                                        "setHome")!=KMessageBox::PrimaryAction) return;
     mHomeLat = lat;
     mHomeLong = lng;
     // TODO: do this here?
@@ -163,7 +163,7 @@ void MapController::slotSetZoom()
                                         i18n("Set Standard Zoom?"),
                                         KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
                                         KStandardGuiItem::cancel(),
-                                        "setZoom")!=KMessageBox::Yes) return;
+                                        "setZoom")!=KMessageBox::PrimaryAction) return;
     mHomeZoom = zoom;
     emit statusMessage(i18n("Standard zoom set to %1", mHomeZoom));
     emit modified();
