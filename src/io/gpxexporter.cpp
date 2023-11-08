@@ -379,6 +379,18 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         }
     }
 
+    // Ensure that the containing folder path for a waypoint is
+    // written out.  It is not stored a property of the waypoint,
+    // so generate it here.
+    if (tdw!=nullptr)
+    {
+        const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
+        if (fold!=nullptr)				// within a folder?
+        {						// note the folder path
+            extensionsQueue.enqueue(DataIndexer::nameWithNamespace("folder"), fold->path());
+        }
+    }
+
     // All of the item data has been added to the appropriate queue.
     //
     // Now resolve the final point or line colour - either one that
