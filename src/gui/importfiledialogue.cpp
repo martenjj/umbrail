@@ -8,7 +8,7 @@
 #include <klocalizedstring.h>
 #include <kurlrequester.h>
 
-#include <recentsaver.h>
+#include <kfdialog/recentsaver.h>
 
 #include "importerbase.h"
 

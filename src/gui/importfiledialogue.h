@@ -3,7 +3,7 @@
 #define IMPORTFILEDIALOGUE_H
 
 
-#include <dialogbase.h>
+#include <kfdialog/dialogbase.h>
 
 #include "importerbase.h"
 
