@@ -286,6 +286,18 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         const QVariant &v = item->metadata(idx);
         if (v.isNull()) continue;
 
+        // A folder is not written as an explicit GPX file element,
+        // therefore its metadata cannot be written either.  Ignore
+        // any folder metadata set for it, and warn if there is any
+        // that we are not expecting.  The only folder metadata that
+        // we set is "creator" by AddContainerCommand, so this is
+        // simply ignored with no message.
+        if (tdf!=nullptr)
+        {
+            if (name!="creator") qWarning() << "Unexpected metadata" << name << "for folder" << item->name();
+            continue;
+        }
+
         // The queue that will be used to store the tags and values,
         // except in the category and address special cases.
         TagQueue &toQueue = (isExtensionTag(item, name) ? extensionsQueue : toplevelQueue);
