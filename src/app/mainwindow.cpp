@@ -882,7 +882,7 @@ void MainWindow::slotImportFile()
     if (isPointsListMode()) opts |= ImporterExporterBase::MarkNewWaypoints;
 
     // Importing with merged waypoints cannot be undone and may cause data
-    // loss is the file is modified but not saved.  Warn the user and give
+    // loss if the file is modified but not saved.  Warn the user and give
     // them a change to cancel the operation.
     if (isModified() && (opts & ImporterExporterBase::MergeWaypoints))
     {
@@ -971,6 +971,12 @@ case TrackData::File:
         propsText = i18ncp("@action:inmenu", "File Properties...", "Files Properties...", selCount);
         propsEnabled = true;
         delEnabled = false;
+        // Enabling these actions assumes that a track or route container
+        // with valid points is present within the file.  That assumption
+        // may not be true, but calling FilesView::selectedPoints() here
+        // to really verify whether points are selected is is a bit too
+        // expensive.  These operations must either work with no selected
+        // points, or tell the user if there are no points to work on.
         stopsEnabled = profileEnabled = true;
         break;
 

@@ -89,7 +89,15 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     setButtonEnabled(QDialogButtonBox::Ok, false);
     setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Commit"));
 
+    // Get the selected points.
     filesController()->filesView()->selectedPoints().swap(mInputPoints);
+    if (mInputPoints.isEmpty())
+    {
+        KMessageBox::error(ApplicationDataInterface::mainWidget(),
+                           i18n("No points selected for stop detection"), i18n("No Points"));
+        deleteLater();					// no point (groan) in carrying on
+        return;
+    }
 
     mTimeZone = QTimeZone::utc();			// a sensible default
     QString zoneName = filesController()->model()->rootFileItem()->metadata("timezone").toString();

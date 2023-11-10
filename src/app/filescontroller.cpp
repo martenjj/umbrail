@@ -371,9 +371,6 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, Impo
     }
     else if (options & ImporterExporterBase::MergeWaypoints)
     {							// import with waypoint merge
-        // TODO: do not decide here, but call a slot from the command
-        // to clear the undo stack?
-
         // Need to execute the command immediately
         // (synchronously), so that the MainWindow can
         // then clear its undo stack.

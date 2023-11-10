@@ -43,6 +43,7 @@
 #include <kconfiggroup.h>
 #include <kiconloader.h>
 #include <kcolorscheme.h>
+#include <kmessagebox.h>
 
 #include <kfdialog/dialogstatewatcher.h>
 
@@ -248,12 +249,20 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     setObjectName("ProfileWidget");
     setButtons(QDialogButtonBox::Close);
 
+    mTimeZone = nullptr;				// not set yet
+
     // Get the selected points.
     filesController()->filesView()->selectedPoints().swap(mPoints);
-    Q_ASSERT(!mPoints.isEmpty());
+    if (mPoints.isEmpty())
+    {
+        KMessageBox::error(ApplicationDataInterface::mainWidget(),
+                           i18n("No points selected for profile"), i18n("No Points"));
+        deleteLater();					// no point (groan) in carrying on
+        return;
+    }
 
     // See if the first of those is a route point.  If so, assume that all of them are
-    // and the plot is in route mode (interpolated points, limited options).
+    // and that the plot is in route mode (interpolated points, limited options).
     const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(mPoints.first());
     mRouteMode = (tdr!=nullptr);
     qDebug() << "route mode?" << mRouteMode;
@@ -266,7 +275,6 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     setWindowTitle(mRouteMode ? i18n("Route Profile") : i18n("Track Profile"));
 
     // Resolve the file time zone.
-    mTimeZone = nullptr;
     QVariant zoneName = filesController()->model()->rootFileItem()->metadata("timezone");
     if (!zoneName.isNull())
     {
