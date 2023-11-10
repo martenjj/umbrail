@@ -50,6 +50,7 @@
 
 #undef MEMORY_TRACKING
 #undef DEBUG_ICONS
+#define DEBUG_MERGE
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -142,7 +143,6 @@ TimeRange TrackData::unifyTimeSpans(const QList<TrackDataItem *> *items)
 }
 
 
-
 BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 {
     if (items==nullptr) return (BoundingArea());
@@ -159,7 +159,6 @@ BoundingArea TrackData::unifyBoundingAreas(const QList<TrackDataItem *> *items)
 
     return (result);
 }
-
 
 
 unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> *items)
@@ -942,6 +941,235 @@ const PointIcon *TrackDataWaypoint::icon() const
     // Lowest priority: default icon
     // waypointType() must be TrackData::WaypointNormal here
     return (TrackDataItem::icon());
+}
+
+
+// Merging waypoints, compatibility and automatic merge
+//
+// based on NavMarks PointData::canMerge() and PointData::mergeWith()
+
+QStringList TrackDataWaypoint::formattedAddress() const
+{
+    return (TrackData::formattedAddress(metadata("StreetAddress"), metadata("City"),
+                                        metadata("State"), metadata("PostalCode"),
+                                        metadata("Country")));
+}
+
+
+#define LATLONGTOL              (5.0/(60*60*10))	// 0.5 seconds of angle,
+							// about 15 metres at equator
+#define ELEVTOL			(1.0)			// 1 metre
+#define NAMEMIN			10			// minimum for prefix match
+#define WAYPOINT		"Waypoint"		// default symbol name
+
+
+static inline bool symbolIsValid(const QVariant &sym)
+{
+    return (sym.isValid() && sym.toString()!=WAYPOINT);
+}
+
+
+static inline bool addressIsValid(const QStringList &addr)
+{
+    return (!addr.isEmpty() && !addr.join("").isEmpty());
+}
+
+
+static TrackData::WaypointFlags mergedFlags(TrackData::WaypointFlags flags1, TrackData::WaypointFlags flags2)
+{
+    // If combining a NewlyImported point with an existing one,
+    // turn off that flag.
+    TrackData::WaypointFlags f = flags1;
+    const bool combinedImport = !(f & TrackData::NewlyImported) &&
+                                (flags2 & TrackData::NewlyImported);
+    f |= flags2;
+    if (combinedImport) f &= ~TrackData::NewlyImported;
+    return (f);
+}
+
+
+//  Merge criteria for automatic merging:
+//
+//    Name		either match exactly, or one an exact prefix of the other
+//    Symbol		either match exactly, or one is WAYPOINT or blank
+//    Lat/Long		both present and equal within LATLONGTOL
+//    Elevation         if both present, must match within ELEVTOL
+//    Address		if both present, must match exactly
+//    Categories	irrelevant (will be combined on merge)
+//    Sources		irrelevant (will be combined on merge)
+//    Flags		irrelevant (will be combined on merge)
+
+bool TrackDataWaypoint::canMerge(const TrackDataWaypoint *other, bool positionOnly) const
+{
+    // Latitude/Longitude
+    if (fabs(this->latitude()-other->latitude())>LATLONGTOL) return (false);
+    if (fabs(this->longitude()-other->longitude())>LATLONGTOL) return (false);
+
+    // If only a position check is required, there nothing else to do.
+    // This is used for checking compatibility before a manual merge.
+    if (positionOnly) return (true);
+
+    // Name
+    const QString &n1 = this->name();
+    const QString &n2 = other->name();
+#ifdef DEBUG_MERGE
+    qDebug() << "trying" << n2 << "into" << n1;
+#endif
+    if (n1!=n2)						// not an exact match
+    {
+        int preflen = qMin(n1.length(), n2.length());	// length of shortest
+        if (preflen<NAMEMIN) return (false);		// too short for this match
+        if (n1.left(preflen)!=n2.left(preflen))
+        {
+#ifdef DEBUG_MERGE
+            qDebug() << "can't merge - name";
+#endif
+            return (false);
+        }
+    }
+
+    // Symbol
+    const QVariant &s1 = this->metadata("sym");
+    const QVariant &s2 = other->metadata("sym");
+    if (s1!=s2)
+    {
+        if (s1.isValid() && s2.isValid())
+        {
+#ifdef DEBUG_MERGE
+            qDebug() << "can't merge - sym" << s2 << s1;
+#endif
+            return (false);
+        }
+    }
+
+    // Elevation
+    const double e1 = this->elevation();
+    const double e2 = other->elevation();
+    if (!ISNAN(e1) && !ISNAN(e2))
+    {
+        if (fabs(e1-e2)>ELEVTOL)
+        {
+#ifdef DEBUG_MERGE
+            qDebug() << "can't merge - ele" << e2 << e1;
+#endif
+            return (false);
+        }
+    }
+
+    // Address
+    const QStringList &a1 = this->formattedAddress();
+    const QStringList &a2 = other->formattedAddress();
+    if (addressIsValid(a1) && addressIsValid(a2))
+    {
+        if (a1!=a2)
+        {
+#ifdef DEBUG_MERGE
+            qDebug() << "can't merge - address";
+#endif
+            return (false);
+        }
+    }
+
+    // All matched
+#ifdef DEBUG_MERGE
+    qDebug() << "can merge";
+#endif
+    return (true);
+}
+
+
+// This assumes that the points are compatible for merging,
+// in other words canMerge() above would return true.
+
+void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
+{
+    // Name - if one is an exact prefix of the other then take the longest,
+    // otherwise just accept the first.
+    const QString &n1 = this->name();
+    const QString &n2 = other->name();
+    if (n1!=n2)						// not an exact match
+    {
+        if (n1.length()<n2.length())			// second is the longest
+        {
+            if (n2.left(n1.length())==n1) setName(n2, other->hasExplicitName());
+        }
+    }
+
+    // Symbol - accept the first unless that is the default WAYPOINT or blank,
+    // in which case use the other.
+    const QVariant &s1 = this->metadata("sym");
+    const QVariant &s2 = other->metadata("sym");
+    if (!symbolIsValid(s1) && symbolIsValid(s2)) setMetadata("sym", s2);
+
+    // Latitude/Longtitude - just accept the first
+    // (we know that they are both valid).
+
+    // Elevation - accept the first unless it is invalid,
+    // in which case use the other.
+    if (ISNAN(this->elevation())) setMetadata("ele", other->elevation());
+
+    // TODO: Is this necessary?  Just merge the individual metadata below,
+    // then would not need TrackDataWaypoint::formattedAddress().
+
+    // Address - accept the first unless it is completely blank,
+    // in which case use the other.
+    const QStringList &a1 = this->formattedAddress();
+    const QStringList &a2 = other->formattedAddress();
+    if (!addressIsValid(a1) && addressIsValid(a2))
+    {
+        this->setMetadata("StreetAddress", other->metadata("StreetAddress"));
+        this->setMetadata("City", other->metadata("City"));
+        this->setMetadata("State", other->metadata("State"));
+        this->setMetadata("PostalCode", other->metadata("PostalCode"));
+        this->setMetadata("Country", other->metadata("Country"));
+    }
+
+    // Categories - merge the two lists.
+    const QStringList &c1 = this->metadata("category").toStringList();
+    const QStringList &c2 = other->metadata("category").toStringList();
+    if (!c2.isEmpty())					// if there is something to merge
+    {
+        QStringList res = c1;
+        for (const QString &c : qAsConst(c2))
+        {
+            if (!res.contains(c)) res.append(c);
+        }
+
+        setMetadata("category", res);
+    }
+
+    // Sources - only accept the first list unless it is empty,
+    // in which case use the other.
+    const QStringList &o1 = this->metadata("origin").toStringList();
+    const QStringList &o2 = other->metadata("origin").toStringList();
+    if (o1.isEmpty() && !o2.isEmpty()) setMetadata("origin", o2);
+
+    // Flags - combine the two.
+    TrackData::WaypointFlags f1 = static_cast<TrackData::WaypointFlags>(this->metadata("flags").toInt());
+    TrackData::WaypointFlags f2 = static_cast<TrackData::WaypointFlags>(other->metadata("flags").toInt());
+    TrackData::WaypointFlags res = mergedFlags(f1, f2);
+    if (res!=f1) setMetadata("flags", static_cast<int>(res));
+
+    // Other data - accept the first unless it is empty,
+    // in which case use the other.
+    for (int idx = 0; idx<DataIndexer::count(); ++idx)
+    {
+        const QByteArray &name = DataIndexer::name(idx);
+        if (MetadataModel::isInternalTag(name)) continue;
+        // These metadata items have been merged specially above.
+        if (name=="ele" || name=="sym" || name=="StreetAddress" ||
+            name=="City" || name=="State" || name=="PostalCode" ||
+            name=="Country" || name=="category" || name=="origin" ||
+            name=="flags") continue;
+
+        const QVariant &m1 = this->metadata(idx);
+        const QVariant &m2 = other->metadata(idx);
+        if (m1.isNull() && !m2.isNull()) setMetadata(idx, m2);
+    }
+
+#ifdef DEBUG_MERGE
+    qDebug() << "merged" << n2 << "into" << n1;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

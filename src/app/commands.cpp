@@ -157,15 +157,34 @@ ImportFileCommand::~ImportFileCommand()
 }
 
 
+// Locate any folders (at any depth) below that item.  If there are
+// subfolders then they and the parent folder are returned separately
+// with the parent folder first.
+static void findFolders(TrackDataItem *item, QVector<TrackDataFolder *> *res)
+{
+    // See if this item is a folder.  If so, record it in the result list.
+    TrackDataFolder *tdf = dynamic_cast<TrackDataFolder *>(item);
+    if (tdf!=nullptr)
+    {
+        qDebug() << "found" << tdf->path();
+        res->append(tdf);
+    }
+
+    // Recurse into child items to find any folders below here.
+    const int num = item->childCount();
+    for (int i = 0; i<num; ++i) findFolders(item->childAt(i), res);
+}
+
+
 void ImportFileCommand::redo()
 {
     Q_ASSERT(mImportData!=nullptr);
     mSavedCount = mImportData->childCount();		// how many tracks contained
     qDebug() << "from" << mImportData->name() << "count" << mSavedCount << "opts" << mOptions;
 
-    // The "Ignore Home/Work" option will already have been
-    // actioned by the importer, so there is no need to take
-    // any account of it here.
+    // The "Ignore Home/Work" option and the NewlyImported flag
+    // will already have been actioned by the importer, so there is
+    // no need to take any account of those here.
 
     TrackDataFile *root = model()->rootFileItem();
     if (root==nullptr)					// no data in model yet
@@ -192,7 +211,7 @@ void ImportFileCommand::redo()
             // Recursively look through the imported data for any folders,
             // and if the corresponding folders already exist then merge
             // them.
-
+            //
             // Merging means first comparing all of the imported waypoints
             // with those in the existing folder.  Any that can be automatically
             // merged with an existing waypoint are merged and then removed from
@@ -201,17 +220,83 @@ void ImportFileCommand::redo()
             // data.  Any subfolders remaining after doing this are also added
             // to the existing folder.  The imported folder should then be empty
             // and is removed.
+            QVector<TrackDataFolder *> importedFolders;
+            findFolders(mImportData, &importedFolders);
+            const int num = importedFolders.count();
+            qDebug() << "found" << num << "folders";
 
+            for (int i = 0; i<num; ++i)
+            {
+                TrackDataFolder *importFolder = importedFolders[i];
+                const QString path = importFolder->path();
+                qDebug() << "trying folder" << path;
 
+                TrackDataFolder *existingFolder = TrackData::findFolderByPath(path, root);
+                if (existingFolder!=nullptr)
+                {
+                    qDebug() << "already existing folder, count" << existingFolder->childCount() << "import" << importFolder->childCount();
 
+                    // Look at all of the import points in this folder in order.
+                    for (int j = 0; ; ++j)
+                    {
+                        // Do the loop check here, for the case where an item
+                        // has been removed and we are looking again at the
+                        // same position in the list.
+again:                  if (j>=importFolder->childCount()) break;
 
+                        // The import waypoint to potentially be merged.
+                        // It may not be a waypoint (if not, most likely
+                        // a subfolder), in which case just ignore it.
+                        TrackDataWaypoint *importWpt = dynamic_cast<TrackDataWaypoint *>(importFolder->childAt(j));
+                        if (importWpt==nullptr) continue;
 
+                        // Compare it against all of the existing points in this folder.
+                        for (int k = 0; k<existingFolder->childCount(); ++k)
+                        {
+                            // The existing waypoint to potentially be merged into.
+                            // Again it may not be a waypoint, in which case
+                            // just ignore it.
+                            TrackDataWaypoint *existingWpt = dynamic_cast<TrackDataWaypoint *>(existingFolder->childAt(k));
+                            if (existingWpt==nullptr) continue;
 
+                            // See if the two waypoints can be automatically merged.
+                            if (existingWpt->canMerge(importWpt))
+                            {
+                                existingWpt->mergeWith(importWpt);
+                                importFolder->removeChildItem(importWpt);
+                                goto again;		// continue checks with next
+                            }				// (also exits this nested loop)
+                        }
 
+                        // If the waypoint could not be automatically merged,
+                        // then simply move it to the existing folder.
+                        qDebug() << "could not be merged" << importWpt->name();
+                        importFolder->removeChildItem(importWpt);
+                        existingFolder->addChildItem(importWpt);
+                        goto again;			// continue checks with next
+                    }
 
+                    qDebug() << "after merge, import count" << importFolder->childCount();
+                }
+            }
 
-
-
+            // Remove any import folders which have been emptied by
+            // the merging above.  The list of folders originally found
+            // is traversed in reverse order so that subfolders are removed
+            // before their parent folders.  After this has been done, the
+            // pointers in 'importedFolders' may no longer be valid.
+            for (int i = num-1; i>=0; --i)
+            {
+                TrackDataFolder *tdf = importedFolders[i];
+                if (tdf->childCount()==0)		// is the folder empty?
+                {
+                    TrackDataItem *pnt = tdf->parent();	// parent containing this folder
+                    if (pnt==nullptr) continue;		// shouldn't happen at top level
+                    qDebug() << "remove empty imported" << tdf->path();
+                    pnt->removeChildItem(tdf);
+                    delete tdf;				// don't need this any more
+                }
+            }
         }
 
         // Now, all remaining items (expected to be tracks, or folders if
@@ -246,7 +331,7 @@ void ImportFileCommand::redo()
         }
 
         model()->endLayoutChange();
-        Q_ASSERT(mImportData->childCount()==0);		// should have taken all tracks
+        Q_ASSERT(mImportData->childCount()==0);		// should have taken everything
     }
 
     controller()->filesView()->clearSelection();

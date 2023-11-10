@@ -465,6 +465,9 @@ public:
     TrackData::WaypointType waypointType() const;
     bool isMediaType() const;
 
+    bool canMerge(const TrackDataWaypoint *other, bool positionOnly = false) const;
+    void mergeWith(const TrackDataWaypoint *other);
+
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
     DEFINE_PROPERTIES_PAGE(Style)
@@ -473,6 +476,9 @@ public:
 
 protected:
     QString iconName() const override;
+
+private:
+    QStringList formattedAddress() const;
 };
 
 //////////////////////////////////////////////////////////////////////////
