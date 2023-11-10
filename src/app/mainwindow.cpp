@@ -880,6 +880,17 @@ void MainWindow::slotImportFile()
     opts = d.options();					// actual options from dialogue
 							// add option for import operation
     if (isPointsListMode()) opts |= ImporterExporterBase::MarkNewWaypoints;
+
+    // Importing with merged waypoints cannot be undone and may cause data
+    // loss is the file is modified but not saved.  Warn the user and give
+    // them a change to cancel the operation.
+    if (isModified() && (opts & ImporterExporterBase::MergeWaypoints))
+    {
+        if (KMessageBox::warningContinueCancel(this,
+                                               xi18nc("@info", "File <emphasis strong=\"1\"><filename>%1</filename></emphasis> has been modified but not saved.<nl/>The import operation with merged waypoints cannot be undone.<nl/><nl/>Continue with the import?", documentName()),
+                                               i18n("Confirm Import"),
+                                               KGuiItem(i18n("Import"), mImportAction->icon()))!=KMessageBox::Continue) return;
+    }
 							// do the import or merge
     if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
 
