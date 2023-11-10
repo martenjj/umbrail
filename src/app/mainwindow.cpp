@@ -878,6 +878,8 @@ void MainWindow::slotImportFile()
 
     if (!d.exec()) return;
     opts = d.options();					// actual options from dialogue
+							// add option for import operation
+    if (isPointsListMode()) opts |= ImporterExporterBase::MarkNewWaypoints;
 							// do the import or merge
     if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
 

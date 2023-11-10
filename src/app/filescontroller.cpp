@@ -341,12 +341,8 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, Impo
         return (FilesController::StatusFailed);
     }
 
-//////////////////////////////////////////////////////////
-// TODO: pass 'options' to importer so that it can action
-// the "Ignore Home/Work" option.
-//////////////////////////////////////////////////////////
-
     emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
+    imp->setOptions(options);				// set the import options
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
 
     const ErrorReporter *rep = imp->reporter();
@@ -513,7 +509,8 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
     if (options & ImporterExporterBase::SelectionOnly) exp->setSelectionId(filesView()->selectionId());
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
-    exp->save(exportTo, tdf, options);
+    exp->setOptions(options);				// set the export options
+    exp->save(exportTo, tdf);
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))

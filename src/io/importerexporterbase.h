@@ -34,8 +34,6 @@ class ErrorReporter;
 class ImporterExporterBase
 {
 public:
-    ErrorReporter *reporter() const		{ return (mReporter); }
-
     enum Option
     {
         NoOption = 0x0000,
@@ -44,16 +42,23 @@ public:
         SelectionOnly = 0x0002,
         // import
         IgnoreHome = 0x0100,
-        MergeWaypoints = 0x0200
+        MergeWaypoints = 0x0200,
+        MarkNewWaypoints = 0x0400
     };
     Q_DECLARE_FLAGS(Options, Option)
+
+    ErrorReporter *reporter() const				{ return (mReporter); }
+    void setOptions(ImporterExporterBase::Options opts)		{ mOptions = opts; }
 
 protected:
     ImporterExporterBase();
     virtual ~ImporterExporterBase();
 
+    ImporterExporterBase::Options options() const		{ return (mOptions); }
+
 private:
     ErrorReporter *mReporter;
+    ImporterExporterBase::Options mOptions;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ImporterExporterBase::Options)

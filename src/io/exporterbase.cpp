@@ -60,7 +60,7 @@ void ExporterBase::setSelectionId(unsigned long id)
 
 bool ExporterBase::isSelected(const TrackDataItem *item) const
 {
-    if (!(mOptions & ImporterExporterBase::SelectionOnly)) return (true);
+    if (!(options() & ImporterExporterBase::SelectionOnly)) return (true);
 							// all items, not just selection
     const int num = item->childCount();
     if (num>0)						// is this a container?
@@ -84,13 +84,12 @@ bool ExporterBase::isSelected(const TrackDataItem *item) const
 }
 
 
-bool ExporterBase::save(const QUrl &file, const TrackDataFile *item, ImporterExporterBase::Options options)
+bool ExporterBase::save(const QUrl &file, const TrackDataFile *item)
 {
-    qDebug() << "to" << file << "options" << options;
-    mOptions = options;
+    qDebug() << "to" << file << "options" << options();
     reporter()->setFile(file);
 
-    if (options & ImporterExporterBase::ToClipboard)
+    if (options() & ImporterExporterBase::ToClipboard)
     {							// output to the clipboard
         QBuffer buf;
         if (!buf.open(QIODevice::WriteOnly))

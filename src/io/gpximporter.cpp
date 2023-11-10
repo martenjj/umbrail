@@ -722,6 +722,15 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         const int idx = DataIndexer::index("origin");
         if (tdw->metadata(idx).isNull()) tdw->setMetadata(idx, originId());
 
+        // If requested, mark the waypoint as "newly imported".  The flag will
+        // be set on all waypoints in this file, but if they eventually get
+        // merged as duplicates into the main data tree then the flag set here
+        // is ignored.
+        if (options() & ImporterExporterBase::MarkNewWaypoints)
+        {
+            tdw->setMetadata("flags", static_cast<int>(TrackData::NewlyImported));
+        }
+
         folder->addChildItem(tdw);			// add to destination folder
         mCurrentPoint = nullptr;			// finished with temporary
         return (true);

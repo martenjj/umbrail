@@ -41,7 +41,7 @@ public:
     ExporterBase();
     virtual ~ExporterBase() = default;
 
-    bool save(const QUrl &file, const TrackDataFile *item, ImporterExporterBase::Options options);
+    bool save(const QUrl &file, const TrackDataFile *item);
     void setSelectionId(unsigned long id);
 
 protected:
@@ -49,7 +49,6 @@ protected:
     bool isSelected(const TrackDataItem *item) const;
 
 private:
-    ImporterExporterBase::Options mOptions;
     unsigned long mSelectionId;
 };
 
