@@ -161,6 +161,15 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         // when the file is exported.
         pnt->setMetadata("folder", QVariant());
 
+        // If requested, mark the waypoint as "newly imported".  As with GPX
+        // import the flag will be set on all waypoints in this file, but if
+        // they eventually get merged as duplicates into the main data tree
+        // then the flag set here is ignored.
+        if (options() & ImporterExporterBase::MarkNewWaypoints)
+        {
+            pnt->setMetadata("flags", static_cast<int>(TrackData::NewlyImported));
+        }
+
         folder->addChildItem(pnt);			// add to destination folder
         ++num;						// count up this point
     }
