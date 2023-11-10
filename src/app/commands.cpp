@@ -318,8 +318,9 @@ again:                  if (j>=importFolder->childCount()) break;
             if (catMap==nullptr)			// but root does not so far
             {
                 qDebug() << "adopting imported categories";
-                root->setCategories(newMap);
-                catMap = root->categories();		// update pointer to as set
+                root->setCategories(newMap);		// use those as categories
+                mImportData->setCategories(nullptr);	// have now taken ownership
+                catMap = newMap;			// update pointer to as set
             }
             else
             {
