@@ -490,7 +490,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     }
     else if (localName=="rtept")			// start of an RTEPT element
     {
-        if (mCurrentRoute==nullptr)
+        if (mCurrentRoute==nullptr)			// check properly nested
         {
             return (addError("RTEPT not within RTE"));
         }
@@ -545,6 +545,12 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         }
 
         catMap->addCategory(name.toString(), col);	// add entry to categories
+    }
+    else						// start of unrecognised element
+    {
+        // This is an error because the attribute information will be
+        // lost, see endElement().
+        if (!atts.isEmpty()) addError("unknown element "+localName.toUpper()+" with attributes");
     }
 
     mContainedChars.clear();				// clear element contents
@@ -740,9 +746,13 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     // or a value that is treated specially.  If the element contained
     // any textual data, then add it to the current element or file metadata
     // indexed by the literal element tag.
-
     const QString elementText = elementContents();	// get any current contents
-    if (elementText.isEmpty()) return (true);		// ignore if there was none
+
+    // If the element does not contain textual data but has attributes,
+    // unfortunately by now that information is lost.  If it turns out
+    // that the attribute data is important, it will need to be retained
+    // in startElement() and then stored in the element metadata here.
+    if (elementText.isEmpty()) return (true);		// ignore if there is none
 
     QByteArray key = qName;				// namespaced name of the element
     // Ultra GPS Logger tags waypoints with <description> instead of <desc>
