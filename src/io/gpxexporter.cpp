@@ -373,6 +373,10 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
             // <gpxx:WaypointExtensions> block, along with the categories.
             addressQueue.enqueue(name, v.toString());
         }
+        else if (name=="flags")				// waypoint flags,
+        {						// only if not zero
+            if (v.toInt()!=0) toQueue.enqueue(name, valueString(v));
+        }
         else						// any other tag
         {
             toQueue.enqueue(name, valueString(v));
@@ -380,7 +384,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     }
 
     // Ensure that the containing folder path for a waypoint is
-    // written out.  It is not stored a property of the waypoint,
+    // written out.  It is not stored as a property of the waypoint,
     // so generate it here.
     if (tdw!=nullptr)
     {
