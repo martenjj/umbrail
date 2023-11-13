@@ -6,7 +6,7 @@
 
 #include <qwidget.h>
 
-class QLabel;
+class QLineEdit;
 
 
 class ListEditWidget : public QWidget
@@ -25,8 +25,7 @@ signals:
     void editRequested();
 
 private:
-    // TODO: a read only QLineEdit for more consistent appearance
-    QLabel *mListLabel;
+    QLineEdit *mListLabel;
 };
 
 #endif							// LISTEDITWIDGET_H

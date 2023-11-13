@@ -3,12 +3,12 @@
 
 #include <qformlayout.h>
 #include <qpushbutton.h>
-#include <qlabel.h>
+#include <qlineedit.h>
 
 #include <klocalizedstring.h>
 
 
-// TODO: use also in TrackPropertiesDetailPages
+// TODO: can use also in TrackPropertiesDetailPages?
 
 ListEditWidget::ListEditWidget(QWidget *pnt)
     : QWidget(pnt)
@@ -17,9 +17,9 @@ ListEditWidget::ListEditWidget(QWidget *pnt)
     QGridLayout *hlay = new QGridLayout(this);
     hlay->setMargin(0);
 
-    mListLabel = new QLabel(this);
-    mListLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-    hlay->addWidget(mListLabel, 0, 0, Qt::AlignTop);
+    mListLabel = new QLineEdit(this);
+    mListLabel->setReadOnly(true);
+    hlay->addWidget(mListLabel, 0, 0);
     hlay->setColumnStretch(0, 1);
 
     QPushButton *b = new QPushButton(pnt);
@@ -27,7 +27,7 @@ ListEditWidget::ListEditWidget(QWidget *pnt)
     b->setIcon(QIcon::fromTheme("document-edit"));
     setFocusProxy(b);
     setFocusPolicy(Qt::StrongFocus);
-    hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
+    hlay->addWidget(b, 0, 1, Qt::AlignRight);
 
     connect(b, &QAbstractButton::clicked, this, &ListEditWidget::editRequested);
 }

@@ -4,7 +4,6 @@
 #include <qformlayout.h>
 #include <qcombobox.h>
 #include <qpushbutton.h>
-#include <qlabel.h>
 
 #include <klocalizedstring.h>
 
@@ -58,8 +57,6 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     mCategoriesLabel = new ListEditWidget(this);
     connect(mCategoriesLabel, &ListEditWidget::editRequested, this, &MergePointsDialogue::slotEditCategories);
     lay->addRow(i18nc("@label:textbox", "Categories:"), mCategoriesLabel);
-    QLabel *al = qobject_cast<QLabel *>(lay->labelForField(mCategoriesLabel));
-    if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
 
     // In NavMarks there was the facility to display and merge the source tags
     // (now using the metadata name "origin") here.  However, although
