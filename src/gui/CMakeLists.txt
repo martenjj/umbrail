@@ -55,6 +55,7 @@ set(gui_SRCS
   flagseditdialogue.cpp
   iconselector.cpp
   importfiledialogue.cpp
+  mergepointsdialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})

@@ -1117,6 +1117,12 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
     const QStringList &a2 = other->formattedAddress();
     if (!addressIsValid(a1) && addressIsValid(a2))
     {
+        // TODO: instead if handling all five of these metadata items
+        // separately and formatting them back and forth for display,
+        // would it be possible to handle them as a single list value
+        // "address" (semicolon separated for display/edit, convert ';'
+        // to ',' on import) and assemble/decompose it on import/export?
+
         this->setMetadata("StreetAddress", other->metadata("StreetAddress"));
         this->setMetadata("City", other->metadata("City"));
         this->setMetadata("State", other->metadata("State"));
@@ -1139,10 +1145,11 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
     }
 
     // Sources - only accept the first list unless it is empty,
-    // in which case use the other.
-    const QStringList &o1 = this->metadata("origin").toStringList();
-    const QStringList &o2 = other->metadata("origin").toStringList();
-    if (o1.isEmpty() && !o2.isEmpty()) setMetadata("origin", o2);
+    // in which case use the other.  This is for an automatic
+    // merge - for a manual merge the two lists are combined.
+    const QVariant &o1 = this->metadata("origin");
+    const QVariant &o2 = other->metadata("origin");
+    if (o1.isNull() && !o2.isNull()) setMetadata("origin", o2);
 
     // Flags - combine the two.
     TrackData::WaypointFlags f1 = static_cast<TrackData::WaypointFlags>(this->metadata("flags").toInt());

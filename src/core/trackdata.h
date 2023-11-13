@@ -467,6 +467,7 @@ public:
 
     bool canMerge(const TrackDataWaypoint *other, bool positionOnly = false) const;
     void mergeWith(const TrackDataWaypoint *other);
+    QStringList formattedAddress() const;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -476,9 +477,6 @@ public:
 
 protected:
     QString iconName() const override;
-
-private:
-    QStringList formattedAddress() const;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -1447,3 +1447,116 @@ void AddPhotoCommand::undo()
 {
     AddWaypointCommand::undo();
 }
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Replace Items							//
+//									//
+//  Remove the specified 'items' from their parent container, which	//
+//  is assumed to be the same for all of them but need not be, and	//
+//  then put the replacement 'item' where the first removed item was.	//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+// TODO: equivalent to DeleteItemsCommand with no replacement
+
+ReplaceItemsCommand::ReplaceItemsCommand(FilesController *fc, QUndoCommand *parent)
+    : FilesCommandBase(fc, parent)
+{
+    mDeletedItemsContainer = nullptr;
+    mAddedItem = nullptr;
+    // Need this flag to distinguish between "no replacement specified"
+    // and "replacement has been added to and is owned by main data tree".
+    mWasAdded = false;
+}
+
+
+ReplaceItemsCommand::~ReplaceItemsCommand()
+{
+    delete mDeletedItemsContainer;
+    delete mAddedItem;
+}
+
+
+void ReplaceItemsCommand::setData(const QList<TrackDataItem *> &removeItems, TrackDataItem *addItem)
+{
+     mRemoveItems = removeItems;
+     mAddedItem = addItem;
+}
+
+
+void ReplaceItemsCommand::redo()
+{
+    Q_ASSERT(!mRemoveItems.isEmpty());
+    controller()->filesView()->clearSelection();
+    model()->startLayoutChange();
+
+    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new ItemContainer;
+    Q_ASSERT(mDeletedItemsContainer->childCount()==0);
+
+    const int num = mRemoveItems.count();
+    mParentIndexes.resize(num);
+    mParentItems.resize(num);
+
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mRemoveItems[i];
+        TrackDataItem *parent = item->parent();
+        Q_ASSERT(parent!=nullptr);
+        mParentItems[i] = parent;
+        mParentIndexes[i] = parent->childIndex(item);
+
+        parent->removeChildItem(item);
+        mDeletedItemsContainer->addChildItem(item);
+    }
+
+    if (mAddedItem!=nullptr)
+    {
+        int addedIndex = mParentIndexes[0];		// index of first removed item
+        TrackDataItem *addedParent = mParentItems[0];	// parent of first removed item
+        addedParent->addChildItem(mAddedItem, addedIndex);
+							// add new child to it
+        controller()->filesView()->selectItem(mAddedItem);
+							// and select in view
+        mAddedItem = nullptr;				// now claimed by data tree
+        mWasAdded = true;				// note item was added
+    }
+
+    model()->endLayoutChange();
+    controller()->doUpdateMap();
+}
+
+
+void ReplaceItemsCommand::undo()
+{
+    Q_ASSERT(!mRemoveItems.isEmpty());
+    const int num = mRemoveItems.count();
+    Q_ASSERT(mParentItems.count()==num);
+    Q_ASSERT(mParentIndexes.count()==num);
+
+    controller()->filesView()->clearSelection();
+    model()->startLayoutChange();
+
+    if (mWasAdded)					// a replacement was added,
+    {							// remove it again
+        int addedIndex = mParentIndexes[0];		// index of added item
+        TrackDataItem *addedParent = mParentItems[0];	// parent of added item
+        mAddedItem = addedParent->takeChildItem(addedIndex);
+    }							// remove replacement from tree
+
+    for (int i = num-1; i>=0; --i)			// now add back those deleted
+    {
+        TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
+        TrackDataItem *parent = mParentItems[i];
+        parent->addChildItem(item, mParentIndexes[i]);
+        controller()->filesView()->selectItem(item, true);
+    }
+    Q_ASSERT(mDeletedItemsContainer->childCount()==0);
+
+    mParentItems.clear();
+    mParentIndexes.clear();
+    mWasAdded = false;
+
+    model()->endLayoutChange();
+    controller()->doUpdateMap();
+}

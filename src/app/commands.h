@@ -79,7 +79,6 @@ private:
 
 
 
-
 class ImportFileCommand : public FilesCommandBase
 {
 public:
@@ -100,8 +99,6 @@ private:
 
 
 
-
-
 class ChangeItemCommand : public FilesCommandBase
 {
 public:
@@ -117,10 +114,6 @@ protected:
     QList<TrackDataItem *> mDataItems;
     bool mFileWasModified;
 };
-
-
-
-
 
 
 
@@ -144,7 +137,6 @@ private:
 
 
 
-
 class ChangeItemDataCommand : public ChangeItemCommand
 {
 public:
@@ -163,8 +155,6 @@ private:
     QVariant mNewValue;
     QVariantList mSavedValues;
 };
-
-
 
 
 
@@ -383,6 +373,28 @@ public:
 private:
     QUrl mLinkUrl;
     QDateTime mDateTime;
+};
+
+
+
+class ReplaceItemsCommand : public FilesCommandBase
+{
+public:
+    ReplaceItemsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
+    virtual ~ReplaceItemsCommand();
+
+    void setData(const QList<TrackDataItem *> &removeItems, TrackDataItem *addItem);
+
+    void redo() override;
+    void undo() override;
+
+private:
+    QList<TrackDataItem *> mRemoveItems;
+    QVector<TrackDataItem *> mParentItems;
+    QVector<int> mParentIndexes;
+    ItemContainer *mDeletedItemsContainer;
+    TrackDataItem *mAddedItem;
+    bool mWasAdded;
 };
 
 
