@@ -1,10 +1,8 @@
 
 #include "mergepointsdialogue.h"
 
-#include <qwidget.h>
 #include <qformlayout.h>
 #include <qcombobox.h>
-#include <qdebug.h>
 #include <qpushbutton.h>
 #include <qlabel.h>
 
@@ -12,47 +10,7 @@
 
 #include "pointiconprovider.h"
 #include "categorieseditdialogue.h"
-
-
-
-
-
-
-// TODO: to a separate source file
-// TODO: use also in TrackPropertiesDetailPages
-
-ListEdit::ListEdit(QWidget *pnt)
-    : QWidget(pnt)
-{
-    // TODO: use QHBoxLayout with first widget stretched
-    QGridLayout *hlay = new QGridLayout(this);
-    hlay->setMargin(0);
-
-    mListLabel = new QLabel(this);
-    mListLabel->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-    hlay->addWidget(mListLabel, 0, 0, Qt::AlignTop);
-    hlay->setColumnStretch(0, 1);
-
-    QPushButton *b = new QPushButton(pnt);
-    //QPushButton *b = new QPushButton(i18nc("@action:button", "Edit..."), pnt);
-    b->setIcon(QIcon::fromTheme("document-edit"));
-    setFocusProxy(b);
-    setFocusPolicy(Qt::StrongFocus);
-    hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
-
-    connect(b, &QAbstractButton::clicked, this, &ListEdit::editRequested);
-}
-
-
-
-void ListEdit::setList(const QStringList &list)
-{
-    mListLabel->setText(list.join(", "));
-}
-
-
-
-
+#include "listeditwidget.h"
 
 
 MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
@@ -97,8 +55,8 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
 
     lay->addItem(DialogBase::verticalSpacerItem());
 
-    mCategoriesLabel = new ListEdit(this);
-    connect(mCategoriesLabel, &ListEdit::editRequested, this, &MergePointsDialogue::slotEditCategories);
+    mCategoriesLabel = new ListEditWidget(this);
+    connect(mCategoriesLabel, &ListEditWidget::editRequested, this, &MergePointsDialogue::slotEditCategories);
     lay->addRow(i18nc("@label:textbox", "Categories:"), mCategoriesLabel);
     QLabel *al = qobject_cast<QLabel *>(lay->labelForField(mCategoriesLabel));
     if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
