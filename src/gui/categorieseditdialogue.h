@@ -57,8 +57,6 @@ private slots:
 
 private:
     QTreeWidget *mList;
-    const CategoriesList *mAllCategories;
-    const QStringList *mItemCategories;
 };
 
 #endif							// CATEGORIESEDITDIALOGUE_H

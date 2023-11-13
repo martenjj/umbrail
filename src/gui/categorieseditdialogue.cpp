@@ -51,9 +51,6 @@ CategoriesEditDialogue::CategoriesEditDialogue(const QStringList *itemCats, cons
     : DialogBase(pnt),
       DialogStateSaver(this)
 {
-    mAllCategories = allCats;
-    mItemCategories = itemCats;
-
     setObjectName("CategoriesEditDialogue");
     setWindowTitle(i18n("Select Categories"));
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Reset);
@@ -66,15 +63,20 @@ CategoriesEditDialogue::CategoriesEditDialogue(const QStringList *itemCats, cons
     mList->setRootIsDecorated(false);
     mList->setColumnCount(COL_COUNT);
 
-    const QStringList list = allCats->allCategories();
+    // Guard against the possibility of not having the full list
+    // of all categories available;  in this case, display the
+    // item's categories only.  Disable the list to indicate that
+    // there is no point trying to change anything.
+    const bool haveList = (allCats!=nullptr);
+    if (!haveList) mList->setEnabled(false);
+
+    const QStringList list = (haveList ? allCats->allCategories() : *itemCats);
     for (const QString &cat : list)
     {
-        QStringList strings;
-
         QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "" << "" << cat);
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsUserCheckable);
 
-        const int idx = mItemCategories->indexOf(cat);
+        const int idx = itemCats->indexOf(cat);
         item->setCheckState(COL_PRIMARY, idx==0 ? Qt::Checked : Qt::Unchecked);
         item->setCheckState(COL_SECONDARY, idx>=1 ? Qt::Checked : Qt::Unchecked);
 
@@ -125,6 +127,7 @@ QStringList CategoriesEditDialogue::categories()
     }
     else if (!cats.isEmpty())				// no primary category,
     {							// but secondary categories set
+        // TODO: is this message useful?
         KMessageBox::information(this, xi18nc("@info", "No primary category is set.<nl/>The first secondary category, <resource>%1</resource>,<nl/>will be taken as the primary category.", cats.first()));
     }
 
