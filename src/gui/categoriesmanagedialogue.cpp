@@ -285,11 +285,9 @@ void CategoriesManageDialogue::saveConfig(QDialog *dlg, KConfigGroup &grp) const
 
 void CategoriesManageDialogue::accept()
 {
-    mCategories.clear();				// clear all existing categories
     const int num = mList->topLevelItemCount();		// how many in GUI list
-    if (num==0) return;					// nothing to recreate
-
-    for (int i = 0; i<num; ++i)
+    mCategories.clear();				// clear all existing categories
+    for (int i = 0; i<num; ++i)				// recreate the category list
     {
         const QTreeWidgetItem *item = mList->topLevelItem(i);
         mCategories.addCategory(item->text(COL_NAME), item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
