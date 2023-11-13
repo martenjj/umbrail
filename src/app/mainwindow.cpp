@@ -304,12 +304,12 @@ void MainWindow::setupActions()
     connect(mDeleteItemsAction, &QAction::triggered, filesController(), &FilesController::slotDeleteItems);
 
     mSplitTrackAction = ac->addAction("track_split");
-    mSplitTrackAction->setText(i18n("Split Segment"));
+    mSplitTrackAction->setText(i18n("Split"));
     mSplitTrackAction->setIcon(QIcon::fromTheme("split"));
     connect(mSplitTrackAction, &QAction::triggered, filesController(), &FilesController::slotSplitSegment);
 
     mMergeTrackAction = ac->addAction("track_merge");
-    mMergeTrackAction->setText(i18n("Merge Segments"));
+    mMergeTrackAction->setText(i18n("Merge"));
     mMergeTrackAction->setIcon(QIcon::fromTheme("merge"));
     connect(mMergeTrackAction, &QAction::triggered, filesController(), &FilesController::slotMergeSegments);
 
@@ -1049,6 +1049,8 @@ case TrackData::Waypoint:
         selectedContainer = selectedItem->parent();
         statusEnabled = true;
         copyEnabled = true;
+        mergeEnabled = (selCount>1);
+        mergeText = i18nc("@action:inmenu", "Merge Waypoints...");
 
         if (selCount==1)
         {
@@ -1162,35 +1164,35 @@ default:
     mMoveItemAction->setEnabled(moveEnabled);
     mMoveItemAction->setText(moveText);
 
-    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File && !isReadOnly());
-    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File && !isReadOnly());
-    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File ||
-                                                 selType==TrackData::Folder) && !isReadOnly());
+    mAddTrackAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddRouteAction->setEnabled(selCount==1 && selType==TrackData::File);
+    mAddFolderAction->setEnabled(selCount==1 && (selType==TrackData::File || selType==TrackData::Folder));
 
     if (isPointsListMode())				// in points list view mode?
     {
         mAddWaypointAction->setEnabled(true);		// always allowed in this mode
+        mAddRoutepointAction->setEnabled(false);	// never allowed in this mode
     }
     else						// tree view mode
     {
-        // This will always be possible if a folder is selected.  If a point or
-        // waypoint is selected (to create at that position), then it may not
-        // be possible to actually create the waypoint if no folder exists
-        // to contain it.  Same for a route point below.
+        // This will always be possible if an appropriate container is
+        // selected.  If a point or waypoint is selected (to create at
+        // that position), then it may not be possible to actually create
+        // the point if no container exists to contain it.
         mAddWaypointAction->setEnabled(selCount==1 && (selType==TrackData::Folder ||
                                                        selType==TrackData::Trackpoint ||
-                                                       selType==TrackData::Waypoint) && !isReadOnly());
+                                                       selType==TrackData::Waypoint));
+        mAddRoutepointAction->setEnabled(selCount==1 && (selType==TrackData::Route ||
+                                                         selType==TrackData::Trackpoint ||
+                                                         selType==TrackData::Waypoint));
     }
 
-    mAddRoutepointAction->setEnabled(selCount==1 && (selType==TrackData::Route ||
-                                                     selType==TrackData::Trackpoint ||
-                                                     selType==TrackData::Waypoint) && !isReadOnly());
     mWaypointStatusAction->setEnabled(statusEnabled);
 
     if (selCount==1 && selType==TrackData::Trackpoint)
     {							// not first point in segment
         const QModelIndex idx = filesController()->model()->indexForItem(selectedItem);
-        mAddTrackpointAction->setEnabled(idx.row()>0 && !isReadOnly());
+        mAddTrackpointAction->setEnabled(idx.row()>0);
     }
     else mAddTrackpointAction->setEnabled(false);
 
@@ -1208,7 +1210,7 @@ default:
             mMapDragAction->setChecked(false);
             slotMapMovePoints();
         }
-        mMapDragAction->setEnabled(true && !isReadOnly());
+        mMapDragAction->setEnabled(true);
     }
     else
     {
