@@ -1,9 +1,9 @@
 
 #include "listeditwidget.h"
 
-#include <qformlayout.h>
-#include <qpushbutton.h>
+#include <qtoolbutton.h>
 #include <qlineedit.h>
+#include <qboxlayout.h>
 
 #include <klocalizedstring.h>
 
@@ -13,23 +13,22 @@
 ListEditWidget::ListEditWidget(QWidget *pnt)
     : QWidget(pnt)
 {
-    // TODO: use QHBoxLayout with first widget stretched
-    QGridLayout *hlay = new QGridLayout(this);
-    hlay->setMargin(0);
+    QHBoxLayout *hlay = new QHBoxLayout(this);
+    hlay->setContentsMargins(0, 0, 0, 0);
 
     mListLabel = new QLineEdit(this);
     mListLabel->setReadOnly(true);
-    hlay->addWidget(mListLabel, 0, 0);
-    hlay->setColumnStretch(0, 1);
+    hlay->addWidget(mListLabel);
+    hlay->setStretch(0, 1);
 
-    QPushButton *b = new QPushButton(pnt);
-    //QPushButton *b = new QPushButton(i18nc("@action:button", "Edit..."), pnt);
+    QToolButton *b = new QToolButton(this);
+    b->setAutoRaise(true);
     b->setIcon(QIcon::fromTheme("document-edit"));
+    connect(b, &QAbstractButton::clicked, this, &ListEditWidget::editRequested);
+    hlay->addWidget(b);
+
     setFocusProxy(b);
     setFocusPolicy(Qt::StrongFocus);
-    hlay->addWidget(b, 0, 1, Qt::AlignRight);
-
-    connect(b, &QAbstractButton::clicked, this, &ListEditWidget::editRequested);
 }
 
 
