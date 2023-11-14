@@ -37,6 +37,7 @@ class TrackDataItem;
 class TrackDataLabel;
 class VariableUnitDisplay;
 class CategoriesList;
+class ListEditWidget;
 
 
 class TrackItemDetailPage : public TrackPropertiesPage
@@ -78,9 +79,9 @@ protected slots:
 
 private:
     QLabel *mPositionLabel;
-    QLabel *mAddressLabel;
-    QLabel *mCategoriesLabel;
-    QLabel *mFlagsLabel;
+    ListEditWidget *mAddressLabel;
+    ListEditWidget *mCategoriesLabel;
+    ListEditWidget *mFlagsLabel;
     TrackDataLabel *mTimeLabel;
     TrackDataLabel *mTimeStartLabel;
     TrackDataLabel *mTimeEndLabel;

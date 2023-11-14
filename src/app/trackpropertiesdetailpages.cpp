@@ -26,7 +26,6 @@
 #include "trackpropertiesdetailpages.h"
 
 #include <qformlayout.h>
-#include <qpushbutton.h>
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
@@ -39,6 +38,7 @@
 #include "addresseditdialogue.h"
 #include "categorieseditdialogue.h"
 #include "flagseditdialogue.h"
+#include "listeditwidget.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -324,35 +324,6 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
 }
 
 
-static QPushButton *addDisplayEditField(QLabel **label,
-                                        const QString &caption,
-                                        QFormLayout *layout,
-                                        QWidget *pnt)
-{
-    QWidget *hb = new QWidget(pnt);
-    QGridLayout *hlay = new QGridLayout(hb);
-    hlay->setMargin(0);
-
-    QLabel *l = new QLabel(pnt);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
-    hlay->addWidget(l, 0, 0, Qt::AlignTop);
-    hlay->setColumnStretch(0, 1);
-
-    QPushButton *b = new QPushButton(i18nc("@action:button", "Edit..."), pnt);
-    b->setIcon(QIcon::fromTheme("document-edit"));
-    hb->setFocusProxy(b);
-    hb->setFocusPolicy(Qt::StrongFocus);
-    hlay->addWidget(b, 0, 1, Qt::AlignRight|Qt::AlignTop);
-
-    layout->addRow(caption, hb);
-    QLabel *al = qobject_cast<QLabel *>(layout->labelForField(hb));
-    if (al!=nullptr) al->setAlignment((al->alignment() & ~Qt::AlignVertical_Mask)|Qt::AlignTop);
-
-    *label = l;
-    return (b);
-}
-
-
 void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
                                            DisplayItems disp)
 {
@@ -592,22 +563,20 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
             addSeparatorField();
 
             // Categories
-            QPushButton *b = addDisplayEditField(&mCategoriesLabel,
-                                                 i18nc("@label:textbox", "Categories:"),
-                                                 mFormLayout, this);
-            b->setToolTip(i18nc("@info:tooltip", "Edit the categories"));
-            b->setEnabled(!isReadOnly() && mAllCategories!=nullptr);
-            connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditCategories);
+            mCategoriesLabel = new ListEditWidget(this);
+            mCategoriesLabel->setEditToolTip(i18nc("@info:tooltip", "Edit the categories"));
+            mCategoriesLabel->setEnabled(!isReadOnly() && mAllCategories!=nullptr);
+            connect(mCategoriesLabel, &ListEditWidget::editRequested, this, &TrackItemDetailPage::slotEditCategories);
+            mFormLayout->addRow(i18nc("@label:textbox", "Categories:"), mCategoriesLabel);
 
             if (num==1)					// a single point selected
             {
                 // Address
-                b = addDisplayEditField(&mAddressLabel,
-                                        i18nc("@label:textbox", "Address:"),
-                                        mFormLayout, this);
-                b->setToolTip(i18nc("@info:tooltip", "Edit the address"));
-                b->setEnabled(!isReadOnly());
-                connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditAddress);
+                mAddressLabel = new ListEditWidget(this);
+                mAddressLabel->setEditToolTip(i18nc("@info:tooltip", "Edit the address"));
+                mAddressLabel->setEnabled(!isReadOnly());
+                connect(mAddressLabel, &ListEditWidget::editRequested, this, &TrackItemDetailPage::slotEditAddress);
+                mFormLayout->addRow(i18nc("@label:textbox", "Address:"), mAddressLabel);
             }
         }
     }
@@ -615,12 +584,11 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
     // Flags, usually for a waypoint
     if (disp & DisplayFlags)
     {
-        QPushButton *b = addDisplayEditField(&mFlagsLabel,
-                                             i18nc("@label:textbox", "Flags:"),
-                                             mFormLayout, this);
-        b->setToolTip(i18nc("@info:tooltip", "Edit the waypoint flags"));
-        b->setEnabled(!isReadOnly());
-        connect(b, &QAbstractButton::clicked, this, &TrackItemDetailPage::slotEditFlags);
+        mFlagsLabel = new ListEditWidget(this);
+        mFlagsLabel->setEditToolTip(i18nc("@info:tooltip", "Edit the waypoint flags"));
+        mFlagsLabel->setEnabled(!isReadOnly());
+        connect(mFlagsLabel, &ListEditWidget::editRequested, this, &TrackItemDetailPage::slotEditFlags);
+        mFormLayout->addRow(i18nc("@label:textbox", "Flags:"), mFlagsLabel);
     }
 }
 
@@ -667,13 +635,18 @@ void TrackItemDetailPage::refreshData()
                                                              dataModel()->data("State"),
                                                              dataModel()->data("PostalCode"),
                                                              dataModel()->data("Country"));
-        mAddressLabel->setText(addr.join('\n'));
+
+        if (!addr.isEmpty()) mAddressLabel->setList(addr);
+        else mAddressLabel->setList(QStringList() << i18nc("no value set", "(None)"));
+        mAddressLabel->setDisplayToolTip(addr.join('\n'));
     }
 
     if (mCategoriesLabel!=nullptr)
     {
         const QStringList cats = dataModel()->data("category").toStringList();
-        mCategoriesLabel->setText(!cats.isEmpty() ? cats.join('\n') : i18nc("no categories set", "(None)"));
+        mCategoriesLabel->setDisplayToolTip(cats.join('\n'));
+        if (!cats.isEmpty()) mCategoriesLabel->setList(cats);
+        else mCategoriesLabel->setList(QStringList() << i18nc("no value set", "(None)"));
     }
 
     if (mFlagsLabel!=nullptr)
@@ -684,7 +657,10 @@ void TrackItemDetailPage::refreshData()
         if (flags & TrackData::HomePoint) setFlags.append(i18n("Home"));
         if (flags & TrackData::NoExport) setFlags.append(i18n("NoExport"));
         if (flags & TrackData::NewlyImported) setFlags.append(i18n("NewImport"));
-        mFlagsLabel->setText(!setFlags.isEmpty() ? setFlags.join('\n') : i18nc("no flags set", "(None)"));
+
+        mFlagsLabel->setDisplayToolTip(setFlags.join('\n'));
+        if (!setFlags.isEmpty()) mFlagsLabel->setList(setFlags);
+        else mFlagsLabel->setList(QStringList() << i18nc("no value set", "(None)"));
     }
 
     const QTimeZone *tz = dataModel()->timeZone();
