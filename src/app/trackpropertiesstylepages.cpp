@@ -209,7 +209,8 @@ void TrackItemStylePage::addIconButton()
     mIconButton = new KIconButton(this);
     mIconButton->setIconSize(KIconLoader::SizeMedium);
     mIconButton->setButtonIconSize(KIconLoader::SizeMedium);
-    mIconButton->installEventFilter(this);
+    mIconButton->setEnabled(!isReadOnly());
+    if (!isReadOnly()) mIconButton->installEventFilter(this);
     mFormLayout->addRow(i18n("Symbol:"), mIconButton);
 
     mIconNameLabel = new QLabel(this);
