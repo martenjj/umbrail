@@ -1120,6 +1120,11 @@ default:
     const QList<QAction *> acts = mWaypointStatusAction->actions();
     for (QAction *act : acts) act->setChecked(statusValue==act->data().toInt());
 
+    // This is allowed (but no modifications can be made)
+    // even in read-only mode.
+    mPropertiesAction->setEnabled(propsEnabled);
+    mPropertiesAction->setText(propsText);
+
     // No modifying actions are allowed in read-only mode, disable them
     // and then there is no more to do.
     if (isReadOnly())
@@ -1138,8 +1143,6 @@ default:
         return;
     }
 
-    mPropertiesAction->setEnabled(propsEnabled);
-    mPropertiesAction->setText(propsText);
     mDeleteItemsAction->setEnabled(delEnabled);
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
