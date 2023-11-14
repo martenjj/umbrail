@@ -30,9 +30,33 @@
 #include <qpushbutton.h>
 #include <qbuttongroup.h>
 #include <qcheckbox.h>
+#include <qfontdatabase.h>
 
 #include <klocalizedstring.h>
 #include <kiconloader.h>
+
+
+static QLabel *createHintLabel(const QString &text, QWidget *parent)
+{
+    QLabel *hintLabel = new QLabel(text+"", parent);
+    hintLabel->setFont(QFontDatabase::systemFont(QFontDatabase::SmallestReadableFont));
+    hintLabel->setWordWrap(true);
+    hintLabel->setAlignment(Qt::AlignLeft|Qt::AlignTop);
+
+    // In this application there seems to be no need to force the label's
+    // minimum width, as was needed in the Klipper configuration dialogue.
+
+    return (hintLabel);
+}
+
+
+static QPixmap createPixmap(const QString &name, const QString &overlay1, const QString &overlay2)
+{
+    // Our overlays at the top left and top right corners.
+    return (KIconLoader::global()->loadIcon(name, KIconLoader::NoGroup,
+                                            KIconLoader::SizeMedium, KIconLoader::DefaultState,
+                                            QStringList() << "" << "" << overlay1 << overlay2));
+}
 
 
 FlagsEditDialogue::FlagsEditDialogue(TrackData::WaypointFlags flags, QWidget *pnt)
@@ -52,34 +76,51 @@ FlagsEditDialogue::FlagsEditDialogue(TrackData::WaypointFlags flags, QWidget *pn
     mGroup = new QButtonGroup(vb);
     mGroup->setExclusive(false);
 
+    // Home point
     QCheckBox *check = new QCheckBox(i18n("Home point"), vb);
     check->setChecked(flags & TrackData::HomePoint);
     mGroup->addButton(check, TrackData::HomePoint);
-    glay->addWidget(check, 1, 1);
+    glay->addWidget(check, 1, 1, Qt::AlignTop);
 
     QLabel *pix = new QLabel(this);
-    pix->setPixmap(QIcon::fromTheme("go-home").pixmap(KIconLoader::SizeSmall));
-    glay->addWidget(pix, 1, 2);
+    pix->setPixmap(createPixmap("go-home", "", ""));
+    glay->addWidget(pix, 1, 2, 2, 1, Qt::AlignTop|Qt::AlignRight);
 
+    QLabel *hint = createHintLabel(i18n("The waypoint can be selected as \"Home\" or \"Work\" when exporting."), this);
+    glay->addWidget(hint, 2, 1);
+
+    glay->setRowMinimumHeight(3, DialogBase::verticalSpacing());
+
+    // Not exported
     check = new QCheckBox(i18n("Not exported"), vb);
     check->setChecked(flags & TrackData::NoExport);
     mGroup->addButton(check, TrackData::NoExport);
-    glay->addWidget(check, 2, 1);
+    glay->addWidget(check, 4, 1, Qt::AlignTop);
 
     pix = new QLabel(this);
-    pix->setPixmap(QIcon::fromTheme("process-stop").pixmap(KIconLoader::SizeSmall));
-    glay->addWidget(pix, 2, 2);
+    pix->setPixmap(createPixmap("document-export", "process-stop", ""));
+    glay->addWidget(pix, 4, 2, 2, 1, Qt::AlignTop|Qt::AlignRight);
 
+    hint = createHintLabel(i18n("The waypoint will not be exported."), this);
+    glay->addWidget(hint, 5, 1);
+
+    glay->setRowMinimumHeight(6, DialogBase::verticalSpacing());
+
+    // Newly imported
     check = new QCheckBox(i18n("Newly imported"), vb);
     check->setChecked(flags & TrackData::NewlyImported);
     mGroup->addButton(check, TrackData::NewlyImported);
-    glay->addWidget(check, 3, 1);
+    glay->addWidget(check, 7, 1, Qt::AlignTop);
 
     pix = new QLabel(this);
-    pix->setPixmap(QIcon::fromTheme("document-import").pixmap(KIconLoader::SizeSmall));
-    glay->addWidget(pix, 3, 2);
+    pix->setPixmap(createPixmap("document-import", "", "emblem-new"));
+    glay->addWidget(pix, 7, 2, 2, 1, Qt::AlignTop|Qt::AlignRight);
 
-    glay->setRowStretch(4, 1);
+    hint = createHintLabel(i18n("The waypoint has been newly imported and may need to be verified or merged with an existing one."), this);
+    glay->addWidget(hint, 8, 1);
+
+    glay->setRowMinimumHeight(9, DialogBase::verticalSpacing());
+    glay->setRowStretch(9, 1);
 }
 
 
