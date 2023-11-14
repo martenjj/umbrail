@@ -143,6 +143,26 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
 }
 
 
+static void disableSingleValueCombo(QComboBox *cb)
+{
+    const int num = cb->count();			// how many entries in combo
+    if (num==0) return;					// nothing to look at
+
+    bool allSame = true;				// assume so to start
+    const QString first = cb->itemText(0);		// text of first item
+    for (int idx = 1; idx<num; ++idx)			// look at all the others
+    {
+        if (cb->itemText(idx)!=first)			// not the same as first
+        {
+            allSame = false;				// some are different
+            break;					// no need to look at more
+        }
+    }
+
+    cb->setEnabled(!allSame);				// enable combo accordingly
+}
+
+
 void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *points)
 {
     mPoints = points;					// remember input list
@@ -174,7 +194,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         // Latitude/Longtitude - non-editable combo box with the alternatives
         const double lat = tdw->latitude();
         const double lon = tdw->longitude();
-        // Combining the numerical values into a QPointF so that they can be
+        // Combine the numerical values into a QPointF so that they can be
         // stored in a QVariant - easier than using a QPair and having to
         // declare that as a QMetaType.  It doesn't matter that the X and Y
         // coordinates are reversed.
@@ -214,9 +234,12 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
 
     mCategoriesLabel->setList(mCombinedCats);		// set from combined list
 
-    // TODO: for elevation, symbol, address, position disable the combo box if
-    // all of the values are the same - indicates to the user that there
-    // is no choice needing to be made.
+    // Diable non-editable combo boxes if all of the values are the same.
+    // This indicates to the user that there is no choice needing to be made.
+    disableSingleValueCombo(mSymbolEdit);
+    disableSingleValueCombo(mLatLongEdit);
+    disableSingleValueCombo(mElevationEdit);
+    disableSingleValueCombo(mAddressEdit);
 
     slotUpdateButtons();
 }
