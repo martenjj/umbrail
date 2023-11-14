@@ -35,4 +35,17 @@ ListEditWidget::ListEditWidget(QWidget *pnt)
 void ListEditWidget::setList(const QStringList &list)
 {
     mListLabel->setText(list.join(", "));
+    mListLabel->setCursorPosition(0);			// show start of new text
+}
+
+
+void ListEditWidget::setDisplayToolTip(const QString &tip)
+{
+    mListLabel->setToolTip(tip);			// the line edit
+}
+
+
+void ListEditWidget::setEditToolTip(const QString &tip)
+{
+    layout()->itemAt(1)->widget()->setToolTip(tip);	// the tool button
 }
