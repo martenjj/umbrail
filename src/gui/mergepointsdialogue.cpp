@@ -86,8 +86,10 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     mStatusEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     lay->addRow(i18n("Status:"), mStatusEdit);
 
-
-
+    mDescriptionEdit = new QComboBox(w);
+    mDescriptionEdit->setEditable(false);
+    mDescriptionEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    lay->addRow(i18n("Description:"), mDescriptionEdit);
 
     setMainWidget(w);
     w->setMinimumWidth(500);
@@ -107,6 +109,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     const QPointF p = mLatLongEdit->currentData().toPointF();
     res->setLatLong(p.x(), p.y());
 
+    // TODO: can just copy currentData directly
     const double elev = mElevationEdit->currentData().toDouble();
     if (!ISNAN(elev)) res->setMetadata("ele", elev);
 
@@ -151,6 +154,9 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     res->setMetadata("PostalCode", tdw->metadata("PostalCode"));
     res->setMetadata("Country", tdw->metadata("Country"));
 
+    // Other metadata that is simply copied as selected.
+    res->setMetadata("desc", mDescriptionEdit->currentData());
+
     return (res);					// caller takes ownership
 }
 
@@ -175,6 +181,23 @@ static void disableSingleValueCombo(QComboBox *cb)
 }
 
 
+static void selectFirstNonNullCombo(QComboBox *cb)
+{
+    const int num = cb->count();			// how many entries in combo
+    if (num==0) return;					// nothing to look at
+
+    for (int idx = 0; idx<num; ++idx)			// look at all the items
+    {
+        const QVariant &v = cb->itemData(idx);
+        if (!v.isNull())				// found one with non null data
+        {
+            cb->setCurrentIndex(idx);			// set that as current
+            return;					// no more to do
+        }
+    }
+}
+
+
 void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *points)
 {
     mPoints = points;					// remember input list
@@ -182,6 +205,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     mNameEdit->clear();					// reset accumulating fields
     mCombinedCats.clear();
 
+    // TODO: use selectFirstNonNullCombo
     int elevToSelect = -1;				// index to initially select
     int addrToSelect = -1;
 
@@ -192,10 +216,10 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         mNameEdit->addItem(tdw->name());
 
         // Symbol - non-editable combo box with the alternatives
-        const QVariant v = tdw->metadata("sym");
-        if (!v.isNull())
+        const QVariant &v1 = tdw->metadata("sym");
+        if (!v1.isNull())
         {
-            const QString &sym = v.toString();
+            const QString &sym = v1.toString();
             const PointIcon *pi = PointIconProvider::self()->icon(sym);
             mSymbolEdit->addItem(pi->icon(), sym, sym);
             // TODO: may need to show namespace
@@ -237,12 +261,23 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(tdw->metadata("status").toInt());
         mStatusEdit->addItem(QIcon::fromTheme(TrackData::iconForWaypointStatus(status)),
                              TrackData::formattedWaypointStatus(status), status);
+        // Description
+        const QVariant &v2 = tdw->metadata("desc");
+        if (!v2.isNull())
+        {
+            QString desc = v2.toString();
+            desc.replace('\n', "; ");
+            mDescriptionEdit->addItem(desc, v2);
+        }
+        else mDescriptionEdit->addItem(i18n("(none)"));
+
         ++idx;
     }
 
     mNameEdit->setCurrentIndex(0);			// initially select the first
     mLatLongEdit->setCurrentIndex(0);
     mStatusEdit->setCurrentIndex(0);
+    mDescriptionEdit->setCurrentIndex(0);
 
     if (elevToSelect==-1) elevToSelect = 0;		// select the first reasonable
     mElevationEdit->setCurrentIndex(elevToSelect);
@@ -251,13 +286,16 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
 
     mCategoriesLabel->setList(mCombinedCats);		// set from combined list
 
-    // Diable non-editable combo boxes if all of the values are the same.
+    // Disable non-editable combo boxes if all of the values are the same.
     // This indicates to the user that there is no choice needing to be made.
     disableSingleValueCombo(mSymbolEdit);
     disableSingleValueCombo(mLatLongEdit);
     disableSingleValueCombo(mElevationEdit);
     disableSingleValueCombo(mAddressEdit);
     disableSingleValueCombo(mStatusEdit);
+    disableSingleValueCombo(mDescriptionEdit);
+
+    selectFirstNonNullCombo(mDescriptionEdit);
 
     slotUpdateButtons();
 }
