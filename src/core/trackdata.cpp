@@ -282,6 +282,21 @@ default:				return (i18n("(Unknown %1)", status));
 }
 
 
+QString TrackData::iconForWaypointStatus(TrackData::WaypointStatus status)
+{
+    switch (status)
+    {
+default:
+case TrackData::StatusNone:		return ("unknown");
+case TrackData::StatusTodo:		return ("task-ongoing");
+case TrackData::StatusDone:		return ("task-complete");
+case TrackData::StatusQuestion:		return ("task-attempt");
+case TrackData::StatusUnwanted:		return ("task-reject");
+case TrackData::StatusInvalid:		return ("task-delegate");
+    }
+}
+
+
 // based on NavMarks PointData::displayAddress()
 QStringList TrackData::formattedAddress(const QVariant &street,
                                         const QVariant &city,

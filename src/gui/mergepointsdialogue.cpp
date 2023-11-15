@@ -79,7 +79,15 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     // "Properties - Metadata" list.  They are merged automatically by this
     // manual merge operation in the same way as other metadata.
 
-    // TODO: GUI for merge of type, time, status, description, colours
+    // TODO: GUI for merge of type, time, description, colours, media
+
+    mStatusEdit = new QComboBox(w);
+    mStatusEdit->setEditable(false);
+    mStatusEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    lay->addRow(i18n("Status:"), mStatusEdit);
+
+
+
 
     setMainWidget(w);
     w->setMinimumWidth(500);
@@ -122,10 +130,14 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
             if (!combinedOrgs.contains(org)) combinedOrgs.append(org);
         }
     }
+    if (f!=TrackData::NoFlags) res->setMetadata("flags", static_cast<int>(f));
 
-    res->setMetadata("flags", static_cast<int>(f));
     res->setMetadata("origin", combinedOrgs);
     res->setMetadata("category", mCombinedCats);
+
+    // Store status only if it is not "None"
+    TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(mStatusEdit->currentData().toInt());
+    if (status!=TrackData::StatusNone) res->setMetadata("status", status);
 
     // Decomposing the address from its formatted display form into
     // individual components is not deterministic, because null
@@ -221,11 +233,16 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         if (!addr.isEmpty() && addrToSelect==-1) addrToSelect = idx;
         mAddressEdit->addItem((!addr.isEmpty() ? addr : i18n("(none)")));
 
+        // Status
+        TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(tdw->metadata("status").toInt());
+        mStatusEdit->addItem(QIcon::fromTheme(TrackData::iconForWaypointStatus(status)),
+                             TrackData::formattedWaypointStatus(status), status);
         ++idx;
     }
 
     mNameEdit->setCurrentIndex(0);			// initially select the first
     mLatLongEdit->setCurrentIndex(0);
+    mStatusEdit->setCurrentIndex(0);
 
     if (elevToSelect==-1) elevToSelect = 0;		// select the first reasonable
     mElevationEdit->setCurrentIndex(elevToSelect);
@@ -240,6 +257,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     disableSingleValueCombo(mLatLongEdit);
     disableSingleValueCombo(mElevationEdit);
     disableSingleValueCombo(mAddressEdit);
+    disableSingleValueCombo(mStatusEdit);
 
     slotUpdateButtons();
 }

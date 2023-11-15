@@ -36,6 +36,7 @@ private:
     QComboBox *mSymbolEdit;
     QComboBox *mLatLongEdit;
     QComboBox *mElevationEdit;
+    QComboBox *mStatusEdit;
     ListEditWidget *mCategoriesLabel;
     QComboBox *mAddressEdit;
 };

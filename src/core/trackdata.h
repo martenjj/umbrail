@@ -201,8 +201,11 @@ namespace TrackData
     QString formattedDuration(unsigned t, bool blankIfZero = false);
     QString formattedTime(const QDateTime &dt, const QTimeZone *tz = nullptr);
     QString formattedWaypointStatus(TrackData::WaypointStatus status, bool blankForNone = false);
+    QString iconForWaypointStatus(TrackData::WaypointStatus status);
+
     QStringList formattedAddress(const QVariant &street, const QVariant &city,
-                                 const QVariant &state, const QVariant &pcode, const QVariant &cntry);
+                                 const QVariant &state, const QVariant &pcode,
+                                 const QVariant &cntry);
     /**
      * Find a folder by name or path.
      *
