@@ -41,6 +41,7 @@ private:
     QComboBox *mDescriptionEdit;
     ListEditWidget *mCategoriesLabel;
     QComboBox *mAddressEdit;
+    QComboBox *mLinkEdit;
 };
 
 #endif							// MERGEPOINTSDIALOG_H

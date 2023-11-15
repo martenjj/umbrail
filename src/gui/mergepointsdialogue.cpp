@@ -99,6 +99,11 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     mDescriptionEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     lay->addRow(i18n("Description:"), mDescriptionEdit);
 
+    mLinkEdit = new QComboBox(w);
+    mLinkEdit->setEditable(false);
+    mLinkEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    lay->addRow(i18n("Link/Media:"), mLinkEdit);
+
     setMainWidget(w);
     w->setMinimumWidth(500);
 }
@@ -165,6 +170,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     // Other metadata that is simply copied as selected.
     res->setMetadata("desc", mDescriptionEdit->currentData());
     res->setMetadata("time", mTimeEdit->currentData());
+    res->setMetadata("link", mLinkEdit->currentData());
 
     return (res);					// caller takes ownership
 }
@@ -194,16 +200,19 @@ static void selectFirstNonNullCombo(QComboBox *cb)
 {
     const int num = cb->count();			// how many entries in combo
     if (num==0) return;					// nothing to look at
+    int toSelect = 0;					// select first if nothing faund
 
     for (int idx = 0; idx<num; ++idx)			// look at all the items
     {
         const QVariant &v = cb->itemData(idx);
         if (!v.isNull())				// found one with non null data
         {
-            cb->setCurrentIndex(idx);			// set that as current
-            return;					// no more to do
+            toSelect = idx;				// set that as current
+            break;					// no more to do
         }
     }
+
+    cb->setCurrentIndex(toSelect);			// select found or first
 }
 
 
@@ -225,10 +234,10 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         mNameEdit->addItem(tdw->name());
 
         // Symbol - non-editable combo box with the alternatives
-        const QVariant &v1 = tdw->metadata("sym");
-        if (!v1.isNull())
+        QVariant v = tdw->metadata("sym");
+        if (!v.isNull())
         {
-            const QString &sym = v1.toString();
+            const QString &sym = v.toString();
             const PointIcon *pi = PointIconProvider::self()->icon(sym);
             mSymbolEdit->addItem(pi->icon(), sym, sym);
             // TODO: may need to show namespace
@@ -255,8 +264,8 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         else mElevationEdit->addItem(NONESTRING, NAN);
 
         // Time - non-editable combo box with the alternatives
-        const QVariant &v3 = tdw->metadata("time");
-        if (!v3.isNull()) mTimeEdit->addItem(tdw->formattedTime(), v3);
+        v = tdw->metadata("time");
+        if (!v.isNull()) mTimeEdit->addItem(tdw->formattedTime(), v);
         else mTimeEdit->addItem(NONESTRING);
 
         // Categories - pre-merge the lists
@@ -276,14 +285,20 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         mStatusEdit->addItem(QIcon::fromTheme(TrackData::iconForWaypointStatus(status)),
                              TrackData::formattedWaypointStatus(status), status);
         // Description
-        const QVariant &v2 = tdw->metadata("desc");
-        if (!v2.isNull())
+        v = tdw->metadata("desc");
+        if (!v.isNull())
         {
-            QString desc = v2.toString();
+            QString desc = v.toString();
             desc.replace('\n', "; ");
-            mDescriptionEdit->addItem(desc, v2);
+            mDescriptionEdit->addItem(desc, v);
         }
         else mDescriptionEdit->addItem(NONESTRING);
+
+        // Link/Media - non-editable combo box with the alternatives,
+        // not supporting the obsolete "media" tag.
+        v = tdw->metadata("link");
+        if (!v.isNull()) mLinkEdit->addItem(v.toString(), v);
+        else mLinkEdit->addItem(NONESTRING);
 
         ++idx;
     }
@@ -291,7 +306,6 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     mNameEdit->setCurrentIndex(0);			// initially select the first
     mLatLongEdit->setCurrentIndex(0);
     mStatusEdit->setCurrentIndex(0);
-    mDescriptionEdit->setCurrentIndex(0);
 
     if (elevToSelect==-1) elevToSelect = 0;		// select the first reasonable
     mElevationEdit->setCurrentIndex(elevToSelect);
@@ -309,9 +323,11 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     disableSingleValueCombo(mAddressEdit);
     disableSingleValueCombo(mStatusEdit);
     disableSingleValueCombo(mDescriptionEdit);
+    disableSingleValueCombo(mLinkEdit);
 
-    selectFirstNonNullCombo(mDescriptionEdit);
     selectFirstNonNullCombo(mTimeEdit);
+    selectFirstNonNullCombo(mDescriptionEdit);
+    selectFirstNonNullCombo(mLinkEdit);
 
     slotUpdateButtons();
 }
