@@ -12,6 +12,9 @@
 #include "listeditwidget.h"
 
 
+static const QString NONESTRING = i18nc("display string for no value", "(none)");
+
+
 MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     : DialogBase(pnt)
 {
@@ -44,6 +47,11 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     mElevationEdit->setEditable(false);
     mElevationEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     lay->addRow(i18n("Elevation:"), mElevationEdit);
+
+    mTimeEdit = new QComboBox(w);
+    mTimeEdit->setEditable(false);
+    mTimeEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    lay->addRow(i18n("Time:"), mTimeEdit);
 
     lay->addItem(DialogBase::verticalSpacerItem());
 
@@ -79,7 +87,7 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     // "Properties - Metadata" list.  They are merged automatically by this
     // manual merge operation in the same way as other metadata.
 
-    // TODO: GUI for merge of type, time, description, colours, media
+    // TODO: GUI for merge of type/media, colours
 
     mStatusEdit = new QComboBox(w);
     mStatusEdit->setEditable(false);
@@ -156,6 +164,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
 
     // Other metadata that is simply copied as selected.
     res->setMetadata("desc", mDescriptionEdit->currentData());
+    res->setMetadata("time", mTimeEdit->currentData());
 
     return (res);					// caller takes ownership
 }
@@ -225,7 +234,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
             // TODO: may need to show namespace
             //PointIcon::namespaceName(pi->nsp())
         }
-        else mSymbolEdit->addItem(QIcon("unknown"), i18n("(none)"));
+        else mSymbolEdit->addItem(QIcon("unknown"), NONESTRING);
 
         // Latitude/Longtitude - non-editable combo box with the alternatives
         const double lat = tdw->latitude();
@@ -243,7 +252,12 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
             if (elevToSelect==-1) elevToSelect = idx;
             mElevationEdit->addItem(QString::number(elev, 'f', 1), elev);
         }
-        else mElevationEdit->addItem(i18n("(none)"), NAN);
+        else mElevationEdit->addItem(NONESTRING, NAN);
+
+        // Time - non-editable combo box with the alternatives
+        const QVariant &v3 = tdw->metadata("time");
+        if (!v3.isNull()) mTimeEdit->addItem(tdw->formattedTime(), v3);
+        else mTimeEdit->addItem(NONESTRING);
 
         // Categories - pre-merge the lists
         const QStringList cats = tdw->metadata("category").toStringList();
@@ -255,7 +269,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         // Address - non-editable combo box with the alternatives
         QString addr = tdw->formattedAddress().join(", ");
         if (!addr.isEmpty() && addrToSelect==-1) addrToSelect = idx;
-        mAddressEdit->addItem((!addr.isEmpty() ? addr : i18n("(none)")));
+        mAddressEdit->addItem((!addr.isEmpty() ? addr : NONESTRING));
 
         // Status
         TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(tdw->metadata("status").toInt());
@@ -269,7 +283,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
             desc.replace('\n', "; ");
             mDescriptionEdit->addItem(desc, v2);
         }
-        else mDescriptionEdit->addItem(i18n("(none)"));
+        else mDescriptionEdit->addItem(NONESTRING);
 
         ++idx;
     }
@@ -291,11 +305,13 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     disableSingleValueCombo(mSymbolEdit);
     disableSingleValueCombo(mLatLongEdit);
     disableSingleValueCombo(mElevationEdit);
+    disableSingleValueCombo(mTimeEdit);
     disableSingleValueCombo(mAddressEdit);
     disableSingleValueCombo(mStatusEdit);
     disableSingleValueCombo(mDescriptionEdit);
 
     selectFirstNonNullCombo(mDescriptionEdit);
+    selectFirstNonNullCombo(mTimeEdit);
 
     slotUpdateButtons();
 }
