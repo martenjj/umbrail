@@ -34,6 +34,7 @@ private:
 
     QComboBox *mNameEdit;
     QComboBox *mSymbolEdit;
+    QComboBox *mColourEdit;
     QComboBox *mLatLongEdit;
     QComboBox *mElevationEdit;
     QComboBox *mTimeEdit;

@@ -36,6 +36,11 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     mSymbolEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
     lay->addRow(i18n("Symbol:"), mSymbolEdit);
 
+    mColourEdit = new QComboBox(w);
+    mColourEdit->setEditable(false);
+    mColourEdit->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+    lay->addRow(i18n("Colour:"), mColourEdit);
+
     lay->addItem(DialogBase::verticalSpacerItem());
 
     mLatLongEdit = new QComboBox(w);
@@ -86,8 +91,6 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     // them).  The only display of them is in the main points list and the
     // "Properties - Metadata" list.  They are merged automatically by this
     // manual merge operation in the same way as other metadata.
-
-    // TODO: GUI for merge of colours
 
     mStatusEdit = new QComboBox(w);
     mStatusEdit->setEditable(false);
@@ -171,6 +174,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     res->setMetadata("desc", mDescriptionEdit->currentData());
     res->setMetadata("time", mTimeEdit->currentData());
     res->setMetadata("link", mLinkEdit->currentData());
+    res->setMetadata("pointcolor", mColourEdit->currentData());
 
     return (res);					// caller takes ownership
 }
@@ -245,6 +249,17 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         }
         else mSymbolEdit->addItem(QIcon("unknown"), NONESTRING);
 
+        // Colour - non-editable combo box with the alternatives
+        v = tdw->metadata("pointcolor");
+        if (!v.isNull())
+        {
+            const QColor &col = v.value<QColor>();
+            QPixmap pix(16, 16);
+            pix.fill(col);
+            mColourEdit->addItem(QIcon(pix), col.name(), col);
+        }
+        else mColourEdit->addItem(QIcon::fromTheme("edit-none"), NONESTRING);
+
         // Latitude/Longtitude - non-editable combo box with the alternatives
         const double lat = tdw->latitude();
         const double lon = tdw->longitude();
@@ -317,6 +332,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     // Disable non-editable combo boxes if all of the values are the same.
     // This indicates to the user that there is no choice needing to be made.
     disableSingleValueCombo(mSymbolEdit);
+    disableSingleValueCombo(mColourEdit);
     disableSingleValueCombo(mLatLongEdit);
     disableSingleValueCombo(mElevationEdit);
     disableSingleValueCombo(mTimeEdit);
@@ -325,6 +341,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     disableSingleValueCombo(mDescriptionEdit);
     disableSingleValueCombo(mLinkEdit);
 
+    selectFirstNonNullCombo(mColourEdit);
     selectFirstNonNullCombo(mTimeEdit);
     selectFirstNonNullCombo(mDescriptionEdit);
     selectFirstNonNullCombo(mLinkEdit);
