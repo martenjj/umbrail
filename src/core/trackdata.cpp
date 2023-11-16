@@ -913,7 +913,6 @@ const PointIcon *TrackDataWaypoint::icon() const
     // The top level file item colour or the application default waypoint
     // colour is never actually used.
     v = metadata("pointcolor");
-    if (v.isNull()) v = metadata("color");
     if (!v.isNull())
     {
         const QColor col = v.value<QColor>();
