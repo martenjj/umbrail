@@ -37,13 +37,15 @@ public:
     enum Option
     {
         NoOption = 0x0000,
+        // an import or export operation
+        ImportExport = 0x0001,
         // export
-        ToClipboard = 0x0001,
-        SelectionOnly = 0x0002,
+        ToClipboard = 0x0010,
+        SelectionOnly = 0x0020,
         // import
         IgnoreHome = 0x0100,
         MergeWaypoints = 0x0200,
-        MarkNewWaypoints = 0x0400
+        MarkNewWaypoints = 0x0400,
     };
     Q_DECLARE_FLAGS(Options, Option)
 

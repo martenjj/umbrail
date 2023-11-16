@@ -878,7 +878,7 @@ void MainWindow::slotImportFile()
 
     if (!d.exec()) return;
     opts = d.options();					// actual options from dialogue
-							// add option for import operation
+    opts |= ImporterExporterBase::ImportExport;		// add options for import operation
     if (isPointsListMode()) opts |= ImporterExporterBase::MarkNewWaypoints;
 
     // Importing with merged waypoints cannot be undone and may cause data

@@ -88,6 +88,7 @@ private:
     void addMessage(ErrorReporter::Severity severity, const QString &msg);
 
     void checkNamespace(const QStringRef &namespaceURI, const QStringRef &localName, const QStringRef &nsPrefix);
+    bool finaliseElement(TrackDataItem *item);
 
 private:
     TrackDataTrack *mCurrentTrack;

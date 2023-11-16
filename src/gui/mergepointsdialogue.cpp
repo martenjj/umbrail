@@ -87,7 +87,7 @@ MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     // "Properties - Metadata" list.  They are merged automatically by this
     // manual merge operation in the same way as other metadata.
 
-    // TODO: GUI for merge of type/media, colours
+    // TODO: GUI for merge of colours
 
     mStatusEdit = new QComboBox(w);
     mStatusEdit->setEditable(false);

@@ -338,26 +338,25 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         }
         else addError("GPXX:CATEGORY not within WPT");
     }
-    else if (localName=="color")			// start of a COLOR element, which
-    {							// should be within EXTENSIONS
+    else if (localName=="color" ||			// start of a COLOR element or
+             localName=="linecolor" ||			// application-specific, which
+             localName=="pointcolor")			// should be within EXTENSIONS
+    {
         elementText = mXmlReader->readElementText();
 
         TrackDataItem *item = currentItem();		// find innermost current element
         if (item!=nullptr)
         {
+            // For the moment the attribute is recorded as is,
+            // COLOR will be reconciled with LINECOLOR/POINTCOLOR
+            // when the element is being finalised.
             QString rgbString = elementText;
             if (!rgbString.startsWith('#')) rgbString.prepend('#');
-            QColor col(rgbString);
-            if (!col.isValid()) return (addError("invalid value for COLOR"));
-
-            // The COLOR attribute is recorded as it it is, it will not set
-            // our internal LINECOLOR/POINTCOLOR attributes so that it does
-            // not become permanent if the file is re-exported.  COLOR will
-            // be looked up when needed if LINECOLOR/POINTCOLOR is not
-            // available.
-            item->setMetadata(localName, col);
+            const QColor col(rgbString);
+            if (col.isValid()) item->setMetadata(localName, col);
+            else addError("invalid value for COLOR");
         }
-        else addError("COLOR not within TRK, TRKSEG, TRKPT, WPT, RTE or RTEPT");
+        else if (localName=="color") addError("COLOR not within TRK, TRKSEG, TRKPT, WPT, RTE or RTEPT");
     }
 
     // Contrary to standard practice, perform this test with isNull() not
@@ -608,6 +607,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
             qDebug() << "got implied TRKSEG:" << mCurrentSegment->name();
 #endif
+            finaliseElement(mCurrentSegment);
             mCurrentTrack->addChildItem(mCurrentSegment);
             mCurrentSegment = nullptr;			// finished with temporary
         }
@@ -615,6 +615,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a TRK:" << mCurrentTrack->name();
 #endif
+        finaliseElement(mCurrentTrack);
         dataRoot()->addChildItem(mCurrentTrack);
         mCurrentTrack = nullptr;			// finished with temporary
         return (true);
@@ -629,6 +630,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a TRKSEG:" << mCurrentSegment->name();
 #endif
+        finaliseElement(mCurrentSegment);
         mCurrentTrack->addChildItem(mCurrentSegment);
         mCurrentSegment = nullptr;			// finished with temporary
         return (true);
@@ -644,6 +646,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         qDebug() << "got a TRKPT:" << mCurrentPoint->name();
 #endif
         Q_ASSERT(mCurrentSegment!=nullptr || mCurrentTrack!=nullptr);
+        finaliseElement(mCurrentPoint);
         if (mCurrentSegment!=nullptr) mCurrentSegment->addChildItem(mCurrentPoint);
         else mCurrentTrack->addChildItem(mCurrentPoint);
         mCurrentPoint = nullptr;			// finished with temporary
@@ -659,6 +662,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a RTE:" << mCurrentRoute->name();
 #endif
+        finaliseElement(mCurrentRoute);
         dataRoot()->addChildItem(mCurrentRoute);
         mCurrentRoute = nullptr;			// finished with temporary
         return (true);
@@ -674,6 +678,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         qDebug() << "got a RTEPT:" << mCurrentPoint->name();
 #endif
         Q_ASSERT(mCurrentRoute!=nullptr);
+        finaliseElement(mCurrentPoint);
         mCurrentRoute->addChildItem(mCurrentPoint);
         mCurrentPoint = nullptr;			// finished with temporary
         return (true);
@@ -737,6 +742,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
             tdw->setMetadata("flags", static_cast<int>(TrackData::NewlyImported));
         }
 
+        finaliseElement(tdw);
         folder->addChildItem(tdw);			// add to destination folder
         mCurrentPoint = nullptr;			// finished with temporary
         return (true);
@@ -896,4 +902,63 @@ void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
         // here.
         DataIndexer::setUriForNamespace(nsPrefix.toLatin1(), namespaceURI.toLatin1());
     }
+}
+
+
+bool GpxImporter::finaliseElement(TrackDataItem *item)
+{
+    // TODO: check/map obsolete MEDIA -> LINK
+
+    // Check the colour values.  COLOR is the standard element tag that
+    // may be generated and interpreted by other applications, while
+    // LINECOLOR/POINTCOLOR are our own internal tags as the authoritative
+    // record of colour within this application.
+    //
+    // COLOR may be set or updated by other applications.  Therefore the
+    // interpretation of the colour tags varies depending on whether this
+    // operation is an import or a file load.
+    //
+    // For a file load, which is assumed to have been previously saved by us,
+    // LINECOLOR/POINTCOLOR are taken as the authoritative values.  If COLOR
+    // is present and set to the same value then it is ignored, if not the
+    // same value then a warning is given.  If COLOR is present but there are
+    // no other colour tags, then the appropriate one is set from COLOR and
+    // the original tag removed.
+    //
+    // For an import, it is assumed that another application may have set
+    // the COLOR tag.  If present it is allowed to override LINECOLOR/POINTCOLOR,
+    // with again a warning if the values are different.
+    //
+    // In either case, after copying or ignoring the value as appropriate,
+    // the COLOR tag is removed.  It will be regenerated on export if
+    // necessary.
+
+    // Only our own colour tags should be present for the top level file
+    // element (in file metadata), and both may be present.  Accept and
+    // retain them without any further checking.
+    if (dynamic_cast<TrackDataFile *>(item)!=nullptr) return (true);
+
+    // If the COLOR tag is not present, then there is nothing to do.
+    const QColor col = item->metadata("color").value<QColor>();
+    if (!col.isValid()) return (true);
+
+    // Note whether this is a point element (POINTCOLOR applies), or
+    // any other element (LINECOLOR applies).  Then note the tag name
+    // as appropriate and get the corresponding colour value.
+    const bool isPoint = (dynamic_cast<TrackDataAbstractPoint *>(item)!=nullptr);
+    const QByteArray &name = (isPoint ? "pointcolor" : "linecolor");
+    const QColor ourCol = item->metadata(name).value<QColor>();
+
+    if (options() & ImporterExporterBase::ImportExport)	// an import operation
+    {
+        if (ourCol.isValid() && ourCol!=col) addWarning(QString("%1 ignored, using COLOR value").arg(QString(name).toUpper()));
+        item->setMetadata(name, col);
+    }
+    else						// a file load operation
+    {
+        if (ourCol.isValid() && ourCol!=col) addWarning(QString("COLOR ignored, using %1 value").arg(QString(name).toUpper()));
+    }
+    item->setMetadata("color", QVariant());		// clear the COLOR value
+
+    return (true);
 }
