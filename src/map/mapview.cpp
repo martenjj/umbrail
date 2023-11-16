@@ -286,8 +286,12 @@ void MapView::slotShowLayer()
 }
 
 
-static QColor resolveColour(const TrackDataItem *item, const char *key, const QColor &appDefault)
+QColor MapView::resolveLineColour(const TrackDataItem *item)
 {
+    // Only line colour, for those elements drawn as lines, needs to be considered
+    // here - the colour for a waypoint is resolved in TrackDataWaypoint::icon()
+    // and other types of points are drawn using icons only.
+    //
     // Resolving a colour is not a trivial operation - needing to examine not only
     // the metadata of the item, but also all of its parents, up to the top level file,
     // then finally the application's default.  However, this search will only need
@@ -298,8 +302,7 @@ static QColor resolveColour(const TrackDataItem *item, const char *key, const QC
 
     while (item!=nullptr)				// search to root of tree
     {
-        QVariant v = item->metadata(key);		// our colour from this item
-        if (v.isNull()) v = item->metadata("color");	// fallback colour from item
+        QVariant v = item->metadata("linecolor");	// our colour from this item
         if (!v.isNull())
         {
             QColor col = v.value<QColor>();		// colour value from that
@@ -308,13 +311,7 @@ static QColor resolveColour(const TrackDataItem *item, const char *key, const QC
         item = item->parent();				// up to parent item
     }
 
-    return (appDefault);				// finally application default
-}
-
-
-QColor MapView::resolveLineColour(const TrackDataItem *tdi)
-{
-    return (resolveColour(tdi, "linecolor", Settings::lineColour()));
+    return (Settings::lineColour());			// finally application default
 }
 
 

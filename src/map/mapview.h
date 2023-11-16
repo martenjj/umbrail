@@ -62,7 +62,6 @@ public:
     void setMovePointsMode(bool on);
 
     static QColor resolveLineColour(const TrackDataItem *tdi);
-    static QColor resolvePointColour(const TrackDataItem *tdi) = delete;
 
     void cancelDrag();
     void setStopLayerData(const QList<const TrackDataWaypoint *> *stops);
