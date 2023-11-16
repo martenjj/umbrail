@@ -400,12 +400,11 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     // Now resolve the final point or line colour - either one that
     // has been explicitly set, or the category colour if there is one.
     if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
-    {							// no COLOR at top level
+    {							// but no COLOR at top level
         TagQueue &toQueue = (isExtensionTag(item, "color") ? extensionsQueue : toplevelQueue);
 
         QColor col = explicitColour;
         if (!col.isValid()) col = categoryColour;
-        if (!col.isValid()) col = item->metadata("color").value<QColor>();
         if (col.isValid() && col.alpha()==255)
         {
             // NavMarks applied a workaround for OsmAnd+ (as of version 2.0.4)
