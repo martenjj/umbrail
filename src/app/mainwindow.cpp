@@ -1122,6 +1122,17 @@ default:
     mPropertiesAction->setEnabled(propsEnabled);
     mPropertiesAction->setText(propsText);
 
+    // Viewing actions allowed in read-only mode
+    mPlayMediaAction->setEnabled(playEnabled);
+    mPlayMediaAction->setText(playText);
+    mOpenMediaAction->setEnabled(playEnabled);
+    mSaveMediaAction->setEnabled(playEnabled);
+
+    mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
+    mClearSelectAction->setEnabled(selCount>0);
+    mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
+    mCopyAction->setEnabled(copyEnabled);
+
     // No modifying actions are allowed in read-only mode, disable them
     // and then there is no more to do.
     if (isReadOnly())
@@ -1145,16 +1156,6 @@ default:
     mProfileAction->setEnabled(profileEnabled);
     mStatisticsAction->setEnabled(profileEnabled);
     mStopDetectAction->setEnabled(stopsEnabled);
-
-    mPlayMediaAction->setEnabled(playEnabled);
-    mPlayMediaAction->setText(playText);
-    mOpenMediaAction->setEnabled(playEnabled);
-    mSaveMediaAction->setEnabled(playEnabled);
-
-    mSelectAllAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
-    mClearSelectAction->setEnabled(selCount>0);
-    mMapGoToAction->setEnabled(selCount>0 && selType!=TrackData::Mixed);
-    mCopyAction->setEnabled(copyEnabled);
 
     mSplitTrackAction->setEnabled(splitEnabled);
     if (splitEnabled) mSplitTrackAction->setText(splitText);
