@@ -47,9 +47,6 @@ ImportFileDialogue::ImportFileDialogue(const QString &filter, QWidget *pnt)
     mMergeWaypointsCheck->setChecked(false);
     form->addRow("", mMergeWaypointsCheck);
 
-    // TODO: warning message if main file modified (passed in via options)
-    // and mMergeWaypointsCheck is set to on.
-
     setMinimumWidth(450);
 }
 
@@ -57,7 +54,8 @@ ImportFileDialogue::ImportFileDialogue(const QString &filter, QWidget *pnt)
 void ImportFileDialogue::setOptions(ImporterExporterBase::Options opts)
 {
     mNoHomeCheck->setChecked(opts & ImporterExporterBase::IgnoreHome);
-    mMergeWaypointsCheck->setChecked(opts & ImporterExporterBase::MergeWaypoints);
+    if (opts & ImporterExporterBase::MergeNotAllowed) mMergeWaypointsCheck->setEnabled(false);
+    else mMergeWaypointsCheck->setChecked(opts & ImporterExporterBase::MergeWaypoints);
 }
 
 

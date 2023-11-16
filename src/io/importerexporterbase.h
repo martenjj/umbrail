@@ -46,6 +46,7 @@ public:
         IgnoreHome = 0x0100,
         MergeWaypoints = 0x0200,
         MarkNewWaypoints = 0x0400,
+        MergeNotAllowed = 0x0800
     };
     Q_DECLARE_FLAGS(Options, Option)
 

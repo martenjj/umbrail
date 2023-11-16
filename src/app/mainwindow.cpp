@@ -867,13 +867,10 @@ void MainWindow::slotImportFile()
     // TODO: maybe only use the dialogue if in points list mode?
     ImportFileDialogue d(FilesController::allImportFilters(), this);
 
-    /////////////////////////////////////////
-    // TODO: if filesController()->model()->isEmpty() then
-    // disable "Merge" via an option passed to dialogue
-    /////////////////////////////////////////
-
     ImporterExporterBase::Options opts = ImporterExporterBase::IgnoreHome;
     if (isPointsListMode()) opts |= ImporterExporterBase::MergeWaypoints;
+    const FilesModel *mod = filesController()->model();
+    if (mod->isEmpty() || mod->rootFileItem()->childCount()==0) opts |= ImporterExporterBase::MergeNotAllowed;
     d.setOptions(opts);					// default options for dialogue
 
     if (!d.exec()) return;
