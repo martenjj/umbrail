@@ -4,12 +4,15 @@
 #include <qformlayout.h>
 #include <qcombobox.h>
 #include <qpushbutton.h>
+#include <qdebug.h>
 
 #include <klocalizedstring.h>
 
 #include "pointiconprovider.h"
 #include "categorieseditdialogue.h"
 #include "listeditwidget.h"
+#include "dataindexer.h"
+#include "metadatamodel.h"
 
 
 static const QString NONESTRING = i18nc("display string for no value", "(none)");
@@ -163,18 +166,48 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     // components are ignored by TrackData::formattedAddress().
     // Therefore copy the components individually from the selected
     // source point.
-    const TrackDataWaypoint *tdw = mPoints->at(mAddressEdit->currentIndex());
-    res->setMetadata("StreetAddress", tdw->metadata("StreetAddress"));
-    res->setMetadata("City", tdw->metadata("City"));
-    res->setMetadata("State", tdw->metadata("State"));
-    res->setMetadata("PostalCode", tdw->metadata("PostalCode"));
-    res->setMetadata("Country", tdw->metadata("Country"));
+    const TrackDataWaypoint *src = mPoints->at(mAddressEdit->currentIndex());
+    res->setMetadata("StreetAddress", src->metadata("StreetAddress"));
+    res->setMetadata("City", src->metadata("City"));
+    res->setMetadata("State", src->metadata("State"));
+    res->setMetadata("PostalCode", src->metadata("PostalCode"));
+    res->setMetadata("Country", src->metadata("Country"));
 
     // Other metadata that is simply copied as selected.
     res->setMetadata("desc", mDescriptionEdit->currentData());
     res->setMetadata("time", mTimeEdit->currentData());
     res->setMetadata("link", mLinkEdit->currentData());
     res->setMetadata("pointcolor", mColourEdit->currentData());
+
+    // Any remaining metadata is simply copied from the first
+    // input point that has a non-null value.
+    const int num = DataIndexer::count();
+    for (int idx = 0; idx<num; ++idx)
+    {
+        const QByteArray &name = DataIndexer::name(idx);
+        if (MetadataModel::isInternalTag(name)) continue;
+        // Ignore data which will have been merged, either manually
+        // or automatically, already.
+        if (name=="sym" || name=="ele" || name=="flags" || name=="origin" ||
+            name=="category" || name=="status" || name=="StreetAddress" ||
+            name=="City" || name=="State" || name=="PostalCode" || name=="Country" ||
+            name=="desc" || name=="time" || name=="link" || name=="pointcolor") continue;
+
+        QVariant rv;					// result found to be copied
+        for (const TrackDataWaypoint *tdw : qAsConst(*mPoints))
+        {						// look at all input points
+            QVariant v = tdw->metadata(name);		// data from that point
+            if (v.isNull()) continue;			// ignore if there is none
+
+            if (rv.isNull()) rv = v;			// save this result value
+            else if (v!=rv)				// a value found already,
+            {						// but not the same
+                qDebug() << "conflicting merge values for" << name << "- discarding" << v << "from" << tdw->name();
+            }
+        }
+
+        if (!rv.isNull()) res->setMetadata(idx, rv);	// store merge value found
+    }
 
     return (res);					// caller takes ownership
 }
