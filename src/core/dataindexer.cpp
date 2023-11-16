@@ -97,6 +97,12 @@ QByteArray DataIndexer::name(int idx)
 }
 
 
+bool DataIndexer::exists(const QByteArray &nm)
+{
+    return (sIndexHash.contains(nm));
+}
+
+
 int DataIndexer::indexWithNamespace(const QByteArray &nm, const QByteArray &nsp)
 {
     const int idx = index(nm);				// look up index as before

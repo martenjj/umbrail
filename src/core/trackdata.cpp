@@ -840,10 +840,8 @@ TrackData::WaypointType TrackDataWaypoint::waypointType() const
     QVariant n = metadata("stop");			// first try saved stop data
     if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
 
-    n = metadata("link");				// then get saved link name
-    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
-    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
-    if (n.isNull() && hasExplicitName()) n = name();	// lastly try our waypoint name
+    n = metadata("link");				// get saved link name
+    if (n.isNull() && hasExplicitName()) n = name();	// if none try our waypoint name
     if (n.isNull()) return (TrackData::WaypointNormal);	// no media data present
 
     QString ns = n.toString();

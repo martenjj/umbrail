@@ -62,7 +62,6 @@ static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType
     }
 
     QVariant n = item->metadata("link");		// first try saved media name
-    if (n.isNull()) n = item->metadata("media");	// compatibility with old metadata
     if (n.isNull()) n = item->name();			// then the waypoint name
     qDebug() << "item" << item->name() << "link" << n.toString();
 
@@ -113,7 +112,6 @@ void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
     if (!file.isValid()) return;
 
     // TODO: selectable external player output with a config setting,
-    // see krepton//src/sounds.cpp
 
 #ifdef HAVE_PHONON
     VideoViewer *v = new VideoViewer(file, nullptr);

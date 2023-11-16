@@ -907,6 +907,25 @@ void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
 
 bool GpxImporter::finaliseElement(TrackDataItem *item)
 {
+    // Map the obsolete MEDIA tag to use LINK instead.
+    // Check whether any MEDIA tag has ever been seen first,
+    // so as not to create that tag if it not needed.
+    if (DataIndexer::exists("media"))
+    {
+        const QVariant &v1 = item->metadata("media");
+        if (!v1.isNull())
+        {
+            const QVariant &v2 = item->metadata("link");
+            if (v2.isNull())
+            {
+                addWarning("Obsolete MEDIA changed to LINK");
+                item->setMetadata("link", v1);
+            }
+            else if (v1!=v2) addWarning("Obsolete MEDIA ignored because LINK is present");
+            item->setMetadata("media", QVariant());
+        }
+    }
+
     // TODO: check/map obsolete MEDIA -> LINK
 
     // Check the colour values.  COLOR is the standard element tag that

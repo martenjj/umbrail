@@ -70,6 +70,14 @@ namespace DataIndexer
     QByteArray name(int idx);
 
     /**
+     * Check whether a name has been allocated.
+     *
+     * @param nm The name
+     * @return @c true if the name is allocated
+     **/
+    bool exists(const QByteArray &nm);
+
+    /**
      * Get the number of indexes that are currently allocated.
      *
      * @return the number, or 0 if none are currently allocated
