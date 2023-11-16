@@ -137,13 +137,7 @@ static inline const char *colourKey(bool isLine)
 
 QColor TrackItemStylePage::getColourData(bool isLine)
 {
-    QColor col = dataModel()->data(colourKey(isLine)).value<QColor>();
-    // TODO: Not sure if we really want to do this.  It's definitely the
-    // right thing to do to fall back to the COLOR value for rendering,
-    // but questionable whether it should be shown here as if it were
-    // our application setting.
-    if (!col.isValid()) col = dataModel()->data("color").value<QColor>();
-    return (col);
+    return (dataModel()->data(colourKey(isLine)).value<QColor>());
 }
 
 
