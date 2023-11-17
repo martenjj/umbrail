@@ -50,8 +50,6 @@
 #include "qcustomplot.h"
 #endif // HAVE_QCUSTOMPLOT
 
-#include <marble/MarbleDebug.h>
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Main							 	//
@@ -104,21 +102,12 @@ int main(int argc,char *argv[])
     QCommandLineParser parser;
     parser.setApplicationDescription(aboutData.shortDescription());
 
-    parser.addOption(QCommandLineOption("marble-debug", i18n("Enable Marble debug messages (default).")));
-    parser.addOption(QCommandLineOption("no-marble-debug", i18n("Disable Marble debug messages.")));
-
     parser.addPositionalArgument("file", i18n("File to load"), i18n("[file...]"));
     parser.addOption(QCommandLineOption((QStringList() << "r" << "readonly"), i18n("Open files as read-only.")));
 
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
-
-    // Unfortunately this sets the debug message state for our
-    // application's qDebug() messages as well as Marble's.
-    // Marble needs to be converted to use categorised logging.
-    if (parser.isSet("marble-debug")) Marble::MarbleDebug::setEnabled(true);
-    if (parser.isSet("no-marble-debug")) Marble::MarbleDebug::setEnabled(false);
 
     MainWindow *w = nullptr;
     QStringList args = parser.positionalArguments();
