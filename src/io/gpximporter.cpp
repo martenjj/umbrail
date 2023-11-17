@@ -705,25 +705,6 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #ifdef DEBUG_IMPORT
         qDebug() << "got a WPT:" << mCurrentPoint->name();
 #endif
-        if (tdw->isMediaType())
-        {
-            // TODO: do this in finaliseElement() after diagnostics
-
-            // Only do this check if the "link" metadata has not already
-            // been set by a LINK tag.
-            const int idx = DataIndexer::index("link");
-            if (tdw->metadata(idx).isNull())
-            {
-                // An OsmAnd+ AV note is stored as a waypoint with a special name.
-                // Using the GUI, it is possible to rename such a waypoint;  relying
-                // on the visible name to locate the media file would then fail.
-                // To get around this, we save the original name in the waypoint's
-                // metadata under the "link" key which will not get overwritten;  this
-                // will from then on be saved and loaded in the GPX file.
-                tdw->setMetadata(idx, tdw->name());
-            }
-        }
-
         // Do we ignore this as a "Home" or "Work" point?
         if (options() & ImporterExporterBase::IgnoreHome)
         {
@@ -923,26 +904,41 @@ void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
 
 bool GpxImporter::finaliseElement(TrackDataItem *item)
 {
-    // Map the obsolete MEDIA tag to use LINK instead.
-    // Check whether any MEDIA tag has ever been seen first,
-    // so as not to create that tag if it not needed.
-    if (DataIndexer::exists("media"))
+    TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(item);
+    if (tdw!=nullptr && tdw->isMediaType())
     {
-        const QVariant &v1 = item->metadata("media");
-        if (!v1.isNull())
-        {
-            const QVariant &v2 = item->metadata("link");
-            if (v2.isNull())
-            {
-                addWarning("Obsolete MEDIA changed to LINK");
-                item->setMetadata("link", v1);
-            }
-            else if (v1!=v2) addWarning("Obsolete MEDIA ignored because LINK is present");
-            item->setMetadata("media", QVariant());
-        }
-    }
+        // An OsmAnd+ AV note is stored as a waypoint with a special name.
+        // Using the GUI, it is possible to rename such a waypoint;  relying
+        // on the visible name to locate the media file would then fail.
+        // To get around this, we save the original name in the waypoint's
+        // metadata under the "link" key which will not get overwritten;  this
+        // will from then on be saved and loaded in the GPX file.
+        //
+        // Only do this check if the "link" metadata has not already
+        // been set by a LINK or MEDIA tag.
+        const int idx = DataIndexer::index("link");
 
-    // TODO: check/map obsolete MEDIA -> LINK
+        // Map the obsolete MEDIA tag to use LINK instead.
+        // Check whether any MEDIA tag has ever been seen first,
+        // so as not to create that tag if it not needed.
+        if (DataIndexer::exists("media"))
+        {
+            const QVariant &v1 = item->metadata("media");
+            if (!v1.isNull())
+            {
+                const QVariant &v2 = item->metadata(idx);
+                if (v2.isNull())
+                {
+                    addWarning("Obsolete MEDIA changed to LINK");
+                    item->setMetadata(idx, v1);
+                }
+                else if (v1!=v2) addWarning("Obsolete MEDIA ignored because LINK is present");
+                item->setMetadata("media", QVariant());
+            }
+        }
+
+        if (item->metadata(idx).isNull()) item->setMetadata(idx, tdw->name());
+    }
 
     // Check the colour values.  COLOR is the standard element tag that
     // may be generated and interpreted by other applications, while
