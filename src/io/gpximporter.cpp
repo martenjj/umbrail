@@ -231,7 +231,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     // value.  If the element tag is recognised, then use the value
     // as appropriate.  The readElementText() consumes the element.
     // This just an optimisation so that characters() and endElement()
-    // do not havs to be called as the tokeniser parses the element.
+    // do not have to be called as the tokeniser parses the element.
     //
     // The (default) option ErrorOnUnexpectedElement to readElementText()
     // will raise an error if any nested elements are found.  Really, the
@@ -595,6 +595,17 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         return (true);
     }
 
+    // For tags that create elements, if for some reason the element
+    // cannot be finalised or added to the data tree it must be cleaned
+    // up before returning with addError() to skip the current element.
+    // For example,
+    //
+    //    if (there is a problem with the waypoint)
+    //    {
+    //      delete mCurrentPoint; mCurrentPoint = nullptr;
+    //      return (addError("Waypoint not complete"));
+    //    }
+
     if (localName=="trk")				// end of a TRK element
     {
         if (mCurrentTrack==nullptr)			// check must have started
@@ -696,6 +707,8 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
 #endif
         if (tdw->isMediaType())
         {
+            // TODO: do this in finaliseElement() after diagnostics
+
             // Only do this check if the "link" metadata has not already
             // been set by a LINK tag.
             const int idx = DataIndexer::index("link");
@@ -711,15 +724,18 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
             }
         }
 
-        // If for some reason any element cannot be finalised or added to the
-        // data tree, it must be cleaned up before returning with addError()
-        // to skip the current element.  For example,
-        //
-        //    if (there is a problem with the waypoint)
-        //    {
-        //      delete mCurrentPoint; mCurrentPoint = nullptr;
-        //      return (addError("Waypoint not complete"));
-        //    }
+        // Do we ignore this as a "Home" or "Work" point?
+        if (options() & ImporterExporterBase::IgnoreHome)
+        {
+            const QString &name = tdw->name();
+            if (name=="Home" ||				// Garmin
+                name=="home" || name=="work")		// OsmAnd+
+            {
+                qDebug() << "Home point" << name << "ignored";
+                delete mCurrentPoint; mCurrentPoint = nullptr;
+                return (true);
+            }
+        }
 
         TrackDataFolder *folder = waypointFolder(tdw, tdw->isMediaType() ? NOTES_FOLDER_NAME : WAYPOINTS_FOLDER_NAME);
         Q_ASSERT(folder!=nullptr);
