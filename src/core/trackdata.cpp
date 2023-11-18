@@ -51,7 +51,6 @@
 #undef MEMORY_TRACKING
 #undef DEBUG_ICONS
 #define DEBUG_MERGE
-#define DEBUG_ICONS
 
 //////////////////////////////////////////////////////////////////////////
 //									//

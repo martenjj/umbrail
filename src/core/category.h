@@ -34,14 +34,15 @@ class CategoryData
 {
 public:
     CategoryData() = default;
-    explicit CategoryData(const QColor &colour)					{ mColour = colour; }
+    explicit CategoryData(const QColor &colour)		{ mColour = colour; }
 
-    void setColour(const QColor &colour)					{ mColour = colour; }
-    void setIcon(const QString &iconName, const QString &shape = QString()) 	{ mIconName = iconName; mShape = shape; }
+    void setColour(const QColor &colour)		{ mColour = colour; }
+    void setIcon(const QString &iconName) 		{ mIconName = iconName; }
+    void setShape(const QString &shape) 		{ mShape = shape; }
 
-    QColor colour() const		{ return (mColour); }
-    QString icon() const		{ return (mIconName); }
-    QString shape() const		{ return (mShape); }
+    QColor colour() const				{ return (mColour); }
+    QString icon() const				{ return (mIconName); }
+    QString shape() const				{ return (mShape); }
 
 private:
     QColor mColour;

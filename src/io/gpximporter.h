@@ -34,6 +34,7 @@ class TrackDataTrack;
 class TrackDataRoute;
 class TrackDataSegment;
 class TrackDataAbstractPoint;
+class CategoryData;
 
 class QXmlStreamReader;
 class QXmlStreamAttributes;
@@ -83,6 +84,7 @@ private:
     QByteArray indent() const;
     TrackDataItem *currentItem() const;
     void getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName);
+    void addCategory(const QStringRef &name, const CategoryData &cat);
     QString elementContents();
 
     void addMessage(ErrorReporter::Severity severity, const QString &msg);

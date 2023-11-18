@@ -180,6 +180,23 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
 }
 
 
+void GpxImporter::addCategory(const QStringRef &name, const CategoryData &cat)
+{
+    // The first time that a valid category has been found,
+    // allocate the category map and set it on the root file item.
+    // The user of that root item will eventually take ownership of it.
+    CategoryList *catMap = dataRoot()->categories();
+    if (catMap==nullptr)
+    {
+        qDebug() << "new category map for" << dataRoot()->name();
+        catMap = new CategoryList;
+        dataRoot()->setCategories(catMap);
+    }
+							// add entry to categories
+    catMap->addCategory(name.toString(), cat);
+}
+
+
 bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &encoding)
 {
 #ifdef DEBUG_DETAILED
@@ -410,16 +427,19 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
 
         mWithinExtensions = true;			// just note for contents
     }
-    else if (localName=="catmap")			// start of a CATMAP element
+    else if (localName=="catmap" || localName=="points_groups")
     {
+        // The start of a CATMAP (ours) or POINTS_GROUPS (OsmAnd) container
+        // element.  For simplicity the two are considered equivalent.
+
         if (mWithinCategories)				// check not nested
         {
-            addError("nested CATMAP elements");
+            addError("nested CATMAP or POINTS_GROUPS elements");
         }
 
         if (!mWithinExtensions)				// should be within EXTENSIONS
         {
-            addWarning("CATMAP not within EXTENSIONS");
+            addWarning("CATMAP or POINTS_GROUPS not within EXTENSIONS");
         }
 
         mWithinCategories = true;			// just note for contents
@@ -514,16 +534,23 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName), link.toString());
         else addWarning("missing LINK/HREF attribute on LINK element");
     }
-    else if (localName=="catentry")			// start of a CATENTRY element
+    else if (localName=="catentry" || localName=="group")
     {
+        // The start of a CATENTRY (ours) or GROUP (OsmAnd) category
+        // element.  For simplicity the two are again considered equivalent.
+        //
+        //  <catentry name="personal" color="#eecc22"/>
+        //  <group name="personal" color="#eecc22" icon="special_house" background="circle"/>
+
         if (!mWithinCategories)
         {
-            return (addError("CATENTRY not within CATMAP"));
+            return (addError("CATENTRY or GROUP not within CATMAP or POINTS_GROUP"));
         }
 
         QStringRef name = atts.value("name");
-        if (name.isEmpty()) return (addWarning("missing NAME attribute on CATENTRY element"));
-        QColor col;
+        if (name.isEmpty()) return (addWarning("missing NAME attribute on "+localName.toUpper()+" element"));
+
+        QColor col;					// get the colour, present for both
         QString rgbString = atts.value("color").toString();
         if (!rgbString.isEmpty())
         {
@@ -532,18 +559,13 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             if (!col.isValid()) return (addError("invalid value for COLOR"));
         }
 
-        // The first time that a valid category has been found,
-        // allocate the category map and set it on the root file item.
-        // The user of that root item will eventually take ownership of it.
-        CategoryList *catMap = dataRoot()->categories();
-        if (catMap==nullptr)
-        {
-            qDebug() << "new category map";
-            catMap = new CategoryList;
-            dataRoot()->setCategories(catMap);
-        }
-							// add entry to categories
-        catMap->addCategory(name.toString(), CategoryData(col));
+        CategoryData cat(col);				// create the category data
+        const QStringRef iconName = atts.value("icon");	// then collect the remaining
+        if (!iconName.isEmpty()) cat.setIcon(iconName.toString());
+        const QStringRef shape = atts.value("background");
+        if (!shape.isEmpty()) cat.setShape(shape.toString());
+
+        addCategory(name, CategoryData(col));		// add entry to categories
     }
     else						// start of unrecognised element
     {
@@ -589,8 +611,10 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         return (true);
     }
 
-    if (localName=="catmap")				// end of a CATMAP element
+    if (localName=="catmap" || localName=="points_groups")
     {
+        // The end of a CATMAP (ours) or POINTS_GROUPS (OsmAnd) container
+        // element.
         mWithinCategories = false;			// just note it finished
         return (true);
     }
