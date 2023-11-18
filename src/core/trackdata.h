@@ -47,7 +47,7 @@ class TrackDataFile;
 class TrackDataFolder;
 class TrackPropertiesPage;
 class PointIcon;
-class CategoriesList;
+class CategoryList;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -297,8 +297,8 @@ public:
 
     QUrl fileName() const				{ return (mFileName); }
     void setFileName(const QUrl &file);
-    CategoriesList *categories() const			{ return (mCategories); }
-    void setCategories(CategoriesList *list)		{ mCategories = list; }
+    CategoryList *categories() const			{ return (mCategories); }
+    void setCategories(CategoryList *list)		{ mCategories = list; }
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -311,7 +311,7 @@ protected:
 
 private:
     QUrl mFileName;
-    CategoriesList *mCategories;
+    CategoryList *mCategories;
 };
 
 //////////////////////////////////////////////////////////////////////////

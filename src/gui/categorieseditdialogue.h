@@ -33,7 +33,7 @@
 
 class QTreeWidget;
 class QTreeWidgetItem;
-class CategoriesList;
+class CategoryList;
 
 
 class CategoriesEditDialogue : public DialogBase, public DialogStateSaver
@@ -41,7 +41,7 @@ class CategoriesEditDialogue : public DialogBase, public DialogStateSaver
     Q_OBJECT
 
 public:
-    explicit CategoriesEditDialogue(const QStringList *itemCats, const CategoriesList *allCats, QWidget *pnt = NULL);
+    explicit CategoriesEditDialogue(const QStringList *itemCats, const CategoryList *allCats, QWidget *pnt = NULL);
     virtual ~CategoriesEditDialogue() = default;
 
     QStringList categories();

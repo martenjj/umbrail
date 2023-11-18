@@ -30,7 +30,7 @@
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>
 
-#include "categorieslist.h"
+#include "category.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -49,11 +49,11 @@ class CategoryEditDialogue : public DialogBase
     Q_OBJECT
 
 public:
-    explicit CategoryEditDialogue(const QString &name, const QColor &col, QWidget *pnt = nullptr);
+    explicit CategoryEditDialogue(const QString &name, const CategoryData &cat, QWidget *pnt = nullptr);
     virtual ~CategoryEditDialogue() = default;
 
     QString name() const;
-    QColor colour() const;
+    CategoryData category() const;
 
 private slots:
     void slotUpdateButtonStates();
@@ -74,10 +74,10 @@ class CategoriesManageDialogue : public DialogBase, public DialogStateSaver
     Q_OBJECT
 
 public:
-    explicit CategoriesManageDialogue(const CategoriesList *cats, QWidget *pnt = nullptr);
+    explicit CategoriesManageDialogue(const CategoryList *cats, QWidget *pnt = nullptr);
     virtual ~CategoriesManageDialogue() = default;
 
-    const CategoriesList *categories() const		{ return (&mCategories); }
+    const CategoryList *categories() const		{ return (&mCategories); }
 
     void saveConfig(QDialog *dlg, KConfigGroup &grp) const override;
     void restoreConfig(QDialog *dlg, const KConfigGroup &grp) override;
@@ -91,7 +91,7 @@ protected slots:
 
 private:
     void createDisplay();
-    QTreeWidgetItem *addCategoryItem(const QString &name, const QColor &col);
+    QTreeWidgetItem *addCategoryItem(const QString &name, const CategoryData &cat);
 
 private slots:
     void slotUpdateButtonStates();
@@ -102,7 +102,7 @@ private:
     QPushButton *mEditButton;
     QPushButton *mDeleteButton;
 
-    CategoriesList mCategories;
+    CategoryList mCategories;
 };
 
 //////////////////////////////////////////////////////////////////////////

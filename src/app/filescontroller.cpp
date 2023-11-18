@@ -1514,19 +1514,19 @@ void FilesController::slotSetTimeZone()
 
 void FilesController::slotManageCategories()
 {
-    CategoriesList *cats = model()->rootFileItem()->categories();
+    CategoryList *cats = model()->rootFileItem()->categories();
     CategoriesManageDialogue d(cats, mainWidget());	// existing categories, may be none
     if (!d.exec()) return;
 
     // TODO: maybe should be undo'able
 
-    const CategoriesList *newCats = d.categories();	// updated categories from dialogue
+    const CategoryList *newCats = d.categories();	// updated categories from dialogue
     Q_ASSERT(newCats!=nullptr);
 
     if (cats==nullptr)					// no categories previously set
     {
         if (newCats->count()==0) return;		// none to add, nothing to do
-        cats = new CategoriesList;			// allocate new and set on root
+        cats = new CategoryList;			// allocate new and set on root
         model()->rootFileItem()->setCategories(cats);
     }
 

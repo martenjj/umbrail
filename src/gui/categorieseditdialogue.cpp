@@ -35,7 +35,7 @@
 #include <kmessagebox.h>
 #include <kconfiggroup.h>
 
-#include "categorieslist.h"
+#include "category.h"
 
 
 enum COLUMN
@@ -47,7 +47,7 @@ enum COLUMN
 };
 
 
-CategoriesEditDialogue::CategoriesEditDialogue(const QStringList *itemCats, const CategoriesList *allCats, QWidget *pnt)
+CategoriesEditDialogue::CategoriesEditDialogue(const QStringList *itemCats, const CategoryList *allCats, QWidget *pnt)
     : DialogBase(pnt),
       DialogStateSaver(this)
 {
@@ -70,7 +70,7 @@ CategoriesEditDialogue::CategoriesEditDialogue(const QStringList *itemCats, cons
     const bool haveList = (allCats!=nullptr);
     if (!haveList) mList->setEnabled(false);
 
-    const QStringList list = (haveList ? allCats->allCategories() : *itemCats);
+    const QStringList list = (haveList ? allCats->allNames() : *itemCats);
     for (const QString &cat : list)
     {
         QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "" << "" << cat);

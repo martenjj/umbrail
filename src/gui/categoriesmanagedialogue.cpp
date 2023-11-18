@@ -46,7 +46,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-CategoryEditDialogue::CategoryEditDialogue(const QString &name, const QColor &col, QWidget *pnt)
+CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryData &cat, QWidget *pnt)
     : DialogBase(pnt)
 {
     setObjectName("CategoryEditDialogue");
@@ -62,7 +62,7 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const QColor &co
     lay->addRow(i18n("Name:"), mNameEdit);
 
     mColourButton = new KColorButton(w);
-    mColourButton->setColor(col);
+    mColourButton->setColor(cat.colour());
     lay->addRow(i18n("Colour:"), mColourButton);
 
     setMainWidget(w);
@@ -78,9 +78,11 @@ QString CategoryEditDialogue::name() const
 }
 
 
-QColor CategoryEditDialogue::colour() const
+CategoryData CategoryEditDialogue::category() const
 {
-    return (mColourButton->color());
+    CategoryData res;
+    res.setColour(mColourButton->color());
+    return (res);
 }
 
 
@@ -120,7 +122,7 @@ enum COLUMN
 };
 
 
-CategoriesManageDialogue::CategoriesManageDialogue(const CategoriesList *cats, QWidget *pnt)
+CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWidget *pnt)
     : DialogBase(pnt),
       DialogStateSaver(this)
 {
@@ -188,10 +190,10 @@ static inline void setItemData(QTreeWidgetItem *item, const QString &name, const
 }
 
 
-QTreeWidgetItem *CategoriesManageDialogue::addCategoryItem(const QString &name, const QColor &col)
+QTreeWidgetItem *CategoriesManageDialogue::addCategoryItem(const QString &name, const CategoryData &cat)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem;
-    setItemData(item, name, col);
+    setItemData(item, name, cat.colour());
     item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     mList->addTopLevelItem(item);
     return (item);
@@ -201,18 +203,18 @@ QTreeWidgetItem *CategoriesManageDialogue::addCategoryItem(const QString &name, 
 void CategoriesManageDialogue::createDisplay()
 {
     mList->clear();
-    const QStringList cats = mCategories.allCategories();
-    for (const QString &cat : cats) addCategoryItem(cat, mCategories.colourFor(cat));
+    const QStringList catNames = mCategories.allNames();
+    for (const QString &name : catNames) addCategoryItem(name, mCategories.category(name));
 }
 
 
 // TODO: check for duplication
 void CategoriesManageDialogue::slotNewCategory()
 {
-    CategoryEditDialogue d("", QColor(), this);
+    CategoryEditDialogue d("", CategoryData(), this);
     if (!d.exec()) return;
 
-    QTreeWidgetItem *item = addCategoryItem(d.name(), d.colour());
+    QTreeWidgetItem *item = addCategoryItem(d.name(), d.category());
     mList->sortItems(COL_NAME, Qt::AscendingOrder);
     mList->setCurrentItem(item);
     mList->scrollToItem(item);
@@ -226,10 +228,12 @@ void CategoriesManageDialogue::slotEditCategory()
     if (sel.count()!=1) return;
 
     QTreeWidgetItem *item = sel.first();
-    CategoryEditDialogue d(item->text(COL_NAME), item->data(COL_COLOUR, Qt::UserRole).value<QColor>(), this);
+    CategoryData cat;
+    cat.setColour(item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
+    CategoryEditDialogue d(item->text(COL_NAME), cat, this);
     if (!d.exec()) return;
 
-    setItemData(item, d.name(), d.colour());
+    setItemData(item, d.name(), d.category().colour());
     mList->sortItems(COL_NAME, Qt::AscendingOrder);
     mList->scrollToItem(item);
 }
@@ -290,7 +294,9 @@ void CategoriesManageDialogue::accept()
     for (int i = 0; i<num; ++i)				// recreate the category list
     {
         const QTreeWidgetItem *item = mList->topLevelItem(i);
-        mCategories.addCategory(item->text(COL_NAME), item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
+        CategoryData cat;
+        cat.setColour(item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
+        mCategories.addCategory(item->text(COL_NAME), cat);
     }
 
     DialogBase::accept();

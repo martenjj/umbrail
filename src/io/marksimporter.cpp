@@ -39,7 +39,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
-#include "categorieslist.h"
+#include "category.h"
 
 #define MARKS_FOLDER_NAME	"Marks"
 #define GROUP_CREATOR		"Creator"
@@ -86,7 +86,7 @@ bool MarksImporter::loadFrom(QIODevice *dev)
 
     // Allocate the category map and set it on the root file item.
     // The user of that root item takes ownership of it.
-    CategoriesList *catMap = new CategoriesList;
+    CategoryList *catMap = new CategoryList;
     dataRoot()->setCategories(catMap);
 
     // Load the category->colour map from the [Categories] group,
@@ -106,8 +106,8 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         QString colKey = "Colour"+QString::number(i);	// key for category colour
         QColor colVal = grp.readEntry(colKey, QColor());
 						        // get colour for category
-        catMap->addCategory(nameVal, colVal);		// save in category map
-    }
+        catMap->addCategory(nameVal, CategoryData(colVal));
+    }							// add entry to categories
     qDebug() << "category map" << catMap->count() << "entries";
 
     int num = 0;

@@ -35,7 +35,7 @@
 #include "filesmodel.h"
 #include "filesview.h"
 #include "dataindexer.h"
-#include "categorieslist.h"
+#include "category.h"
 
 
 #undef DEBUG_ITEMS
@@ -311,10 +311,10 @@ again:                  if (j>=importFolder->childCount()) break;
         // Merge any categories defined in the import data with the existing
         // categories on the root file item.  Do not supersede any already
         // existing categories.
-        CategoriesList *newMap = mImportData->categories();
+        CategoryList *newMap = mImportData->categories();
         if (newMap!=nullptr)				// import data has categories
         {
-            CategoriesList *catMap = root->categories();
+            CategoryList *catMap = root->categories();
             if (catMap==nullptr)			// but root does not so far
             {
                 qDebug() << "adopting imported categories";

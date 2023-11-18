@@ -36,7 +36,7 @@ class QLabel;
 class TrackDataItem;
 class TrackDataLabel;
 class VariableUnitDisplay;
-class CategoriesList;
+class CategoryList;
 class ListEditWidget;
 
 
@@ -87,7 +87,7 @@ private:
     TrackDataLabel *mTimeEndLabel;
     VariableUnitDisplay *mElevationLabel;
 
-    const CategoriesList *mAllCategories;
+    const CategoryList *mAllCategories;
     QMap<int,QWidget *> mMetadataMap;
 };
 

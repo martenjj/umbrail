@@ -23,30 +23,40 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef CATEGORIESLIST_H
-#define CATEGORIESLIST_H
+#include "category.h"
 
-#include <qmap.h>
-#include <qcolor.h>
+#include <qdebug.h>
 
 
-class CategoriesList
+
+
+
+
+
+
+
+
+
+
+void CategoryList::addCategory(const QString &name, const CategoryData &cat, bool overwrite)
 {
-public:
-    CategoriesList() = default;
-    ~CategoriesList() = default;
+    if (!overwrite && mCategoryMap.contains(name))
+    {
+        qDebug() << "not overwriting" << name;
+        return;
+    }
 
-    void addCategory(const QString &cat, const QColor &colour, bool overwrite = true);
-    void addCategories(const CategoriesList *cats, bool overwrite = true);
+    qDebug() << "adding" << name;
+    mCategoryMap.insert(name, cat);
+}
 
-    void clear()						{ mCategoryMap.clear(); }
 
-    QColor colourFor(const QString &cat) const			{ return (mCategoryMap.value(cat)); }
-    int count() const						{ return (mCategoryMap.count()); }
-    QStringList allCategories() const				{ return (mCategoryMap.keys()); }
-
-protected:
-    QMap<QString,QColor> mCategoryMap;
-};
-
-#endif							// CATEGORIESLIST_H
+void CategoryList::addCategories(const CategoryList *cats, bool overwrite)
+{
+    qDebug() << "starting with" << mCategoryMap.count() << "categories";
+    for (const QString &name : cats->allNames())
+    {
+        addCategory(name, cats->category(name), overwrite);
+    }
+    qDebug() << "finished with" << mCategoryMap.count() << "categories";
+}

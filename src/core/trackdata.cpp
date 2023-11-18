@@ -40,7 +40,7 @@
 #include "pointicon.h"
 #include "pointiconprovider.h"
 #include "metadatamodel.h"
-#include "categorieslist.h"
+#include "category.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -51,6 +51,7 @@
 #undef MEMORY_TRACKING
 #undef DEBUG_ICONS
 #define DEBUG_MERGE
+#define DEBUG_ICONS
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -934,10 +935,10 @@ const PointIcon *TrackDataWaypoint::icon() const
         {
             // If the file has categories available, then get the colour for
             // the waypoint category.
-            const CategoriesList *catMap = root->categories();
+            const CategoryList *catMap = root->categories();
             if (catMap!=nullptr)			// categories set for file
             {
-                const QColor col = catMap->colourFor(cat);
+                const QColor col = catMap->category(cat).colour();
                 if (col.isValid())			// colour is defined for category
                 {
 #ifdef DEBUG_ICONS

@@ -34,7 +34,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "metadatamodel.h"
-#include "categorieslist.h"
+#include "category.h"
 
 // GPX specification: http://www.topografix.com/GPX/1/1/
 
@@ -360,7 +360,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
                 // Get the colour defined for the primary category,
                 // which will be output later if no explicit colour
                 // is defined.
-                if (mCategoriesList!=nullptr) categoryColour = mCategoriesList->colourFor(primaryCategory);
+                if (mCategoriesList!=nullptr) categoryColour = mCategoriesList->category(primaryCategory).colour();
             }
 
             // For Garmin, the full list of categories is written out inside
@@ -548,12 +548,12 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
         str.writeStartElement("extensions");
         str.writeStartElement(DataIndexer::applicationNamespace()+":catmap");
 
-        const QStringList catNames = mCategoriesList->allCategories();
+        const QStringList catNames = mCategoriesList->allNames();
         for (const QString &cat : catNames)
         {
             str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
             str.writeAttribute("name", cat);
-            const QColor col = mCategoriesList->colourFor(cat);
+            const QColor col = mCategoriesList->category(cat).colour();
             if (col.isValid()) str.writeAttribute("color", col.name());
         }
 

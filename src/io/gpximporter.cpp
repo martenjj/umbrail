@@ -36,7 +36,7 @@
 #include "trackdata.h"
 #include "dataindexer.h"
 #include "errorreporter.h"
-#include "categorieslist.h"
+#include "category.h"
 
 #ifdef DEBUG_DETAILED
 #include <iostream>
@@ -535,15 +535,15 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         // The first time that a valid category has been found,
         // allocate the category map and set it on the root file item.
         // The user of that root item will eventually take ownership of it.
-        CategoriesList *catMap = dataRoot()->categories();
+        CategoryList *catMap = dataRoot()->categories();
         if (catMap==nullptr)
         {
             qDebug() << "new category map";
-            catMap = new CategoriesList;
+            catMap = new CategoryList;
             dataRoot()->setCategories(catMap);
         }
-
-        catMap->addCategory(name.toString(), col);	// add entry to categories
+							// add entry to categories
+        catMap->addCategory(name.toString(), CategoryData(col));
     }
     else						// start of unrecognised element
     {

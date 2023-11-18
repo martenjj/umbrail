@@ -23,33 +23,49 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef GPXEXPORTER_H
-#define GPXEXPORTER_H
+#ifndef CATEGORY_H
+#define CATEGORY_H
 
-#include "exporterbase.h"
-
-class TrackDataFile;
-class QXmlStreamWriter;
-class CategoryList;
+#include <qmap.h>
+#include <qcolor.h>
 
 
-class GpxExporter : public ExporterBase
+class CategoryData
 {
 public:
-    GpxExporter();
-    virtual ~GpxExporter() = default;
+    CategoryData() = default;
+    explicit CategoryData(const QColor &colour)					{ mColour = colour; }
 
-    static QString filter();
+    void setColour(const QColor &colour)					{ mColour = colour; }
+    void setIcon(const QString &iconName, const QString &shape = QString()) 	{ mIconName = iconName; mShape = shape; }
 
-protected:
-    bool saveTo(QIODevice *devconst, const TrackDataFile *item) override;
-
-private:
-    bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const;
-    bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const;
+    QColor colour() const		{ return (mColour); }
+    QString icon() const		{ return (mIconName); }
+    QString shape() const		{ return (mShape); }
 
 private:
-    const CategoryList *mCategoriesList;
+    QColor mColour;
+    QString mIconName;
+    QString mShape;
 };
 
-#endif							// GPXEXPORTER_H
+
+class CategoryList
+{
+public:
+    CategoryList() = default;
+
+    void addCategory(const QString &name, const CategoryData &cat, bool overwrite = true);
+    void addCategories(const CategoryList *cats, bool overwrite = true);
+
+    void clear()						{ mCategoryMap.clear(); }
+
+    CategoryData category(const QString &name) const		{ return (mCategoryMap.value(name)); }
+    int count() const						{ return (mCategoryMap.count()); }
+    QStringList allNames() const				{ return (mCategoryMap.keys()); }
+
+protected:
+    QMap<QString,CategoryData> mCategoryMap;
+};
+
+#endif							// CATEGORY_H
