@@ -1120,11 +1120,12 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
     // in which case use the other.
     if (ISNAN(this->elevation())) setMetadata("ele", other->elevation());
 
-    // TODO: Is this necessary?  Just merge the individual metadata below,
-    // then would not need TrackDataWaypoint::formattedAddress().
-
     // Address - accept the first unless it is completely blank,
-    // in which case use the other.
+    // in which case use the other.  Thie decision has to be made
+    // by looking at the complete address and choosing one or the
+    // other;  looking at each metadata item individually as with
+    // the "Other data" below could potentially result in an address
+    // as a mixture of both sources.
     const QStringList &a1 = this->formattedAddress();
     const QStringList &a2 = other->formattedAddress();
     if (!addressIsValid(a1) && addressIsValid(a2))
