@@ -540,24 +540,42 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     }
     str.writeEndElement();				// </metadata>
 
-    // file <extensions>, category list if present
+    // file <extensions>, category list if present - as appropriate for
+    // either a save or an export.
     mCategoriesList = item->categories();
-    if (mCategoriesList!=nullptr)
+    if (mCategoriesList!=nullptr && mCategoriesList->count()>0)
     {
         str.writeCharacters("\n\n  ");
         str.writeStartElement("extensions");
-        str.writeStartElement(DataIndexer::applicationNamespace()+":catmap");
 
-        const QStringList catNames = mCategoriesList->allNames();
-        for (const QString &cat : catNames)
+        if (options() & ImporterExporterBase::ImportExport)
         {
-            str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
-            str.writeAttribute("name", cat);
-            const QColor col = mCategoriesList->category(cat).colour();
-            if (col.isValid()) str.writeAttribute("color", col.name());
+            // The OsmAnd POINTS_GROUPS/GROUP format
+            str.writeStartElement("osmand:points_groups");
+        }
+        else
+        {
+            // The original CATMAP/CATENTRY format (with OsmAnd extensions)
+            str.writeStartElement(DataIndexer::applicationNamespace()+":catmap");
         }
 
-        str.writeEndElement();				// </catmap>
+        const QStringList catNames = mCategoriesList->allNames();
+        for (const QString &name : catNames)
+        {
+            if (options() & ImporterExporterBase::ImportExport) str.writeEmptyElement("osmand:group");
+            else str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
+            str.writeAttribute("name", name);
+
+            const CategoryData &cat = mCategoriesList->category(name);
+            const QColor col = cat.colour();
+            if (col.isValid()) str.writeAttribute("color", col.name());
+            const QString icon = cat.icon();
+            if (!icon.isEmpty()) str.writeAttribute("icon", icon);
+            const QString shape = cat.shape();
+            if (!shape.isEmpty()) str.writeAttribute("background", shape);
+        }
+
+        str.writeEndElement();				// </catmap> or </points_groups>
         str.writeEndElement();				// </extensions>
     }
 
