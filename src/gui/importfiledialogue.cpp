@@ -34,7 +34,7 @@ ImportFileDialogue::ImportFileDialogue(const QString &filter, QWidget *pnt)
     mUrlRequester->setStartDir(recent.recentUrl());
 
     mUrlRequester->setWindowTitle(i18n("Select Import File"));
-    connect(mUrlRequester, SIGNAL(textChanged(const QString &)), SLOT(slotUrlChanged(const QString &)));
+    connect(mUrlRequester, &KUrlRequester::textChanged, this, &ImportFileDialogue::slotUrlChanged);
     form->addRow(i18nc("@label:textbox", "File:"), mUrlRequester);
 
     form->setItem(form->rowCount(), QFormLayout::SpanningRole, DialogBase::verticalSpacerItem());
@@ -70,7 +70,7 @@ QUrl ImportFileDialogue::selectedUrl() const
 
 void ImportFileDialogue::slotUrlChanged(const QString &text)
 {
-    setButtonEnabled(QDialogButtonBox::Ok, !text.isEmpty() && QUrl(text).isValid());
+    setButtonEnabled(QDialogButtonBox::Ok, mUrlRequester->url().isValid());
 }
 
 

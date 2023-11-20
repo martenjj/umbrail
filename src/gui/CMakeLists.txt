@@ -57,6 +57,7 @@ set(gui_SRCS
   importfiledialogue.cpp
   mergepointsdialogue.cpp
   listeditwidget.cpp
+  exportfiledialogue.cpp
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})

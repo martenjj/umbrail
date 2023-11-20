@@ -75,6 +75,7 @@
 #include "stopdetectdialogue.h"
 #include "pointiconprovider.h"
 #include "importfiledialogue.h"
+#include "exportfiledialogue.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -199,11 +200,10 @@ void MainWindow::setupActions()
     connect(mImportAction, &QAction::triggered, this, &MainWindow::slotImportFile);
 
     mExportAction = ac->addAction("file_export");
-    mExportAction->setText(i18n("Export..."));
+    mExportAction->setText(i18n("Export File..."));
     mExportAction->setIcon(QIcon::fromTheme("document-export"));
     ac->setDefaultShortcut(mExportAction, Qt::CTRL+Qt::Key_E);
     connect(mExportAction, &QAction::triggered, this, &MainWindow::slotExportFile);
-    mExportAction->setEnabled(false);
 
     mPhotoAction = ac->addAction("file_add_photo");
     mPhotoAction->setText("Import Photo...");
@@ -663,7 +663,9 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 //    |				   |		      |			   |
 //  slotSaveProject() --------> slotSaveAs()	slotSaveCopy()		slotExportFile()
 //    |                             |		      |			   |
-//  save() <------------------------+ <---------------+			(not implemented)
+//  save() <------------------------+ <---------------+                    |
+//    |                                                                    |
+//    + <------------------------------------------------------------------+
 //    |
 //  FilesController::exportFile()
 
@@ -751,19 +753,15 @@ void MainWindow::slotSaveCopy()
 
 void MainWindow::slotExportFile()
 {
-    RecentSaver saver("project");
-    QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
-                                            i18n("Export File As"),			// caption
-                                            saver.recentUrl(documentName(true)),	// dir
-                                            FilesController::allExportFilters(),	// filter
-                                            nullptr,					// selectedFilter,
-                                            QFileDialog::Options(),			// options
-                                            QStringList());				// supportedSchemes
+// TODO: option to export selected items
+    ExportFileDialogue d(FilesController::allExportFilters(), this);
+    FilesModel *mod = filesController()->model();
+    d.setSourceModel(mod);
 
-    if (!file.isValid()) return;			// didn't get a file name
-    saver.save(file);
-//////// TODO: export selected item
-//    filesController()->exportFile(file);
+    if (!d.exec()) return;
+
+    ImporterExporterBase::Options opts = ImporterExporterBase::ImportExport;
+//    filesController()->exportFile(file, opts, d.homePoint(), d.workPoint());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1237,8 +1235,10 @@ void MainWindow::slotSetModified(bool mod)
     setWindowTitle(documentName()+" [*]");
     setWindowModified(mod);
 
-    mSaveProjectAsAction->setEnabled(!filesController()->model()->isEmpty());
-    mSaveProjectCopyAction->setEnabled(!filesController()->model()->isEmpty());
+    const bool hasContent = !filesController()->model()->isEmpty();
+    mSaveProjectAsAction->setEnabled(hasContent);
+    mExportAction->setEnabled(hasContent);
+    mSaveProjectCopyAction->setEnabled(hasContent);
 }
 
 

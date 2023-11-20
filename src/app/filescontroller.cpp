@@ -419,6 +419,7 @@ static int fileExists(const QUrl &file)
 }
 
 
+// TODO: only ever called with tdf == model()->rootFileItem() (even for selection)
 FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
