@@ -309,7 +309,7 @@ case ErrorReporter::Fatal:
 }
 
 
-FilesController::Status FilesController::importFile(const QUrl &importFrom, ImporterExporterBase::Options options)
+FilesController::Status FilesController::importFile(const QUrl &importFrom, const ImporterExporterOptions &options)
 {
     if (!importFrom.isValid()) return (FilesController::StatusFailed);
 
@@ -370,7 +370,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, Impo
         delete cmd;					// no need for this now
         emit statusMessage(xi18nc("@info", "Loaded <filename>%1</filename>", importFrom.toDisplayString()));
     }
-    else if (options & ImporterExporterBase::MergeWaypoints)
+    else if (options.hasFlag(ImporterExporterOptions::MergeWaypoints))
     {							// import with waypoint merge
         // Need to execute the command immediately
         // (synchronously), so that the MainWindow can
@@ -419,8 +419,7 @@ static int fileExists(const QUrl &file)
 }
 
 
-// TODO: only ever called with tdf == model()->rootFileItem() (even for selection)
-FilesController::Status FilesController::exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options)
+FilesController::Status FilesController::exportFile(const QUrl &exportTo, const ImporterExporterOptions &options)
 {
     if (!exportTo.isValid()) return (FilesController::StatusFailed);
 
@@ -435,7 +434,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
 
     exportType = exportType.toUpper();
     qDebug() << "to" << exportTo;
-    qDebug() << "type" << exportType << "options" << options;
+    qDebug() << "type" << exportType << "options" << options.flags();
 
     QScopedPointer<ExporterBase> exp;			// exporter for requested format
     if (exportType=="GPX")				// export to GPX file
@@ -505,11 +504,11 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
         }
     }
 
-    if (options & ImporterExporterBase::SelectionOnly) exp->setSelectionId(filesView()->selectionId());
+    if (options.hasFlag(ImporterExporterOptions::SelectionOnly)) exp->setSelectionId(filesView()->selectionId());
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->setOptions(options);				// set the export options
-    exp->save(exportTo, tdf);
+    exp->save(exportTo, model()->rootFileItem());
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))
@@ -518,13 +517,13 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
         return (FilesController::StatusFailed);
     }
 
-    if (options & ImporterExporterBase::ToClipboard)
+    if (options.hasFlag(ImporterExporterOptions::ToClipboard))
     {
         emit statusMessage(xi18nc("@info", "Copied selection to clipboard"));
     }
     else
     {
-        if (options & ImporterExporterBase::SelectionOnly)
+        if (options.hasFlag(ImporterExporterOptions::SelectionOnly))
         {
             emit statusMessage(xi18nc("@info", "Saved selection to <filename>%1</filename>", exportTo.toDisplayString()));
         }

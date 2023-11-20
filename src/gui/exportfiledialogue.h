@@ -7,6 +7,8 @@
 
 #include <kfdialog/dialogbase.h>
 
+#include "importerexporteroptions.h"
+
 class QTreeView;
 class QUrl;
 class KUrlRequester;
@@ -71,8 +73,7 @@ public:
     void setSourceModel(QAbstractItemModel *model);
 
     QUrl selectedUrl() const;
-    QString homePoint() const;
-    QString workPoint() const;
+    ImporterExporterOptions options() const;
 
 private slots:
     void slotSettingChanged();

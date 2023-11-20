@@ -26,7 +26,7 @@
 #ifndef IMPORTEREXPORTERBASE_H
 #define IMPORTEREXPORTERBASE_H
 
-#include <qflags.h>
+#include "importerexporteroptions.h"
 
 class ErrorReporter;
 
@@ -34,36 +34,18 @@ class ErrorReporter;
 class ImporterExporterBase
 {
 public:
-    enum Option
-    {
-        NoOption = 0x0000,
-        // an import or export operation
-        ImportExport = 0x0001,
-        // export
-        ToClipboard = 0x0010,
-        SelectionOnly = 0x0020,
-        // import
-        IgnoreHome = 0x0100,
-        MergeWaypoints = 0x0200,
-        MarkNewWaypoints = 0x0400,
-        MergeNotAllowed = 0x0800
-    };
-    Q_DECLARE_FLAGS(Options, Option)
-
     ErrorReporter *reporter() const				{ return (mReporter); }
-    void setOptions(ImporterExporterBase::Options opts)		{ mOptions = opts; }
+    void setOptions(const ImporterExporterOptions &opts)	{ mOptions = opts; }
 
 protected:
     ImporterExporterBase();
     virtual ~ImporterExporterBase();
 
-    ImporterExporterBase::Options options() const		{ return (mOptions); }
+    const ImporterExporterOptions &options() const		{ return (mOptions); }
 
 private:
     ErrorReporter *mReporter;
-    ImporterExporterBase::Options mOptions;
+    ImporterExporterOptions mOptions;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(ImporterExporterBase::Options)
 
 #endif							// IMPORTEREXPORTERBASE_H

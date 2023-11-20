@@ -255,23 +255,19 @@ QUrl ExportFileDialogue::selectedUrl() const
 }
 
 
-QString ExportFileDialogue::homePoint() const
-{
-    HomePointsModel *listModel = qobject_cast<HomePointsModel *>(mListView->model());
-    Q_ASSERT(listModel!=nullptr);
-    return (listModel->homePoint());
-}
-
-
-QString ExportFileDialogue::workPoint() const
-{
-    HomePointsModel *listModel = qobject_cast<HomePointsModel *>(mListView->model());
-    Q_ASSERT(listModel!=nullptr);
-    return (listModel->workPoint());
-}
-
-
 void ExportFileDialogue::slotSettingChanged()
 {
     setButtonEnabled(QDialogButtonBox::Ok, mUrlRequester->url().isValid());
+}
+
+
+ImporterExporterOptions ExportFileDialogue::options() const
+{
+    HomePointsModel *listModel = qobject_cast<HomePointsModel *>(mListView->model());
+    Q_ASSERT(listModel!=nullptr);
+
+    ImporterExporterOptions opts;
+    opts.setHomePoint(listModel->homePoint());
+    opts.setWorkPoint(listModel->workPoint());
+    return (opts);
 }

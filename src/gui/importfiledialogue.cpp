@@ -51,11 +51,11 @@ ImportFileDialogue::ImportFileDialogue(const QString &filter, QWidget *pnt)
 }
 
 
-void ImportFileDialogue::setOptions(ImporterExporterBase::Options opts)
+void ImportFileDialogue::setOptions(const ImporterExporterOptions &opts)
 {
-    mNoHomeCheck->setChecked(opts & ImporterExporterBase::IgnoreHome);
-    if (opts & ImporterExporterBase::MergeNotAllowed) mMergeWaypointsCheck->setEnabled(false);
-    else mMergeWaypointsCheck->setChecked(opts & ImporterExporterBase::MergeWaypoints);
+    mNoHomeCheck->setChecked(opts.hasFlag(ImporterExporterOptions::IgnoreHome));
+    if (opts.hasFlag(ImporterExporterOptions::MergeNotAllowed)) mMergeWaypointsCheck->setEnabled(false);
+    else mMergeWaypointsCheck->setChecked(opts.hasFlag(ImporterExporterOptions::MergeWaypoints));
 }
 
 
@@ -74,10 +74,10 @@ void ImportFileDialogue::slotUrlChanged(const QString &text)
 }
 
 
-ImporterExporterBase::Options ImportFileDialogue::options() const
+ImporterExporterOptions ImportFileDialogue::options() const
 {
-    ImporterExporterBase::Options opts = ImporterExporterBase::NoOption;
-    if (mNoHomeCheck->isChecked()) opts |= ImporterExporterBase::IgnoreHome;
-    if (mMergeWaypointsCheck->isChecked()) opts |= ImporterExporterBase::MergeWaypoints;
-    return (opts);
+    ImporterExporterOptions::Flags f = ImporterExporterOptions::NoFlags;
+    if (mNoHomeCheck->isChecked()) f |= ImporterExporterOptions::IgnoreHome;
+    if (mMergeWaypointsCheck->isChecked()) f |= ImporterExporterOptions::MergeWaypoints;
+    return (ImporterExporterOptions(f));
 }

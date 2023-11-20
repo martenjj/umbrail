@@ -28,7 +28,6 @@
  
 #include <qobject.h>
 #include "applicationdatainterface.h"
-#include "importerexporterbase.h"
 
 #include <math.h>					// need this for 'NAN'
 
@@ -43,6 +42,7 @@ class PointsModel;
 class TrackDataFile;
 class ErrorReporter;
 class TrackDataItem;
+class ImporterExporterOptions;
 
 
 class DialogueConstraintFilter : public QObject
@@ -81,8 +81,8 @@ public:
     void readProperties();
     void saveProperties();
 
-    FilesController::Status importFile(const QUrl &importFrom, ImporterExporterBase::Options options);
-    FilesController::Status exportFile(const QUrl &exportTo, const TrackDataFile *tdf, ImporterExporterBase::Options options);
+    FilesController::Status importFile(const QUrl &importFrom, const ImporterExporterOptions &options);
+    FilesController::Status exportFile(const QUrl &exportTo, const ImporterExporterOptions &options);
     FilesController::Status importPhoto(const QList<QUrl> &urls);
     void initNew();
 

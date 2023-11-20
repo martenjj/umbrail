@@ -180,11 +180,18 @@ bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str
 
 // This cannot be file-static because it needs to be able to
 // access ExporterBase::isSelected().
-bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const
+bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, const QString &newName) const
 {
     // If the item is not selected for export, then simply look inside
     // and process its child items.
     if (!isSelected(item)) return (writeChildren(item, str));
+
+    // The name to use when writing out this item.  If the name is
+    // automatically assigned (not explicit), then no name is written.
+    // If a new name to override the existing one is specified then
+    // that name is used.
+    QString itemName = newName;
+    if (itemName.isEmpty() && item->hasExplicitName()) itemName = item->name();
 
     // What sort of element?
     const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
@@ -213,18 +220,18 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
     {
         str.writeCharacters("\n\n  ");
         str.writeStartElement("trk");
-        if (item->hasExplicitName()) toplevelQueue.enqueue("name", item->name());
+        if (!itemName.isEmpty()) toplevelQueue.enqueue("name", itemName);
     }
     else if (tdr!=nullptr)				// element RTE
     {
         str.writeCharacters("\n\n  ");
         str.writeStartElement("rte");
-        if (item->hasExplicitName()) toplevelQueue.enqueue("name", item->name());
+        if (!itemName.isEmpty()) toplevelQueue.enqueue("name", itemName);
     }
     else if (tds!=nullptr)				// element TRKSEG
     {
         str.writeStartElement("trkseg");
-        if (item->hasExplicitName()) extensionsQueue.enqueue("name", item->name());
+        if (!itemName.isEmpty()) extensionsQueue.enqueue("name", itemName);
     }
     else if (tda!=nullptr)				// element TRKPT, WPT or RTEPT
     {
@@ -234,6 +241,20 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         }
         else if (tdw!=nullptr)				// element WPT
         {
+            const QString &homeName = options().homePoint();
+            if (newName.isEmpty() && !homeName.isEmpty() && homeName==tdw->name())
+            {
+                qDebug() << "identified Home point" << tdw->name();
+                mHomePoint = tdw;
+            }
+
+            const QString &workName = options().workPoint();
+            if (newName.isEmpty() && !workName.isEmpty() && workName==tdw->name())
+            {
+                qDebug() << "identified Work point" << tdw->name();
+                mWorkPoint = tdw;
+            }
+
             str.writeCharacters("\n\n  ");
             str.writeStartElement("wpt");
         }
@@ -249,7 +270,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         str.writeAttribute("lon", QString::number(tda->longitude(), 'f'));
 
         // <name> xsd:string </name>
-        if (item->hasExplicitName()) toplevelQueue.enqueue("name", item->name());
+        if (!itemName.isEmpty()) toplevelQueue.enqueue("name", itemName);
     }
     else if (tdf!=nullptr)				// Folder
     {							// write nothing, but recurse for children
@@ -383,6 +404,10 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
         }
     }
 
+    // If this item is being renamed - that is, it is the copy of either
+    // the "Home" or "Work" points - then record the original point.
+    if (!newName.isEmpty() && item->hasExplicitName()) extensionsQueue.enqueue("source", item->name());
+
     // Ensure that the containing folder path for a waypoint is
     // written out.  It is not stored as a property of the waypoint,
     // so generate it here.
@@ -495,6 +520,10 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str) co
 bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
 {
     qDebug() << "item" << item->name();
+    qDebug() << "home" << options().homePoint() << "work" << options().workPoint();
+
+    mHomePoint = nullptr;				// points not found yet
+    mWorkPoint = nullptr;
 
     QXmlStreamWriter str(dev);
     str.setAutoFormatting(true);
@@ -548,7 +577,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
         str.writeCharacters("\n\n  ");
         str.writeStartElement("extensions");
 
-        if (options() & ImporterExporterBase::ImportExport)
+        if (options().hasFlag(ImporterExporterOptions::ImportExport))
         {
             // The OsmAnd POINTS_GROUPS/GROUP format
             str.writeStartElement("osmand:points_groups");
@@ -562,7 +591,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
         const QStringList catNames = mCategoriesList->allNames();
         for (const QString &name : catNames)
         {
-            if (options() & ImporterExporterBase::ImportExport) str.writeEmptyElement("osmand:group");
+            if (options().hasFlag(ImporterExporterOptions::ImportExport)) str.writeEmptyElement("osmand:group");
             else str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
             str.writeAttribute("name", name);
 
@@ -580,6 +609,19 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     }
 
     writeChildren(item, str);				// write out child elements
+
+    // Write out a copy of the "Home" and "Work" waypoints, if they
+    // were requested and have been found.
+    if (mHomePoint!=nullptr)
+    {
+        str.writeCharacters("\n\n");
+        writeItem(mHomePoint, str, "home");
+    }
+    if (mWorkPoint!=nullptr)
+    {
+        str.writeCharacters("\n\n");
+        writeItem(mWorkPoint, str, "work");
+    }
 
     str.writeCharacters("\n\n");
     str.writeEndElement();				// </gpx>

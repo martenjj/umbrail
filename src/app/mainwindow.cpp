@@ -669,7 +669,7 @@ void MainWindow::readProperties(const KConfigGroup &grp)
 //    |
 //  FilesController::exportFile()
 
-bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
+bool MainWindow::save(const QUrl &to, const ImporterExporterOptions &options)
 {
     qDebug() << "to" << to;
     if (!to.isValid()) return (false);			// should never happen
@@ -687,7 +687,7 @@ bool MainWindow::save(const QUrl &to, ImporterExporterBase::Options options)
     // metadata for view mode
     tdf->setMetadata("viewmode", mViewModeAction->isChecked() ? "list" : "tree");
 
-    return (filesController()->exportFile(to, tdf, options)==FilesController::StatusOk);
+    return (filesController()->exportFile(to, options)==FilesController::StatusOk);
 }
 
 
@@ -702,7 +702,7 @@ void MainWindow::slotSaveProject()
     QUrl projectFile = fileName();
     qDebug() << "to" << projectFile;
 
-    if (save(projectFile, ImporterExporterBase::NoOption))
+    if (save(projectFile, ImporterExporterOptions()))
     {
         TrackDataFile *tdf = filesController()->model()->rootFileItem();
         if (tdf!=nullptr) tdf->setFileName(projectFile);
@@ -747,7 +747,7 @@ void MainWindow::slotSaveCopy()
     saver.save(file);
 
     qDebug() << "to" << file;
-    save(file, ImporterExporterBase::NoOption);
+    save(file, ImporterExporterOptions());
 }
 
 
@@ -760,8 +760,9 @@ void MainWindow::slotExportFile()
 
     if (!d.exec()) return;
 
-    ImporterExporterBase::Options opts = ImporterExporterBase::ImportExport;
-//    filesController()->exportFile(file, opts, d.homePoint(), d.workPoint());
+    ImporterExporterOptions opts = d.options();		// selected points from dialogue
+    opts.setFlags(ImporterExporterOptions::ImportExport);
+    filesController()->exportFile(d.selectedUrl(), opts);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -790,7 +791,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
     qDebug() << "from" << from;
     if (!from.isValid()) return (FilesController::StatusFailed);
 
-    FilesController::Status status = filesController()->importFile(from, ImporterExporterBase::NoOption);
+    FilesController::Status status = filesController()->importFile(from, ImporterExporterOptions());
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
 
     TrackDataFile *tdf = filesController()->model()->rootFileItem();
@@ -865,21 +866,23 @@ void MainWindow::slotImportFile()
     // TODO: maybe only use the dialogue if in points list mode?
     ImportFileDialogue d(FilesController::allImportFilters(), this);
 
-    ImporterExporterBase::Options opts = ImporterExporterBase::IgnoreHome;
-    if (isPointsListMode()) opts |= ImporterExporterBase::MergeWaypoints;
+    ImporterExporterOptions::Flags f = ImporterExporterOptions::IgnoreHome;
+    if (isPointsListMode()) f |= ImporterExporterOptions::MergeWaypoints;
     const FilesModel *mod = filesController()->model();
-    if (mod->isEmpty() || mod->rootFileItem()->childCount()==0) opts |= ImporterExporterBase::MergeNotAllowed;
-    d.setOptions(opts);					// default options for dialogue
+    if (mod->isEmpty() || mod->rootFileItem()->childCount()==0) f |= ImporterExporterOptions::MergeNotAllowed;
+    d.setOptions(ImporterExporterOptions(f));		// default options for dialogue
 
     if (!d.exec()) return;
-    opts = d.options();					// actual options from dialogue
-    opts |= ImporterExporterBase::ImportExport;		// add options for import operation
-    if (isPointsListMode()) opts |= ImporterExporterBase::MarkNewWaypoints;
+    ImporterExporterOptions opts = d.options();		// actual options from dialogue
+    f = opts.flags();					// actual flags from dialogue
+    f |= ImporterExporterOptions::ImportExport;		// add options for import operation
+    if (isPointsListMode()) f |= ImporterExporterOptions::MarkNewWaypoints;
+    opts.setFlags(f);
 
     // Importing with merged waypoints cannot be undone and may cause data
     // loss if the file is modified but not saved.  Warn the user and give
     // them a change to cancel the operation.
-    if (isModified() && (opts & ImporterExporterBase::MergeWaypoints))
+    if (isModified() && opts.hasFlag(ImporterExporterOptions::MergeWaypoints))
     {
         if (KMessageBox::warningContinueCancel(this,
                                                xi18nc("@info", "File <emphasis strong=\"1\"><filename>%1</filename></emphasis> has been modified but not saved.<nl/>The import operation with merged waypoints cannot be undone.<nl/><nl/>Continue with the import?", documentName()),
@@ -889,7 +892,9 @@ void MainWindow::slotImportFile()
 							// do the import or merge
     if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
 
-    if (opts & ImporterExporterBase::MergeWaypoints)	// did import with merge,
+
+
+    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))	// did import with merge,
     {							// cannot undo after that
         qDebug() << "clearing undo stack after import with merge";
         mUndoStack->clear();
@@ -1484,7 +1489,7 @@ void MainWindow::slotCopy()
     qDebug();
 
     QUrl projectFile("clipboard:/a.gpx");		// selects clipboard, sets format
-    bool ok = save(projectFile, ImporterExporterBase::ToClipboard|ImporterExporterBase::SelectionOnly);
+    bool ok = save(projectFile, ImporterExporterOptions(ImporterExporterOptions::ToClipboard|ImporterExporterOptions::SelectionOnly));
     if (!ok) qWarning() << "Save to clipboard failed";
 }
 

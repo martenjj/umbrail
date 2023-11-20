@@ -21,8 +21,8 @@ public:
     virtual ~ImportFileDialogue() = default;
 
     QUrl selectedUrl() const;
-    void setOptions(ImporterExporterBase::Options opts);
-    ImporterExporterBase::Options options() const;
+    void setOptions(const ImporterExporterOptions &opts);
+    ImporterExporterOptions options() const;
 
 private slots:
     void slotUrlChanged(const QString &text);

@@ -45,11 +45,13 @@ protected:
     bool saveTo(QIODevice *devconst, const TrackDataFile *item) override;
 
 private:
-    bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str) const;
+    bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str, const QString &newName = QString()) const;
     bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const;
 
 private:
     const CategoryList *mCategoriesList;
+    mutable const TrackDataItem *mHomePoint;
+    mutable const TrackDataItem *mWorkPoint;
 };
 
 #endif							// GPXEXPORTER_H

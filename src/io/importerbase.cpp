@@ -69,7 +69,7 @@ static void dumpMetadata(const TrackDataItem *tdd, const QString &source)
 
 TrackDataFile *ImporterBase::load(const QUrl &file)
 {
-    qDebug() << "from" << file << "opts" << options();
+    qDebug() << "from" << file << "opts" << options().flags();
     reporter()->setFile(file);
 
     // Verify and open the load file

@@ -180,7 +180,7 @@ void ImportFileCommand::redo()
 {
     Q_ASSERT(mImportData!=nullptr);
     mSavedCount = mImportData->childCount();		// how many tracks contained
-    qDebug() << "from" << mImportData->name() << "count" << mSavedCount << "opts" << mOptions;
+    qDebug() << "from" << mImportData->name() << "count" << mSavedCount << "opts" << mOptions.flags();
 
     // The "Ignore Home/Work" option and the NewlyImported flag
     // will already have been actioned by the importer, so there is
@@ -191,7 +191,7 @@ void ImportFileCommand::redo()
     {
         // This option should be disabled by the GUI if the model
         // is empty, so it should never be seen here.
-        if (mOptions & ImporterExporterBase::MergeWaypoints) qWarning() << "Ignoring merge option into empty model";
+        if (mOptions.hasFlag(ImporterExporterOptions::MergeWaypoints)) qWarning() << "Ignoring merge option into empty model";
 
         // Set the top level imported file item as the model file root.
         model()->setRootFileItem(mImportData);		// use this as root item
@@ -201,7 +201,7 @@ void ImportFileCommand::redo()
     {
         model()->startLayoutChange();
 
-        if (mOptions & ImporterExporterBase::MergeWaypoints)
+        if (mOptions.hasFlag(ImporterExporterOptions::MergeWaypoints))
         {
             // When merging in this mode, the undo stack will be cleared
             // after the merge is complete.  This means that it is not

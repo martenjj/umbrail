@@ -31,7 +31,7 @@
 
 #include "trackdata.h"
 #include "filescontroller.h"
-#include "importerexporterbase.h"
+#include "importerexporteroptions.h"
 
 
 class ItemContainer;
@@ -86,7 +86,7 @@ public:
     virtual ~ImportFileCommand();
 
     void setData(TrackDataFile *tdf)				{ mImportData = tdf; }
-    void setOptions(ImporterExporterBase::Options options)	{ mOptions = options; }
+    void setOptions(const ImporterExporterOptions &options)	{ mOptions = options; }
 
     void redo() override;
     void undo() override;
@@ -94,7 +94,7 @@ public:
 private:
     TrackDataFile *mImportData;
     int mSavedCount;
-    ImporterExporterBase::Options mOptions;
+    ImporterExporterOptions mOptions;
 };
 
 

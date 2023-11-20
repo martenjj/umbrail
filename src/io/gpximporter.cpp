@@ -730,7 +730,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         qDebug() << "got a WPT:" << mCurrentPoint->name();
 #endif
         // Do we ignore this as a "Home" or "Work" point?
-        if (options() & ImporterExporterBase::IgnoreHome)
+        if (options().hasFlag(ImporterExporterOptions::IgnoreHome))
         {
             const QString &name = tdw->name();
             if (name=="Home" ||				// Garmin
@@ -758,7 +758,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         // be set on all waypoints in this file, but if they eventually get
         // merged as duplicates into the main data tree then the flag set here
         // is ignored.
-        if (options() & ImporterExporterBase::MarkNewWaypoints)
+        if (options().hasFlag(ImporterExporterOptions::MarkNewWaypoints))
         {
             tdw->setMetadata("flags", static_cast<int>(TrackData::NewlyImported));
         }
@@ -1003,8 +1003,8 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
     const QByteArray &name = (isPoint ? "pointcolor" : "linecolor");
     const QColor ourCol = item->metadata(name).value<QColor>();
 
-    if (options() & ImporterExporterBase::ImportExport)	// an import operation
-    {
+    if (options().hasFlag(ImporterExporterOptions::ImportExport))
+    {							// an import operation
         if (ourCol.isValid() && ourCol!=col) addWarning(QString("%1 ignored, using COLOR value").arg(QString(name).toUpper()));
         item->setMetadata(name, col);
     }

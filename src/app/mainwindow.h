@@ -31,7 +31,6 @@
 #include "applicationdata.h"
 #include "filescontroller.h"
 #include "mapbrowser.h"
-#include "importerexporterbase.h"
 
 
 class QLabel;
@@ -55,6 +54,7 @@ class KSqueezedTextLabel;
 class MapController;
 class Project;
 class TrackDataItem;
+class ImporterExporterOptions;
 
 
 class MainWindow : public KXmlGuiWindow, public ApplicationData
@@ -130,7 +130,7 @@ private:
     void setupActions();
     void setupStatusBar();
 
-    bool save(const QUrl &to, ImporterExporterBase::Options options);
+    bool save(const QUrl &to, const ImporterExporterOptions &options);
     FilesController::Status load(const QUrl &from);
 
     bool acceptMimeData(const QMimeData *mimeData);
