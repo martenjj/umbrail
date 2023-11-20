@@ -23,7 +23,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "trackfiltermodel.h"
+#include "destinationfiltermodel.h"
 
 #include <qfont.h>
 
@@ -34,7 +34,7 @@
 
 
 
-TrackFilterModel::TrackFilterModel(QObject *pnt)
+DestinationFilterModel::DestinationFilterModel(QObject *pnt)
     : QSortFilterProxyModel(pnt)
 {
     mSourceItems = nullptr;
@@ -42,7 +42,7 @@ TrackFilterModel::TrackFilterModel(QObject *pnt)
 }
 
 
-void TrackFilterModel::setSource(const QList<TrackDataItem *> *items)
+void DestinationFilterModel::setSource(const QList<TrackDataItem *> *items)
 {
     mSourceItems = items;
 
@@ -56,13 +56,13 @@ void TrackFilterModel::setSource(const QList<TrackDataItem *> *items)
 }
 
 
-void TrackFilterModel::setMode(TrackData::Type mode)
+void DestinationFilterModel::setMode(TrackData::Type mode)
 {
     mMode = mode;
 }
 
 
-bool TrackFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
+bool DestinationFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
     FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
     QModelIndex idx = filesModel->index(row, 0, pnt);
@@ -97,7 +97,7 @@ default:
 }
 
 
-Qt::ItemFlags TrackFilterModel::flags(const QModelIndex &idx) const
+Qt::ItemFlags DestinationFilterModel::flags(const QModelIndex &idx) const
 {
     FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
     const TrackDataItem *item = filesModel->itemForIndex(mapToSource(idx));
@@ -240,7 +240,7 @@ default:
 }
 
 
-QVariant TrackFilterModel::data(const QModelIndex &idx, int role) const
+QVariant DestinationFilterModel::data(const QModelIndex &idx, int role) const
 {
     if (role!=Qt::FontRole) return (QSortFilterProxyModel::data(idx, role));
 

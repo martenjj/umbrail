@@ -38,7 +38,7 @@ set(core_SRCS
   waypointimageprovider.cpp
   metadatamodel.cpp
   filesmodel.cpp
-  trackfiltermodel.cpp
+  destinationfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
 )
