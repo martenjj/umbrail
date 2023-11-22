@@ -34,7 +34,7 @@
 
 #include "filesmodel.h"
 #include "filesview.h"
-#include "trackfiltermodel.h"
+#include "destinationfiltermodel.h"
 #include "trackdata.h"
 #include "latlongwidget.h"
 
@@ -108,20 +108,20 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
     mContainerList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mContainerList->setHeaderHidden(true);
  
-    TrackFilterModel *trackModel = new TrackFilterModel(this);
+    DestinationFilterModel *destinationModel = new DestinationFilterModel(this);
 
     FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
     Q_ASSERT(filesModel!=nullptr);
-    trackModel->setSourceModel(filesModel);
-    trackModel->setMode(routeMode ? TrackData::Route : TrackData::Waypoint);
-    mContainerList->setModel(trackModel);
+    destinationModel->setSourceModel(filesModel);
+    destinationModel->setMode(routeMode ? TrackData::Route : TrackData::Waypoint);
+    mContainerList->setModel(destinationModel);
     mContainerList->expandToDepth(9);
 
     // Try to preselect a destination for the new item.  This may
     // be overridden by setDestinationContainer() below.
     mCanCreate = true;					// assume so initially
     QModelIndex theItem;
-    const int selectableItems = findSelectableItems(mContainerList->rootIndex(), trackModel, &theItem);
+    const int selectableItems = findSelectableItems(mContainerList->rootIndex(), destinationModel, &theItem);
     if (selectableItems==1 && theItem.isValid())
     {
         // Firstly, if there is only a single selectable destination,
@@ -142,7 +142,7 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
         if (items.count()==1)
         {
             const TrackDataItem *item = items.first();
-            mContainerList->setCurrentIndex(trackModel->mapFromSource(filesModel->indexForItem(item)));
+            mContainerList->setCurrentIndex(destinationModel->mapFromSource(filesModel->indexForItem(item)));
         }
     }
 
@@ -183,10 +183,10 @@ void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
     FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
     Q_ASSERT(filesModel!=nullptr);
 
-    QAbstractProxyModel *trackModel = qobject_cast<QAbstractProxyModel *>(mContainerList->model());
-    Q_ASSERT(trackModel!=nullptr);
+    QAbstractProxyModel *destinationModel = qobject_cast<QAbstractProxyModel *>(mContainerList->model());
+    Q_ASSERT(destinationModel!=nullptr);
 
-    const QModelIndex idx = trackModel->mapFromSource(filesModel->indexForItem(item));
+    const QModelIndex idx = destinationModel->mapFromSource(filesModel->indexForItem(item));
     qDebug() << item->name() << "-> idx" << idx;
     if (idx.isValid()) mContainerList->setCurrentIndex(idx);
     mCanCreate = true;
@@ -211,9 +211,9 @@ TrackDataItem *CreatePointDialogue::selectedContainer() const
     QModelIndexList selIndexes = mContainerList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (nullptr);
 
-    TrackFilterModel *trackModel = qobject_cast<TrackFilterModel *>(mContainerList->model());
-    FilesModel *filesModel = qobject_cast<FilesModel *>(trackModel->sourceModel());
-    TrackDataItem *item = filesModel->itemForIndex(trackModel->mapToSource(selIndexes.first()));
+    DestinationFilterModel *destinationModel = qobject_cast<DestinationFilterModel *>(mContainerList->model());
+    FilesModel *filesModel = qobject_cast<FilesModel *>(destinationModel->sourceModel());
+    TrackDataItem *item = filesModel->itemForIndex(destinationModel->mapToSource(selIndexes.first()));
     return (item);
 }
 

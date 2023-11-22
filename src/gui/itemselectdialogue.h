@@ -34,7 +34,7 @@
 
 class QTreeView;
 class QItemSelection;
-class TrackFilterModel;
+class DestinationFilterModel;
 class FilesModel;
 
 
@@ -53,7 +53,7 @@ protected:
     explicit ItemSelectDialogue(QWidget *pnt = nullptr);
     virtual ~ItemSelectDialogue();
 
-    TrackFilterModel *trackModel() const;
+    DestinationFilterModel *destinationModel() const;
     FilesModel *filesModel() const;
 
 protected slots:

@@ -27,7 +27,7 @@
 
 #include <klocalizedstring.h>
 
-#include "trackfiltermodel.h"
+#include "destinationfiltermodel.h"
 
 
 MoveItemDialogue::MoveItemDialogue(QWidget *pnt)
@@ -45,5 +45,5 @@ MoveItemDialogue::MoveItemDialogue(QWidget *pnt)
 
 void MoveItemDialogue::setSource(const QList<TrackDataItem *> *items)
 {
-    trackModel()->setSource(items);
+    destinationModel()->setSource(items);
 }

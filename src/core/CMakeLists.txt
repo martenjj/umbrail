@@ -38,10 +38,10 @@ set(core_SRCS
   metadatamodel.cpp
   filesmodel.cpp
   fileslistmodel.cpp
-  trackfiltermodel.cpp
   waypointsfiltermodel.cpp
   homepointsfiltermodel.cpp
   homepointsdatamodel.cpp
+  destinationfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
   pointsdatamodel.cpp

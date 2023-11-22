@@ -23,8 +23,8 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef TRACKFILTERMODEL_H
-#define TRACKFILTERMODEL_H
+#ifndef DESTINATIONFILTERMODEL_H
+#define DESTINATIONFILTERMODEL_H
  
 #include <qsortfilterproxymodel.h>
 
@@ -34,13 +34,13 @@
 class TrackDataItem;
 
 
-class TrackFilterModel : public QSortFilterProxyModel
+class DestinationFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    TrackFilterModel(QObject *pnt = nullptr);
-    virtual ~TrackFilterModel()				{}
+    DestinationFilterModel(QObject *pnt = nullptr);
+    virtual ~DestinationFilterModel() = default;
 
     virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const override;
     virtual Qt::ItemFlags flags(const QModelIndex &idx) const override;
@@ -55,4 +55,4 @@ private:
 };
 
  
-#endif							// TRACKFILTERMODEL_H
+#endif							// DESTINATIONFILTERMODEL_H
