@@ -27,7 +27,6 @@ HomePointsDataModel::HomePointsDataModel(QObject *pnt)
     qDebug();
     for (int i = 1; i<COL_COUNT; ++i) appendColumn();
 
-    // TODO: eliminate, use QAbstractItemModel::match()
     mHomeIndex = -1;					// nothing selected yet
     mWorkIndex = -1;
 }

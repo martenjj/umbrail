@@ -39,7 +39,6 @@ PointsDataModel::PointsDataModel(QObject *pnt)
 }
 
 
-
 TrackDataItem *PointsDataModel::itemForIndex(const QModelIndex &idx) const
 {
     const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
@@ -60,7 +59,6 @@ QVariant PointsDataModel::extraColumnData(const QModelIndex &pnt, int row, int c
 }
 
 
-// TODO: can use TrackData::formattedLatLong()
 static QVariant formatCoordinates(const TrackDataItem *item)
 {
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
@@ -69,41 +67,11 @@ static QVariant formatCoordinates(const TrackDataItem *item)
 }
 
 
-// TODO: can use TrackData::formattedAddress()
-// Based on NavMarks PointData::displayAddress()
 static QVariant formatAddress(const TrackDataItem *item)
 {
-    QStringList result;
-
-    // "StreetAddress", which may be multiple lines
-    const QString street = item->metadata("StreetAddress").toString();
-    if (!street.isEmpty()) result.append(street.split("\n", Qt::SkipEmptyParts));
-
-    // "City"
-    const QString city = item->metadata("City").toString();
-    if (!city.isEmpty()) result.append(city);
-
-    // "State", if not the same as "City"
-    // and not the same as the first two of "PostalCode" (France departement)
-    const QString state = item->metadata("State").toString();
-    const QString pcode = item->metadata("PostalCode").toString();
-    if (!state.isEmpty() && state!=city &&
-        !(state.length()==2 && state==pcode.left(2))) result.append(state);
-
-    const QString cntry =  item->metadata("Country").toString();
-    if (!pcode.isEmpty() && !cntry.isEmpty())
-    {
-        // "PostalCode - Country" if both are present
-        result.append(pcode+" - "+cntry);
-    }
-    else
-    {
-        // "PostalCode" or "Country"
-        if (!pcode.isEmpty()) result.append(pcode);
-        if (!cntry.isEmpty()) result.append(cntry);
-    }
-
-    return (result.join(", "));
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    if (tdw==nullptr) return (QVariant());
+    return (tdw->formattedAddress().join(", "));
 }
 
 
