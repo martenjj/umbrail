@@ -158,17 +158,17 @@ CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWi
 
     mNewButton = new QPushButton(i18n("Add..."), this);
     mNewButton->setIcon(QIcon::fromTheme("list-add"));
-    connect(mNewButton, SIGNAL(clicked(bool)), SLOT(slotNewCategory()));
+    connect(mNewButton, &QAbstractButton::clicked, this, &CategoriesManageDialogue::slotNewCategory);
     lay->addWidget(mNewButton, 0, 2);
 
     mEditButton = new QPushButton(i18n("Edit..."), this);
     mEditButton->setIcon(QIcon::fromTheme("document-edit"));
-    connect(mEditButton, SIGNAL(clicked(bool)), SLOT(slotEditCategory()));
+    connect(mEditButton, &QAbstractButton::clicked, this, &CategoriesManageDialogue::slotEditCategory);
     lay->addWidget(mEditButton, 1, 2);
 
     mDeleteButton = new QPushButton(i18n("Delete"), this);
     mDeleteButton->setIcon(QIcon::fromTheme("edit-delete"));
-    connect(mDeleteButton, SIGNAL(clicked(bool)), SLOT(slotDeleteCategory()));
+    connect(mDeleteButton, &QAbstractButton::clicked, this, &CategoriesManageDialogue::slotDeleteCategory);
     lay->addWidget(mDeleteButton, 2, 2);
 
     lay->setColumnMinimumWidth(1, DialogBase::verticalSpacing());
