@@ -13,7 +13,6 @@
 #include <kxmlguifactory.h>
 
 #include "settings.h"
-#include "pointsmodel.h"
 #include "autotooltipdelegate.h"
 #include "trackdata.h"
 

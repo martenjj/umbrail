@@ -1,7 +1,7 @@
 // -*-mode:c++ -*-
 
-#ifndef HOMEPOINTSMODEL_H
-#define HOMEPOINTSMODEL_H
+#ifndef HOMEPOINTSDATAMODEL_H
+#define HOMEPOINTSDATAMODEL_H
 
 #include <kextracolumnsproxymodel.h>
 
@@ -15,13 +15,13 @@ class TrackDataItem;
  * The source model is expected to be a HomePointsListModel which presents
  * a filtered list of home waypoints only.
  */
-class HomePointsModel : public KExtraColumnsProxyModel
+class HomePointsDataModel : public KExtraColumnsProxyModel
 {
     Q_OBJECT
 
 public:
-    HomePointsModel(QObject *pnt = nullptr);
-    virtual ~HomePointsModel() = default;
+    HomePointsDataModel(QObject *pnt = nullptr);
+    virtual ~HomePointsDataModel() = default;
 
     QVariant data(const QModelIndex &idx, int role) const override;
     bool setData(const QModelIndex &idx, const QVariant &value, int role) override;
@@ -39,4 +39,4 @@ private:
     int mWorkIndex;
 };
  
-#endif							// HOMEPOINTSMODEL_H
+#endif							// HOMEPOINTSDATAMODEL_H

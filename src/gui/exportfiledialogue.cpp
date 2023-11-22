@@ -13,7 +13,7 @@
 #include <kfdialog/recentsaver.h>
 
 #include "importerexporterbase.h"
-#include "homepointsmodel.h"
+#include "homepointsdatamodel.h"
 
 
 ExportFileDialogue::ExportFileDialogue(const QString &filter, QWidget *pnt)
@@ -99,7 +99,7 @@ void ExportFileDialogue::slotSettingChanged()
 
 ImporterExporterOptions ExportFileDialogue::options() const
 {
-    HomePointsModel *listModel = qobject_cast<HomePointsModel *>(mListView->model());
+    HomePointsDataModel *listModel = qobject_cast<HomePointsDataModel *>(mListView->model());
     Q_ASSERT(listModel!=nullptr);
 
     ImporterExporterOptions opts;

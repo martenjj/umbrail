@@ -28,7 +28,7 @@
 #include <qdebug.h>
 
 #include "trackdata.h"
-#include "waypointslistmodel.h"
+#include "waypointsfiltermodel.h"
 
 
 HomePointsFilterModel::HomePointsFilterModel(QObject *pnt)
@@ -40,7 +40,7 @@ HomePointsFilterModel::HomePointsFilterModel(QObject *pnt)
 
 TrackDataItem *HomePointsFilterModel::itemForIndex(const QModelIndex &idx) const
 {
-    const WaypointsListModel *wlm = qobject_cast<const WaypointsListModel *>(sourceModel());
+    const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
     Q_ASSERT(wlm!=nullptr);
     return (wlm->itemForIndex(mapToSource(idx)));
 }
@@ -48,7 +48,7 @@ TrackDataItem *HomePointsFilterModel::itemForIndex(const QModelIndex &idx) const
 
 bool HomePointsFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
-    const WaypointsListModel *wlm = qobject_cast<const WaypointsListModel *>(sourceModel());
+    const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
     Q_ASSERT(wlm!=nullptr);
     const TrackDataItem *item = wlm->itemForIndex(wlm->index(row, 0, pnt));
     if (item==nullptr) return (false);

@@ -56,11 +56,11 @@ using namespace KExiv2Iface;
 
 #include "filesmodel.h"
 #include "filesview.h"
-#include "pointsmodel.h"
+#include "pointsdatamodel.h"
 #include "fileslistmodel.h"
-#include "waypointslistmodel.h"
+#include "waypointsfiltermodel.h"
 #include "homepointsfiltermodel.h"
-#include "homepointsmodel.h"
+#include "homepointsdatamodel.h"
 #include "pointsview.h"
 #include "commands.h"
 #include "gpximporter.h"
@@ -116,21 +116,20 @@ FilesController::FilesController(QObject *pnt)
     model1->setSourceModel(mFilesModel);
 
     // A QSortFilterProxyModel to filter only waypoints out of the list
-    // TODO: rename to WaypointsFilterModel
-    mWaypointsListModel = new WaypointsListModel(this);
-    mWaypointsListModel->setDynamicSortFilter(true);
-    mWaypointsListModel->setSourceModel(model1);
+    mWaypointsFilterModel = new WaypointsFilterModel(this);
+    mWaypointsFilterModel->setDynamicSortFilter(true);
+    mWaypointsFilterModel->setSourceModel(model1);
 
     // A KExtraColumnsProxyModel to generate display data for the waypoints
-    mPointsModel = new PointsModel(this);
-    mPointsModel->setSourceModel(mWaypointsListModel);
+    mPointsDataModel = new PointsDataModel(this);
+    mPointsDataModel->setSourceModel(mWaypointsFilterModel);
 
     // A QSortFilterProxyModel to sort the points data for display
     QSortFilterProxyModel *model3 = new QSortFilterProxyModel(this);
     model3->setSortCaseSensitivity(Qt::CaseInsensitive);
     model3->setSortRole(Qt::UserRole);
     model3->setDynamicSortFilter(true);
-    model3->setSourceModel(mPointsModel);
+    model3->setSourceModel(mPointsDataModel);
 
     // A QTreeView to provide the points list view onto that
     mPointsView = new PointsView(mainWidget());
@@ -163,16 +162,16 @@ FilesController::~FilesController()
 }
 
 
-HomePointsModel *FilesController::homePointsModel()
+HomePointsDataModel *FilesController::homePointsModel()
 {
     if (mHomePointsModel==nullptr)
     {
         HomePointsFilterModel *homeModel = new HomePointsFilterModel(this);
         homeModel->setDynamicSortFilter(true);
-        homeModel->setSourceModel(mWaypointsListModel);
+        homeModel->setSourceModel(mWaypointsFilterModel);
         homeModel->sort(0);				// sort by name
 
-        mHomePointsModel = new HomePointsModel(this);
+        mHomePointsModel = new HomePointsDataModel(this);
         mHomePointsModel->setSourceModel(homeModel);
     }
 

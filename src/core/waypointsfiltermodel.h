@@ -23,8 +23,8 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef WAYPOINTSLISTMODEL_H
-#define WAYPOINTSLISTMODEL_H
+#ifndef WAYPOINTSFILTERMODEL_H
+#define WAYPOINTSFILTERMODEL_H
  
 #include <qsortfilterproxymodel.h>
 
@@ -35,17 +35,17 @@ class TrackDataItem;
 /**
  * @short A model to filter a list of track data items and accept only waypoints.
  */
-class WaypointsListModel : public QSortFilterProxyModel
+class WaypointsFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 
 public:
-    explicit WaypointsListModel(QObject *pnt = nullptr);
-    virtual ~WaypointsListModel() = default;
+    explicit WaypointsFilterModel(QObject *pnt = nullptr);
+    virtual ~WaypointsFilterModel() = default;
 
     virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const override;
 
     TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
  
-#endif							// WAYPOINTSLISTMODEL_H
+#endif							// WAYPOINTSFILTERMODEL_H

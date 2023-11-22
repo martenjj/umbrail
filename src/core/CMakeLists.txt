@@ -39,12 +39,12 @@ set(core_SRCS
   filesmodel.cpp
   fileslistmodel.cpp
   trackfiltermodel.cpp
-  waypointslistmodel.cpp
+  waypointsfiltermodel.cpp
   homepointsfiltermodel.cpp
-  homepointsmodel.cpp
+  homepointsdatamodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
-  pointsmodel.cpp
+  pointsdatamodel.cpp
   pointicon.cpp
   pointiconprovider.cpp
   category.cpp

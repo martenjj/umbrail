@@ -1,6 +1,6 @@
 
 
-#include "pointsmodel.h"
+#include "pointsdatamodel.h"
 
 #include <qfontdatabase.h>
 #include <qdebug.h>
@@ -12,7 +12,7 @@
 
 #include "trackdata.h"
 #include "pointicon.h"
-#include "waypointslistmodel.h"
+#include "waypointsfiltermodel.h"
 
 
 enum COLUMN
@@ -31,7 +31,7 @@ enum COLUMN
 #define SIZE_HINT		QSize(18, 18)
 
 
-PointsModel::PointsModel(QObject *pnt)
+PointsDataModel::PointsDataModel(QObject *pnt)
     : KExtraColumnsProxyModel(pnt)
 {
     qDebug();
@@ -40,9 +40,9 @@ PointsModel::PointsModel(QObject *pnt)
 
 
 
-TrackDataItem *PointsModel::itemForIndex(const QModelIndex &idx) const
+TrackDataItem *PointsDataModel::itemForIndex(const QModelIndex &idx) const
 {
-    const WaypointsListModel *wlm = qobject_cast<const WaypointsListModel *>(sourceModel());
+    const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
     Q_ASSERT(wlm!=nullptr);
 
     // Do not use mapToSource(), because the source model will generate
@@ -52,7 +52,7 @@ TrackDataItem *PointsModel::itemForIndex(const QModelIndex &idx) const
 }
 
 
-QVariant PointsModel::extraColumnData(const QModelIndex &pnt, int row, int col, int role) const
+QVariant PointsDataModel::extraColumnData(const QModelIndex &pnt, int row, int col, int role) const
 {
     // This should never actually be called, because we override data()
     // and headerData() and return results from those for all columns.
@@ -107,7 +107,7 @@ static QVariant formatAddress(const TrackDataItem *item)
 }
 
 
-QVariant PointsModel::data(const QModelIndex &idx, int role) const
+QVariant PointsDataModel::data(const QModelIndex &idx, int role) const
 {
     const TrackDataItem *item = itemForIndex(idx);
     if (item==nullptr) return (QVariant());
@@ -167,7 +167,7 @@ case Qt::SizeHintRole:
 }
 
 
-QVariant PointsModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant PointsDataModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role!=Qt::DisplayRole) return (QVariant());
     if (orientation!=Qt::Horizontal) return (QVariant());
@@ -186,7 +186,7 @@ default:		return (QVariant());
 }
 
 
-Qt::ItemFlags PointsModel::flags(const QModelIndex &idx) const
+Qt::ItemFlags PointsDataModel::flags(const QModelIndex &idx) const
 {
     return (Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemNeverHasChildren);
 }

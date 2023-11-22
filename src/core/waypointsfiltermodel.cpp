@@ -23,7 +23,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "waypointslistmodel.h"
+#include "waypointsfiltermodel.h"
 
 #include <qdebug.h>
 
@@ -31,7 +31,7 @@
 #include "fileslistmodel.h"
 
 
-WaypointsListModel::WaypointsListModel(QObject *pnt)
+WaypointsFilterModel::WaypointsFilterModel(QObject *pnt)
     : QSortFilterProxyModel(pnt)
 {
     qDebug();
@@ -43,7 +43,7 @@ WaypointsListModel::WaypointsListModel(QObject *pnt)
 // index, FilesModel could make the pointer available via data() with a unique
 // role.  May still have to implement indexForItem() though.
 
-TrackDataItem *WaypointsListModel::itemForIndex(const QModelIndex &idx) const
+TrackDataItem *WaypointsFilterModel::itemForIndex(const QModelIndex &idx) const
 {
     const FilesListModel *flm = qobject_cast<const FilesListModel *>(sourceModel());
     Q_ASSERT(flm!=nullptr);
@@ -51,7 +51,7 @@ TrackDataItem *WaypointsListModel::itemForIndex(const QModelIndex &idx) const
 }
 
 
-bool WaypointsListModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
+bool WaypointsFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
     // The 'row' and 'pnt' refer to the source model.  There is therefore
     // no need to use mapToSource() here.

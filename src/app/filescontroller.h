@@ -38,9 +38,9 @@ class QUrl;
 class FilesView;
 class PointsView;
 class FilesModel;
-class PointsModel;
-class WaypointsListModel;
-class HomePointsModel;
+class PointsDataModel;
+class WaypointsFilterModel;
+class HomePointsDataModel;
 class TrackDataFile;
 class TrackDataItem;
 class ErrorReporter;
@@ -78,7 +78,7 @@ public:
     FilesView *filesView() const		{ return (mFilesView); }
     PointsView *pointsView() const		{ return (mPointsView); }
     FilesModel *filesModel() const		{ return (mFilesModel); }
-    HomePointsModel *homePointsModel();
+    HomePointsDataModel *homePointsModel();
 
     bool isSettingTimeZone() const		{ return (mSettingTimeZone); }
 
@@ -141,10 +141,10 @@ private:
     FilesView *mFilesView;
     PointsView *mPointsView;
     FilesModel *mFilesModel;
-    PointsModel *mPointsModel;
+    PointsDataModel *mPointsDataModel;
 
-    WaypointsListModel *mWaypointsListModel;
-    HomePointsModel *mHomePointsModel;
+    WaypointsFilterModel *mWaypointsFilterModel;
+    HomePointsDataModel *mHomePointsModel;
 
     bool mWarnedNoTimezone;
     bool mSettingTimeZone;

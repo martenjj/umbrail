@@ -76,7 +76,7 @@
 #include "pointiconprovider.h"
 #include "importfiledialogue.h"
 #include "exportfiledialogue.h"
-#include "homepointsmodel.h"
+#include "homepointsdatamodel.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";

@@ -1,6 +1,6 @@
 
 
-#include "homepointsmodel.h"
+#include "homepointsdatamodel.h"
 
 #include <qdebug.h>
 #include <qicon.h>
@@ -21,7 +21,7 @@ enum COLUMN
 };
 
 
-HomePointsModel::HomePointsModel(QObject *pnt)
+HomePointsDataModel::HomePointsDataModel(QObject *pnt)
     : KExtraColumnsProxyModel(pnt)
 {
     qDebug();
@@ -33,7 +33,7 @@ HomePointsModel::HomePointsModel(QObject *pnt)
 }
 
 
-TrackDataItem *HomePointsModel::itemForIndex(const QModelIndex &idx) const
+TrackDataItem *HomePointsDataModel::itemForIndex(const QModelIndex &idx) const
 {
     const HomePointsFilterModel *hfm = qobject_cast<const HomePointsFilterModel *>(sourceModel());
     Q_ASSERT(hfm!=nullptr);
@@ -41,7 +41,7 @@ TrackDataItem *HomePointsModel::itemForIndex(const QModelIndex &idx) const
 }
 
 
-QVariant HomePointsModel::extraColumnData(const QModelIndex &pnt, int row, int col, int role) const
+QVariant HomePointsDataModel::extraColumnData(const QModelIndex &pnt, int row, int col, int role) const
 {
     // This should never actually be called, because we override data()
     // and headerData() and return results from those for all columns.
@@ -49,7 +49,7 @@ QVariant HomePointsModel::extraColumnData(const QModelIndex &pnt, int row, int c
 }
 
 
-QVariant HomePointsModel::data(const QModelIndex &idx, int role) const
+QVariant HomePointsDataModel::data(const QModelIndex &idx, int role) const
 {
     // Because this generates data for all columns of the model, the rearranged
     // column order does not matter.
@@ -76,7 +76,7 @@ case Qt::CheckStateRole:
 }
 
 
-QVariant HomePointsModel::headerData(int section, Qt::Orientation orient, int role) const
+QVariant HomePointsDataModel::headerData(int section, Qt::Orientation orient, int role) const
 {
     if (orient!=Qt::Horizontal) return (QVariant());
 
@@ -95,7 +95,7 @@ QVariant HomePointsModel::headerData(int section, Qt::Orientation orient, int ro
 }
 
 
-bool HomePointsModel::setData(const QModelIndex &idx, const QVariant &value, int role)
+bool HomePointsDataModel::setData(const QModelIndex &idx, const QVariant &value, int role)
 {
     const int row = idx.row();
     const int col = idx.column();
@@ -126,7 +126,7 @@ bool HomePointsModel::setData(const QModelIndex &idx, const QVariant &value, int
 }
 
 
-Qt::ItemFlags HomePointsModel::flags(const QModelIndex &idx) const
+Qt::ItemFlags HomePointsDataModel::flags(const QModelIndex &idx) const
 {
     Qt::ItemFlags f = Qt::ItemIsEnabled|Qt::ItemNeverHasChildren;
     if (idx.column()==COL_HOME || idx.column()==COL_WORK) f |= Qt::ItemIsUserCheckable;
@@ -134,13 +134,13 @@ Qt::ItemFlags HomePointsModel::flags(const QModelIndex &idx) const
 }
 
 
-QString HomePointsModel::homePoint() const
+QString HomePointsDataModel::homePoint() const
 {
     return (mHomeIndex<0 ? QString() : itemForIndex(index(mHomeIndex, 0))->name());
 }
 
 
-QString HomePointsModel::workPoint() const
+QString HomePointsDataModel::workPoint() const
 {
     return (mWorkIndex<0 ? QString() : itemForIndex(index(mWorkIndex, 0))->name());
 }
