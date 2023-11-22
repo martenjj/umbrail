@@ -92,14 +92,11 @@ FilesController::FilesController(QObject *pnt)
     qDebug();
 
     mDataModel = new FilesModel(this);
-    connect(mDataModel, &FilesModel::dataChanged, this, [=](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
+    connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
 
     mView = new FilesView(mainWidget());
     mView->setModel(mDataModel);
 
-    connect(mView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
-
-    connect(mDataModel, &FilesModel::clickedItem, mView, &FilesView::slotClickedItem);
     connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
     mWarnedNoTimezone = false;
@@ -1325,7 +1322,7 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
 
 void FilesController::slotSetTimeZone()
 {
-    TrackDataItem * root = model()->rootFileItem();
+    TrackDataItem *root = model()->rootFileItem();
     if (root==nullptr) return;
 
     TimeZoneSettingDialogue d(mainWidget());
