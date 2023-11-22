@@ -12,7 +12,7 @@
 
 #include "trackdata.h"
 #include "pointicon.h"
-#include "filesmodel.h"
+#include "waypointslistmodel.h"
 
 
 enum COLUMN
@@ -32,36 +32,35 @@ enum COLUMN
 
 
 PointsModel::PointsModel(QObject *pnt)
-    : QAbstractItemModel(pnt)
+    : KExtraColumnsProxyModel(pnt)
 {
     qDebug();
+    for (int i = 1; i<COL_COUNT; ++i) appendColumn();
 }
 
 
-QModelIndex PointsModel::index(int row, int col, const QModelIndex &pnt) const
+
+TrackDataItem *PointsModel::itemForIndex(const QModelIndex &idx) const
 {
-    return (createIndex(row, col, row));
+    const WaypointsListModel *wlm = qobject_cast<const WaypointsListModel *>(sourceModel());
+    Q_ASSERT(wlm!=nullptr);
+
+    // Do not use mapToSource(), because the source model will generate
+    // an invalid index for the extra columns.  We know that the row
+    // numbers are the same in the two models.
+    return (wlm->itemForIndex(wlm->index(idx.row(), 0, idx.parent())));
 }
 
 
-QModelIndex PointsModel::parent(const QModelIndex &idx) const
+QVariant PointsModel::extraColumnData(const QModelIndex &pnt, int row, int col, int role) const
 {
-    return (QModelIndex());
+    // This should never actually be called, because we override data()
+    // and headerData() and return results from those for all columns.
+    return (QVariant());
 }
 
 
-int PointsModel::rowCount(const QModelIndex &pnt) const
-{
-    return (mPoints.count());
-}
-
-
-int PointsModel::columnCount(const QModelIndex &pnt) const
-{
-    return (COL_COUNT);
-}
-
-
+// TODO: can use TrackData::formattedLatLong()
 static QVariant formatCoordinates(const TrackDataItem *item)
 {
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
@@ -70,6 +69,7 @@ static QVariant formatCoordinates(const TrackDataItem *item)
 }
 
 
+// TODO: can use TrackData::formattedAddress()
 // Based on NavMarks PointData::displayAddress()
 static QVariant formatAddress(const TrackDataItem *item)
 {
@@ -109,13 +109,14 @@ static QVariant formatAddress(const TrackDataItem *item)
 
 QVariant PointsModel::data(const QModelIndex &idx, int role) const
 {
-    const TrackDataItem *item = mPoints.value(idx.row());
+    const TrackDataItem *item = itemForIndex(idx);
     if (item==nullptr) return (QVariant());
+    const int col = idx.column();
 
     switch (role)
     {
 case Qt::DisplayRole:
-        switch (idx.column())
+        switch (col)
         {
 case COL_NAME:     return (item->name());
 case COL_ORIGIN:   return (item->metadata("origin").toStringList().join(", "));
@@ -126,21 +127,15 @@ case COL_CATS:     return (item->metadata("category").toStringList().join(", "))
         break;
 
 case Qt::DecorationRole:
-        switch (idx.column())
-        {
-case COL_SYM:      return (item->icon()->icon());
-        }
+        if (col==COL_SYM) return (item->icon()->icon());
         break;
 
 case Qt::FontRole:
-        switch (idx.column())
-        {
-case COL_COORDS:   return (QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        }
+        if (col==COL_COORDS) return (QFontDatabase::systemFont(QFontDatabase::FixedFont));
         break;
 
 case Qt::ForegroundRole:
-        if (idx.column()==COL_NAME)
+        if (col==COL_NAME)
         {
             const KColorScheme sch;
             const TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(item->metadata("flags").toInt());
@@ -151,7 +146,7 @@ case Qt::ForegroundRole:
         break;
 
 case Qt::ToolTipRole:
-        switch (idx.column())
+        switch (col)
         {
 case COL_SYM:      return (item->icon()->name());
 case COL_ORIGIN:   return (item->metadata("origin").toStringList().join("<br/>"));
@@ -159,18 +154,12 @@ case COL_ORIGIN:   return (item->metadata("origin").toStringList().join("<br/>")
         break;
 
 case Qt::UserRole:					// data for sorting
-        switch (idx.column())
-        {
-case COL_SYM:      return (item->icon()->name());
-default:           return (data(idx, Qt::DisplayRole));
-        }
+        if (col==COL_SYM) return (item->icon()->name());
+        else return (data(idx, Qt::DisplayRole));
         break;
 
 case Qt::SizeHintRole:
-        switch (idx.column())
-        {
-case COL_SYM:      return (SIZE_HINT);
-        }
+        if (col==COL_SYM) return (SIZE_HINT);
         break;
     }
 
@@ -200,48 +189,4 @@ default:		return (QVariant());
 Qt::ItemFlags PointsModel::flags(const QModelIndex &idx) const
 {
     return (Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemNeverHasChildren);
-}
-
-
-void PointsModel::setSourceModel(QAbstractItemModel *srcModel)
-{
-    qDebug();
-
-    mSourceModel = srcModel;
-    connect(srcModel, &QAbstractItemModel::modelReset, this, &PointsModel::slotRebuildPointsList);
-    connect(srcModel, &QAbstractItemModel::layoutChanged, this, &PointsModel::slotRebuildPointsList);
-
-    slotRebuildPointsList();
-}
-
-
-void PointsModel::slotRebuildPointsList()
-{
-    beginResetModel();
-    mPoints.clear();
-
-    FilesModel *filesModel = qobject_cast<FilesModel *>(mSourceModel);
-    Q_ASSERT(filesModel!=nullptr);
-    const TrackDataItem *root = filesModel->rootFileItem();
-    if (root!=nullptr) buildPointsList(root);		// may not have been set yet
-
-    endResetModel();
-    qDebug() << "total points" << mPoints.count();
-}
-
-
-void PointsModel::buildPointsList(const TrackDataItem *item)
-{
-    if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr) mPoints.append(item);
-    else
-    {
-        const int n = item->childCount();
-        for (int i = 0; i<n; ++i) buildPointsList(item->childAt(i));
-    }
-}
-
-
-const TrackDataItem *PointsModel::itemAt(int row)
-{
-    return (mPoints.value(row));
 }

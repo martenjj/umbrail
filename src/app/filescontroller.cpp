@@ -44,6 +44,7 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 #include <kactioncollection.h>
+#include <klinkitemselectionmodel.h>
 
 #include <kio/statjob.h>
 #include <kio/filecopyjob.h>
@@ -56,6 +57,8 @@ using namespace KExiv2Iface;
 #include "filesmodel.h"
 #include "filesview.h"
 #include "pointsmodel.h"
+#include "fileslistmodel.h"
+#include "waypointslistmodel.h"
 #include "pointsview.h"
 #include "commands.h"
 #include "gpximporter.h"
@@ -97,31 +100,49 @@ FilesController::FilesController(QObject *pnt)
 {
     qDebug();
 
-    mDataModel = new FilesModel(this);
+    // The master data tree model
+    mFilesModel = new FilesModel(this);
 
-    mPointsModel = new PointsModel(this);
-    mPointsModel->setSourceModel(mDataModel);
-
-    QSortFilterProxyModel *sortModel = new QSortFilterProxyModel(this);
-    sortModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    sortModel->setSortRole(Qt::UserRole);
-    sortModel->setDynamicSortFilter(true);
-    sortModel->setSourceModel(mPointsModel);
-
+    // A QTreeView to provide the main tree view onto that
     mFilesView = new FilesView(mainWidget());
-    mFilesView->setModel(mDataModel);
+    mFilesView->setModel(mFilesModel);
     connect(mFilesView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
 
+    // A KDescendantsProxyModel to flatten the tree into a linear list of points
+    FilesListModel *model1 = new FilesListModel(this);
+    model1->setDisplayAncestorData(false);
+    model1->setSourceModel(mFilesModel);
+
+    // A QSortFilterProxyModel to filter only waypoints out of the list
+    WaypointsListModel *model2 = new WaypointsListModel(this);
+    model2->setDynamicSortFilter(true);
+    model2->setSourceModel(model1);
+
+    // A KExtraColumnsProxyModel to generate display data for the waypoints
+    mPointsModel = new PointsModel(this);
+    mPointsModel->setSourceModel(model2);
+
+    // A QSortFilterProxyModel to sort the points data for display
+    QSortFilterProxyModel *model3 = new QSortFilterProxyModel(this);
+    model3->setSortCaseSensitivity(Qt::CaseInsensitive);
+    model3->setSortRole(Qt::UserRole);
+    model3->setDynamicSortFilter(true);
+    model3->setSourceModel(mPointsModel);
+
+    // A QTreeView to provide the points list view onto that
     mPointsView = new PointsView(mainWidget());
-    mPointsView->setModel(sortModel);
+    mPointsView->setModel(model3);
 
-    connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end) { slotUpdateActionState(); });
-    connect(mDataModel, &FilesModel::clickedItem, mFilesView, &FilesView::slotClickedItem);
-    connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
+    // Data or selection updates from the main tree view
+    connect(mFilesModel, &FilesModel::dataChanged, this, &FilesController::slotUpdateActionState);
+    connect(mFilesModel, &FilesModel::clickedItem, mFilesView, &FilesView::slotClickedItem);
+    connect(mFilesModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
-    // Synchronising the selection between the points list and the tree view
-    connect(mPointsView, &PointsView::pointsSelectionChanged, mFilesView, &FilesView::slotSelectItems);
-    connect(mFilesView, &FilesView::filesSelectionChanged, mPointsView, &PointsView::slotSelectPoints);
+    // Synchronising the selection between the points list and the tree view,
+    // which is all handled automatically by this model.  This means that the
+    // points list view does not need to do anything concerned with selection.
+    KLinkItemSelectionModel *linkModel = new KLinkItemSelectionModel(model3, mFilesView->selectionModel());
+    mPointsView->setSelectionModel(linkModel);
 
     mWarnedNoTimezone = false;
     mSettingTimeZone = false;
@@ -149,10 +170,10 @@ void FilesController::saveProperties()
 
 void FilesController::initNew()
 {
-    Q_ASSERT(model()->rootFileItem()==nullptr);
+    Q_ASSERT(filesModel()->rootFileItem()==nullptr);
 
     TrackDataFile *fileItem = new TrackDataFile;
-    model()->setRootFileItem(fileItem);
+    filesModel()->setRootFileItem(fileItem);
 }
 
 
@@ -364,7 +385,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, cons
     cmd->setData(tdf);					// takes ownership of tree
     cmd->setOptions(options);				// user options for import
 
-    if (model()->isEmpty())				// loading a new file?
+    if (filesModel()->isEmpty())			// loading a new file?
     {
         cmd->redo();					// yes, just do the import
         delete cmd;					// no need for this now
@@ -508,7 +529,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->setOptions(options);				// set the export options
-    exp->save(exportTo, model()->rootFileItem());
+    exp->save(exportTo, filesModel()->rootFileItem());
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))
@@ -581,7 +602,7 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     // Local time needs to be converted to UTC (using the time zone of the file)
     // in order to correspond with the recording times.  This means that a
     // time zone needs to be set for meaningful results.
-    QByteArray zone = model()->rootFileItem()->timeZone().toLocal8Bit();
+    QByteArray zone = filesModel()->rootFileItem()->timeZone().toLocal8Bit();
     if (zone.isEmpty()) return (false);			// if none, can't convert
 
     QTimeZone tz(zone);
@@ -602,8 +623,8 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
 FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 {
     int q;						// status for questions
-
-    QString zone = model()->rootFileItem()->timeZone();	// get the file time zone set
+							// get the file time zone set
+    const QString zone = filesModel()->rootFileItem()->timeZone();
     if (zone.isEmpty() && !mWarnedNoTimezone)		// message only once per file
     {
         q = KMessageBox::warningContinueCancel(mainWidget(),
@@ -623,7 +644,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
     // Find a folder to place the resulting waypoint in, but do not
     // try to create it at this stage if it does not already exist.
-    TrackDataFolder *destFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, model()->rootFileItem());
+    TrackDataFolder *destFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, filesModel()->rootFileItem());
 
     for (int i = 0; i<total; ++i)
     {
@@ -681,7 +702,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             {
                 closestDiff = INT_MAX;
                 closestPoint = nullptr;
-                findChildWithTime(model()->rootFileItem(), dt);
+                findChildWithTime(filesModel()->rootFileItem(), dt);
 
                 if (closestPoint!=nullptr && closestDiff<=Settings::photoTimeThreshold())
                 {
@@ -749,7 +770,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             AddContainerCommand *cmd1 = new AddContainerCommand(this);
             cmd1->setText(i18n("Create Photo Folder"));
             cmd1->setName(PHOTO_FOLDER_NAME);
-            cmd1->setData(TrackData::Folder, model()->rootFileItem());
+            cmd1->setData(TrackData::Folder, filesModel()->rootFileItem());
             executeCommand(cmd1);
             destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
         }
@@ -847,7 +868,7 @@ default:                    break;
 
 void FilesController::slotCheckTimeZone()
 {
-    TrackDataFile *tdf = model()->rootFileItem();
+    TrackDataFile *tdf = filesModel()->rootFileItem();
     if (tdf==nullptr) return;				// check model not empty
 
     QString zone = tdf->timeZone();			// get current file time zone
@@ -1305,7 +1326,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
         // This assumes that the folder to be created is at the top level.
         // Safe to assume this, see StopDetectDialogue::slotCommitResults()
         // for why.
-        cmd1->setData(TrackData::Folder, model()->rootFileItem());
+        cmd1->setData(TrackData::Folder, filesModel()->rootFileItem());
         cmd1->setText(i18n("Create Waypoint Folder"));
         executeCommand(cmd1);
 
@@ -1490,8 +1511,12 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
 
 void FilesController::slotSetTimeZone()
 {
+
+// TODO: simplify, extract the time zone and keep it in a member variable
+// search for it again on model reset
+
     // Select the top-level file item.
-    filesView()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
+    filesView()->slotClickedItem(filesModel()->indexForItem(filesModel()->rootFileItem()),
                                  QItemSelectionModel::ClearAndSelect);
 
     // Set for this one shot operation, so that the selection
@@ -1514,7 +1539,7 @@ void FilesController::slotSetTimeZone()
 
 void FilesController::slotManageCategories()
 {
-    CategoryList *cats = model()->rootFileItem()->categories();
+    CategoryList *cats = filesModel()->rootFileItem()->categories();
     CategoriesManageDialogue d(cats, mainWidget());	// existing categories, may be none
     if (!d.exec()) return;
 
@@ -1527,7 +1552,7 @@ void FilesController::slotManageCategories()
     {
         if (newCats->count()==0) return;		// none to add, nothing to do
         cats = new CategoryList;			// allocate new and set on root
-        model()->rootFileItem()->setCategories(cats);
+        filesModel()->rootFileItem()->setCategories(cats);
     }
 
     cats->clear();

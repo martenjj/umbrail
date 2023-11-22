@@ -38,7 +38,7 @@ class FilesView : public QTreeView, public ApplicationDataInterface
 
 public:
     FilesView(QWidget *pnt = nullptr);
-    virtual ~FilesView();
+    virtual ~FilesView() = default;
 
     void readProperties();
     void saveProperties();
@@ -61,15 +61,12 @@ public slots:
     void slotCollapseAll();
     void slotExpandAll();
 
-    void slotSelectItems(const QList<const TrackDataItem *> &items);
-
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel) override;
     void contextMenuEvent(QContextMenuEvent *ev) override;
 
 signals:
     void updateActionState();
-    void filesSelectionChanged(unsigned long selectionId);
 
 private:
     void expandItem(const QModelIndex &idx);
@@ -79,8 +76,6 @@ private:
     TrackData::Type mSelectedType;
     const TrackDataItem *mSelectedItem;
     unsigned long mSelectionId;
-
-    bool mSelectionInhibit;
 };
  
 #endif							// FILESVIEW_H

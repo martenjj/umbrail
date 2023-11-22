@@ -2,14 +2,21 @@
 
 #ifndef POINTSMODEL_H
 #define POINTSMODEL_H
- 
-#include <qabstractitemmodel.h>
+
+#include <kextracolumnsproxymodel.h>
 
 
 class TrackDataItem;
 
 
-class PointsModel : public QAbstractItemModel
+/**
+ * @short A model to generate the display data for the points list view.
+ *
+ * Apart from doing that, the KExtraColumnsProxyModel handles most of
+ * the work.  It expects its source model to be a WaypointsListModel
+ * which presents it with a list of waypoints only.
+ */
+class PointsModel : public KExtraColumnsProxyModel
 {
     Q_OBJECT
 
@@ -17,26 +24,12 @@ public:
     PointsModel(QObject *pnt = nullptr);
     virtual ~PointsModel() = default;
 
-    virtual QModelIndex index(int row, int col, const QModelIndex &pnt = QModelIndex()) const override;
-    virtual QModelIndex parent(const QModelIndex &idx) const override;
-    virtual int rowCount(const QModelIndex &pnt = QModelIndex()) const override;
-    virtual int columnCount(const QModelIndex &pnt = QModelIndex()) const override;
-    virtual QVariant data(const QModelIndex &idx, int role) const override;
-    virtual Qt::ItemFlags flags(const QModelIndex &idx) const override;
-    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    QVariant data(const QModelIndex &idx, int role) const override;
+    Qt::ItemFlags flags(const QModelIndex &idx) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    QVariant extraColumnData(const QModelIndex &pnt, int row, int col, int role) const override;
 
-    void setSourceModel(QAbstractItemModel *srcModel);
-    const TrackDataItem *itemAt(int row);
-
-private:
-    void buildPointsList(const TrackDataItem *item);
-
-private slots:
-    void slotRebuildPointsList();
-
-private:
-    QAbstractItemModel *mSourceModel;
-    QVector<const TrackDataItem *> mPoints;
+    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
  
 #endif							// POINTSMODEL_H

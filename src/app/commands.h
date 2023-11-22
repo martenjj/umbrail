@@ -68,7 +68,7 @@ protected:
           mController(fc)				{}
 
     FilesController *controller() const			{ return (mController); }
-    FilesModel *model() const				{ return (mController->model()); }
+    FilesModel *model() const				{ return (mController->filesModel()); }
 
     void startLayoutChange() const;
     void endLayoutChange() const;

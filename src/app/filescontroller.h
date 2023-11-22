@@ -75,7 +75,7 @@ public:
 
     FilesView *filesView() const		{ return (mFilesView); }
     PointsView *pointsView() const		{ return (mPointsView); }
-    FilesModel *model() const			{ return (mDataModel); }
+    FilesModel *filesModel() const		{ return (mFilesModel); }
     bool isSettingTimeZone() const		{ return (mSettingTimeZone); }
 
     void readProperties();
@@ -136,7 +136,7 @@ private slots:
 private:
     FilesView *mFilesView;
     PointsView *mPointsView;
-    FilesModel *mDataModel;
+    FilesModel *mFilesModel;
     PointsModel *mPointsModel;
 
     bool mWarnedNoTimezone;
