@@ -39,9 +39,11 @@ class FilesView;
 class PointsView;
 class FilesModel;
 class PointsModel;
+class WaypointsListModel;
+class HomePointsModel;
 class TrackDataFile;
-class ErrorReporter;
 class TrackDataItem;
+class ErrorReporter;
 class ImporterExporterOptions;
 
 
@@ -76,6 +78,8 @@ public:
     FilesView *filesView() const		{ return (mFilesView); }
     PointsView *pointsView() const		{ return (mPointsView); }
     FilesModel *filesModel() const		{ return (mFilesModel); }
+    HomePointsModel *homePointsModel();
+
     bool isSettingTimeZone() const		{ return (mSettingTimeZone); }
 
     void readProperties();
@@ -138,6 +142,9 @@ private:
     PointsView *mPointsView;
     FilesModel *mFilesModel;
     PointsModel *mPointsModel;
+
+    WaypointsListModel *mWaypointsListModel;
+    HomePointsModel *mHomePointsModel;
 
     bool mWarnedNoTimezone;
     bool mSettingTimeZone;

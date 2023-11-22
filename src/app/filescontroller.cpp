@@ -59,6 +59,8 @@ using namespace KExiv2Iface;
 #include "pointsmodel.h"
 #include "fileslistmodel.h"
 #include "waypointslistmodel.h"
+#include "homepointsfiltermodel.h"
+#include "homepointsmodel.h"
 #include "pointsview.h"
 #include "commands.h"
 #include "gpximporter.h"
@@ -114,13 +116,14 @@ FilesController::FilesController(QObject *pnt)
     model1->setSourceModel(mFilesModel);
 
     // A QSortFilterProxyModel to filter only waypoints out of the list
-    WaypointsListModel *model2 = new WaypointsListModel(this);
-    model2->setDynamicSortFilter(true);
-    model2->setSourceModel(model1);
+    // TODO: rename to WaypointsFilterModel
+    mWaypointsListModel = new WaypointsListModel(this);
+    mWaypointsListModel->setDynamicSortFilter(true);
+    mWaypointsListModel->setSourceModel(model1);
 
     // A KExtraColumnsProxyModel to generate display data for the waypoints
     mPointsModel = new PointsModel(this);
-    mPointsModel->setSourceModel(model2);
+    mPointsModel->setSourceModel(mWaypointsListModel);
 
     // A QSortFilterProxyModel to sort the points data for display
     QSortFilterProxyModel *model3 = new QSortFilterProxyModel(this);
@@ -132,6 +135,11 @@ FilesController::FilesController(QObject *pnt)
     // A QTreeView to provide the points list view onto that
     mPointsView = new PointsView(mainWidget());
     mPointsView->setModel(model3);
+
+    // A KExtraColumnsProxyModel to generate display data for
+    // the home/work waypoints in the "Export File" dialogue.
+    // This is created on demand by homePointsModel() below.
+    mHomePointsModel = nullptr;
 
     // Data or selection updates from the main tree view
     connect(mFilesModel, &FilesModel::dataChanged, this, &FilesController::slotUpdateActionState);
@@ -155,11 +163,29 @@ FilesController::~FilesController()
 }
 
 
+HomePointsModel *FilesController::homePointsModel()
+{
+    if (mHomePointsModel==nullptr)
+    {
+        HomePointsFilterModel *homeModel = new HomePointsFilterModel(this);
+        homeModel->setDynamicSortFilter(true);
+        homeModel->setSourceModel(mWaypointsListModel);
+        homeModel->sort(0);				// sort by name
+
+        mHomePointsModel = new HomePointsModel(this);
+        mHomePointsModel->setSourceModel(homeModel);
+    }
+
+    return (mHomePointsModel);
+}
+
+
 void FilesController::readProperties()
 {
     filesView()->readProperties();
     pointsView()->readProperties();
 }
+
 
 void FilesController::saveProperties()
 {

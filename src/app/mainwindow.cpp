@@ -76,6 +76,7 @@
 #include "pointiconprovider.h"
 #include "importfiledialogue.h"
 #include "exportfiledialogue.h"
+#include "homepointsmodel.h"
 
 
 static const char CONFIG_GROUP[] = "MainWindow";
@@ -755,8 +756,7 @@ void MainWindow::slotExportFile()
 {
 // TODO: option to export selected items
     ExportFileDialogue d(FilesController::allExportFilters(), this);
-    FilesModel *mod = filesController()->filesModel();
-    d.setSourceModel(mod);
+    d.setSourceModel(filesController()->homePointsModel());
 
     if (!d.exec()) return;
 

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2023 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -23,44 +23,39 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "waypointslistmodel.h"
+#include "homepointsfiltermodel.h"
 
 #include <qdebug.h>
 
 #include "trackdata.h"
-#include "fileslistmodel.h"
+#include "waypointslistmodel.h"
 
 
-WaypointsListModel::WaypointsListModel(QObject *pnt)
+HomePointsFilterModel::HomePointsFilterModel(QObject *pnt)
     : QSortFilterProxyModel(pnt)
 {
     qDebug();
 }
 
 
-// TODO: to avoid all models in the chain having to implement itemForIndex()
-// in order to be able to get the TrackDataItem corresponding to a model
-// index, FilesModel could make the pointer available via data() with a unique
-// role.  May still have to implement indexForItem() though.
-
-TrackDataItem *WaypointsListModel::itemForIndex(const QModelIndex &idx) const
+TrackDataItem *HomePointsFilterModel::itemForIndex(const QModelIndex &idx) const
 {
-    const FilesListModel *flm = qobject_cast<const FilesListModel *>(sourceModel());
-    Q_ASSERT(flm!=nullptr);
-    return (flm->itemForIndex(mapToSource(idx)));
+    const WaypointsListModel *wlm = qobject_cast<const WaypointsListModel *>(sourceModel());
+    Q_ASSERT(wlm!=nullptr);
+    return (wlm->itemForIndex(mapToSource(idx)));
 }
 
 
-bool WaypointsListModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
+bool HomePointsFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
-    // The 'row' and 'pnt' refer to the source model.  There is therefore
-    // no need to use mapToSource() here.
-
-    const FilesListModel *flm = qobject_cast<const FilesListModel *>(sourceModel());
-    Q_ASSERT(flm!=nullptr);
-    const TrackDataItem *item = flm->itemForIndex(flm->index(row, 0, pnt));
+    const WaypointsListModel *wlm = qobject_cast<const WaypointsListModel *>(sourceModel());
+    Q_ASSERT(wlm!=nullptr);
+    const TrackDataItem *item = wlm->itemForIndex(wlm->index(row, 0, pnt));
     if (item==nullptr) return (false);
 
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
-    return (tdw!=nullptr);
+    // Assuming that any item presented to this model will have been filtered
+    // by the source model and is a waypoint.  This is not a problem if it is
+    // not the case, as other items will not normally have "flags" set anyway.
+    TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(item->metadata("flags").toInt());
+    return (flags & TrackData::HomePoint);
 }
