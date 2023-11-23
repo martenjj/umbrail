@@ -23,22 +23,22 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef TIMEZONEDIALOGUE_H
-#define TIMEZONEDIALOGUE_H
+#ifndef TIMEZONELISTDIALOGUE_H
+#define TIMEZONELISTDIALOGUE_H
 
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>
 
-class TimeZoneWidget;
+class TimeZoneListWidget;
 
 
-class TimeZoneDialogue : public DialogBase, public DialogStateSaver
+class TimeZoneListDialogue : public DialogBase, public DialogStateSaver
 {
     Q_OBJECT
 
 public:
-    explicit TimeZoneDialogue(QWidget *pnt = nullptr);
-    virtual ~TimeZoneDialogue() = default;
+    explicit TimeZoneListDialogue(QWidget *pnt = nullptr);
+    virtual ~TimeZoneListDialogue() = default;
 
     void setTimeZone(const QByteArray &zone);
     QString timeZone() const;
@@ -54,8 +54,8 @@ private slots:
     void slotTimeZoneChanged();
 
 private:
-    TimeZoneWidget *mTimeZoneWidget;
+    TimeZoneListWidget *mTimeZoneWidget;
     bool mReturnUTC;
 };
 
-#endif							// TIMEZONEDIALOGUE_H
+#endif							// TIMEZONELISTDIALOGUE_H

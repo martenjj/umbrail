@@ -23,8 +23,8 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef TIMEZONESELECTOR_H
-#define TIMEZONESELECTOR_H
+#ifndef TIMEZONEDISPLAY_H
+#define TIMEZONEDISPLAY_H
 
 #include <qframe.h>
 
@@ -34,13 +34,13 @@ class QPushButton;
 class TrackDataItem;
 
 
-class TimeZoneSelector : public QFrame
+class TimeZoneDisplay : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit TimeZoneSelector(QWidget *pnt = nullptr);
-    virtual ~TimeZoneSelector() = default;
+    explicit TimeZoneDisplay(QWidget *pnt = nullptr);
+    virtual ~TimeZoneDisplay() = default;
 
     void setTimeZone(const QString &zone);
     QString timeZone() const;
@@ -64,4 +64,4 @@ private:
     double mItemsLon;
 };
  
-#endif							// TIMEZONESELECTOR_H
+#endif							// TIMEZONEDISPLAY_H

@@ -23,7 +23,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "timezonedialogue.h"
+#include "timezonelistdialogue.h"
 
 #include <qgridlayout.h>
 #include <qlabel.h>
@@ -36,14 +36,14 @@
 #include <kconfiggroup.h>
 #include <ktreewidgetsearchline.h>
 
-#include "timezonewidget.h"
+#include "timezonelistwidget.h"
 
 
-TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
+TimeZoneListDialogue::TimeZoneListDialogue(QWidget *pnt)
     : DialogBase(pnt),
       DialogStateSaver(this)
 {
-    setObjectName("TimeZoneDialogue");
+    setObjectName("TimeZoneListDialogue");
 
     setModal(true);
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Reset|QDialogButtonBox::RestoreDefaults);
@@ -54,8 +54,8 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     setButtonIcon(QDialogButtonBox::RestoreDefaults, buttonBox()->button(QDialogButtonBox::Reset)->icon());
     setWindowTitle(i18n("Select Time Zone"));
 
-    connect(buttonBox()->button(QDialogButtonBox::Reset), &QPushButton::clicked, this, &TimeZoneDialogue::slotUseUTC);
-    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &TimeZoneDialogue::slotUseSystem);
+    connect(buttonBox()->button(QDialogButtonBox::Reset), &QPushButton::clicked, this, &TimeZoneListDialogue::slotUseUTC);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, &TimeZoneListDialogue::slotUseSystem);
 
     QWidget *w = new QWidget(this);
     setMainWidget(w);
@@ -80,9 +80,9 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
     }
     //qDebug() << zoneIds;
 
-    mTimeZoneWidget = new TimeZoneWidget(this, zoneIds);
+    mTimeZoneWidget = new TimeZoneListWidget(this, zoneIds);
     mTimeZoneWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-    connect(mTimeZoneWidget, &QTreeWidget::itemSelectionChanged, this, &TimeZoneDialogue::slotTimeZoneChanged);
+    connect(mTimeZoneWidget, &QTreeWidget::itemSelectionChanged, this, &TimeZoneListDialogue::slotTimeZoneChanged);
     gl->addWidget(mTimeZoneWidget, 1, 0, 1, -1);
 
     KTreeWidgetSearchLine *sl = new KTreeWidgetSearchLine(this, mTimeZoneWidget);
@@ -102,14 +102,14 @@ TimeZoneDialogue::TimeZoneDialogue(QWidget *pnt)
 }
 
 
-void TimeZoneDialogue::setTimeZone(const QByteArray &zone)
+void TimeZoneListDialogue::setTimeZone(const QByteArray &zone)
 {
     qDebug() << zone;
     mTimeZoneWidget->setSelected(zone, true);
 }
 
 
-QString TimeZoneDialogue::timeZone() const
+QString TimeZoneListDialogue::timeZone() const
 {
     if (mReturnUTC) return (QString());
     QStringList sel = mTimeZoneWidget->selection();
@@ -117,34 +117,34 @@ QString TimeZoneDialogue::timeZone() const
 }
 
 
-void TimeZoneDialogue::slotUseUTC()
+void TimeZoneListDialogue::slotUseUTC()
 {
     mReturnUTC = true;
     accept();
 }
 
 
-void TimeZoneDialogue::slotUseSystem()
+void TimeZoneListDialogue::slotUseSystem()
 {
     mTimeZoneWidget->setSelected(QTimeZone::systemTimeZone().id(), true);
     accept();
 }
 
 
-void TimeZoneDialogue::slotTimeZoneChanged()
+void TimeZoneListDialogue::slotTimeZoneChanged()
 {
     setButtonEnabled(QDialogButtonBox::Ok, !mTimeZoneWidget->selectedItems().isEmpty());
 }
 
 
-void TimeZoneDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+void TimeZoneListDialogue::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
     grp.writeEntry("State", mTimeZoneWidget->header()->saveState().toHex());
     DialogStateSaver::saveConfig(dialog, grp);
 }
 
 
-void TimeZoneDialogue::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+void TimeZoneListDialogue::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
     QString colStates = grp.readEntry("State");
     if (!colStates.isEmpty()) mTimeZoneWidget->header()->restoreState(QByteArray::fromHex(colStates.toLocal8Bit()));

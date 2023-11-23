@@ -23,7 +23,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "timezoneselector.h"
+#include "timezonedisplay.h"
 
 #include <qpushbutton.h>
 #include <qdebug.h>
@@ -33,15 +33,15 @@
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
 
-#include "timezonedialogue.h"
+#include "timezonelistdialogue.h"
 #include "timezoneprovider.h"
 #include "trackdata.h"
 
 
-TimeZoneSelector::TimeZoneSelector(QWidget *pnt)
+TimeZoneDisplay::TimeZoneDisplay(QWidget *pnt)
     : QFrame(pnt)
 {
-    setObjectName("TimeZoneSelector");
+    setObjectName("TimeZoneDisplay");
 
     QGridLayout *gl = new QGridLayout(this);
     gl->setMargin(0);
@@ -50,54 +50,54 @@ TimeZoneSelector::TimeZoneSelector(QWidget *pnt)
     mZoneDisplay->setReadOnly(true);
     mZoneDisplay->setPlaceholderText(i18n("(UTC)"));
     gl->addWidget(mZoneDisplay, 0, 0);
-    connect(mZoneDisplay, &QLineEdit::textChanged, this, &TimeZoneSelector::zoneChanged);
+    connect(mZoneDisplay, &QLineEdit::textChanged, this, &TimeZoneDisplay::zoneChanged);
 
     QPushButton *b = new QPushButton(QIcon::fromTheme("document-edit"), i18nc("@action:button", "Change..."), this);
     gl->addWidget(b, 0, 1);
-    connect(b, &QAbstractButton::clicked, this, &TimeZoneSelector::slotChangeZone);
+    connect(b, &QAbstractButton::clicked, this, &TimeZoneDisplay::slotChangeZone);
     setFocusProxy(b);
     setFocusPolicy(Qt::StrongFocus);
 
     mGuessButton = new QPushButton(QIcon::fromTheme("preferences-system-network"), i18nc("@action:button", "Get from Location"), this);
     mGuessButton->setEnabled(false);
     gl->addWidget(mGuessButton, 1, 1);
-    connect(mGuessButton, &QAbstractButton::clicked, this, &TimeZoneSelector::slotGuessZone);
+    connect(mGuessButton, &QAbstractButton::clicked, this, &TimeZoneDisplay::slotGuessZone);
 }
 
 
-void TimeZoneSelector::setTimeZone(const QString &zone)
+void TimeZoneDisplay::setTimeZone(const QString &zone)
 {
     mZoneDisplay->setText(zone);
 }
 
 
-QString TimeZoneSelector::timeZone() const
+QString TimeZoneDisplay::timeZone() const
 {
     return (mZoneDisplay->text());
 }
 
 
-void TimeZoneSelector::slotChangeZone()
+void TimeZoneDisplay::slotChangeZone()
 {
-    TimeZoneDialogue d(this);
+    TimeZoneListDialogue d(this);
     d.setTimeZone(timeZone().toLatin1());
     if (d.exec()) setTimeZone(d.timeZone());		// will emit the signal
 }
 
 
-void TimeZoneSelector::slotGuessZone()
+void TimeZoneDisplay::slotGuessZone()
 {
     qDebug() << "for lat" << mItemsLat << "lon" << mItemsLon;
 
     TimeZoneProvider *job = new TimeZoneProvider(mItemsLat, mItemsLon, this);
     if (!job->isValid()) return;			// failed to start job
-    connect(job, &TimeZoneProvider::result, this, &TimeZoneSelector::slotGuessJobFinished);
+    connect(job, &TimeZoneProvider::result, this, &TimeZoneDisplay::slotGuessJobFinished);
 }
 
 
-void TimeZoneSelector::setItems(const QList<TrackDataItem *> *items)
+void TimeZoneDisplay::setItems(const QList<TrackDataItem *> *items)
 {
-    BoundingArea bb = TrackData::unifyBoundingAreas(items);
+    const BoundingArea bb = TrackData::unifyBoundingAreas(items);
     if (!bb.isValid()) return;
 
     mItemsLat = (bb.north()+bb.south())/2;		// centre of area of interest
@@ -106,7 +106,7 @@ void TimeZoneSelector::setItems(const QList<TrackDataItem *> *items)
 }
 
 
-void TimeZoneSelector::slotGuessJobFinished(const QString &zone)
+void TimeZoneDisplay::slotGuessJobFinished(const QString &zone)
 {
     if (!zone.isEmpty()) mZoneDisplay->setText(zone);
 }

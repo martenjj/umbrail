@@ -25,7 +25,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "timezonewidget.h"
+#include "timezonelistwidget.h"
 
 #include <qdebug.h>
 #include <qfile.h>
@@ -59,7 +59,7 @@ static bool localeLessThan(const QString &a, const QString &b)
 }
 
 
-TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
+TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> &zones)
     : QTreeWidget(parent)
 {
     mItemsCheckable = false;
@@ -167,7 +167,7 @@ TimeZoneWidget::TimeZoneWidget(QWidget *parent, const QList<QByteArray> &zones)
 }
 
 
-void TimeZoneWidget::setItemsCheckable(bool enable)
+void TimeZoneListWidget::setItemsCheckable(bool enable)
 {
     mItemsCheckable = enable;
     const int count = topLevelItemCount();
@@ -180,19 +180,19 @@ void TimeZoneWidget::setItemsCheckable(bool enable)
 }
 
 
-bool TimeZoneWidget::itemsCheckable() const
+bool TimeZoneListWidget::itemsCheckable() const
 {
     return (mItemsCheckable);
 }
 
 
-QString TimeZoneWidget::displayName(const QTimeZone &zone)
+QString TimeZoneListWidget::displayName(const QTimeZone &zone)
 {
     return (zone.displayName(QDateTime::currentDateTime()));
 }
 
 
-QStringList TimeZoneWidget::selection() const
+QStringList TimeZoneListWidget::selection() const
 {
     QStringList sel;
 
@@ -200,7 +200,7 @@ QStringList TimeZoneWidget::selection() const
     // Do not use selectedItems() because it skips hidden items, making it
     // impossible to use a KTreeWidgetSearchLine.
     // There is no QTreeWidgetItemConstIterator, hence the const_cast :/
-    QTreeWidgetItemIterator it(const_cast<TimeZoneWidget *>(this), mItemsCheckable ? QTreeWidgetItemIterator::Checked : QTreeWidgetItemIterator::Selected);
+    QTreeWidgetItemIterator it(const_cast<TimeZoneListWidget *>(this), mItemsCheckable ? QTreeWidgetItemIterator::Checked : QTreeWidgetItemIterator::Selected);
     for (; *it; ++it) {
         sel.append((*it)->data(CityColumn, ZoneRole).toString());
     }
@@ -209,7 +209,7 @@ QStringList TimeZoneWidget::selection() const
 }
 
 
-void TimeZoneWidget::setSelected(const QByteArray &zone, bool selected)
+void TimeZoneListWidget::setSelected(const QByteArray &zone, bool selected)
 {
     bool found = false;
 
@@ -254,7 +254,7 @@ void TimeZoneWidget::setSelected(const QByteArray &zone, bool selected)
 }
 
 
-void TimeZoneWidget::clearSelection()
+void TimeZoneListWidget::clearSelection()
 {
     if (mItemsCheckable) {
         // Un-select all items
@@ -270,7 +270,7 @@ void TimeZoneWidget::clearSelection()
 }
 
 
-void TimeZoneWidget::setSelectionMode(QAbstractItemView::SelectionMode mode)
+void TimeZoneListWidget::setSelectionMode(QAbstractItemView::SelectionMode mode)
 {
     mSingleSelection = (mode == QAbstractItemView::SingleSelection);
     if (!mItemsCheckable) {
@@ -279,7 +279,7 @@ void TimeZoneWidget::setSelectionMode(QAbstractItemView::SelectionMode mode)
 }
 
 
-QAbstractItemView::SelectionMode TimeZoneWidget::selectionMode() const
+QAbstractItemView::SelectionMode TimeZoneListWidget::selectionMode() const
 {
     if (mItemsCheckable) {
         return mSingleSelection ? QTreeWidget::SingleSelection : QTreeWidget::MultiSelection;
