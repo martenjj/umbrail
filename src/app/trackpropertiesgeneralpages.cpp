@@ -44,7 +44,7 @@
 #include "filescontroller.h"
 #include "variableunitdisplay.h"
 #include "itemtypecombo.h"
-#include "timezoneselector.h"
+#include "timezonedisplay.h"
 #include "latlongdialogue.h"
 #include "mediaplayer.h"
 #include "metadatamodel.h"
@@ -273,8 +273,9 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
     mUrlRequester = new QLineEdit(this);
     mUrlRequester->setReadOnly(true);
 
-    mTimeZoneSel = new TimeZoneSelector(this);
-    connect(mTimeZoneSel, &TimeZoneSelector::zoneChanged, this, &TrackFileGeneralPage::slotTimeZoneChanged);
+    mTimeZoneSel = new TimeZoneDisplay(this);
+    mTimeZoneSel->setEnabled(!isReadOnly());
+    connect(mTimeZoneSel, &TimeZoneDisplay::zoneChanged, this, &TrackFileGeneralPage::slotTimeZoneChanged);
 
     if (items->count()==1)				// a single item
     {
@@ -282,10 +283,6 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
         Q_ASSERT(fileItem!=nullptr);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
         mTimeZoneSel->setItems(items);			// use these to get timezone
-
-        // The time zone is allowed to be changed even if the file
-        // is read only.  This case is handled specially in FilesController.
-        mTimeZoneSel->setEnabled(!isReadOnly() || filesController()->isSettingTimeZone());
     }
     else						// may be mixed MIME types
     {
