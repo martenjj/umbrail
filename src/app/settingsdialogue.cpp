@@ -50,6 +50,7 @@
 
 #include "settings.h"
 #include "filescontroller.h"
+#include "timezonelistdialogue.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -601,7 +602,14 @@ SettingsTimeZonePage::SettingsTimeZonePage(QWidget *pnt)
     QLabel *l = new QLabel(ski->label());
     gl->addWidget(l, 2, 3, Qt::AlignLeft);
 
-    gl->setRowStretch(3, 1);
+    QPushButton *but = new QPushButton(QIcon::fromTheme("document-preview"), i18n("Preview..."), w);
+    but->setToolTip(i18n("Preview the time zone list with these settings."));
+    connect(but, &QAbstractButton::clicked, this, &SettingsTimeZonePage::slotShowTimeZonePreview);
+    gl->addWidget(but, 4, 0, 1, -1, Qt::AlignRight);
+
+    gl->setColumnMinimumWidth(0, 2*DialogBase::horizontalSpacing());
+    gl->setRowMinimumHeight(3, 4*DialogBase::verticalSpacing());
+    gl->setRowStretch(5, 1);
 
     slotItemChanged();
 }
@@ -613,6 +621,29 @@ void SettingsTimeZonePage::slotItemChanged()
     mZoneNameEdit->setEnabled(mEnableFilteringCheck->isChecked() && mZoneNameCheck->isChecked());
     mTimeOffsetCheck->setEnabled(mEnableFilteringCheck->isChecked());
     mTimeOffsetSpinbox->setEnabled(mEnableFilteringCheck->isChecked() && mTimeOffsetCheck->isChecked());
+}
+
+
+void SettingsTimeZonePage::slotShowTimeZonePreview()
+{
+    const bool enableFiltering = Settings::enableFiltering();
+    const bool matchZoneNameEnabled = Settings::matchZoneNameEnabled();
+    const QString matchZoneNamePrefix = Settings::matchZoneNamePrefix();
+    const bool matchZoneOffsetEnabled = Settings::matchZoneOffsetEnabled();
+    const int matchZoneOffsetLimit = Settings::matchZoneOffsetLimit();
+    slotSave();
+
+    TimeZoneListDialogue d(qobject_cast<QWidget *>(parent()));
+    d.setPreviewMode();
+    d.exec();
+
+    Settings::setEnableFiltering(enableFiltering);
+    Settings::setMatchZoneNameEnabled(matchZoneNameEnabled);
+    Settings::setMatchZoneNamePrefix(matchZoneNamePrefix);
+    Settings::setMatchZoneOffsetEnabled(matchZoneOffsetEnabled);
+    Settings::setMatchZoneOffsetLimit(matchZoneOffsetLimit);
+
+    slotItemChanged();
 }
 
 

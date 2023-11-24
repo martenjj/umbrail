@@ -174,6 +174,7 @@ public slots:
 
 protected slots:
     void slotItemChanged() override;
+    void slotShowTimeZonePreview();
 
 private:
     QCheckBox *mEnableFilteringCheck;

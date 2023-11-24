@@ -42,6 +42,7 @@ public:
 
     void setTimeZone(const QByteArray &zone);
     QString timeZone() const;
+    void setPreviewMode();
 
     void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
     void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;

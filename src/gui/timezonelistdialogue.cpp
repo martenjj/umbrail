@@ -109,6 +109,13 @@ void TimeZoneListDialogue::setTimeZone(const QByteArray &zone)
 }
 
 
+void TimeZoneListDialogue::setPreviewMode()
+{
+    setButtons(QDialogButtonBox::Close);
+    buttonBox()->button(QDialogButtonBox::Close)->setDefault(true);
+}
+
+
 QString TimeZoneListDialogue::timeZone() const
 {
     if (mReturnUTC) return (QString());
