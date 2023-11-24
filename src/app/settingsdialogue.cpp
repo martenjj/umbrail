@@ -558,16 +558,11 @@ SettingsTimeZonePage::SettingsTimeZonePage(QWidget *pnt)
     QWidget *w = widget();
     QGridLayout *gl = new QGridLayout(w);
 
-    const KConfigSkeletonItem *ski = Settings::self()->enableFilteringItem();
-    Q_ASSERT(ski!=nullptr);
-    mEnableFilteringCheck = new QCheckBox(ski->label(), w);
-    mEnableFilteringCheck->setToolTip(ski->toolTip());
-    mEnableFilteringCheck->setChecked(Settings::enableFiltering());
-    connect(mEnableFilteringCheck, &QAbstractButton::toggled, this, &SettingsTimeZonePage::slotItemChanged);
+    QLabel *l = new QLabel(i18n("Show only time zones that:"), w);
+    l->setToolTip(i18n("Limit the list of time zones shown for selection, to those matching the criteria below."));
+    gl->addWidget(l, 0, 0, 1, -1);
 
-    gl->addWidget(mEnableFilteringCheck, 0, 0, 1, -1);
-
-    ski = Settings::self()->matchZoneNameEnabledItem();
+    const KConfigSkeletonItem *ski = Settings::self()->matchZoneNameEnabledItem();
     Q_ASSERT(ski!=nullptr);
     mZoneNameCheck = new QCheckBox(ski->label(), w);
     mZoneNameCheck->setToolTip(ski->toolTip());
@@ -599,7 +594,7 @@ SettingsTimeZonePage::SettingsTimeZonePage(QWidget *pnt)
     mTimeOffsetSpinbox->setSuffix(ki18np(" hour", " hours"));
     gl->addWidget(mTimeOffsetSpinbox, 2, 2);
 
-    QLabel *l = new QLabel(ski->label());
+    l = new QLabel(ski->label());
     gl->addWidget(l, 2, 3, Qt::AlignLeft);
 
     QPushButton *but = new QPushButton(QIcon::fromTheme("document-preview"), i18n("Preview..."), w);
@@ -617,16 +612,13 @@ SettingsTimeZonePage::SettingsTimeZonePage(QWidget *pnt)
 
 void SettingsTimeZonePage::slotItemChanged()
 {
-    mZoneNameCheck->setEnabled(mEnableFilteringCheck->isChecked());
-    mZoneNameEdit->setEnabled(mEnableFilteringCheck->isChecked() && mZoneNameCheck->isChecked());
-    mTimeOffsetCheck->setEnabled(mEnableFilteringCheck->isChecked());
-    mTimeOffsetSpinbox->setEnabled(mEnableFilteringCheck->isChecked() && mTimeOffsetCheck->isChecked());
+    mZoneNameEdit->setEnabled(mZoneNameCheck->isChecked());
+    mTimeOffsetSpinbox->setEnabled(mTimeOffsetCheck->isChecked());
 }
 
 
 void SettingsTimeZonePage::slotShowTimeZonePreview()
 {
-    const bool enableFiltering = Settings::enableFiltering();
     const bool matchZoneNameEnabled = Settings::matchZoneNameEnabled();
     const QString matchZoneNamePrefix = Settings::matchZoneNamePrefix();
     const bool matchZoneOffsetEnabled = Settings::matchZoneOffsetEnabled();
@@ -637,7 +629,6 @@ void SettingsTimeZonePage::slotShowTimeZonePreview()
     d.setPreviewMode();
     d.exec();
 
-    Settings::setEnableFiltering(enableFiltering);
     Settings::setMatchZoneNameEnabled(matchZoneNameEnabled);
     Settings::setMatchZoneNamePrefix(matchZoneNamePrefix);
     Settings::setMatchZoneOffsetEnabled(matchZoneOffsetEnabled);
@@ -649,7 +640,6 @@ void SettingsTimeZonePage::slotShowTimeZonePreview()
 
 void SettingsTimeZonePage::slotSave()
 {
-    Settings::setEnableFiltering(mEnableFilteringCheck->isChecked());
     Settings::setMatchZoneNameEnabled(mZoneNameCheck->isChecked());
     Settings::setMatchZoneOffsetEnabled(mTimeOffsetCheck->isChecked());
     Settings::setMatchZoneOffsetLimit(mTimeOffsetSpinbox->value());
@@ -662,11 +652,7 @@ void SettingsTimeZonePage::slotSave()
 
 void SettingsTimeZonePage::slotDefaults()
 {
-    KConfigSkeletonItem *ski = Settings::self()->enableFilteringItem();
-    ski->setDefault();
-    mEnableFilteringCheck->setChecked(Settings::enableFiltering());
-
-    ski = Settings::self()->matchZoneNameEnabledItem();
+    KConfigSkeletonItem *ski = Settings::self()->matchZoneNameEnabledItem();
     ski->setDefault();
     mZoneNameCheck->setChecked(Settings::matchZoneNameEnabled());
 

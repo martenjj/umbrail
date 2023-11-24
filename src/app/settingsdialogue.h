@@ -177,7 +177,6 @@ protected slots:
     void slotShowTimeZonePreview();
 
 private:
-    QCheckBox *mEnableFilteringCheck;
     QCheckBox *mZoneNameCheck;
     QLineEdit *mZoneNameEdit;
     QCheckBox *mTimeOffsetCheck;

@@ -147,12 +147,6 @@
   </group>
 
   <group name="TimeZones">
-    <entry name="EnableFiltering" type="Bool">
-      <label>Show only time zones that:</label>
-      <tooltip>Limit the list of time zones shown for selection, to those matching the criteria below.</tooltip>
-      <default>true</default>
-    </entry>
-
     <entry name="MatchZoneNameEnabled" type="Bool">
       <label>start with</label>
       <tooltip>Accept time zones whose name starts with this prefix.</tooltip>

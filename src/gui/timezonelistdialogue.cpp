@@ -37,6 +37,7 @@
 #include <ktreewidgetsearchline.h>
 
 #include "timezonelistwidget.h"
+#include "settings.h"
 
 
 TimeZoneListDialogue::TimeZoneListDialogue(QWidget *pnt)
@@ -62,21 +63,29 @@ TimeZoneListDialogue::TimeZoneListDialogue(QWidget *pnt)
     QGridLayout *gl = new QGridLayout(w);
 
     // Filter the available time zones so that the list does not need too
-    // much scrolling.  Accept only those zones which start with "Europe/"
-    // or "UTC", and whose time offset is within 3 hours from UTC.
-    // TODO: make this configurable, offset from current system time zone
+    // much scrolling.  By default, accept only those zones which start
+    // with "Europe/" and whose time offset is within 3 hours from UTC.
+    // Names starting with "UTC" are always accepted, subject to the
+    // zone offset limit setting.
     const QList<QByteArray> allZoneIds = QTimeZone::availableTimeZoneIds();
+    const QByteArray zonePrefix = Settings::matchZoneNamePrefix().toLatin1();
+    const int zoneOffset = Settings::matchZoneOffsetLimit()*3600;
+
     QList<QByteArray> zoneIds;
     for (const QByteArray &zone : allZoneIds)
     {
-        if (zone.startsWith("Europe/") || zone.startsWith("UTC"))
+        if (!zone.startsWith("UTC") && Settings::matchZoneNameEnabled())
         {
-            QTimeZone tz(zone);
-            if (qAbs(tz.offsetFromUtc(QDateTime::currentDateTime()))<=(3*3600))
-            {
-                zoneIds.append(zone);
-            }
+            if (!zonePrefix.isEmpty() && !zone.startsWith(zonePrefix)) continue;
         }
+
+        const QTimeZone tz(zone);
+        if (Settings::matchZoneOffsetEnabled())
+        {
+            if (qAbs(tz.offsetFromUtc(QDateTime::currentDateTime()))>zoneOffset) continue;
+        }
+
+        zoneIds.append(zone);
     }
     //qDebug() << zoneIds;
 
