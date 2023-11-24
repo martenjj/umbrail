@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2023 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -26,6 +26,7 @@
 #include "settingsdialogue.h"
 
 #include <qformlayout.h>
+#include <qgridlayout.h>
 #include <qdialogbuttonbox.h>
 #include <qcheckbox.h>
 #include <qcombobox.h>
@@ -33,6 +34,7 @@
 #include <qspinbox.h>
 #include <qdebug.h>
 #include <qlineedit.h>
+#include <qlabel.h>
 
 #include <klocalizedstring.h>
 #include <kpagedialog.h>
@@ -41,6 +43,7 @@
 #include <kconfigskeleton.h>
 #include <kapplicationtrader.h>
 #include <kparts/partloader.h>
+#include <kpluralhandlingspinbox.h>
 
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>
@@ -81,6 +84,11 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     addPage(page);
 
     page = new SettingsServicesPage(this);
+    connect(buttonBox(), &QDialogButtonBox::accepted, page, &SettingsPage::slotSave);
+    connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
+    addPage(page);
+
+    page = new SettingsTimeZonePage(this);
     connect(buttonBox(), &QDialogButtonBox::accepted, page, &SettingsPage::slotSave);
     connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
     addPage(page);
@@ -360,6 +368,7 @@ SettingsMediaPage::SettingsMediaPage(QWidget *pnt)
 
     ski = Settings::self()->photoTimeThresholdItem();
     Q_ASSERT(ski!=nullptr);
+    // TODO: KPluralHandlingSpinBox
     mTimeThresholdSpinbox = new QSpinBox(w);
     mTimeThresholdSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
     mTimeThresholdSpinbox->setValue(Settings::photoTimeThreshold());
@@ -529,5 +538,118 @@ void SettingsServicesPage::slotDefaults()
 #endif // ENABLE_OPEN_WITH_BING
     mGeonamesUserEdit->clear();
     mOpenTopoApiKeyEdit->clear();
+    slotItemChanged();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  SettingsTimeZonePage						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+SettingsTimeZonePage::SettingsTimeZonePage(QWidget *pnt)
+    : SettingsPage(pnt)
+{
+    setName(i18nc("@title:tab", "Time Zones"));
+    setHeader(i18n("Settings for time zone filtering"));
+    setIcon(QIcon::fromTheme("preferences-system-time"));
+
+    QWidget *w = widget();
+    QGridLayout *gl = new QGridLayout(w);
+
+    const KConfigSkeletonItem *ski = Settings::self()->enableFilteringItem();
+    Q_ASSERT(ski!=nullptr);
+    mEnableFilteringCheck = new QCheckBox(ski->label(), w);
+    mEnableFilteringCheck->setToolTip(ski->toolTip());
+    mEnableFilteringCheck->setChecked(Settings::enableFiltering());
+    connect(mEnableFilteringCheck, &QAbstractButton::toggled, this, &SettingsTimeZonePage::slotItemChanged);
+
+    gl->addWidget(mEnableFilteringCheck, 0, 0, 1, -1);
+
+    ski = Settings::self()->matchZoneNameEnabledItem();
+    Q_ASSERT(ski!=nullptr);
+    mZoneNameCheck = new QCheckBox(ski->label(), w);
+    mZoneNameCheck->setToolTip(ski->toolTip());
+    mZoneNameCheck->setChecked(Settings::matchZoneNameEnabled());
+    connect(mZoneNameCheck, &QAbstractButton::toggled, this, &SettingsTimeZonePage::slotItemChanged);
+    gl->addWidget(mZoneNameCheck, 1, 1);
+
+    ski = Settings::self()->matchZoneNamePrefixItem();
+    Q_ASSERT(ski!=nullptr);
+    mZoneNameEdit = new QLineEdit(w);
+    mZoneNameEdit->setToolTip(ski->toolTip());
+    mZoneNameEdit->setText(Settings::matchZoneNamePrefix());
+    gl->addWidget(mZoneNameEdit, 1, 2);
+
+    ski = Settings::self()->matchZoneOffsetEnabledItem();
+    Q_ASSERT(ski!=nullptr);
+    mTimeOffsetCheck = new QCheckBox(ski->label(), w);
+    mTimeOffsetCheck->setToolTip(ski->toolTip());
+    mTimeOffsetCheck->setChecked(Settings::matchZoneOffsetEnabled());
+    connect(mTimeOffsetCheck, &QAbstractButton::toggled, this, &SettingsTimeZonePage::slotItemChanged);
+    gl->addWidget(mTimeOffsetCheck, 2, 1);
+
+    ski = Settings::self()->matchZoneOffsetLimitItem();
+    Q_ASSERT(ski!=nullptr);
+    mTimeOffsetSpinbox = new KPluralHandlingSpinBox(w);
+    mTimeOffsetSpinbox->setRange(ski->minValue().toInt(), ski->maxValue().toInt());
+    mTimeOffsetSpinbox->setValue(Settings::matchZoneOffsetLimit());
+    mTimeOffsetSpinbox->setToolTip(ski->toolTip());
+    mTimeOffsetSpinbox->setSuffix(ki18np(" hour", " hours"));
+    gl->addWidget(mTimeOffsetSpinbox, 2, 2);
+
+    QLabel *l = new QLabel(ski->label());
+    gl->addWidget(l, 2, 3, Qt::AlignLeft);
+
+    gl->setRowStretch(3, 1);
+
+    slotItemChanged();
+}
+
+
+void SettingsTimeZonePage::slotItemChanged()
+{
+    mZoneNameCheck->setEnabled(mEnableFilteringCheck->isChecked());
+    mZoneNameEdit->setEnabled(mEnableFilteringCheck->isChecked() && mZoneNameCheck->isChecked());
+    mTimeOffsetCheck->setEnabled(mEnableFilteringCheck->isChecked());
+    mTimeOffsetSpinbox->setEnabled(mEnableFilteringCheck->isChecked() && mTimeOffsetCheck->isChecked());
+}
+
+
+void SettingsTimeZonePage::slotSave()
+{
+    Settings::setEnableFiltering(mEnableFilteringCheck->isChecked());
+    Settings::setMatchZoneNameEnabled(mZoneNameCheck->isChecked());
+    Settings::setMatchZoneOffsetEnabled(mTimeOffsetCheck->isChecked());
+    Settings::setMatchZoneOffsetLimit(mTimeOffsetSpinbox->value());
+
+    QString prefix = mZoneNameEdit->text();
+    if (!prefix.isEmpty() && !prefix.endsWith('/')) prefix += '/';
+    Settings::setMatchZoneNamePrefix(prefix);
+}
+
+
+void SettingsTimeZonePage::slotDefaults()
+{
+    KConfigSkeletonItem *ski = Settings::self()->enableFilteringItem();
+    ski->setDefault();
+    mEnableFilteringCheck->setChecked(Settings::enableFiltering());
+
+    ski = Settings::self()->matchZoneNameEnabledItem();
+    ski->setDefault();
+    mZoneNameCheck->setChecked(Settings::matchZoneNameEnabled());
+
+    ski = Settings::self()->matchZoneNamePrefixItem();
+    ski->setDefault();
+    mZoneNameEdit->setText(Settings::matchZoneNamePrefix());
+
+    ski = Settings::self()->matchZoneOffsetEnabledItem();
+    ski->setDefault();
+    mTimeOffsetCheck->setChecked(Settings::matchZoneOffsetEnabled());
+
+    ski = Settings::self()->matchZoneOffsetLimitItem();
+    ski->setDefault();
+    mTimeOffsetSpinbox->setValue(Settings::matchZoneOffsetLimit());
+
     slotItemChanged();
 }
