@@ -48,6 +48,27 @@
 #undef MEMORY_TRACKING
 #undef DEBUG_ICONS
 
+
+
+
+
+
+
+
+
+
+
+
+#define MEMORY_TRACKING
+
+
+
+
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Internal static							//
@@ -62,6 +83,7 @@ static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
 static int counterRoutepoint = 0;
+static int counterContainer = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
@@ -72,7 +94,7 @@ static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
 static int allocRoutepoint = 0;
-static int allocStyle = 0;
+static int allocContainer = 0;
 static int allocChildren = 0;
 static int allocMetadata = 0;
 #endif
@@ -501,6 +523,20 @@ QIcon TrackDataItem::icon() const
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataContainer							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataContainer::TrackDataContainer()
+    : TrackDataItem("container_%04d", &counterContainer)
+{
+#ifdef MEMORY_TRACKING
+    ++allocContainer;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  TrackDataFile							//
 //									//
 //////////////////////////////////////////////////////////////////////////
@@ -756,6 +792,9 @@ TrackDataWaypoint::TrackDataWaypoint()
 
 TrackData::WaypointType TrackDataWaypoint::waypointType() const
 {
+
+
+
     QVariant n = metadata("stop");			// first try saved stop data
     if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
 
@@ -871,6 +910,7 @@ MemoryTracker::MemoryTracker()
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint" << sizeof(TrackDataRoutepoint) << "bytes";
+    qDebug() << "container" << sizeof(TrackDataContainer) << "bytes";
     qDebug() << "***********";
 }
 
@@ -886,6 +926,7 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint allocated" << allocRoutepoint << "items, total" << allocRoutepoint*sizeof(TrackDataRoutepoint) << "bytes";
+    qDebug() << "container allocated" << allocContainer << "items, total" << allocContainer*sizeof(TrackDataContainer) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;
     qDebug() << "***********";

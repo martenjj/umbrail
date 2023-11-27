@@ -54,63 +54,14 @@
 //
 //   - If the command needs to retain a copy of existing items, because
 //     they are being modified or deleted, then they must be stored in
-//     the child list of an internal ItemContainer;  this is simply a
+//     the child list of an internal TrackDataContainer;  this is simply a
 //     TrackDataItem that is not abstract so can be allocated.  Items must
 //     be added or removed to/from this container using the functions
 //     provided by TrackDataItem.
 //
 //     This is so that the parent of the item can be tracked as required.
-//     When the ItemContainer is destroyed, any items that still belong to
-//     it will finally be deleted.
-
-//////////////////////////////////////////////////////////////////////////
-//									//
-//  ItemContainer							//
-//									//
-//////////////////////////////////////////////////////////////////////////
-
-class ItemContainer : public TrackDataItem
-{
-public:
-    explicit ItemContainer();
-    virtual ~ItemContainer();
-
-    TrackData::Type type() const override	{ return (TrackData::None); }
-    virtual QString iconName() const override	{ return (QString()); }
-
-private:
-    static int containerCounter;
-};
-
-
-int ItemContainer::containerCounter = 0;
-
-
-ItemContainer::ItemContainer()
-    : TrackDataItem("container_%04d", &containerCounter)
-{
-#ifdef DEBUG_ITEMS
-    qDebug() << "created" << name();
-#endif
-}
-
-
-ItemContainer::~ItemContainer()
-{
-#ifdef DEBUG_ITEMS
-    qDebug() << "destroying" << name();
-#endif
-    for (int i = 0; i<childCount(); ++i)
-    {
-#ifdef DEBUG_ITEMS
-        qDebug() << "  child" << childAt(i)->name();
-#endif
-    }
-#ifdef DEBUG_ITEMS
-    qDebug() << "done";
-#endif
-}
-
+//     When the TrackDataContainer is destroyed, any items that still belong
+//     to it will finally be deleted.
 
 QString CommandBase::senderText(const QObject *sdr)
 {
@@ -358,7 +309,7 @@ void SplitSegmentCommand::redo()
 
     if (mNewSegmentContainer==nullptr)
     {
-        mNewSegmentContainer = new ItemContainer;
+        mNewSegmentContainer = new TrackDataContainer;
 
         TrackDataItem *copySegment;
         TrackDataAbstractPoint *copyPoint;
@@ -498,7 +449,7 @@ void MergeSegmentsCommand::redo()
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mSavedSegmentContainer==nullptr) mSavedSegmentContainer = new ItemContainer;
+    if (mSavedSegmentContainer==nullptr) mSavedSegmentContainer = new TrackDataContainer;
     Q_ASSERT(mSavedSegmentContainer->childCount()==0);
 
     const int num = mSourceSegments.count();
@@ -640,7 +591,7 @@ void AddContainerCommand::redo()
 
     if (mNewItemContainer==nullptr)			// need to create new container
     {
-        mNewItemContainer = new ItemContainer;
+        mNewItemContainer = new TrackDataContainer;
 
         TrackDataItem *addedItem = nullptr;
         if (mType==TrackData::Track) addedItem = new TrackDataTrack;
@@ -728,7 +679,7 @@ void AddTrackpointCommand::redo()
 
     if (mNewPointContainer==nullptr)			// need to create new point
     {
-        mNewPointContainer = new ItemContainer;
+        mNewPointContainer = new TrackDataContainer;
 
         TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
 
@@ -976,7 +927,7 @@ void DeleteItemsCommand::redo()
     controller()->view()->clearSelection();
     model()->startLayoutChange();
 
-    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new ItemContainer;
+    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new TrackDataContainer;
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
     const int num = mItems.count();
@@ -1116,7 +1067,7 @@ void AddWaypointCommand::redo()
 
     if (mNewWaypointContainer==nullptr)			// need to create new waypoint
     {
-        mNewWaypointContainer = new ItemContainer;
+        mNewWaypointContainer = new TrackDataContainer;
 
         TrackDataWaypoint *newWaypoint = new TrackDataWaypoint;
         if (!mWaypointName.isEmpty()) newWaypoint->setName(mWaypointName, true);
@@ -1214,7 +1165,7 @@ void AddRoutepointCommand::redo()
 
     if (mNewRoutepointContainer==nullptr)		// need to create new routepoint
     {
-        mNewRoutepointContainer = new ItemContainer;
+        mNewRoutepointContainer = new TrackDataContainer;
 
         TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
         if (!mRoutepointName.isEmpty()) newRoutepoint->setName(mRoutepointName, true);

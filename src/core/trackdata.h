@@ -262,7 +262,29 @@ private:
     QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
-    // Style *mStyle;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataContainer							//
+//									//
+//  This is simply a TrackDataItem with the pure virtual functions	//
+//  provided (with dummy values, because they are never used).  It	//
+//  is not intended to be used to represent real file tree data, but	//
+//  is used to provide a consistent interface where undo/redo		//
+//  commands need to retain an item pointer or MetadataModel needs	//
+//  to store item metadata.						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataContainer : public TrackDataItem
+{
+public:
+    explicit TrackDataContainer();
+    virtual ~TrackDataContainer() = default;
+
+    TrackData::Type type() const override	{ return (TrackData::None); }
+    virtual QString iconName() const override	{ return (QString()); }
 };
 
 //////////////////////////////////////////////////////////////////////////

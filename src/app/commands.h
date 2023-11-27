@@ -33,7 +33,7 @@
 #include "filescontroller.h"
 
 
-class ItemContainer;
+class TrackDataContainer;
 
 
 // abstract
@@ -179,7 +179,7 @@ public:
 private:
     TrackDataItem *mParentSegment;
     int mSplitIndex;
-    ItemContainer *mNewSegmentContainer;
+    TrackDataContainer *mNewSegmentContainer;
 };
 
 
@@ -201,7 +201,7 @@ private:
     QVector<TrackDataItem *> mSourceParents;
     QVector<int> mSourceCounts;
     QVector<int> mSourceIndexes;
-    ItemContainer *mSavedSegmentContainer;
+    TrackDataContainer *mSavedSegmentContainer;
 };
 
 
@@ -221,7 +221,7 @@ public:
 private:
     TrackData::Type mType;
     TrackDataItem *mParent;
-    ItemContainer *mNewItemContainer;
+    TrackDataContainer *mNewItemContainer;
     QString mAddName;
 };
 
@@ -239,7 +239,7 @@ public:
     void setData(TrackDataItem *item);
 
 private:
-    ItemContainer *mNewPointContainer;
+    TrackDataContainer *mNewPointContainer;
     TrackDataTrackpoint *mAtPoint;
 };
 
@@ -281,7 +281,7 @@ private:
     QList<TrackDataItem *> mItems;
     QVector<TrackDataItem *> mParentItems;
     QVector<int> mParentIndexes;
-    ItemContainer *mDeletedItemsContainer;
+    TrackDataContainer *mDeletedItemsContainer;
 };
 
 
@@ -328,7 +328,7 @@ private:
     qreal mLatitude;
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
-    ItemContainer *mNewWaypointContainer;
+    TrackDataContainer *mNewWaypointContainer;
 };
 
 
@@ -353,7 +353,7 @@ private:
     qreal mLatitude;
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
-    ItemContainer *mNewRoutepointContainer;
+    TrackDataContainer *mNewRoutepointContainer;
 };
 
 
