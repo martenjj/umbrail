@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gui name="umbrail"
-     version="15"
+     version="16"
      xmlns="http://www.kde.org/standards/kxmlgui/1.0"
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
      xsi:schemaLocation="http://www.kde.org/standards/kxmlgui/1.0
@@ -9,11 +9,11 @@
   <MenuBar>
     <Menu name="file">
       <Action name="file_save_copy" append="save_merge"/>
-      <Action name="file_open_media" append="open_merge"/>
-      <Action name="file_save_media" append="save_merge"/>
       <Action name="file_import" append="save_merge"/>
       <Action name="file_add_photo" append="save_merge"/>
       <Action name="file_export" append="save_merge"/>
+      <Action name="file_open_media" append="save_merge"/>
+      <Action name="file_save_media" append="save_merge"/>
     </Menu>
 
     <Menu name="edit">
