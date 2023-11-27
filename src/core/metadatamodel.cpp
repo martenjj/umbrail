@@ -49,13 +49,8 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     qDebug() << "for" << item->name();
 
     // Copy the existing item metadata.
-    const int num = DataIndexer::count();
-    for (int i = 0; i<num; ++i)
-    {
-        QVariant v = item->metadata(i);
-        if (!v.isNull()) mItemData[i] = v;		// only if present and meaningful
-        mItemChanged[i] = false;			// nothing changed yet
-    }
+    mData = new TrackDataContainer;
+    mData->copyMetadata(item);
 
     // Copy and record data which is not stored by item metadata.
     //
@@ -63,12 +58,12 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     // used anywhere outside of this model.  If any are added here then
     // they also need to be ignored in isInternaltag() below.  Any checks
     // for these names elsewhere must use isInternalTag().
-    mItemData[DataIndexer::index("name")] = item->name();
+    mData->setMetadata(DataIndexer::index("name"), item->name());
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
     if (tdp!=nullptr)
     {
-        mItemData[DataIndexer::index("latitude")] = tdp->latitude();
-        mItemData[DataIndexer::index("longitude")] = tdp->longitude();
+        mData->setMetadata(DataIndexer::index("latitude"), tdp->latitude());
+        mData->setMetadata(DataIndexer::index("longitude"), tdp->longitude());
     }
 
     // The default time zone to use is that appropriate for the reference item,
@@ -79,6 +74,14 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     qDebug() << "parent time zone" << mParentTimeZone << "use parent?" << mUseParentTimeZone;
     mTimeZone = nullptr;
     resolveTimeZone();
+
+    // The same size array is needed to record data that has
+    // been changed.  This must be allocated after all possible
+    // data indexes have been allocated, in order to be of the
+    // correct size.
+    const int num = DataIndexer::count();
+    mItemChanged.resize(num);
+
 }
 
 
@@ -90,6 +93,7 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
 
 MetadataModel::~MetadataModel()
 {
+    delete mData;
     delete mTimeZone;
 }
 
@@ -144,7 +148,7 @@ default:
 
 const QVariant MetadataModel::data(int idx) const
 {
-    return (mItemData.value(idx));
+    return (mData->metadata(idx));
 }
 
 
@@ -165,7 +169,7 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
     if (role!=Qt::EditRole) return (false);
 
     const int row = idx.row();
-    mItemData[row] = TrackData::valueOrNull(value);
+    mData->setMetadata(row, TrackData::valueOrNull(value));
     mItemChanged[row] = true;
     // QAbstractItemModel::setData() API documentation says that we have to
     // emit this signal explicitly.
@@ -176,9 +180,9 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 
 void MetadataModel::setData(int idx, const QVariant &value)
 {
-    if (value==mItemData[idx]) return;			// no change to existing
+    if (value==data(idx)) return;			// no change to existing
 
-    mItemData[idx] = TrackData::valueOrNull(value);
+    mData->setMetadata(idx, TrackData::valueOrNull(value));
     mItemChanged[idx] = true;
 
     if (idx==DataIndexer::index("timezone")) resolveTimeZone();

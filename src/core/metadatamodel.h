@@ -31,6 +31,7 @@
 
 class QTimeZone;
 class TrackDataItem;
+class TrackDataContainer;
 
 
 class MetadataModel : public QAbstractTableModel
@@ -71,8 +72,8 @@ private:
     void resolveTimeZone();
 
 private:
-    QMap<int,QVariant> mItemData;
-    QMap<int,bool> mItemChanged;
+    TrackDataContainer *mData;
+    QVector<bool> mItemChanged;
 
     QString mParentTimeZone;
     bool mUseParentTimeZone;
