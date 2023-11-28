@@ -48,27 +48,6 @@
 #undef MEMORY_TRACKING
 #undef DEBUG_ICONS
 
-
-
-
-
-
-
-
-
-
-
-
-#define MEMORY_TRACKING
-
-
-
-
-
-
-
-
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Internal static							//
@@ -521,6 +500,31 @@ QIcon TrackDataItem::icon() const
     return (QIcon::fromTheme(this->iconName()));
 }
 
+
+// Although in practice media and stops are only expected to be
+// associated with TrackDataWaypoint items, this is in TrackDataItem
+// so that the temporary item untyped provided by MetadataModel can
+// be checked in the same way.
+TrackData::MediaType TrackDataItem::mediaType() const
+{
+    QVariant n = metadata("stop");			// first try saved stop data
+    if (!n.isNull()) return (TrackData::MediaStop);	// this means it's a stop
+
+    n = metadata("link");				// then get saved link name
+    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
+    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
+    if (n.isNull()) n = name();				// lastly try our waypoint name
+    if (n.isNull()) return (TrackData::MediaNormal);	// no media data present
+
+    QString ns = n.toString();
+    // TODO: should get MIME type for extension and then compare against recognised ones
+    // or even look for a general category (audio/... video/... image/... respectively)
+    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::MediaAudioNote);
+    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::MediaVideoNote);
+    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::MediaPhoto);
+    return (TrackData::MediaNormal);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataContainer							//
@@ -790,39 +794,15 @@ TrackDataWaypoint::TrackDataWaypoint()
 }
 
 
-TrackData::WaypointType TrackDataWaypoint::waypointType() const
-{
-
-
-
-    QVariant n = metadata("stop");			// first try saved stop data
-    if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
-
-    n = metadata("link");				// then get saved link name
-    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
-    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
-    if (n.isNull()) n = name();				// lastly try our waypoint name
-    if (n.isNull()) return (TrackData::WaypointNormal);	// no media data present
-
-    QString ns = n.toString();
-    // TODO: should get MIME type for extension and then compare against recognised ones
-    // or even look for a general category (audio/... video/... image/... respectively)
-    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::WaypointAudioNote);
-    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::WaypointVideoNote);
-    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::WaypointPhoto);
-    return (TrackData::WaypointNormal);
-}
-
-
 QString TrackDataWaypoint::iconName() const
 {
-    switch (waypointType())
+    switch (mediaType())
     {
-case TrackData::WaypointNormal:		return ("favorites");
-case TrackData::WaypointAudioNote:	return ("speaker");
-case TrackData::WaypointVideoNote:	return ("mixer-video");
-case TrackData::WaypointPhoto:		return ("image-x-generic");
-case TrackData::WaypointStop:		return ("media-playback-stop");
+case TrackData::MediaNormal:		return ("favorites");
+case TrackData::MediaAudioNote:		return ("speaker");
+case TrackData::MediaVideoNote:		return ("mixer-video");
+case TrackData::MediaPhoto:		return ("image-x-generic");
+case TrackData::MediaStop:		return ("media-playback-stop");
 default:				return ("unknown");
     }
 }
@@ -830,16 +810,16 @@ default:				return ("unknown");
 
 bool TrackDataWaypoint::isMediaType() const
 {
-    const TrackData::WaypointType wpt = waypointType();
-    return (wpt==TrackData::WaypointAudioNote ||
-            wpt==TrackData::WaypointVideoNote ||
-            wpt==TrackData::WaypointPhoto);
+    const TrackData::MediaType wpt = mediaType();
+    return (wpt==TrackData::MediaAudioNote ||
+            wpt==TrackData::MediaVideoNote ||
+            wpt==TrackData::MediaPhoto);
 }
 
 
 QIcon TrackDataWaypoint::icon() const
 {
-    if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
+    if (mediaType()!=TrackData::MediaNormal) return (TrackDataItem::icon());
 
     const QColor col = metadata("pointcolor").value<QColor>();
     if (!col.isValid()) return (TrackDataItem::icon());

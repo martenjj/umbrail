@@ -159,15 +159,15 @@ namespace TrackData
     };
 
     // Finer grained classification for waypoints,
-    // accessed by TrackDataWaypoint::waypointType()
-    enum WaypointType
+    // accessed by TrackDataItem::mediaType()
+    enum MediaType
     {
-        WaypointNormal,
-        WaypointAudioNote,
-        WaypointVideoNote,
-        WaypointPhoto,
-        WaypointStop,
-        WaypointAny
+        MediaNormal,
+        MediaAudioNote,
+        MediaVideoNote,
+        MediaPhoto,
+        MediaStop,
+        MediaAny
     };
 
     // User status for waypoints
@@ -244,6 +244,7 @@ public:
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
     QString timeZone() const;
+    TrackData::MediaType mediaType() const;
 
 protected:
     TrackDataItem(const char *format = nullptr, int *counter = nullptr);
@@ -468,7 +469,6 @@ public:
 
     QIcon icon() const override;
 
-    TrackData::WaypointType waypointType() const;
     bool isMediaType() const;
 
     DEFINE_PROPERTIES_PAGE(General)

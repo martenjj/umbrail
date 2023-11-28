@@ -932,17 +932,17 @@ case TrackData::Waypoint:
             const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
             if (tdw!=nullptr)
             {
-                switch (tdw->waypointType())
+                switch (tdw->mediaType())
                 {
-case TrackData::WaypointAudioNote:	playEnabled = true;
+case TrackData::MediaAudioNote:		playEnabled = true;
 					playText = i18nc("@action:inmenu", "Play Audio Note");
 					break;
 
-case TrackData::WaypointVideoNote:	playEnabled = true;
+case TrackData::MediaVideoNote:		playEnabled = true;
 					playText = i18nc("@action:inmenu", "Play Video Note");
 					break;
 
-case TrackData::WaypointPhoto:		playEnabled = true;
+case TrackData::MediaPhoto:		playEnabled = true;
 					playText = i18nc("@action:inmenu", "View Photo");
 					break;
 
@@ -1124,15 +1124,15 @@ void MainWindow::slotPlayMedia()
 {
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->view()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
-    switch (tdw->waypointType())
+    switch (tdw->mediaType())
     {
-case TrackData::WaypointAudioNote:	MediaPlayer::playAudioNote(tdw);
+case TrackData::MediaAudioNote:		MediaPlayer::playAudioNote(tdw);
 					break;
 
-case TrackData::WaypointVideoNote:	MediaPlayer::playVideoNote(tdw);
+case TrackData::MediaVideoNote:		MediaPlayer::playVideoNote(tdw);
 					break;
 
-case TrackData::WaypointPhoto:		MediaPlayer::viewPhotoNote(tdw);
+case TrackData::MediaPhoto:		MediaPlayer::viewPhotoNote(tdw);
 					break;
 
 default:				break;

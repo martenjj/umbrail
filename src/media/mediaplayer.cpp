@@ -52,10 +52,10 @@
 #include "photoviewer.h"
 
 
-static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType expectedType)
+static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expectedType, bool errorMsg = true)
 {
     if (item==nullptr) return (QUrl());
-    if (expectedType!=TrackData::WaypointAny && item->waypointType()!=expectedType)
+    if (expectedType!=TrackData::MediaAny && item->mediaType()!=expectedType)
     {
         qWarning() << "waypoint" << item->name() << "is not type" << expectedType;
         return (QUrl());
@@ -71,11 +71,15 @@ static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType
     qDebug() << "->" << file;
     if (file.isLocalFile())				// can check for existence here
     {
-        if (!QFile::exists(file.path()))
+        if (!QFile::exists(file.path()))		// file does not exist
         {
-            KMessageBox::error(nullptr,
-                               i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
-                               i18n("Cannot play media file"));
+            if (errorMsg)				// want an error message?
+            {
+                KMessageBox::error(nullptr,
+                                   i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
+                                   i18n("Cannot play media file"));
+            }
+
             return (QUrl());
         }
     }
@@ -85,9 +89,9 @@ static QUrl findMediaFile(const TrackDataWaypoint *item, TrackData::WaypointType
 }
 
 
-void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
+void MediaPlayer::playAudioNote(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::WaypointAudioNote);
+    QUrl file = findMediaFile(item, TrackData::MediaAudioNote);
     if (!file.isValid()) return;
 
     // TODO: selectable external player output with a config setting,
@@ -107,9 +111,9 @@ void MediaPlayer::playAudioNote(const TrackDataWaypoint *item)
 }
 
 
-void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
+void MediaPlayer::playVideoNote(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::WaypointVideoNote);
+    QUrl file = findMediaFile(item, TrackData::MediaVideoNote);
     if (!file.isValid()) return;
 
     // TODO: selectable external player output with a config setting,
@@ -126,9 +130,9 @@ void MediaPlayer::playVideoNote(const TrackDataWaypoint *item)
 
 
 
-void MediaPlayer::viewPhotoNote(const TrackDataWaypoint *item)
+void MediaPlayer::viewPhotoNote(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::WaypointPhoto);
+    QUrl file = findMediaFile(item, TrackData::MediaPhoto);
     if (!file.isValid()) return;
 
     PhotoViewer *v = new PhotoViewer(file, nullptr);
@@ -137,9 +141,9 @@ void MediaPlayer::viewPhotoNote(const TrackDataWaypoint *item)
 }
 
 
-void MediaPlayer::openMediaFile(const TrackDataWaypoint *item)
+void MediaPlayer::openMediaFile(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::WaypointAny);
+    QUrl file = findMediaFile(item, TrackData::MediaAny);
     if (file.isEmpty()) return;
 
     auto *job = new KIO::ApplicationLauncherJob(nullptr);
@@ -153,9 +157,9 @@ void MediaPlayer::openMediaFile(const TrackDataWaypoint *item)
 }
 
 
-void MediaPlayer::saveMediaFile(const TrackDataWaypoint *item)
+void MediaPlayer::saveMediaFile(const TrackDataItem *item)
 {
-    QUrl sourceUrl = findMediaFile(item, TrackData::WaypointAny);
+    QUrl sourceUrl = findMediaFile(item, TrackData::MediaAny);
     if (!sourceUrl.isValid()) return;
 
     QMimeDatabase db;
@@ -175,4 +179,10 @@ void MediaPlayer::saveMediaFile(const TrackDataWaypoint *item)
     qDebug() << destUrl;
 
     KIO::file_copy(sourceUrl, destUrl, -1);
+}
+
+
+QUrl MediaPlayer::findMediaFile(const TrackDataItem *item)
+{
+    return (findMediaFile(item, TrackData::MediaAny, false));
 }

@@ -257,3 +257,9 @@ void MetadataModel::resolveTimeZone()
         else qDebug() << "set to" << mTimeZone->id() << "offset" << mTimeZone->offsetFromUtc(QDateTime::currentDateTime());
     }
 }
+
+
+const TrackDataItem *MetadataModel::currentItem() const
+{
+    return (static_cast<const TrackDataContainer *>(mData));
+}
