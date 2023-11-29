@@ -24,8 +24,8 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef TIMEZONEWIDGET_H
-#define TIMEZONEWIDGET_H
+#ifndef TIMEZONELISTWIDGET_H
+#define TIMEZONELISTWIDGET_H
 
 #include <qtreewidget.h>
 
@@ -45,14 +45,14 @@ class QTimeZone;
  * \code
  *
  *  // This adds a time zone widget to a dialog.
- *  m_timezones = new TimeZoneWidget(this);
+ *  m_timezones = new TimeZoneListWidget(this);
  *  ...
  * \endcode
  *
  * To use the class to implement a multiple-choice custom time zone selector:
  * \code
  *
- *  m_timezones = new TimeZoneWidget( this, "Time zones", vcalendarTimezones );
+ *  m_timezones = new TimeZoneListWidget( this, "Time zones", vcalendarTimezones );
  *  m_timezones->setSelectionMode( QTreeView::MultiSelection );
  *  ...
  * \endcode
@@ -61,7 +61,7 @@ class QTimeZone;
  *
  * @author S.R.Haque <srhaque@iee.org>
  **/
-class TimeZoneWidget : public QTreeWidget
+class TimeZoneListWidget : public QTreeWidget
 {
     Q_OBJECT
     Q_PROPERTY(bool itemsCheckable READ itemsCheckable WRITE setItemsCheckable)
@@ -75,12 +75,12 @@ public:
      * @param timeZones The time zone database to use. If 0, the system time zone
      *                  database is used.
      */
-    explicit TimeZoneWidget(QWidget *parent = nullptr, const QList<QByteArray> &zones = QList<QByteArray>());
+    explicit TimeZoneListWidget(QWidget *parent = nullptr, const QList<QByteArray> &zones = QList<QByteArray>());
 
     /**
      * Destroys the time zone selection widget.
      */
-    virtual ~TimeZoneWidget() = default;
+    virtual ~TimeZoneListWidget() = default;
 
     /**
      * Makes all items show a checkbox, so that the user can select multiple
@@ -119,7 +119,7 @@ public:
      * Returns the currently selected time zones. See QTreeView::selectionChanged().
      *
      * @return a list of time zone names, in the format used by the database
-     *         supplied to the {@link TimeZoneWidget() } constructor.
+     *         supplied to the {@link TimeZoneListWidget() } constructor.
      */
     QStringList selection() const;
 
@@ -151,4 +151,4 @@ private:
     bool mSingleSelection;
 };
 
-#endif							// TIMEZONEWIDGET_H
+#endif							// TIMEZONELISTWIDGET_H

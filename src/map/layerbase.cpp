@@ -148,8 +148,9 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     // on top of all non-selected ones.  In the absence of any selection,
     // everything will be painted in file and then time order (i.e. later
     // items on top of earlier ones).
-    paintDataTree(filesModel->rootFileItem(), painter, false, false);
-    paintDataTree(filesModel->rootFileItem(), painter, true, false);
+    const TrackDataItem *filesRoot = filesModel->rootFileItem();
+    paintDataTree(filesRoot, painter, false, false);
+    paintDataTree(filesRoot, painter, true, false);
 
     if (mDraggingPoints!=nullptr)
     {
@@ -359,6 +360,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 
     FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
     if (filesModel==nullptr) return (false);		// no data to use!
+    const TrackDataItem *filesRoot = filesModel->rootFileItem();
 
     if (ev->type()==QEvent::MouseButtonPress)
     {
@@ -391,7 +393,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
         qDebug() << "  tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
 #endif
-        const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
+        const TrackDataAbstractPoint *tdp = findClickedPoint(filesRoot);
         if (tdp!=nullptr)				// a point was found
         {
             mClickedPoint = tdp;			// record for release event
@@ -432,7 +434,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
             qDebug() << "  valid click detected";
 #endif
-            filesModel->clickedPoint(clickedPoint, mouseEvent->modifiers());
+            filesView()->selectMapPoint(clickedPoint, mouseEvent->modifiers());
             return (true);				// event consumed
         }
     }
@@ -453,7 +455,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #endif
                 mClickTimer->invalidate();
 
-                const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
+                const TrackDataAbstractPoint *tdp = findClickedPoint(filesRoot);
                 if (tdp!=nullptr && tdp->selectionId()!=mSelectionId)
                 {
 #ifdef DEBUG_DRAGGING
@@ -463,7 +465,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
                 }
 
                 mDraggingPoints = new QList<SelectionRun>;
-                this->findSelectionInTree(filesModel->rootFileItem());
+                this->findSelectionInTree(filesRoot);
             }
             else return (false);			// outside click tolerance
         }

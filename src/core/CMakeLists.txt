@@ -37,7 +37,7 @@ set(core_SRCS
   units.cpp
   metadatamodel.cpp
   filesmodel.cpp
-  trackfiltermodel.cpp
+  destinationfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
   pointsmodel.cpp

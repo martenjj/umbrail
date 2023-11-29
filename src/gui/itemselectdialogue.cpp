@@ -32,7 +32,7 @@
 
 #include "filesview.h"
 #include "filesmodel.h"
-#include "trackfiltermodel.h"
+#include "destinationfiltermodel.h"
 #include "trackdata.h"
 
 
@@ -56,9 +56,9 @@ ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
     mTrackList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mTrackList->setHeaderHidden(true);
 
-    TrackFilterModel *trackModel = new TrackFilterModel(this);
-    trackModel->setSourceModel(filesView()->model());
-    mTrackList->setModel(trackModel);
+    DestinationFilterModel *destinationModel = new DestinationFilterModel(this);
+    destinationModel->setSourceModel(filesView()->model());
+    mTrackList->setModel(destinationModel);
 
     connect(mTrackList->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ItemSelectDialogue::slotSelectionChanged);
@@ -104,7 +104,7 @@ ItemSelectDialogue::~ItemSelectDialogue()
     // KDialog::~KDialog at kdelibs/kdeui/dialogs/kdialog.cpp:201
     // MoveSegmentDialogue::~MoveSegmentDialogue at movesegmentdialogue.cpp:63
 
-    delete trackModel();
+    delete destinationModel();
 }
 
 
@@ -116,7 +116,7 @@ void ItemSelectDialogue::setSelectedItem(const TrackDataItem *item)
         return;
     }
 
-    QModelIndex idx = trackModel()->mapFromSource(filesModel()->indexForItem(item));
+    QModelIndex idx = destinationModel()->mapFromSource(filesModel()->indexForItem(item));
     mTrackList->expand(idx.parent());
     mTrackList->selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
 }
@@ -127,7 +127,7 @@ TrackDataItem *ItemSelectDialogue::selectedItem() const
     QModelIndexList selIndexes = mTrackList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (nullptr);
 
-    TrackDataItem *item = filesModel()->itemForIndex(trackModel()->mapToSource(selIndexes.first()));
+    TrackDataItem *item = filesModel()->itemForIndex(destinationModel()->mapToSource(selIndexes.first()));
     return (item);
 }
 
@@ -139,15 +139,15 @@ void ItemSelectDialogue::slotSelectionChanged(const QItemSelection &sel, const Q
 }
 
 
-TrackFilterModel *ItemSelectDialogue::trackModel() const
+DestinationFilterModel *ItemSelectDialogue::destinationModel() const
 {
-    return (qobject_cast<TrackFilterModel *>(mTrackList->model()));
+    return (qobject_cast<DestinationFilterModel *>(mTrackList->model()));
 }
 
 
 FilesModel *ItemSelectDialogue::filesModel() const
 {
-    return (qobject_cast<FilesModel *>(trackModel()->sourceModel()));
+    return (qobject_cast<FilesModel *>(destinationModel()->sourceModel()));
 }
 
 

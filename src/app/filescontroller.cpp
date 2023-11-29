@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2023 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -73,9 +73,10 @@ using namespace KExiv2Iface;
 #include "dataindexer.h"
 #include "categoriesmanagedialogue.h"
 #include "mergepointsdialogue.h"
+#include "timezonesettingdialogue.h"
+
 
 #define GROUP_FILES		"Files"
-
 #define PHOTO_FOLDER_NAME	"Photos"
 
 
@@ -98,6 +99,7 @@ FilesController::FilesController(QObject *pnt)
     qDebug();
 
     mDataModel = new FilesModel(this);
+    connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
 
     mPointsModel = new PointsModel(this);
     mPointsModel->setSourceModel(mDataModel);
@@ -116,7 +118,6 @@ FilesController::FilesController(QObject *pnt)
     mPointsView->setModel(sortModel);
 
     connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end) { slotUpdateActionState(); });
-    connect(mDataModel, &FilesModel::clickedItem, mFilesView, &FilesView::slotClickedItem);
     connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
     // Synchronising the selection between the points list and the tree view
@@ -124,7 +125,6 @@ FilesController::FilesController(QObject *pnt)
     connect(mFilesView, &FilesView::filesSelectionChanged, mPointsView, &PointsView::slotSelectPoints);
 
     mWarnedNoTimezone = false;
-    mSettingTimeZone = false;
 }
 
 
@@ -885,42 +885,11 @@ void FilesController::slotTrackProperties()
     QString actText = CommandBase::senderText(sender());
     d.setWindowTitle(actText);
 
-    const bool wasSettingTimeZone = mSettingTimeZone;	// note current setting
-    const bool status = d.exec();			// execute the dialogue
-
-    // If setting the time zone, which automatically selected the
-    // root file item before getting here, then clear the selection
-    // even if the dialogue was cancelled.
-    if (wasSettingTimeZone) filesView()->selectItem(nullptr);
-
-    mSettingTimeZone = false;				// reset for next time
-    if (!status) return;				// finish now if cancelled
+    if (!d.exec()) return;				// execute the dialogue
 
     TrackDataItem *item = items.first();		// the item to change
     QUndoCommand *cmd = new QUndoCommand();		// parent command
     const MetadataModel *model = d.dataModel();		// model for new data
-
-    // Hopefully this is the right thing to do.  If the properties dialogue
-    // has been summoned via the "Set Time Zone" action and the file is
-    // read only then only allow the time zone to be changed (which is
-    // enforced in the properties dialogue) and implement the change
-    // immediately without involving the undo system or marking the file
-    // as modified.  If the file is not read only then, whether summoned
-    // via "Set Time Zone" or "Properties", implement the change in the
-    // usual way.
-    if (wasSettingTimeZone && isReadOnly())		// setting time zone only
-    {
-        const int idx = DataIndexer::index("timezone");
-        const QVariant oldData = item->metadata(idx);
-        const QVariant newData = model->data(idx);
-        if (newData==oldData) return;			// time zone has not changed
-
-        qDebug() << "timezone for" << item->name() << "=" << oldData.toString() << "->" << newData.toString();
-
-        item->setMetadata(idx, newData);		// set directly, no undo
-        if (!isReadOnly()) emit modified();		// modifies file if possible
-        return;						// no more to do
-    }
 
     // Item name
     const QString newItemName = model->data(DataIndexer::index("name")).toString();
@@ -1425,7 +1394,6 @@ void FilesController::slotDragDropItems(const QList<TrackDataItem *> &sourceItem
 
     MoveItemCommand *cmd = new MoveItemCommand(this);
     cmd->setText(i18n("Drag/Drop"));
-
     cmd->setData(sourceItems, ontoParent, row);
     executeCommand(cmd);
 }
@@ -1490,25 +1458,38 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
 
 void FilesController::slotSetTimeZone()
 {
-    // Select the top-level file item.
-    filesView()->slotClickedItem(static_cast<FilesModel *>(model())->indexForItem(model()->rootFileItem()),
-                                 QItemSelectionModel::ClearAndSelect);
+    TrackDataItem *root = model()->rootFileItem();
+    if (root==nullptr) return;
 
-    // Set for this one shot operation, so that the selection
-    // can be cleared afterwards.
-    mSettingTimeZone = true;
+    TimeZoneSettingDialogue d(mainWidget());
+    const QString &oldZone = root->timeZone();
+    d.setTimeZone(oldZone);
+    QList<TrackDataItem *> items;
+    items.append(root);
+    d.setItems(&items);
 
-    TrackPropertiesDialogue::setNextPageIndex(0);	// open at "General" page
+    if (!d.exec()) return;
+    const QString &newZone = d.timeZone();
+    if (newZone==oldZone) return;
+    qDebug() << "time zone" << oldZone << "->" << newZone;
 
-    // Open the dialogue by triggering the action, so that the dialogue
-    // can access the sender() action to get its text for the window caption.
-    //
-    // See StopDetectDialogue::StopDetectDialogue() for why the qualification
-    // of mainWidget() is needed.
-    KXmlGuiWindow *mainwin = qobject_cast<KXmlGuiWindow *>(ApplicationDataInterface::mainWidget());
-    QAction *act = mainwin->actionCollection()->action("track_properties");
-    Q_ASSERT(act!=nullptr);
-    QTimer::singleShot(0, act, &QAction::trigger);
+    if (isReadOnly())
+    {
+        // If the file is read only, then change the time zone metadata of
+        // the root file item directly.  This will not take account of or
+        // affect the file modification state and will not show up in the
+        // undo history.
+        root->setMetadata("timezone", newZone);
+    }
+    else
+    {
+        // Otherwise, change the root file item data in the normal way.
+        ChangeItemDataCommand *cmd = new ChangeItemDataCommand(this);
+        cmd->setText(i18n("Set Time Zone"));
+        cmd->setDataItems(items);
+        cmd->setData("timezone", newZone);
+        executeCommand(cmd);
+    }
 }
 
 

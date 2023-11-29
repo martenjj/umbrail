@@ -41,7 +41,7 @@ class ItemTypeCombo;
 class TrackDataItem;
 class TrackDataAbstractPoint;
 class TrackDataWaypoint;
-class TimeZoneSelector;
+class TimeZoneDisplay;
 class TrackDataLabel;
 
 
@@ -108,7 +108,7 @@ private slots:
 
 private:
     QLineEdit *mUrlRequester;
-    TimeZoneSelector *mTimeZoneSel;
+    TimeZoneDisplay *mTimeZoneSel;
 };
 
 

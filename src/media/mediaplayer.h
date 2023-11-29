@@ -27,17 +27,21 @@
 #define MEDIAPLAYER_H
 
 
-class TrackDataWaypoint;
+class QUrl;
+class TrackDataItem;
+
 
 // TODO: needs to be a class, so that it can have the main window as parent
 namespace MediaPlayer
 {
-    void playAudioNote(const TrackDataWaypoint *item);
-    void playVideoNote(const TrackDataWaypoint *item);
-    void viewPhotoNote(const TrackDataWaypoint *item);
+    QUrl findMediaFile(const TrackDataItem *item);
 
-    void openMediaFile(const TrackDataWaypoint *item);
-    void saveMediaFile(const TrackDataWaypoint *item);
+    void playAudioNote(const TrackDataItem *item);
+    void playVideoNote(const TrackDataItem *item);
+    void viewPhotoNote(const TrackDataItem *item);
+
+    void openMediaFile(const TrackDataItem *item);
+    void saveMediaFile(const TrackDataItem *item);
 }
 
 #endif							// MEDIAPLAYER_H

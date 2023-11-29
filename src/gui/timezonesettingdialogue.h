@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2023 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -23,45 +23,31 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef TIMEZONESELECTOR_H
-#define TIMEZONESELECTOR_H
+#ifndef TIMEZONESETTINGDIALOGUE_H
+#define TIMEZONESETTINGDIALOGUE_H
 
-#include <qframe.h>
+#include <kfdialog/dialogbase.h>
 
+#include "applicationdatainterface.h"
 
-class QLineEdit;
-class QPushButton;
+class TimeZoneDisplay;
 class TrackDataItem;
 
 
-class TimeZoneSelector : public QFrame
+class TimeZoneSettingDialogue : public DialogBase, public ApplicationDataInterface
 {
     Q_OBJECT
 
 public:
-    explicit TimeZoneSelector(QWidget *pnt = nullptr);
-    virtual ~TimeZoneSelector() = default;
+    TimeZoneSettingDialogue(QWidget *pnt = nullptr);
+    virtual ~TimeZoneSettingDialogue() = default;
 
     void setTimeZone(const QString &zone);
     QString timeZone() const;
-
     void setItems(const QList<TrackDataItem *> *items);
 
-protected slots:
-    void slotChangeZone();
-    void slotGuessZone();
-
-private slots:
-    void slotGuessJobFinished(const QString &zone);
-
-signals:
-    void zoneChanged(const QString &zone);
-
 private:
-    QLineEdit *mZoneDisplay;
-    QPushButton *mGuessButton;
-    double mItemsLat;
-    double mItemsLon;
+    TimeZoneDisplay *mTimeZoneDisplay;
 };
- 
-#endif							// TIMEZONESELECTOR_H
+
+#endif							// TIMEZONESELECTDIALOGUE_H

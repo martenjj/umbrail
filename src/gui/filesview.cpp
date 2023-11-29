@@ -270,26 +270,19 @@ void FilesView::slotSelectAllSiblings()
 }
 
 
-void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
+void FilesView::selectMapPoint(const TrackDataItem *item, Qt::KeyboardModifiers mods)
 {
-    selectionModel()->select(QItemSelection(index, index),
-                             static_cast<QItemSelectionModel::SelectionFlags>(flags));
+    bool combine;
+    if (mods==Qt::NoModifier) combine = false;
+    else if (mods==Qt::ControlModifier) combine = true;
+    else return;
 
-    // If the thing clicked on is a track point, only scroll to it if
-    // its parent segment is expanded.  This avoids a long list of points
-    // suddenly appearing in the view for a stray map click.
-    const TrackDataItem *item = static_cast<FilesModel *>(model())->itemForIndex(index);
-    if (dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr)
-    {
-        QModelIndex pnt = index.parent();
-        if (!isExpanded(pnt)) return;
-    }
-
-    scrollTo(index);
+    qDebug() << "click on" << item->name() << "combine?" << combine;
+    selectItem(item, combine, true);
 }
 
 
-void FilesView::selectItem(const TrackDataItem *item, bool combine)
+void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMap)
 {
     if (item==nullptr)					// clearing selection
     {
@@ -297,12 +290,22 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine)
         return;						// no more to do
     }
 
-    QModelIndex idx = qobject_cast<FilesModel *>(model())->indexForItem(item);
+    const QModelIndex idx = qobject_cast<FilesModel *>(model())->indexForItem(item);
     qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;
 
     if (!combine) selectionModel()->clear();
     selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+
+    // If the thing clicked on the map was a track point, only scroll to
+    // it if its parent segment is already expanded.  This avoids a long
+    // list of points suddenly appearing in the view for a stray map click.
+    if (wasOnMap && dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr)
+    {
+        const QModelIndex pnt = idx.parent();
+        if (!isExpanded(pnt)) return;
+    }
+
     scrollTo(idx);					// also expand if necessary
 }
 

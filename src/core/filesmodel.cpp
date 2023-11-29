@@ -276,18 +276,6 @@ void FilesModel::endLayoutChange()
     emit layoutChanged();
 }
 
-
-void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods)
-{
-    QItemSelectionModel::SelectionFlags selFlags;
-    if (mods==Qt::NoModifier) selFlags = QItemSelectionModel::ClearAndSelect;
-    else if (mods==Qt::ControlModifier) selFlags = QItemSelectionModel::Toggle;
-    else return;
-
-    qDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
-    emit clickedItem(indexForItem(tdp), static_cast<unsigned int>(selFlags));
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Drag and Drop							//

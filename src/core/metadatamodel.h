@@ -31,6 +31,7 @@
 
 class QTimeZone;
 class TrackDataItem;
+class TrackDataContainer;
 
 
 class MetadataModel : public QAbstractTableModel
@@ -57,6 +58,17 @@ public:
     double longitude() const;
 
     /**
+     * Get the internal TrackDataItem that holds the current metadata.
+     *
+     * The data may not be modified through this pointer, but it can
+     * be used where a temporary item with the current metadata is
+     * required.
+     *
+     * @return the internal item
+     **/
+    const TrackDataItem *currentItem() const;
+
+    /**
      * Check whether the tag is internal to this application only.
      *
      * @param nm The plain internal name
@@ -71,8 +83,8 @@ private:
     void resolveTimeZone();
 
 private:
-    QMap<int,QVariant> mItemData;
-    QMap<int,bool> mItemChanged;
+    TrackDataContainer *mData;
+    QVector<bool> mItemChanged;
 
     QString mParentTimeZone;
     bool mUseParentTimeZone;

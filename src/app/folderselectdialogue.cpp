@@ -35,7 +35,7 @@
 
 #include "mainwindow.h"
 #include "filesmodel.h"
-#include "trackfiltermodel.h"
+#include "destinationfiltermodel.h"
 #include "trackdata.h"
 #include "commands.h"
 
@@ -55,7 +55,7 @@ FolderSelectDialogue::FolderSelectDialogue(QWidget *pnt)
     connect(buttonBox()->button(QDialogButtonBox::Yes), &QAbstractButton::clicked, this, &FolderSelectDialogue::slotNewFolder);
     connect(this, &ItemSelectDialogue::selectionChanged, this, &FolderSelectDialogue::slotUpdateButtonStates);
 
-    trackModel()->setMode(TrackData::Folder);		// can select folders
+    destinationModel()->setMode(TrackData::Folder);	// can select folders
 
     slotUpdateButtonStates();
 }

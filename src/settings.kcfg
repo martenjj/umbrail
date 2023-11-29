@@ -154,4 +154,31 @@
     </entry>
   </group>
 
+  <group name="TimeZones">
+    <entry name="MatchZoneNameEnabled" type="Bool">
+      <label>start with</label>
+      <tooltip>Accept time zones whose name starts with this prefix.</tooltip>
+      <default>true</default>
+    </entry>
+
+    <entry name="MatchZoneNamePrefix" type="String">
+      <tooltip>Set the time zone name matching prefix.</tooltip>
+      <default>Europe/</default>
+    </entry>
+
+    <entry name="MatchZoneOffsetEnabled" type="Bool">
+      <label>are within</label>
+      <tooltip>Accept time zones within this offset from UTC.</tooltip>
+      <default>true</default>
+    </entry>
+
+    <entry name="MatchZoneOffsetLimit" type="UInt">
+      <label>of UTC</label>
+      <tooltip>Set the time zone offset limit.</tooltip>
+      <default>3</default>
+      <min>1</min>
+      <max>13</max>
+    </entry>
+  </group>
+
 </kcfg>

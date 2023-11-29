@@ -23,27 +23,40 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "moveitemdialogue.h"
+#ifndef TIMEZONELISTDIALOGUE_H
+#define TIMEZONELISTDIALOGUE_H
 
-#include <klocalizedstring.h>
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
 
-#include "destinationfiltermodel.h"
+class TimeZoneListWidget;
 
 
-MoveItemDialogue::MoveItemDialogue(QWidget *pnt)
-    : ItemSelectDialogue(pnt)
+class TimeZoneListDialogue : public DialogBase, public DialogStateSaver
 {
-    setObjectName("MoveItemDialogue");
+    Q_OBJECT
 
-    setWindowTitle(i18nc("@title:window", "Move Item"));
-    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+public:
+    explicit TimeZoneListDialogue(QWidget *pnt = nullptr);
+    virtual ~TimeZoneListDialogue() = default;
 
-    setButtonEnabled(QDialogButtonBox::Ok, false);
-    setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Move"));
-}
+    void setTimeZone(const QByteArray &zone);
+    QString timeZone() const;
+    void setPreviewMode();
 
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
-void MoveItemDialogue::setSource(const QList<TrackDataItem *> *items)
-{
-    destinationModel()->setSource(items);
-}
+protected slots:
+    void slotUseUTC();
+    void slotUseSystem();
+
+private slots:
+    void slotTimeZoneChanged();
+
+private:
+    TimeZoneListWidget *mTimeZoneWidget;
+    bool mReturnUTC;
+};
+
+#endif							// TIMEZONELISTDIALOGUE_H
