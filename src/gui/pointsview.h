@@ -5,6 +5,9 @@
 #include "applicationdatainterface.h"
 
 
+class QTimer;
+
+
 class PointsView : public QTreeView, public ApplicationDataInterface
 {
     Q_OBJECT
@@ -18,6 +21,16 @@ public:
 
 protected:
     virtual void contextMenuEvent(QContextMenuEvent *ev) override;
+
+protected slots:
+    void selectionChanged(const QItemSelection &sel, const QItemSelection &desel) override;
+
+private slots:
+    void slotCheckSelection();
+
+private:
+    QTimer *mSelectionTimer;
+    bool mSelectionBusy;
 };
  
 #endif							// POINTSVIEW_H
