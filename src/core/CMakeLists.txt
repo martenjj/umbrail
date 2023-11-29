@@ -37,10 +37,14 @@ set(core_SRCS
   units.cpp
   metadatamodel.cpp
   filesmodel.cpp
+  fileslistmodel.cpp
+  waypointsfiltermodel.cpp
+  homepointsfiltermodel.cpp
+  homepointsdatamodel.cpp
   destinationfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
-  pointsmodel.cpp
+  pointsdatamodel.cpp
   pointicon.cpp
   pointiconprovider.cpp
   category.cpp
@@ -53,5 +57,6 @@ target_link_libraries(${PN}core
   KF5::I18n
   KF5::KIOCore
   KF5::IconThemes
+  KF5::ItemModels
   KF5::ConfigWidgets
 )

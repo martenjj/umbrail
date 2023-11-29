@@ -38,10 +38,12 @@ class QUrl;
 class FilesView;
 class PointsView;
 class FilesModel;
-class PointsModel;
+class PointsDataModel;
+class WaypointsFilterModel;
+class HomePointsDataModel;
 class TrackDataFile;
-class ErrorReporter;
 class TrackDataItem;
+class ErrorReporter;
 class ImporterExporterOptions;
 
 
@@ -75,7 +77,8 @@ public:
 
     FilesView *filesView() const		{ return (mFilesView); }
     PointsView *pointsView() const		{ return (mPointsView); }
-    FilesModel *model() const			{ return (mDataModel); }
+    FilesModel *filesModel() const		{ return (mFilesModel); }
+    HomePointsDataModel *homePointsModel();
 
     void readProperties();
     void saveProperties();
@@ -135,8 +138,11 @@ private slots:
 private:
     FilesView *mFilesView;
     PointsView *mPointsView;
-    FilesModel *mDataModel;
-    PointsModel *mPointsModel;
+    FilesModel *mFilesModel;
+    PointsDataModel *mPointsDataModel;
+
+    WaypointsFilterModel *mWaypointsFilterModel;
+    HomePointsDataModel *mHomePointsModel;
 
     bool mWarnedNoTimezone;
 };

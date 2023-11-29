@@ -114,6 +114,6 @@ void FolderSelectDialogue::setPath(const QString &path)
 {
     qDebug() << path;
 
-    TrackDataFolder *selFolder = TrackData::findFolderByPath(path, filesController()->model()->rootFileItem());
+    TrackDataFolder *selFolder = TrackData::findFolderByPath(path, filesController()->filesModel()->rootFileItem());
     setSelectedItem(selFolder);				// empty path => NULL => clear selection
 }

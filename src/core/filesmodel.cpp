@@ -267,13 +267,16 @@ void FilesModel::changedItem(const TrackDataItem *item)
 
 void FilesModel::startLayoutChange()
 {
-    emit layoutAboutToBeChanged();
+    // Simply emitting layoutAboutToBeChanged() here and layoutChanged()
+    // below does not seem to go far enough, it causes an assert within
+    // KDescendantsProxyModel when deleting items.
+    beginResetModel();
 }
 
 
 void FilesModel::endLayoutChange()
 {
-    emit layoutChanged();
+    endResetModel();
 }
 
 //////////////////////////////////////////////////////////////////////////
