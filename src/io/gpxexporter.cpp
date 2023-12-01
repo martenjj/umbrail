@@ -540,6 +540,8 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/GpxExtensions/v3", "gpxx");
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
+    // OsmAnd+ namespace may be needed for the category map
+    str.writeNamespace("https://osmand.net", "osmand");
     // our own extensions
     str.writeNamespace(("http://www.keelhaul.me.uk/" PROJECT_NAME), DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
@@ -550,6 +552,8 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     {
         if (nsp==DataIndexer::applicationNamespace()) continue;	// already added above
         if (nsp=="topografix") continue;			// already added above
+        if (nsp=="osmand") continue;				// already added above
+
         str.writeNamespace(DataIndexer::uriForNamespace(nsp), nsp);
     }
     str.writeCharacters("\n\n  ");
