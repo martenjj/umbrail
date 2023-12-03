@@ -1034,6 +1034,7 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
     else						// a file load operation
     {
         if (ourCol.isValid() && ourCol!=col) addWarning(QString("COLOR ignored, using %1 value").arg(QString(name).toUpper()));
+        else item->setMetadata(name, col);
     }
     item->setMetadata("color", QVariant());		// clear the COLOR value
 
