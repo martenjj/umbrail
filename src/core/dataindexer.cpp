@@ -54,6 +54,8 @@ static const char *sApplicationTags[] =
     "rangering",
     "origin",
     "flags",
+    "subtype",						// OsmAnd "amenity_subtype"
+    "visited",						// OsmAnd "visited_date"
     nullptr
 };
 
