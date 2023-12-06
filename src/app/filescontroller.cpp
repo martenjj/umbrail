@@ -125,16 +125,16 @@ FilesController::FilesController(QObject *pnt)
     mWaypointsFilterModel->setDynamicSortFilter(true);
     mWaypointsFilterModel->setSourceModel(model1);
 
-    // A KExtraColumnsProxyModel to generate display data for the waypoints
-    mPointsDataModel = new PointsDataModel(this);
-    mPointsDataModel->setSourceModel(mWaypointsFilterModel);
+    // A QIdentityProxyModel to generate display data for the waypoints
+    PointsDataModel *model5 = new PointsDataModel(this);
+    model5->setSourceModel(mWaypointsFilterModel);
 
     // A QSortFilterProxyModel to sort the points data for display
     QSortFilterProxyModel *model3 = new QSortFilterProxyModel(this);
     model3->setSortCaseSensitivity(Qt::CaseInsensitive);
     model3->setSortRole(Qt::UserRole);
     model3->setDynamicSortFilter(true);
-    model3->setSourceModel(mPointsDataModel);
+    model3->setSourceModel(model5);
 
     // A QTreeView to provide the points list view onto that
     mPointsView = new PointsView(mainWidget());

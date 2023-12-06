@@ -38,7 +38,6 @@ class QUrl;
 class FilesView;
 class PointsView;
 class FilesModel;
-class PointsDataModel;
 class WaypointsFilterModel;
 class HomePointsDataModel;
 class TrackDataFile;
@@ -141,7 +140,6 @@ private:
     FilesView *mFilesView;
     PointsView *mPointsView;
     FilesModel *mFilesModel;
-    PointsDataModel *mPointsDataModel;
 
     WaypointsFilterModel *mWaypointsFilterModel;
     HomePointsDataModel *mHomePointsModel;

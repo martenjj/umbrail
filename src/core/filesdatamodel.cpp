@@ -94,5 +94,5 @@ QVariant FilesDataModel::data(const QModelIndex &idx, int role) const
         }
     }
 
-    return (QIdentityProxyModel::data(idx,role));
+    return (QIdentityProxyModel::data(idx, role));
 }

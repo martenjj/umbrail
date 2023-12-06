@@ -170,9 +170,8 @@ case Qt::FontRole:
 case Qt::ForegroundRole:
         if (col==ColumnName)
         {
-            const KColorScheme sch;
             const TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(item->metadata("flags").toInt());
-
+            const KColorScheme sch;
             if (flags & TrackData::NewlyImported) return (sch.foreground(KColorScheme::PositiveText));
             if (flags & TrackData::NoExport) return (sch.foreground(KColorScheme::NegativeText));
         }
