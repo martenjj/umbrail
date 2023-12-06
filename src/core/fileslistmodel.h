@@ -27,8 +27,7 @@
 #define FILESLISTMODEL_H
  
 #include <kdescendantsproxymodel.h>
-
-class TrackDataItem;
+#include "itemindexinterface.h"
 
 
 /**
@@ -38,15 +37,13 @@ class TrackDataItem;
  * by KDescendantsProxyModel, but it needs to be a derived class so that
  * the index <-> item mapping can be passed down the model tree.
  */
-class FilesListModel : public KDescendantsProxyModel
+class FilesListModel : public KDescendantsProxyModel, public ItemIndexInterface
 {
     Q_OBJECT
 
 public:
     explicit FilesListModel(QObject *pnt = nullptr);
     virtual ~FilesListModel() = default;
-
-    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
  
 #endif							// FILESLISTMODEL_H

@@ -7,19 +7,19 @@
 
 ItemIndexInterface::ItemIndexInterface(QAbstractProxyModel *pnt)
 {
-    //qDebug() << "############ on" << pnt;
     mSourceModel = pnt;
 }
 
 
 TrackDataItem *ItemIndexInterface::itemForIndex(const QModelIndex &idx) const
 {
-    //qDebug() << "#######################################################";
-    //qDebug() << "sm" << mSourceModel;
+    return (itemForSourceIndex(mSourceModel->mapToSource(idx)));
+}
 
+
+TrackDataItem *ItemIndexInterface::itemForSourceIndex(const QModelIndex &idx) const
+{
     const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(mSourceModel->sourceModel());
-    //qDebug() << "ii" << iii;
-
     Q_ASSERT(iii!=nullptr);
-    return (iii->itemForIndex(mSourceModel->mapToSource(idx)));
+    return (iii->itemForIndex(idx));
 }

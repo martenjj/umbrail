@@ -8,22 +8,14 @@
 #include <kcolorscheme.h>
 
 #include "trackdata.h"
-#include "waypointsfiltermodel.h"
 #include "filesmodel.h"
 
 
 PointsDataModel::PointsDataModel(QObject *pnt)
-    : QIdentityProxyModel(pnt)
+    : QIdentityProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     qDebug();
-}
-
-
-TrackDataItem *PointsDataModel::itemForIndex(const QModelIndex &idx) const
-{
-    const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
-    Q_ASSERT(wlm!=nullptr);
-    return (wlm->itemForIndex(mapToSource(idx)));
 }
 
 

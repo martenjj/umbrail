@@ -4,9 +4,7 @@
 #define POINTSDATAMODEL_H
 
 #include <qidentityproxymodel.h>
-
-
-class TrackDataItem;
+#include "itemindexinterface.h"
 
 
 /**
@@ -17,7 +15,7 @@ class TrackDataItem;
  * source model to be a WaypointsFilterModel which presents it with a list
  * of waypoints only.
  */
-class PointsDataModel : public QIdentityProxyModel
+class PointsDataModel : public QIdentityProxyModel, public ItemIndexInterface
 {
     Q_OBJECT
 
@@ -27,8 +25,6 @@ public:
 
     QVariant data(const QModelIndex &idx, int role) const override;
     Qt::ItemFlags flags(const QModelIndex &idx) const override;
-
-    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
 
 #endif							// POINTSDATAMODEL_H
