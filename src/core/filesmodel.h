@@ -28,6 +28,8 @@
  
 #include <qabstractitemmodel.h>
 
+#include "itemindexinterface.h"
+
 
 class FilesController;
 class TrackDataItem;
@@ -49,7 +51,7 @@ enum Column
 };
 
 
-class FilesModel : public QAbstractItemModel
+class FilesModel : public QAbstractItemModel, public ItemIndexInterface
 {
     Q_OBJECT
 
@@ -83,8 +85,9 @@ public:
     void startLayoutChange();
     void endLayoutChange();
 
+    TrackDataItem *itemForIndex(const QModelIndex &idx) const override;
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
-    static TrackDataItem *itemForIndex(const QModelIndex &idx);
+
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 
 signals:

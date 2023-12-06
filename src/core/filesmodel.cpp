@@ -44,7 +44,8 @@
 
 
 FilesModel::FilesModel(QObject *pnt)
-    : QAbstractItemModel(pnt)
+    : QAbstractItemModel(pnt),
+      ItemIndexInterface(nullptr)
 {
     qDebug();
     mRootFileItem = nullptr;
@@ -61,7 +62,7 @@ FilesModel::~FilesModel()
 }
 
 
-/* static */ TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx)
+TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
 {
     return (static_cast<TrackDataItem *>(idx.internalPointer()));
 }

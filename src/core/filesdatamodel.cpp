@@ -15,17 +15,10 @@
 
 
 FilesDataModel::FilesDataModel(QObject *pnt)
-    : QIdentityProxyModel(pnt)
+    : QIdentityProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     qDebug();
-}
-
-
-TrackDataItem *FilesDataModel::itemForIndex(const QModelIndex &idx) const
-{
-    const FilesModel *fm = qobject_cast<const FilesModel *>(sourceModel());
-    Q_ASSERT(fm!=nullptr);
-    return (fm->itemForIndex(mapToSource(idx)));
 }
 
 

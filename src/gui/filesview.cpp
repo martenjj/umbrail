@@ -40,6 +40,14 @@
 #include "filesmodel.h"
 
 
+TrackDataItem *FilesView::itemForIndex(const QModelIndex &idx) const
+{
+    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(model());
+    Q_ASSERT(iii!=nullptr);
+    return (iii->itemForIndex(idx));
+}
+
+
 FilesView::FilesView(QWidget *pnt)
     : QTreeView(pnt),
       ApplicationDataInterface(pnt)
@@ -131,14 +139,14 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     }
     else
     {
-        mSelectedItem = FilesModel::itemForIndex(selIndexes.first());
+        mSelectedItem = itemForIndex(selIndexes.first());
         Q_ASSERT(mSelectedItem!=nullptr);
         mSelectedType = mSelectedItem->type();
 
         QModelIndex firstParent = selIndexes.first().parent();
         for (int i = 1; i<mSelectedCount; ++i)
         {
-            const TrackDataItem *item = FilesModel::itemForIndex(selIndexes[i]);
+            const TrackDataItem *item = itemForIndex(selIndexes[i]);
             Q_ASSERT(item!=nullptr);
             if (selIndexes[i].parent()!=firstParent || item->type()!=mSelectedType)
             {
@@ -151,7 +159,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     // Mark the current selection with the current selection ID.
     for (int i = 0; i<mSelectedCount; ++i)
     {
-        TrackDataItem *tdi = static_cast<FilesModel *>(model())->itemForIndex(selIndexes[i]);
+        TrackDataItem *tdi = itemForIndex(selIndexes[i]);
         Q_ASSERT(tdi!=nullptr);
         tdi->setSelectionId(mSelectionId);
 
@@ -186,6 +194,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
         list.append(tdi);
     }
 
+    // TODO: internal to us
     FilesModel::sortByIndexRow(&list);			// ensure in predictable order
     return (list);
 }
@@ -260,22 +269,22 @@ void FilesView::slotSelectAllSiblings()
 }
 
 
-void FilesView::slotClickedItem(const QModelIndex &index, unsigned int flags)
+void FilesView::slotClickedItem(const QModelIndex &idx, unsigned int flags)
 {
-    selectionModel()->select(QItemSelection(index, index),
+    selectionModel()->select(QItemSelection(idx, idx),
                              static_cast<QItemSelectionModel::SelectionFlags>(flags));
 
     // If the thing clicked on is a track point, only scroll to it if
     // its parent segment is expanded.  This avoids a long list of points
     // suddenly appearing in the view for a stray map click.
-    const TrackDataItem *item = static_cast<FilesModel *>(model())->itemForIndex(index);
+    const TrackDataItem *item = itemForIndex(idx);
     if (dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr)
     {
-        QModelIndex pnt = index.parent();
+        QModelIndex pnt = idx.parent();
         if (!isExpanded(pnt)) return;
     }
 
-    scrollTo(index);
+    scrollTo(idx);
 }
 
 
@@ -307,7 +316,7 @@ void FilesView::slotCollapseAll()
 
 void FilesView::expandItem(const QModelIndex &idx)
 {
-    const TrackDataItem *item = FilesModel::itemForIndex(idx);
+    const TrackDataItem *item = itemForIndex(idx);
 
     if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr ||
         dynamic_cast<const TrackDataRoute *>(item)!=nullptr)

@@ -4,9 +4,7 @@
 #define FILESDATAMODEL_H
 
 #include <qidentityproxymodel.h>
-
-
-class TrackDataItem;
+#include "itemindexinterface.h"
 
 
 /**
@@ -16,7 +14,7 @@ class TrackDataItem;
  * to trim the columns down to one and generate data specific to this
  * view.
  */
-class FilesDataModel : public QIdentityProxyModel
+class FilesDataModel : public QIdentityProxyModel, public ItemIndexInterface
 {
     Q_OBJECT
 
@@ -26,8 +24,6 @@ public:
 
     QVariant data(const QModelIndex &idx, int role) const override;
     int columnCount(const QModelIndex &pnt) const override;
-
-    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
 
 #endif							// FILESDATAMODEL_H

@@ -49,6 +49,7 @@ set(core_SRCS
   pointicon.cpp
   pointiconprovider.cpp
   category.cpp
+  itemindexinterface.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})
