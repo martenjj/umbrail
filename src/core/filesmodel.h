@@ -27,6 +27,7 @@
 #define FILESMODEL_H
  
 #include <qabstractitemmodel.h>
+#include <qitemselectionmodel.h>
 
 #include "itemindexinterface.h"
 
@@ -91,7 +92,7 @@ public:
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 
 signals:
-    void clickedItem(const QModelIndex &index, unsigned int flags);
+    void clickedItem(const QModelIndex &index, QItemSelectionModel::SelectionFlags flags);
     void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
 
 private:

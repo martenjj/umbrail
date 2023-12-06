@@ -272,7 +272,7 @@ void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardMod
     else return;
 
     qDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
-    emit clickedItem(indexForItem(tdp), static_cast<unsigned int>(selFlags));
+    emit clickedItem(indexForItem(tdp), selFlags);
 }
 
 //////////////////////////////////////////////////////////////////////////

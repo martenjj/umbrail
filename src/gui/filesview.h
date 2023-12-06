@@ -56,7 +56,7 @@ public:
 
 public slots:
     void slotSelectAllSiblings();
-    void slotClickedItem(const QModelIndex &idx, unsigned int flags);
+    void slotClickedItem(const QModelIndex &idx, QItemSelectionModel::SelectionFlags flags);
 
     void slotCollapseAll();
     void slotExpandAll();

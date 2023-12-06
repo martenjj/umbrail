@@ -194,7 +194,6 @@ QList<TrackDataItem *> FilesView::selectedItems() const
         list.append(tdi);
     }
 
-    // TODO: internal to us
     FilesModel::sortByIndexRow(&list);			// ensure in predictable order
     return (list);
 }
@@ -269,10 +268,9 @@ void FilesView::slotSelectAllSiblings()
 }
 
 
-void FilesView::slotClickedItem(const QModelIndex &idx, unsigned int flags)
+void FilesView::slotClickedItem(const QModelIndex &idx, QItemSelectionModel::SelectionFlags flags)
 {
-    selectionModel()->select(QItemSelection(idx, idx),
-                             static_cast<QItemSelectionModel::SelectionFlags>(flags));
+    selectionModel()->select(QItemSelection(idx, idx), flags);
 
     // If the thing clicked on is a track point, only scroll to it if
     // its parent segment is expanded.  This avoids a long list of points
