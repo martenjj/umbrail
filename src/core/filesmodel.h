@@ -35,6 +35,20 @@ class TrackDataFile;
 class TrackDataAbstractPoint;
 
 
+// This is deliberately outside the class definition so that it
+// does not need to be qualified everywhere.
+enum Column
+{
+    ColumnName,					// name
+    ColumnSym,					// symbol
+    ColumnOrigin,				// data source ID
+    ColumnCoords,				// lat/long coordinates
+    ColumnAddress,				// street address
+    ColumnCats,					// catgeories
+    ColumnCount					// how many - must be last
+};
+
+
 class FilesModel : public QAbstractItemModel
 {
     Q_OBJECT

@@ -38,6 +38,7 @@ set(core_SRCS
   metadatamodel.cpp
   filesmodel.cpp
   fileslistmodel.cpp
+  filesdatamodel.cpp
   waypointsfiltermodel.cpp
   homepointsfiltermodel.cpp
   homepointsdatamodel.cpp

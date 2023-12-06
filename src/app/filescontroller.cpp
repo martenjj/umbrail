@@ -58,6 +58,7 @@ using namespace KExiv2Iface;
 #include "filesview.h"
 #include "pointsdatamodel.h"
 #include "fileslistmodel.h"
+#include "filesdatamodel.h"
 #include "waypointsfiltermodel.h"
 #include "homepointsfiltermodel.h"
 #include "homepointsdatamodel.h"
@@ -105,9 +106,13 @@ FilesController::FilesController(QObject *pnt)
     // The master data tree model
     mFilesModel = new FilesModel(this);
 
+    // A QIdentityProxyModel to generate display data for the tree view
+    FilesDataModel *model4 = new FilesDataModel(this);
+    model4->setSourceModel(mFilesModel);
+
     // A QTreeView to provide the main tree view onto that
     mFilesView = new FilesView(mainWidget());
-    mFilesView->setModel(mFilesModel);
+    mFilesView->setModel(model4);
     connect(mFilesView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
 
     // A KDescendantsProxyModel to flatten the tree into a linear list of points
