@@ -27,15 +27,13 @@
 #define HOMEPOINTSLISTMODEL_H
  
 #include <qsortfilterproxymodel.h>
-
-
-class TrackDataItem;
+#include "itemindexinterface.h"
 
 
 /**
  * @short A model to filter a list of waypoints and accept only those marked as "home" points.
  */
-class HomePointsFilterModel : public QSortFilterProxyModel
+class HomePointsFilterModel : public QSortFilterProxyModel, public ItemIndexInterface
 {
     Q_OBJECT
 
@@ -44,8 +42,6 @@ public:
     virtual ~HomePointsFilterModel() = default;
 
     virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const override;
-
-    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
  
 #endif							// HOMEPOINTSLISTMODEL_H

@@ -9,7 +9,7 @@
 
 #include "trackdata.h"
 #include "pointicon.h"
-#include "homepointsfiltermodel.h"
+#include "filesmodel.h"
 
 
 enum COLUMN
@@ -22,29 +22,18 @@ enum COLUMN
 
 
 HomePointsDataModel::HomePointsDataModel(QObject *pnt)
-    : KExtraColumnsProxyModel(pnt)
+    : QIdentityProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     qDebug();
-    for (int i = 1; i<COL_COUNT; ++i) appendColumn();
-
     mHomeIndex = -1;					// nothing selected yet
     mWorkIndex = -1;
 }
 
 
-TrackDataItem *HomePointsDataModel::itemForIndex(const QModelIndex &idx) const
+int HomePointsDataModel::columnCount(const QModelIndex &pnt) const
 {
-    const HomePointsFilterModel *hfm = qobject_cast<const HomePointsFilterModel *>(sourceModel());
-    Q_ASSERT(hfm!=nullptr);
-    return (hfm->itemForIndex(hfm->index(idx.row(), 0, idx.parent())));
-}
-
-
-QVariant HomePointsDataModel::extraColumnData(const QModelIndex &pnt, int row, int col, int role) const
-{
-    // This should never actually be called, because we override data()
-    // and headerData() and return results from those for all columns.
-    return (QVariant());
+    return (COL_COUNT);
 }
 
 
@@ -127,7 +116,7 @@ bool HomePointsDataModel::setData(const QModelIndex &idx, const QVariant &value,
 
 Qt::ItemFlags HomePointsDataModel::flags(const QModelIndex &idx) const
 {
-    Qt::ItemFlags f = Qt::ItemIsEnabled|Qt::ItemNeverHasChildren;
+    Qt::ItemFlags f = QIdentityProxyModel::flags(idx)|Qt::ItemNeverHasChildren;
     if (idx.column()==COL_HOME || idx.column()==COL_WORK) f |= Qt::ItemIsUserCheckable;
     return (f);
 }

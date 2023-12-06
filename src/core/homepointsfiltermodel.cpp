@@ -28,29 +28,19 @@
 #include <qdebug.h>
 
 #include "trackdata.h"
-#include "waypointsfiltermodel.h"
 
 
 HomePointsFilterModel::HomePointsFilterModel(QObject *pnt)
-    : QSortFilterProxyModel(pnt)
+    : QSortFilterProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     qDebug();
 }
 
 
-TrackDataItem *HomePointsFilterModel::itemForIndex(const QModelIndex &idx) const
-{
-    const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
-    Q_ASSERT(wlm!=nullptr);
-    return (wlm->itemForIndex(mapToSource(idx)));
-}
-
-
 bool HomePointsFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
-    const WaypointsFilterModel *wlm = qobject_cast<const WaypointsFilterModel *>(sourceModel());
-    Q_ASSERT(wlm!=nullptr);
-    const TrackDataItem *item = wlm->itemForIndex(wlm->index(row, 0, pnt));
+    const TrackDataItem *item = itemForSourceIndex(sourceModel()->index(row, 0, pnt));
     if (item==nullptr) return (false);
 
     // Assuming that any item presented to this model will have been filtered
