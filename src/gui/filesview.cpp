@@ -40,6 +40,14 @@
 #include "filesmodel.h"
 
 
+TrackDataItem *FilesView::itemForIndex(const QModelIndex &idx) const
+{
+    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(model());
+    Q_ASSERT(iii!=nullptr);
+    return (iii->itemForIndex(idx));
+}
+
+
 FilesView::FilesView(QWidget *pnt)
     : QTreeView(pnt),
       ApplicationDataInterface(pnt)
@@ -131,14 +139,14 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     }
     else
     {
-        mSelectedItem = FilesModel::itemForIndex(selIndexes.first());
+        mSelectedItem = itemForIndex(selIndexes.first());
         Q_ASSERT(mSelectedItem!=nullptr);
         mSelectedType = mSelectedItem->type();
 
         QModelIndex firstParent = selIndexes.first().parent();
         for (int i = 1; i<mSelectedCount; ++i)
         {
-            const TrackDataItem *item = FilesModel::itemForIndex(selIndexes[i]);
+            const TrackDataItem *item = itemForIndex(selIndexes[i]);
             Q_ASSERT(item!=nullptr);
             if (selIndexes[i].parent()!=firstParent || item->type()!=mSelectedType)
             {
@@ -151,7 +159,7 @@ void FilesView::selectionChanged(const QItemSelection &sel,
     // Mark the current selection with the current selection ID.
     for (int i = 0; i<mSelectedCount; ++i)
     {
-        TrackDataItem *tdi = static_cast<FilesModel *>(model())->itemForIndex(selIndexes[i]);
+        TrackDataItem *tdi = itemForIndex(selIndexes[i]);
         Q_ASSERT(tdi!=nullptr);
         tdi->setSelectionId(mSelectionId);
 
@@ -310,7 +318,7 @@ void FilesView::slotCollapseAll()
 
 void FilesView::expandItem(const QModelIndex &idx)
 {
-    const TrackDataItem *item = FilesModel::itemForIndex(idx);
+    const TrackDataItem *item = itemForIndex(idx);
 
     if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr ||
         dynamic_cast<const TrackDataRoute *>(item)!=nullptr)

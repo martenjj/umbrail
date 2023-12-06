@@ -57,6 +57,7 @@ public:
 
 public slots:
     void slotSelectAllSiblings();
+
     void slotCollapseAll();
     void slotExpandAll();
 
@@ -68,6 +69,7 @@ signals:
     void updateActionState();
 
 private:
+    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     void expandItem(const QModelIndex &idx);
 
 private:

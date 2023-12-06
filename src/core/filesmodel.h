@@ -27,6 +27,9 @@
 #define FILESMODEL_H
  
 #include <qabstractitemmodel.h>
+#include <qitemselectionmodel.h>
+
+#include "itemindexinterface.h"
 
 
 class FilesController;
@@ -35,7 +38,21 @@ class TrackDataFile;
 class TrackDataAbstractPoint;
 
 
-class FilesModel : public QAbstractItemModel
+// This is deliberately outside the class definition so that it
+// does not need to be qualified everywhere.
+enum Column
+{
+    ColumnName,					// name
+    ColumnSym,					// symbol
+    ColumnOrigin,				// data source ID
+    ColumnCoords,				// lat/long coordinates
+    ColumnAddress,				// street address
+    ColumnCats,					// catgeories
+    ColumnCount					// how many - must be last
+};
+
+
+class FilesModel : public QAbstractItemModel, public ItemIndexInterface
 {
     Q_OBJECT
 
@@ -67,8 +84,9 @@ public:
     void startLayoutChange();
     void endLayoutChange();
 
+    TrackDataItem *itemForIndex(const QModelIndex &idx) const override;
     QModelIndex indexForItem(const TrackDataItem *tdi) const;
-    static TrackDataItem *itemForIndex(const QModelIndex &idx);
+
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 
 signals:

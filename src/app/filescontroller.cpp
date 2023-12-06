@@ -58,6 +58,7 @@ using namespace KExiv2Iface;
 #include "filesview.h"
 #include "pointsdatamodel.h"
 #include "fileslistmodel.h"
+#include "filesdatamodel.h"
 #include "waypointsfiltermodel.h"
 #include "homepointsfiltermodel.h"
 #include "homepointsdatamodel.h"
@@ -106,9 +107,13 @@ FilesController::FilesController(QObject *pnt)
     // The master data tree model
     mFilesModel = new FilesModel(this);
 
+    // A QIdentityProxyModel to generate display data for the tree view
+    FilesDataModel *model4 = new FilesDataModel(this);
+    model4->setSourceModel(mFilesModel);
+
     // A QTreeView to provide the main tree view onto that
     mFilesView = new FilesView(mainWidget());
-    mFilesView->setModel(mFilesModel);
+    mFilesView->setModel(model4);
     connect(mFilesView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
 
     // A KDescendantsProxyModel to flatten the tree into a linear list of points
@@ -121,16 +126,16 @@ FilesController::FilesController(QObject *pnt)
     mWaypointsFilterModel->setDynamicSortFilter(true);
     mWaypointsFilterModel->setSourceModel(model1);
 
-    // A KExtraColumnsProxyModel to generate display data for the waypoints
-    mPointsDataModel = new PointsDataModel(this);
-    mPointsDataModel->setSourceModel(mWaypointsFilterModel);
+    // A QIdentityProxyModel to generate display data for the waypoints
+    PointsDataModel *model5 = new PointsDataModel(this);
+    model5->setSourceModel(mWaypointsFilterModel);
 
     // A QSortFilterProxyModel to sort the points data for display
     QSortFilterProxyModel *model3 = new QSortFilterProxyModel(this);
     model3->setSortCaseSensitivity(Qt::CaseInsensitive);
     model3->setSortRole(Qt::UserRole);
     model3->setDynamicSortFilter(true);
-    model3->setSourceModel(mPointsDataModel);
+    model3->setSourceModel(model5);
 
     // A QTreeView to provide the points list view onto that
     mPointsView = new PointsView(mainWidget());

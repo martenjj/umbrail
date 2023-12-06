@@ -27,19 +27,10 @@
 
 #include <qdebug.h>
 
-#include "filesmodel.h"
-
 
 FilesListModel::FilesListModel(QObject *pnt)
-    : KDescendantsProxyModel(pnt)
+    : KDescendantsProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     qDebug();
-}
-
-
-TrackDataItem *FilesListModel::itemForIndex(const QModelIndex &idx) const
-{
-    const FilesModel *filesModel = qobject_cast<const FilesModel *>(sourceModel());
-    Q_ASSERT(filesModel!=nullptr);
-    return (filesModel->itemForIndex(mapToSource(idx)));
 }

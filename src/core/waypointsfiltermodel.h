@@ -27,15 +27,13 @@
 #define WAYPOINTSFILTERMODEL_H
  
 #include <qsortfilterproxymodel.h>
-
-
-class TrackDataItem;
+#include "itemindexinterface.h"
 
 
 /**
  * @short A model to filter a list of track data items and accept only waypoints.
  */
-class WaypointsFilterModel : public QSortFilterProxyModel
+class WaypointsFilterModel : public QSortFilterProxyModel, public ItemIndexInterface
 {
     Q_OBJECT
 
@@ -44,8 +42,6 @@ public:
     virtual ~WaypointsFilterModel() = default;
 
     virtual bool filterAcceptsRow(int row, const QModelIndex &pnt) const override;
-
-    TrackDataItem *itemForIndex(const QModelIndex &idx) const;
 };
  
 #endif							// WAYPOINTSFILTERMODEL_H

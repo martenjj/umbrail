@@ -38,6 +38,7 @@ set(core_SRCS
   metadatamodel.cpp
   filesmodel.cpp
   fileslistmodel.cpp
+  filesdatamodel.cpp
   waypointsfiltermodel.cpp
   homepointsfiltermodel.cpp
   homepointsdatamodel.cpp
@@ -48,6 +49,7 @@ set(core_SRCS
   pointicon.cpp
   pointiconprovider.cpp
   category.cpp
+  itemindexinterface.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})

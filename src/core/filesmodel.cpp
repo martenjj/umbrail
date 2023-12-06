@@ -30,6 +30,7 @@
 #include <qitemselectionmodel.h>
 #include <qmimedata.h>
 #include <qdebug.h>
+#include <qfontdatabase.h>
 
 #include <klocalizedstring.h>
 #include <kcolorscheme.h>
@@ -38,19 +39,13 @@
 #include "trackdata.h"
 
 
-enum COLUMN
-{
-    COL_NAME,						// icon/description
-    COL_COUNT						// how many - must be last
-};
-
-
 #define SIZE_ICON		QSize(16, 16)
 #define SIZE_HINT		QSize(18, 18)
 
 
 FilesModel::FilesModel(QObject *pnt)
-    : QAbstractItemModel(pnt)
+    : QAbstractItemModel(pnt),
+      ItemIndexInterface(nullptr)
 {
     qDebug();
     mRootFileItem = nullptr;
@@ -67,7 +62,7 @@ FilesModel::~FilesModel()
 }
 
 
-/* static */ TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx)
+TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
 {
     return (static_cast<TrackDataItem *>(idx.internalPointer()));
 }
@@ -123,99 +118,81 @@ int FilesModel::rowCount(const QModelIndex &pnt) const
 
 int FilesModel::columnCount(const QModelIndex &pnt) const
 {
-    return (COL_COUNT);
+    return (ColumnCount);
+}
+
+
+static QVariant formatCoordinates(const TrackDataItem *item)
+{
+    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    if (tdp==nullptr) return (QVariant());
+    return (tdp->formattedPosition());
+}
+
+
+static QVariant formatAddress(const TrackDataItem *item)
+{
+    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    if (tdw==nullptr) return (QVariant());
+    return (tdw->formattedAddress().join(", "));
 }
 
 
 QVariant FilesModel::data(const QModelIndex &idx, int role) const
 {
-    const TrackDataItem *tdi = itemForIndex(idx);
+    const TrackDataItem *item = itemForIndex(idx);
+    const int col = idx.column();
 
     switch (role)
     {
 case Qt::DisplayRole:
-        switch (idx.column())
+        switch (col)
         {
-case COL_NAME:     return (tdi->name());
+case ColumnName:     return (item->name());
+case ColumnOrigin:   return (item->metadata("origin").toStringList().join(", "));
+case ColumnCoords:   return (formatCoordinates(item));
+case ColumnAddress:  return (formatAddress(item));
+case ColumnCats:     return (item->metadata("category").toStringList().join(", "));
         }
         break;
 
 case Qt::DecorationRole:
-        switch (idx.column())
+        switch (col)
         {
-case COL_NAME:     return (tdi->icon()->icon());
+case ColumnName:
+case ColumnSym:      return (item->icon()->icon());
         }
+        break;
+
+case Qt::FontRole:
+        if (col==ColumnCoords) return (QFontDatabase::systemFont(QFontDatabase::FixedFont));
         break;
 
 case Qt::ForegroundRole:
-        switch (idx.column())
+        if (col==ColumnName)
         {
-case COL_NAME:
-            QVariant status = tdi->metadata("status");
-            if (!status.isNull())
-            {
-                TrackData::WaypointStatus s = static_cast<TrackData::WaypointStatus>(status.toInt());
-                KColorScheme sch(QPalette::Normal);
-                if (s==TrackData::StatusTodo) return (sch.foreground(KColorScheme::NegativeText));
-                if (s==TrackData::StatusDone) return (sch.foreground(KColorScheme::PositiveText));
-                if (s==TrackData::StatusQuestion) return (sch.foreground(KColorScheme::NeutralText));
-                if (s==TrackData::StatusUnwanted) return (sch.foreground(KColorScheme::NeutralText));
-            }
-        }
-        break;
-
-case Qt::UserRole:					// data for sorting
-        switch (idx.column())
-        {
-default:           return (data(idx, Qt::DisplayRole));
+            const TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(item->metadata("flags").toInt());
+            const KColorScheme sch;
+            if (flags & TrackData::NewlyImported) return (sch.foreground(KColorScheme::PositiveText));
+            if (flags & TrackData::NoExport) return (sch.foreground(KColorScheme::NegativeText));
         }
         break;
 
 case Qt::ToolTipRole:
-        switch (idx.column())
+        switch (col)
         {
-case COL_NAME:
-            {
-                QString tip;
-
-                if (dynamic_cast<const TrackDataFolder *>(tdi)!=nullptr) tip = i18np("Folder with %1 item", "Folder with %1 items", tdi->childCount());
-                else if (dynamic_cast<const TrackDataTrack *>(tdi)!=nullptr) tip = i18np("Track with %1 segment", "Track with %1 segments", tdi->childCount());
-                else if (dynamic_cast<const TrackDataSegment *>(tdi)!=nullptr) tip = i18np("Segment with %1 point", "Segment with %1 points", tdi->childCount());
-                else if (dynamic_cast<const TrackDataRoute *>(tdi)!=nullptr) tip = i18np("Route with %1 point", "Route with %1 points", tdi->childCount());
-                else
-                {
-                    const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                    if (tdf!=nullptr) tip = i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString());
-                    else
-                    {
-                        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(tdi);
-                        if (dynamic_cast<const TrackDataTrackpoint *>(tdp)!=nullptr) tip = i18n("Point at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                        else if (dynamic_cast<const TrackDataWaypoint *>(tdp)!=nullptr)
-                        {
-                            const QString wptStatus = TrackData::formattedWaypointStatus(
-                                static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
-                            if (!wptStatus.isEmpty()) tip = i18n("Waypoint at %1, elevation %2 (%3)", tdp->formattedTime(true), tdp->formattedElevation(), wptStatus);
-                            else tip = i18n("Waypoint at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                        }
-                        else if (dynamic_cast<const TrackDataRoutepoint *>(tdp)!=nullptr) tip = i18n("Routepoint, elevation %1", tdp->formattedElevation());
-                    }
-                }
-
-                if (!tip.isEmpty())
-                {
-                    QString desc = tdi->metadata("desc").toString();
-                    if (!desc.isEmpty())
-                    {
-                        desc.replace('\n', ";&nbsp;");
-                        tip = i18n("<div style=\"white-space:nowrap\">%1</div><div style=\"font-style:italic\">\"%2\"</div>", tip, desc);
-                    }
-
-                    return (tip);
-                }
-
-            }
-            break;
+case ColumnSym:      return (item->icon()->name());
+case ColumnOrigin:   return (item->metadata("origin").toStringList().join("<br/>"));
         }
+        break;
+
+case Qt::UserRole:					// data for sorting
+        if (col==ColumnSym) return (item->icon()->name());
+        else return (data(idx, Qt::DisplayRole));
+        break;
+
+case Qt::SizeHintRole:
+        if (col==ColumnSym) return (SIZE_HINT);
         break;
     }
 
@@ -230,7 +207,12 @@ QVariant FilesModel::headerData(int section, Qt::Orientation orientation, int ro
 
     switch (section)
     {
-case COL_NAME:		return (i18n("Name"));
+case ColumnName:		return (i18n("Name"));
+case ColumnSym:		return (i18n("Sym"));
+case ColumnOrigin:	return (i18n("Origin"));
+case ColumnCoords:	return (i18n("Lat/Long"));
+case ColumnAddress:	return (i18n("Address"));
+case ColumnCats:	return (i18n("Categories"));
 default:		return (QVariant());
     }
 }

@@ -28,26 +28,13 @@
 #include <qdebug.h>
 
 #include "trackdata.h"
-#include "fileslistmodel.h"
 
 
 WaypointsFilterModel::WaypointsFilterModel(QObject *pnt)
-    : QSortFilterProxyModel(pnt)
+    : QSortFilterProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     qDebug();
-}
-
-
-// TODO: to avoid all models in the chain having to implement itemForIndex()
-// in order to be able to get the TrackDataItem corresponding to a model
-// index, FilesModel could make the pointer available via data() with a unique
-// role.  May still have to implement indexForItem() though.
-
-TrackDataItem *WaypointsFilterModel::itemForIndex(const QModelIndex &idx) const
-{
-    const FilesListModel *flm = qobject_cast<const FilesListModel *>(sourceModel());
-    Q_ASSERT(flm!=nullptr);
-    return (flm->itemForIndex(mapToSource(idx)));
 }
 
 
@@ -56,11 +43,8 @@ bool WaypointsFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) con
     // The 'row' and 'pnt' refer to the source model.  There is therefore
     // no need to use mapToSource() here.
 
-    const FilesListModel *flm = qobject_cast<const FilesListModel *>(sourceModel());
-    Q_ASSERT(flm!=nullptr);
-    const TrackDataItem *item = flm->itemForIndex(flm->index(row, 0, pnt));
+    const TrackDataItem *item = itemForSourceIndex(sourceModel()->index(row, 0, pnt));
     if (item==nullptr) return (false);
-
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
     return (tdw!=nullptr);
 }
