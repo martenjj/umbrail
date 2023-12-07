@@ -36,6 +36,7 @@ class QSpinBox;
 class QLineEdit;
 class KColorButton;
 class KUrlRequester;
+class KPluralHandlingSpinBox;
 
 
 class SettingsDialogue : public KPageDialog
@@ -157,5 +158,30 @@ private:
     QLineEdit *mGeonamesUserEdit;
     QLineEdit *mOpenTopoApiKeyEdit;
 };
+
+
+class SettingsTimeZonePage : public SettingsPage
+{
+    Q_OBJECT
+
+public:
+    explicit SettingsTimeZonePage(QWidget *pnt = nullptr);
+    virtual ~SettingsTimeZonePage() = default;
+
+public slots:
+    void slotSave() override;
+    void slotDefaults() override;
+
+protected slots:
+    void slotItemChanged() override;
+    void slotShowTimeZonePreview();
+
+private:
+    QCheckBox *mZoneNameCheck;
+    QLineEdit *mZoneNameEdit;
+    QCheckBox *mTimeOffsetCheck;
+    KPluralHandlingSpinBox *mTimeOffsetSpinbox;
+};
+
 
 #endif							// SETTINGSDIALOGUE_H

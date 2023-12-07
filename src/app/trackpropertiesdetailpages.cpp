@@ -27,6 +27,7 @@
 
 #include <qformlayout.h>
 #include <qdebug.h>
+#include <qdesktopservices.h>
 
 #include <klocalizedstring.h>
 
@@ -39,6 +40,7 @@
 #include "categorieseditdialogue.h"
 #include "flagseditdialogue.h"
 #include "listeditwidget.h"
+#include "mediaplayer.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -941,11 +943,13 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     qDebug();
     setObjectName("TrackWaypointDetailPage");
 
+    mMediaDisplay = nullptr;
+
     addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
     if (items->count()==1)				// single selection
     {
-        const TrackDataWaypoint *tdp = dynamic_cast<const TrackDataWaypoint *>(items->first());
-        Q_ASSERT(tdp!=nullptr);
+        const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(items->first());
+        Q_ASSERT(tdw!=nullptr);
 
         addSeparatorField();
 
@@ -953,10 +957,21 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
         pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
         mFormLayout->addRow(i18nc("@label:textbox", "Folder:"), pathDisplay);
 
-        TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(tdp->parent());
+        TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(tdw->parent());
         Q_ASSERT(folderItem!=nullptr);
         pathDisplay->setText(folderItem->path());
 
+        if (tdw->isMediaType())
+        {
+            mMediaDisplay = new QLabel(this);
+            mMediaDisplay->setTextInteractionFlags(Qt::LinksAccessibleByMouse|Qt::LinksAccessibleByKeyboard);
+            connect(mMediaDisplay, &QLabel::linkActivated, this, [](const QString &link)
+            {
+                QDesktopServices::openUrl(QUrl(link));
+            });
+
+            mFormLayout->addRow(i18nc("@label:textbox", "Media:"), mMediaDisplay);
+        }
     }
     else						// multiple selection
     {
@@ -964,6 +979,29 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     }
 
     addDisplayFields(items, DisplayAddress|DisplayFlags);
+}
+
+
+void TrackWaypointDetailPage::refreshData()
+{
+    TrackItemDetailPage::refreshData();
+
+    if (mMediaDisplay!=nullptr)
+    {
+        const TrackDataItem *item = dataModel()->currentItem();
+        const QUrl u = MediaPlayer::findMediaFile(item);
+
+        QString txt;
+        QString tip;
+        if (u.isValid())
+        {
+            txt = "<a href=\""+u.toString()+"\">"+u.fileName()+"</a>";
+            tip = u.toDisplayString();
+        }
+
+        mMediaDisplay->setText(txt);
+        mMediaDisplay->setToolTip(tip);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

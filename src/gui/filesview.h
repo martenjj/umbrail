@@ -49,15 +49,14 @@ public:
     QList<TrackDataItem *> selectedItems() const;
     QVector<const TrackDataAbstractPoint *> selectedPoints() const;
 
-    void selectItem(const TrackDataItem *item, bool combine = false);
+    void selectItem(const TrackDataItem *item, bool combine = false, bool wasOnMap = false);
+    void selectMapPoint(const TrackDataItem *item, Qt::KeyboardModifiers mods);
     void setMovePointsMode(bool on);
 
     unsigned long selectionId() const		{ return (mSelectionId); }
 
 public slots:
     void slotSelectAllSiblings();
-    void slotClickedItem(const QModelIndex &idx, QItemSelectionModel::SelectionFlags flags);
-
     void slotCollapseAll();
     void slotExpandAll();
 

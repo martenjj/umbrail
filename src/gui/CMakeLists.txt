@@ -36,9 +36,10 @@ set(gui_SRCS
   latlongdialogue.cpp
   latlongwidget.cpp
   ploteditwidget.cpp
-  timezonedialogue.cpp
-  timezoneselector.cpp
-  timezonewidget.cpp
+  timezonelistdialogue.cpp
+  timezonedisplay.cpp
+  timezonelistwidget.cpp
+  timezonesettingdialogue.cpp
   trackdatalabel.cpp
   valueslider.cpp
   variableunitdisplay.cpp

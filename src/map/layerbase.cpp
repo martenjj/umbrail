@@ -432,8 +432,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
             qDebug() << "  valid click detected";
 #endif
             // TODO: emit a signal from MapController
-            //filesModel->clickedPoint(clickedPoint, mouseEvent->modifiers());
-
+            filesView()->selectMapPoint(clickedPoint, mouseEvent->modifiers());
             return (true);				// event consumed
         }
     }

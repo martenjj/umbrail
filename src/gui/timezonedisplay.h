@@ -23,39 +23,45 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef TIMEZONEDIALOGUE_H
-#define TIMEZONEDIALOGUE_H
+#ifndef TIMEZONEDISPLAY_H
+#define TIMEZONEDISPLAY_H
 
-#include <kfdialog/dialogbase.h>
-#include <kfdialog/dialogstatesaver.h>
-
-class TimeZoneWidget;
+#include <qframe.h>
 
 
-class TimeZoneDialogue : public DialogBase, public DialogStateSaver
+class QLineEdit;
+class QPushButton;
+class TrackDataItem;
+
+
+class TimeZoneDisplay : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit TimeZoneDialogue(QWidget *pnt = nullptr);
-    virtual ~TimeZoneDialogue() = default;
+    explicit TimeZoneDisplay(QWidget *pnt = nullptr);
+    virtual ~TimeZoneDisplay() = default;
 
-    void setTimeZone(const QByteArray &zone);
+    void setTimeZone(const QString &zone);
     QString timeZone() const;
 
-    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
-    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
+    void setItems(const QList<TrackDataItem *> *items);
 
 protected slots:
-    void slotUseUTC();
-    void slotUseSystem();
+    void slotChangeZone();
+    void slotGuessZone();
 
 private slots:
-    void slotTimeZoneChanged();
+    void slotGuessJobFinished(const QString &zone);
+
+signals:
+    void zoneChanged(const QString &zone);
 
 private:
-    TimeZoneWidget *mTimeZoneWidget;
-    bool mReturnUTC;
+    QLineEdit *mZoneDisplay;
+    QPushButton *mGuessButton;
+    double mItemsLat;
+    double mItemsLon;
 };
-
-#endif							// TIMEZONEDIALOGUE_H
+ 
+#endif							// TIMEZONEDISPLAY_H

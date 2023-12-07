@@ -261,20 +261,6 @@ void FilesModel::endLayoutChange()
     endResetModel();
 }
 
-
-// TODO: move to eventual destination FilesView
-// model should not need to handle UI apart from D&D
-void FilesModel::clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods)
-{
-    QItemSelectionModel::SelectionFlags selFlags;
-    if (mods==Qt::NoModifier) selFlags = QItemSelectionModel::ClearAndSelect;
-    else if (mods==Qt::ControlModifier) selFlags = QItemSelectionModel::Toggle;
-    else return;
-
-    qDebug() << "click for" << indexForItem(tdp) << "flags" << selFlags;
-    emit clickedItem(indexForItem(tdp), selFlags);
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Drag and Drop							//

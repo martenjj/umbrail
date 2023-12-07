@@ -151,14 +151,14 @@ bool WaypointLayerable::isShowingPoint(const TrackDataAbstractPoint *pnt) const
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(pnt);
     if (tdw==nullptr) return (false);			// otherwise, should be a waypoint
 
-    const TrackData::WaypointType type = tdw->waypointType();
+    const TrackData::MediaType type = tdw->mediaType();
     switch (type)
     {
-case TrackData::WaypointNormal:		return (mSelection & WaypointSelectDialogue::SelectWaypoints);
-case TrackData::WaypointAudioNote:	return (mSelection & WaypointSelectDialogue::SelectAudioNotes);
-case TrackData::WaypointVideoNote:	return (mSelection & WaypointSelectDialogue::SelectVideoNotes);
-case TrackData::WaypointPhoto:		return (mSelection & WaypointSelectDialogue::SelectPhotos);
-case TrackData::WaypointStop:		return (mSelection & WaypointSelectDialogue::SelectStops);
+case TrackData::MediaNormal:		return (mSelection & WaypointSelectDialogue::SelectWaypoints);
+case TrackData::MediaAudioNote:		return (mSelection & WaypointSelectDialogue::SelectAudioNotes);
+case TrackData::MediaVideoNote:		return (mSelection & WaypointSelectDialogue::SelectVideoNotes);
+case TrackData::MediaPhoto:		return (mSelection & WaypointSelectDialogue::SelectPhotos);
+case TrackData::MediaStop:		return (mSelection & WaypointSelectDialogue::SelectStops);
 default:				return (false);
     }
 }

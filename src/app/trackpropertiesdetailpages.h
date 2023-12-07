@@ -156,6 +156,10 @@ class TrackWaypointDetailPage : public TrackItemDetailPage
 public:
     TrackWaypointDetailPage(const QList<TrackDataItem *> *items, QWidget *pnt);
     virtual ~TrackWaypointDetailPage() = default;
+    void refreshData() override;
+
+private:
+    QLabel *mMediaDisplay;
 };
 
 

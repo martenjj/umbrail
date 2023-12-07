@@ -161,15 +161,15 @@ namespace TrackData
     };
 
     // Finer grained classification for waypoints,
-    // accessed by TrackDataWaypoint::waypointType()
-    enum WaypointType
+    // accessed by TrackDataItem::mediaType()
+    enum MediaType
     {
-        WaypointNormal,
-        WaypointAudioNote,
-        WaypointVideoNote,
-        WaypointPhoto,
-        WaypointStop,
-        WaypointAny
+        MediaNormal,
+        MediaAudioNote,
+        MediaVideoNote,
+        MediaPhoto,
+        MediaStop,
+        MediaAny
     };
 
     // User status for waypoints
@@ -261,6 +261,7 @@ public:
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
     QString timeZone() const;
+    TrackData::MediaType mediaType() const;
 
 protected:
     TrackDataItem(const char *format = nullptr, int *counter = nullptr);
@@ -279,6 +280,29 @@ private:
     QVector<QVariant> *mMetadata;
     TrackDataItem *mParent;
     unsigned long mSelectionId;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataContainer							//
+//									//
+//  This is simply a TrackDataItem with the pure virtual functions	//
+//  provided (with dummy values, because they are never used).  It	//
+//  is not intended to be used to represent real file tree data, but	//
+//  is used to provide a consistent interface where undo/redo		//
+//  commands need to retain an item pointer or MetadataModel needs	//
+//  to store item metadata.						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataContainer : public TrackDataItem
+{
+public:
+    explicit TrackDataContainer();
+    virtual ~TrackDataContainer() = default;
+
+    TrackData::Type type() const override	{ return (TrackData::None); }
+    virtual QString iconName() const override	{ return (QString()); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -465,7 +489,6 @@ public:
 
     const PointIcon *icon() const override;
 
-    TrackData::WaypointType waypointType() const;
     bool isMediaType() const;
 
     bool canMerge(const TrackDataWaypoint *other, bool positionOnly = false) const;

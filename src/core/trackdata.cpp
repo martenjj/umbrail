@@ -66,6 +66,7 @@ static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
 static int counterRoutepoint = 0;
+static int counterContainer = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
@@ -76,7 +77,7 @@ static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
 static int allocRoutepoint = 0;
-static int allocStyle = 0;
+static int allocContainer = 0;
 static int allocChildren = 0;
 static int allocMetadata = 0;
 #endif
@@ -573,6 +574,45 @@ const TrackDataFile *TrackDataItem::root() const
     return (root);
 }
 
+
+// Although in practice media and stops are only expected to be
+// associated with TrackDataWaypoint items, this is in TrackDataItem
+// so that the temporary item untyped provided by MetadataModel can
+// be checked in the same way.
+TrackData::MediaType TrackDataItem::mediaType() const
+{
+    QVariant n = metadata("stop");			// first try saved stop data
+    if (!n.isNull()) return (TrackData::MediaStop);	// this means it's a stop
+
+    n = metadata("link");				// then get saved link name
+    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
+    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
+    if (n.isNull()) n = name();				// lastly try our waypoint name
+    if (n.isNull()) return (TrackData::MediaNormal);	// no media data present
+
+    QString ns = n.toString();
+    // TODO: should get MIME type for extension and then compare against recognised ones
+    // or even look for a general category (audio/... video/... image/... respectively)
+    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::MediaAudioNote);
+    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::MediaVideoNote);
+    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::MediaPhoto);
+    return (TrackData::MediaNormal);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  TrackDataContainer							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+TrackDataContainer::TrackDataContainer()
+    : TrackDataItem("container_%04d", &counterContainer)
+{
+#ifdef MEMORY_TRACKING
+    ++allocContainer;
+#endif
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFile							//
@@ -835,34 +875,15 @@ TrackDataWaypoint::TrackDataWaypoint()
 }
 
 
-TrackData::WaypointType TrackDataWaypoint::waypointType() const
-{
-    QVariant n = metadata("stop");			// first try saved stop data
-    if (!n.isNull()) return (TrackData::WaypointStop);	// this means it's a stop
-
-    n = metadata("link");				// get saved link name
-    if (n.isNull() && hasExplicitName()) n = name();	// if none try our waypoint name
-    if (n.isNull()) return (TrackData::WaypointNormal);	// no media data present
-
-    QString ns = n.toString();
-    // TODO: should get MIME type for extension and then compare against recognised ones
-    // or even look for a general category (audio/... video/... image/... respectively)
-    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::WaypointAudioNote);
-    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::WaypointVideoNote);
-    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::WaypointPhoto);
-    return (TrackData::WaypointNormal);
-}
-
-
 QString TrackDataWaypoint::iconName() const
 {
-    switch (waypointType())
+    switch (mediaType())
     {
-case TrackData::WaypointNormal:		return ("favorites");
-case TrackData::WaypointAudioNote:	return ("speaker");
-case TrackData::WaypointVideoNote:	return ("mixer-video");
-case TrackData::WaypointPhoto:		return ("image-x-generic");
-case TrackData::WaypointStop:		return ("media-playback-stop");
+case TrackData::MediaNormal:		return ("favorites");
+case TrackData::MediaAudioNote:		return ("speaker");
+case TrackData::MediaVideoNote:		return ("mixer-video");
+case TrackData::MediaPhoto:		return ("image-x-generic");
+case TrackData::MediaStop:		return ("media-playback-stop");
 default:				return ("unknown");
     }
 }
@@ -870,10 +891,10 @@ default:				return ("unknown");
 
 bool TrackDataWaypoint::isMediaType() const
 {
-    const TrackData::WaypointType wpt = waypointType();
-    return (wpt==TrackData::WaypointAudioNote ||
-            wpt==TrackData::WaypointVideoNote ||
-            wpt==TrackData::WaypointPhoto);
+    const TrackData::MediaType wpt = mediaType();
+    return (wpt==TrackData::MediaAudioNote ||
+            wpt==TrackData::MediaVideoNote ||
+            wpt==TrackData::MediaPhoto);
 }
 
 
@@ -886,7 +907,7 @@ bool TrackDataWaypoint::isMediaType() const
 const PointIcon *TrackDataWaypoint::icon() const
 {
     // First priority: special waypoint type
-    if (waypointType()!=TrackData::WaypointNormal) return (TrackDataItem::icon());
+    if (mediaType()!=TrackData::MediaNormal) return (TrackDataItem::icon());
 
     // Second priority: named symbol
     QVariant v = metadata("sym");
@@ -1250,6 +1271,7 @@ MemoryTracker::MemoryTracker()
     qDebug() << "trackpoint" << sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint" << sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint" << sizeof(TrackDataRoutepoint) << "bytes";
+    qDebug() << "container" << sizeof(TrackDataContainer) << "bytes";
     qDebug() << "***********";
 }
 
@@ -1265,6 +1287,7 @@ MemoryTracker::~MemoryTracker()
     qDebug() << "trackpoint allocated" << allocTrackpoint << "items, total" << allocTrackpoint*sizeof(TrackDataTrackpoint) << "bytes";
     qDebug() << "waypoint allocated" << allocWaypoint << "items, total" << allocWaypoint*sizeof(TrackDataWaypoint) << "bytes";
     qDebug() << "routepoint allocated" << allocRoutepoint << "items, total" << allocRoutepoint*sizeof(TrackDataRoutepoint) << "bytes";
+    qDebug() << "container allocated" << allocContainer << "items, total" << allocContainer*sizeof(TrackDataContainer) << "bytes";
     qDebug() << "child list allocated" << allocChildren;
     qDebug() << "metadata allocated" << allocMetadata;
     qDebug() << "***********";

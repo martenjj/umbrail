@@ -79,8 +79,6 @@ public:
     TrackDataFile *takeRootFileItem();
     void setRootFileItem(TrackDataFile *root);
 
-    void clickedPoint(const TrackDataAbstractPoint *tdp, Qt::KeyboardModifiers mods);
-
     // signal changes from the model
     void changedItem(const TrackDataItem *item);
     void startLayoutChange();
@@ -92,7 +90,6 @@ public:
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 
 signals:
-    void clickedItem(const QModelIndex &index, QItemSelectionModel::SelectionFlags flags);
     void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
 
 private:

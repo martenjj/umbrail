@@ -9,11 +9,11 @@
   <MenuBar>
     <Menu name="file">
       <Action name="file_save_copy" append="save_merge"/>
-      <Action name="file_open_media" append="open_merge"/>
-      <Action name="file_save_media" append="save_merge"/>
       <Action name="file_import" append="save_merge"/>
       <Action name="file_add_photo" append="save_merge"/>
       <Action name="file_export" append="save_merge"/>
+      <Action name="file_open_media" append="save_merge"/>
+      <Action name="file_save_media" append="save_merge"/>
     </Menu>
 
     <Menu name="edit">

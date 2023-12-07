@@ -44,7 +44,7 @@
 #include "filescontroller.h"
 #include "variableunitdisplay.h"
 #include "itemtypecombo.h"
-#include "timezoneselector.h"
+#include "timezonedisplay.h"
 #include "latlongdialogue.h"
 #include "mediaplayer.h"
 #include "metadatamodel.h"
@@ -274,8 +274,9 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
     mUrlRequester = new QLineEdit(this);
     mUrlRequester->setReadOnly(true);
 
-    mTimeZoneSel = new TimeZoneSelector(this);
-    connect(mTimeZoneSel, &TimeZoneSelector::zoneChanged, this, &TrackFileGeneralPage::slotTimeZoneChanged);
+    mTimeZoneSel = new TimeZoneDisplay(this);
+    mTimeZoneSel->setEnabled(!isReadOnly());
+    connect(mTimeZoneSel, &TimeZoneDisplay::zoneChanged, this, &TrackFileGeneralPage::slotTimeZoneChanged);
 
     if (items->count()==1)				// a single item
     {
@@ -283,10 +284,6 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
         Q_ASSERT(fileItem!=nullptr);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
         mTimeZoneSel->setItems(items);			// use these to get timezone
-
-        // The time zone is allowed to be changed even if the file
-        // is read only.  This case is handled specially in FilesController.
-        mTimeZoneSel->setEnabled(!isReadOnly() || filesController()->isSettingTimeZone());
     }
     else						// may be mixed MIME types
     {
@@ -444,13 +441,13 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
         Q_ASSERT(theWaypoint!=nullptr);
 
         QString typeName;
-        switch (theWaypoint->waypointType())
+        switch (theWaypoint->mediaType())
         {
-case TrackData::WaypointNormal:		typeName = i18n("None");	break;
-case TrackData::WaypointAudioNote:	typeName = i18n("Audio Note");	break;
-case TrackData::WaypointVideoNote:	typeName = i18n("Video Note");	break;
-case TrackData::WaypointPhoto:		typeName = i18n("Photo");	break;
-case TrackData::WaypointStop:		typeName = i18n("Stop");	break;
+case TrackData::MediaNormal:		typeName = i18n("None");	break;
+case TrackData::MediaAudioNote:		typeName = i18n("Audio Note");	break;
+case TrackData::MediaVideoNote:		typeName = i18n("Video Note");	break;
+case TrackData::MediaPhoto:		typeName = i18n("Photo");	break;
+case TrackData::MediaStop:		typeName = i18n("Stop");	break;
 default:				typeName = i18n("(Unknown)");	break;
         }
 
@@ -465,9 +462,9 @@ default:				typeName = i18n("(Unknown)");	break;
         hlay->addStretch(1);
 
         QPushButton *actionButton = nullptr;
-        switch (theWaypoint->waypointType())
+        switch (theWaypoint->mediaType())
         {
-case TrackData::WaypointAudioNote:
+case TrackData::MediaAudioNote:
             actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the audio note"));
             connect(actionButton, &QAbstractButton::clicked, this, [theWaypoint]()
@@ -477,7 +474,7 @@ case TrackData::WaypointAudioNote:
             showTime = true;				// interested in the note time
             break;
 
-case TrackData::WaypointVideoNote:
+case TrackData::MediaVideoNote:
             actionButton = new QPushButton(QIcon::fromTheme("media-playback-start"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "Play the video note"));
             connect(actionButton, &QAbstractButton::clicked, this, [theWaypoint]()
@@ -487,7 +484,7 @@ case TrackData::WaypointVideoNote:
             showTime = true;				// interested in the note time
             break;
 
-case TrackData::WaypointPhoto:
+case TrackData::MediaPhoto:
             actionButton = new QPushButton(QIcon::fromTheme("document-preview"), "", this);
             actionButton->setToolTip(i18nc("@info:tooltip", "View the photo"));
             connect(actionButton, &QAbstractButton::clicked, this, [theWaypoint]()
@@ -497,7 +494,7 @@ case TrackData::WaypointPhoto:
             showTime = true;				// interested in the photo time
             break;
 
-case TrackData::WaypointStop:
+case TrackData::MediaStop:
             showTime = true;				// interested in the stop time
             break;
 

@@ -23,25 +23,40 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef MEDIAPLAYER_H
-#define MEDIAPLAYER_H
+#ifndef TIMEZONELISTDIALOGUE_H
+#define TIMEZONELISTDIALOGUE_H
+
+#include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
+
+class TimeZoneListWidget;
 
 
-class QUrl;
-class TrackDataItem;
-
-
-// TODO: needs to be a class, so that it can have the main window as parent
-namespace MediaPlayer
+class TimeZoneListDialogue : public DialogBase, public DialogStateSaver
 {
-    QUrl findMediaFile(const TrackDataItem *item);
+    Q_OBJECT
 
-    void playAudioNote(const TrackDataItem *item);
-    void playVideoNote(const TrackDataItem *item);
-    void viewPhotoNote(const TrackDataItem *item);
+public:
+    explicit TimeZoneListDialogue(QWidget *pnt = nullptr);
+    virtual ~TimeZoneListDialogue() = default;
 
-    void openMediaFile(const TrackDataItem *item);
-    void saveMediaFile(const TrackDataItem *item);
-}
+    void setTimeZone(const QByteArray &zone);
+    QString timeZone() const;
+    void setPreviewMode();
 
-#endif							// MEDIAPLAYER_H
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
+
+protected slots:
+    void slotUseUTC();
+    void slotUseSystem();
+
+private slots:
+    void slotTimeZoneChanged();
+
+private:
+    TimeZoneListWidget *mTimeZoneWidget;
+    bool mReturnUTC;
+};
+
+#endif							// TIMEZONELISTDIALOGUE_H

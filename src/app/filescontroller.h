@@ -79,7 +79,8 @@ public:
     FilesModel *filesModel() const		{ return (mFilesModel); }
     HomePointsDataModel *homePointsModel();
 
-    bool isSettingTimeZone() const		{ return (mSettingTimeZone); }
+    FilesView *view() const			{ return (mFilesView); }
+    FilesModel *model() const			{ return (mFilesModel); }
 
     void readProperties();
     void saveProperties();
@@ -145,7 +146,6 @@ private:
     HomePointsDataModel *mHomePointsModel;
 
     bool mWarnedNoTimezone;
-    bool mSettingTimeZone;
 };
  
 #endif							// FILESCONTROLLER_H
