@@ -37,7 +37,6 @@
 #include <marble/GeoPainter.h>
 #include <marble/GeoDataPlacemark.h>
 
-#include "filesmodel.h"
 #include "filesview.h"
 #include "mapcontroller.h"
 #include "mapview.h"
@@ -138,18 +137,18 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     if (!isVisible()) return (true);			// no painting if not visible
     mViewport = viewport;				// save for access by layers
 
-    const FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    if (filesModel==nullptr) return (false);		// no data to use!
-
     mSelectionId = filesView()->selectionId();
+
+    const TrackDataItem *filesRoot = mapController()->rootFileItem();
+    if (filesRoot==nullptr) return (false);
 
     // Paint the data in two passes.  The first does all non-selected items,
     // the second selected ones.  This is so that selected items show up
     // on top of all non-selected ones.  In the absence of any selection,
     // everything will be painted in file and then time order (i.e. later
     // items on top of earlier ones).
-    paintDataTree(filesModel->rootFileItem(), painter, false, false);
-    paintDataTree(filesModel->rootFileItem(), painter, true, false);
+    paintDataTree(filesRoot, painter, false, false);
+    paintDataTree(filesRoot, painter, true, false);
 
     if (mDraggingPoints!=nullptr)
     {
@@ -357,8 +356,8 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 
     MapView *mapView = mapController()->view();
 
-    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    if (filesModel==nullptr) return (false);		// no data to use!
+    const TrackDataItem *filesRoot = mapController()->rootFileItem();
+    if (filesRoot==nullptr) return (false);		// should never happen
 
     if (ev->type()==QEvent::MouseButtonPress)
     {
@@ -391,7 +390,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
         qDebug() << "  tolerance box" << mLatMin << mLonMin << "-" << mLatMax << mLonMax;
 #endif
-        const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
+        const TrackDataAbstractPoint *tdp = findClickedPoint(filesRoot);
         if (tdp!=nullptr)				// a point was found
         {
             mClickedPoint = tdp;			// record for release event
@@ -432,7 +431,9 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
             qDebug() << "  valid click detected";
 #endif
-            filesModel->clickedPoint(clickedPoint, mouseEvent->modifiers());
+            // TODO: emit a signal from MapController
+            //filesModel->clickedPoint(clickedPoint, mouseEvent->modifiers());
+
             return (true);				// event consumed
         }
     }
@@ -453,7 +454,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #endif
                 mClickTimer->invalidate();
 
-                const TrackDataAbstractPoint *tdp = findClickedPoint(filesModel->rootFileItem());
+                const TrackDataAbstractPoint *tdp = findClickedPoint(filesRoot);
                 if (tdp!=nullptr && tdp->selectionId()!=mSelectionId)
                 {
 #ifdef DEBUG_DRAGGING
@@ -463,7 +464,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
                 }
 
                 mDraggingPoints = new QList<SelectionRun>;
-                this->findSelectionInTree(filesModel->rootFileItem());
+                this->findSelectionInTree(filesRoot);
             }
             else return (false);			// outside click tolerance
         }
