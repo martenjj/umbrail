@@ -32,21 +32,21 @@
 
 #include <klocalizedstring.h>
 
-#include "filesmodel.h"
 #include "filesview.h"
 #include "destinationfiltermodel.h"
 #include "trackdata.h"
 #include "latlongwidget.h"
+#include "itemindexinterface.h"
 
 
 // from https://stackoverflow.com/questions/39153835/how-to-loop-over-qabstractitemview-indexes
-static int findSelectableItems(const QModelIndex &index, const QAbstractItemModel *model, QModelIndex *theItem)
+static int findSelectableItems(const QModelIndex &index, const QAbstractItemModel *mod, QModelIndex *theItem)
 {
     int result = 0;
 
     if (index.isValid())
     {
-        const Qt::ItemFlags flags = model->flags(index);
+        const Qt::ItemFlags flags = mod->flags(index);
         if (flags & Qt::ItemIsSelectable)
         {
             ++result;
@@ -54,15 +54,15 @@ static int findSelectableItems(const QModelIndex &index, const QAbstractItemMode
         }
     }
 
-    if (model->hasChildren(index))
+    if (mod->hasChildren(index))
     {
-        auto rows = model->rowCount(index);
-        auto cols = model->columnCount(index);
+        auto rows = mod->rowCount(index);
+        auto cols = mod->columnCount(index);
         for (int i = 0; i < rows; ++i)
         {
             for (int j = 0; j < cols; ++j)
             {
-                result += findSelectableItems(model->index(i, j, index), model, theItem);
+                result += findSelectableItems(mod->index(i, j, index), mod, theItem);
             }
         }
     }
@@ -109,10 +109,7 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
     mContainerList->setHeaderHidden(true);
  
     DestinationFilterModel *destinationModel = new DestinationFilterModel(this);
-
-    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    Q_ASSERT(filesModel!=nullptr);
-    destinationModel->setSourceModel(filesModel);
+    destinationModel->setSourceModel(filesView()->model());
     destinationModel->setMode(routeMode ? TrackData::Route : TrackData::Waypoint);
     mContainerList->setModel(destinationModel);
     mContainerList->expandToDepth(9);
@@ -139,11 +136,7 @@ CreatePointDialogue::CreatePointDialogue(bool routeMode, QWidget *pnt)
         // If there is more than one selectable destination, then if
         // the tree's selected item is valid then preselect that.
         QList<TrackDataItem *> items = filesView()->selectedItems();
-        if (items.count()==1)
-        {
-            const TrackDataItem *item = items.first();
-            mContainerList->setCurrentIndex(destinationModel->mapFromSource(filesModel->indexForItem(item)));
-        }
+        if (items.count()==1) setDestinationContainer(items.first());
     }
 
     connect(mContainerList->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -179,15 +172,11 @@ void CreatePointDialogue::setSourceLatLong(double lat, double lon)
 void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
 {
     Q_ASSERT(item!=nullptr);
-
-    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    Q_ASSERT(filesModel!=nullptr);
-
-    QAbstractProxyModel *destinationModel = qobject_cast<QAbstractProxyModel *>(mContainerList->model());
-    Q_ASSERT(destinationModel!=nullptr);
-
-    const QModelIndex idx = destinationModel->mapFromSource(filesModel->indexForItem(item));
+    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(mContainerList->model());
+    Q_ASSERT(iii!=nullptr);
+    const QModelIndex idx = iii->indexForItem(item);
     qDebug() << item->name() << "-> idx" << idx;
+
     if (idx.isValid()) mContainerList->setCurrentIndex(idx);
     mCanCreate = true;
 }
@@ -211,10 +200,9 @@ TrackDataItem *CreatePointDialogue::selectedContainer() const
     QModelIndexList selIndexes = mContainerList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (nullptr);
 
-    DestinationFilterModel *destinationModel = qobject_cast<DestinationFilterModel *>(mContainerList->model());
-    FilesModel *filesModel = qobject_cast<FilesModel *>(destinationModel->sourceModel());
-    TrackDataItem *item = filesModel->itemForIndex(destinationModel->mapToSource(selIndexes.first()));
-    return (item);
+    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(mContainerList->model());
+    Q_ASSERT(iii!=nullptr);
+    return (iii->itemForIndex(selIndexes.first()));
 }
 
 
