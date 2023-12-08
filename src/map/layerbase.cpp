@@ -37,7 +37,6 @@
 #include <marble/GeoPainter.h>
 #include <marble/GeoDataPlacemark.h>
 
-#include "filesmodel.h"
 #include "filesview.h"
 #include "mapcontroller.h"
 #include "mapview.h"
@@ -138,17 +137,16 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
     if (!isVisible()) return (true);			// no painting if not visible
     mViewport = viewport;				// save for access by layers
 
-    const FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    if (filesModel==nullptr) return (false);		// no data to use!
-
     mSelectionId = filesView()->selectionId();
+
+    const TrackDataItem *filesRoot = mapController()->rootFileItem();
+    if (filesRoot==nullptr) return (false);
 
     // Paint the data in two passes.  The first does all non-selected items,
     // the second selected ones.  This is so that selected items show up
     // on top of all non-selected ones.  In the absence of any selection,
     // everything will be painted in file and then time order (i.e. later
     // items on top of earlier ones).
-    const TrackDataItem *filesRoot = filesModel->rootFileItem();
     paintDataTree(filesRoot, painter, false, false);
     paintDataTree(filesRoot, painter, true, false);
 
@@ -358,9 +356,8 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 
     MapView *mapView = mapController()->view();
 
-    FilesModel *filesModel = qobject_cast<FilesModel *>(filesView()->model());
-    if (filesModel==nullptr) return (false);		// no data to use!
-    const TrackDataItem *filesRoot = filesModel->rootFileItem();
+    const TrackDataItem *filesRoot = mapController()->rootFileItem();
+    if (filesRoot==nullptr) return (false);		// should never happen
 
     if (ev->type()==QEvent::MouseButtonPress)
     {
@@ -434,6 +431,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
 #ifdef DEBUG_DRAGGING
             qDebug() << "  valid click detected";
 #endif
+            // TODO: emit a signal from MapController
             filesView()->selectMapPoint(clickedPoint, mouseEvent->modifiers());
             return (true);				// event consumed
         }

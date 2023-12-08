@@ -21,9 +21,17 @@ TrackDataItem *ItemIndexInterface::itemForIndex(const QModelIndex &idx) const
 
 TrackDataItem *ItemIndexInterface::itemForSourceIndex(const QModelIndex &idx) const
 {
-    // The 'idx' here refers to the source model, so there is therefore
-    // no need to map it to the source model.
+    // The 'idx' here already refers to the source model, so there is
+    // therefore no need to map it as above.
     const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(mSourceModel->sourceModel());
     Q_ASSERT(iii!=nullptr);
     return (iii->itemForIndex(idx));
+}
+
+
+QModelIndex ItemIndexInterface::indexForItem(const TrackDataItem *item) const
+{
+    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(mSourceModel->sourceModel());
+    Q_ASSERT(iii!=nullptr);
+    return (mSourceModel->mapFromSource(iii->indexForItem(item)));
 }

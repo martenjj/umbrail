@@ -93,7 +93,7 @@ void PointsView::slotCheckSelection()
     // (the FilesModel) has only one column then that selection
     // only selects the first column - our column count and
     // selectionBehavior() are ignored.  This slot is called after
-    // a timeout when the selection has beenb changed, and adjusts
+    // a timeout when the selection has been changed, and adjusts
     // the current selection to ensure that full rows are selected.
     // Recursive invocation is guarded by mSelectionBusy.
 
@@ -107,10 +107,15 @@ void PointsView::slotCheckSelection()
         if (r.left()==0) newSel.append(r);
     }
 
+    // If the selection is being cleared, simply clear the current selection
+    // in this view.  Do not "select" a null selection, because the selection
+    // link model will pass that back to the FilesView and clear the selection
+    // there too.
     mSelectionBusy = true;
-    // This must be called unconditionally so that the selection is
-    // correctly cleared, if that is what is happening.
-    selMod->select(newSel, QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows);
+    if (newSel.isEmpty()) selMod->select(oldSel, QItemSelectionModel::Deselect);
+    // Otherwise, clear the original selection in  this view and select the
+    // requested rows instead.
+    else selMod->select(newSel, QItemSelectionModel::Clear|QItemSelectionModel::Select|QItemSelectionModel::Rows);
     mSelectionBusy = false;
 }
 

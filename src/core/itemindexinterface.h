@@ -28,6 +28,7 @@ public:
 
     virtual TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     virtual TrackDataItem *itemForSourceIndex(const QModelIndex &idx) const;
+    virtual QModelIndex indexForItem(const TrackDataItem *item) const;
 
 private:
     QAbstractProxyModel *mSourceModel;

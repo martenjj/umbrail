@@ -39,6 +39,14 @@
 #include "settings.h"
 #include "filesmodel.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#undef DEBUG_EXPANSION
+
 
 TrackDataItem *FilesView::itemForIndex(const QModelIndex &idx) const
 {
@@ -73,6 +81,7 @@ FilesView::FilesView(QWidget *pnt)
     mSelectedCount = 0;
     mSelectedType = TrackData::None;
     mSelectedItem = nullptr;
+    mModelBusy = false;
 
     // The selection ID is a value which is incremented each time the selection
     // changes.  Selected items have the current selection ID stored within them,
@@ -91,8 +100,57 @@ FilesView::FilesView(QWidget *pnt)
     // out-of-date IDs until of the order of 4 billion selection/deselection
     // operations (assuming 32-bit longs) have been performed.  That will keep the
     // user occupied for a while...
-
     mSelectionId = 2;
+}
+
+
+void FilesView::setModel(QAbstractItemModel *mod)
+{
+    QTreeView::setModel(mod);
+    connect(mod, &QAbstractItemModel::modelAboutToBeReset, this, &FilesView::slotStartModelReset);
+    connect(mod, &QAbstractItemModel::modelReset, this, &FilesView::slotFinishModelReset);
+}
+
+
+void FilesView::saveExpansionState(const QModelIndex &idx)
+{
+    const int num = model()->rowCount(idx);
+    for (int r = 0; r<num; ++r) saveExpansionState(model()->index(r, 0, idx));
+
+    if (isExpanded(idx)) mExpansionState.append(itemForIndex(idx));
+}
+
+
+void FilesView::slotStartModelReset()
+{
+    mExpansionState.clear();
+    saveExpansionState(QModelIndex());
+#ifdef DEBUG_EXPANSION
+    qDebug() << "saved" << mExpansionState.count() << "expanded items";
+#endif
+    mModelBusy = true;
+}
+
+
+void FilesView::slotFinishModelReset()
+{
+    mModelBusy = false;
+
+    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
+    Q_ASSERT(iii!=nullptr);
+
+    int numExpanded = 0;
+    for (const TrackDataItem *item : mExpansionState)
+    {
+        const QModelIndex idx = iii->indexForItem(item);
+        if (!idx.isValid()) continue;
+        expand(idx);
+        ++numExpanded;
+    }
+
+#ifdef DEBUG_EXPANSION
+    qDebug() << "restored" << numExpanded << "of" << mExpansionState.count() << "expanded items";
+#endif
 }
 
 
@@ -282,18 +340,26 @@ void FilesView::selectMapPoint(const TrackDataItem *item, Qt::KeyboardModifiers 
 
 void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMap)
 {
+    // This should only be called when the underlying model is in a consistent
+    // state:  that is, not while it is being reset.  Track the reset signals
+    // from the model and ensure that it is not busy.  Selecting items while
+    // the model is busy may cause an assert within KDescendantsProxyModel.
+    if (mModelBusy) qWarning() << "Called while model is busy! Fix the calling command.";
+
     if (item==nullptr)					// clearing selection
     {
         selectionModel()->clear();
         return;						// no more to do
     }
 
-    const QModelIndex idx = qobject_cast<FilesModel *>(model())->indexForItem(item);
+    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
+    Q_ASSERT(iii!=nullptr);
+    QModelIndex idx = iii->indexForItem(item);
     qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;
 
-    if (!combine) selectionModel()->clear();
-    selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+    selectionModel()->select(QItemSelection(idx, idx),
+                             (combine ? QItemSelectionModel::Select : QItemSelectionModel::ClearAndSelect));
 
     // If the thing clicked on the map was a track point, only scroll to
     // it if its parent segment is already expanded.  This avoids a long

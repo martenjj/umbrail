@@ -85,7 +85,7 @@ public:
     void endLayoutChange();
 
     TrackDataItem *itemForIndex(const QModelIndex &idx) const override;
-    QModelIndex indexForItem(const TrackDataItem *tdi) const;
+    QModelIndex indexForItem(const TrackDataItem *tdi) const override;
 
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 

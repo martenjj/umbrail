@@ -41,7 +41,6 @@ ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
       ApplicationDataInterface(pnt)
 {
     setObjectName("ItemSelectDialogue");
-
     setModal(true);
 
     mTrackList = new QTreeView(this);
@@ -56,18 +55,17 @@ ItemSelectDialogue::ItemSelectDialogue(QWidget *pnt)
     mTrackList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mTrackList->setHeaderHidden(true);
 
-    DestinationFilterModel *destinationModel = new DestinationFilterModel(this);
-    destinationModel->setSourceModel(filesView()->model());
-    mTrackList->setModel(destinationModel);
+    mDestinationModel = new DestinationFilterModel(this);
+    mDestinationModel->setSourceModel(filesView()->model());
+    mTrackList->setModel(mDestinationModel);
 
     connect(mTrackList->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ItemSelectDialogue::slotSelectionChanged);
 
     setMainWidget(mTrackList);
+    setMinimumSize(360, 280);
 
     QTimer::singleShot(0, this, &ItemSelectDialogue::slotExpandTree);
-
-    setMinimumSize(360, 280);
 }
 
 
@@ -104,7 +102,7 @@ ItemSelectDialogue::~ItemSelectDialogue()
     // KDialog::~KDialog at kdelibs/kdeui/dialogs/kdialog.cpp:201
     // MoveSegmentDialogue::~MoveSegmentDialogue at movesegmentdialogue.cpp:63
 
-    delete destinationModel();
+    delete mDestinationModel;
 }
 
 
@@ -116,7 +114,9 @@ void ItemSelectDialogue::setSelectedItem(const TrackDataItem *item)
         return;
     }
 
-    QModelIndex idx = destinationModel()->mapFromSource(filesModel()->indexForItem(item));
+    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(destinationModel());
+    Q_ASSERT(iii!=nullptr);
+    QModelIndex idx = iii->indexForItem(item);
     mTrackList->expand(idx.parent());
     mTrackList->selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
 }
@@ -127,8 +127,9 @@ TrackDataItem *ItemSelectDialogue::selectedItem() const
     QModelIndexList selIndexes = mTrackList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (nullptr);
 
-    TrackDataItem *item = filesModel()->itemForIndex(destinationModel()->mapToSource(selIndexes.first()));
-    return (item);
+    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(destinationModel());
+    Q_ASSERT(iii!=nullptr);
+    return (iii->itemForIndex(selIndexes.first()));
 }
 
 
@@ -136,18 +137,6 @@ void ItemSelectDialogue::slotSelectionChanged(const QItemSelection &sel, const Q
 {
     setButtonEnabled(QDialogButtonBox::Ok, mTrackList->selectionModel()->selectedIndexes().count()==1);
     emit selectionChanged();
-}
-
-
-DestinationFilterModel *ItemSelectDialogue::destinationModel() const
-{
-    return (qobject_cast<DestinationFilterModel *>(mTrackList->model()));
-}
-
-
-FilesModel *ItemSelectDialogue::filesModel() const
-{
-    return (qobject_cast<FilesModel *>(destinationModel()->sourceModel()));
 }
 
 

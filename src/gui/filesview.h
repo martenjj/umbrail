@@ -40,6 +40,8 @@ public:
     FilesView(QWidget *pnt = nullptr);
     virtual ~FilesView() = default;
 
+    void setModel(QAbstractItemModel *mod) override;
+
     void readProperties();
     void saveProperties();
 
@@ -57,7 +59,6 @@ public:
 
 public slots:
     void slotSelectAllSiblings();
-
     void slotCollapseAll();
     void slotExpandAll();
 
@@ -71,12 +72,19 @@ signals:
 private:
     TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     void expandItem(const QModelIndex &idx);
+    void saveExpansionState(const QModelIndex &idx);
+
+private slots:
+    void slotStartModelReset();
+    void slotFinishModelReset();
 
 private:
     int mSelectedCount;
     TrackData::Type mSelectedType;
     const TrackDataItem *mSelectedItem;
     unsigned long mSelectionId;
+    bool mModelBusy;
+    QList<const TrackDataItem *> mExpansionState;
 };
  
 #endif							// FILESVIEW_H

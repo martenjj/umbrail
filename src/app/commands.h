@@ -305,8 +305,8 @@ private:
     qreal mLatitude;
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
-    TrackDataWaypoint *mAddedWaypoint;
     TrackDataContainer *mNewWaypointContainer;
+    TrackDataWaypoint *mAddedWaypoint;
 };
 
 

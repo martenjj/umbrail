@@ -30,12 +30,11 @@
 
 #include "applicationdatainterface.h"
 
-#include "trackdata.h"
 
 class QTreeView;
 class QItemSelection;
 class DestinationFilterModel;
-class FilesModel;
+class TrackDataItem;
 
 
 class ItemSelectDialogue : public DialogBase, public ApplicationDataInterface
@@ -53,8 +52,7 @@ protected:
     explicit ItemSelectDialogue(QWidget *pnt = nullptr);
     virtual ~ItemSelectDialogue();
 
-    DestinationFilterModel *destinationModel() const;
-    FilesModel *filesModel() const;
+    DestinationFilterModel *destinationModel() const	{ return (mDestinationModel); }
 
 protected slots:
     void slotSelectionChanged(const QItemSelection &sel, const QItemSelection &desel);
@@ -63,6 +61,7 @@ private slots:
     void slotExpandTree();
 
 private:
+    DestinationFilterModel *mDestinationModel;
     QTreeView *mTrackList;
 };
 

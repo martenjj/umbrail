@@ -981,17 +981,23 @@ void MoveItemCommand::redo()
     // Third pass:  Add all of the items to the destination parent.  If
     // the insertion point is not the default (at the end), then increment
     // the 'destRow' after each one so as to preserve the original order.
-    // Select each item as it is added.
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
         qDebug() << "  ->" << mDestinationParent->name() << "index" << destRow;
         mDestinationParent->addChildItem(item, destRow);
         if (destRow!=-1) ++destRow;
-        controller()->filesView()->selectItem(item, true);
     }
 
     model()->endLayoutChange();
+
+    // Fourth pass:  Select each item that has been added.
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mItems[i];
+        controller()->filesView()->selectItem(item, true);
+    }
+
     controller()->doUpdateMap();
 }
 
@@ -1033,6 +1039,8 @@ void MoveItemCommand::undo()
         par->addChildItem(item, idx);
     }
 
+    model()->endLayoutChange();
+
     // Third pass:  Select all of them.  This avoids the selection not being
     // correct if any subsequently inserted items then reorder the earlier ones.
     for (int i = 0; i<num; ++i)
@@ -1041,7 +1049,6 @@ void MoveItemCommand::undo()
         controller()->filesView()->selectItem(item, true);
     }
 
-    model()->endLayoutChange();
     controller()->doUpdateMap();
 }
 
@@ -1327,8 +1334,6 @@ void AddPhotoCommand::undo()
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-// TODO: equivalent to DeleteItemsCommand with no replacement
-
 ReplaceItemsCommand::ReplaceItemsCommand(FilesController *fc, QUndoCommand *parent)
     : FilesCommandBase(fc, parent)
 {
@@ -1384,14 +1389,17 @@ void ReplaceItemsCommand::redo()
         int addedIndex = mParentIndexes[0];		// index of first removed item
         TrackDataItem *addedParent = mParentItems[0];	// parent of first removed item
         addedParent->addChildItem(mAddedItem, addedIndex);
-							// add new child to it
+    }
+
+    model()->endLayoutChange();
+
+    if (mAddedItem!=nullptr)
+    {							// select added item in view
         controller()->filesView()->selectItem(mAddedItem);
-							// and select in view
         mAddedItem = nullptr;				// now claimed by data tree
         mWasAdded = true;				// note item was added
     }
 
-    model()->endLayoutChange();
     controller()->doUpdateMap();
 }
 
@@ -1413,20 +1421,27 @@ void ReplaceItemsCommand::undo()
         mAddedItem = addedParent->takeChildItem(addedIndex);
     }							// remove replacement from tree
 
+    QList<TrackDataItem *> addedItems;			// for selecting them later
     for (int i = num-1; i>=0; --i)			// now add back those deleted
     {
         TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
         TrackDataItem *parent = mParentItems[i];
         parent->addChildItem(item, mParentIndexes[i]);
-        controller()->filesView()->selectItem(item, true);
+        addedItems.append(item);
     }
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
+
+    model()->endLayoutChange();
+
+    for (TrackDataItem *item : qAsConst(addedItems))	// now select those added back
+    {
+        controller()->filesView()->selectItem(item, true);
+    }
 
     mParentItems.clear();
     mParentIndexes.clear();
     mWasAdded = false;
 
-    model()->endLayoutChange();
     controller()->doUpdateMap();
 }
 
