@@ -1039,6 +1039,8 @@ void MoveItemCommand::undo()
         par->addChildItem(item, idx);
     }
 
+    model()->endLayoutChange();
+
     // Third pass:  Select all of them.  This avoids the selection not being
     // correct if any subsequently inserted items then reorder the earlier ones.
     for (int i = 0; i<num; ++i)
@@ -1047,7 +1049,6 @@ void MoveItemCommand::undo()
         controller()->filesView()->selectItem(item, true);
     }
 
-    model()->endLayoutChange();
     controller()->doUpdateMap();
 }
 
