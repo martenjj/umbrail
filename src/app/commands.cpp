@@ -981,17 +981,23 @@ void MoveItemCommand::redo()
     // Third pass:  Add all of the items to the destination parent.  If
     // the insertion point is not the default (at the end), then increment
     // the 'destRow' after each one so as to preserve the original order.
-    // Select each item as it is added.
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
         qDebug() << "  ->" << mDestinationParent->name() << "index" << destRow;
         mDestinationParent->addChildItem(item, destRow);
         if (destRow!=-1) ++destRow;
-        controller()->filesView()->selectItem(item, true);
     }
 
     model()->endLayoutChange();
+
+    // Fourth pass:  Select each item that has been added.
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *item = mItems[i];
+        controller()->filesView()->selectItem(item, true);
+    }
+
     controller()->doUpdateMap();
 }
 
