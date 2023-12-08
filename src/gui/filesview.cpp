@@ -73,6 +73,7 @@ FilesView::FilesView(QWidget *pnt)
     mSelectedCount = 0;
     mSelectedType = TrackData::None;
     mSelectedItem = nullptr;
+    mModelBusy = false;
 
     // The selection ID is a value which is incremented each time the selection
     // changes.  Selected items have the current selection ID stored within them,
@@ -93,6 +94,14 @@ FilesView::FilesView(QWidget *pnt)
     // user occupied for a while...
 
     mSelectionId = 2;
+}
+
+
+void FilesView::setModel(QAbstractItemModel *mod)
+{
+    QTreeView::setModel(mod);
+    connect(mod, &QAbstractItemModel::modelAboutToBeReset, this, [this]() { mModelBusy = true; });
+    connect(mod, &QAbstractItemModel::modelReset, this, [this]() { mModelBusy = false; });
 }
 
 
@@ -282,6 +291,12 @@ void FilesView::selectMapPoint(const TrackDataItem *item, Qt::KeyboardModifiers 
 
 void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMap)
 {
+    // This should only be called when the underlying model is in a consistent
+    // state:  that is, not while it is being reset.  Track the reset signals
+    // from the model and ensure that it is not busy.  Selecting items while
+    // the model is busy may cause an assert within KDescendantsProxyModel.
+    if (mModelBusy) qWarning() << "Called while model is busy! Fix the calling command.";
+
     if (item==nullptr)					// clearing selection
     {
         selectionModel()->clear();

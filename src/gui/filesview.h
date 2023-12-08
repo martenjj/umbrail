@@ -40,6 +40,8 @@ public:
     FilesView(QWidget *pnt = nullptr);
     virtual ~FilesView() = default;
 
+    void setModel(QAbstractItemModel *mod) override;
+
     void readProperties();
     void saveProperties();
 
@@ -76,6 +78,7 @@ private:
     TrackData::Type mSelectedType;
     const TrackDataItem *mSelectedItem;
     unsigned long mSelectionId;
+    bool mModelBusy;
 };
  
 #endif							// FILESVIEW_H
