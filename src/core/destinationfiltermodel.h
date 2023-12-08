@@ -27,14 +27,12 @@
 #define DESTINATIONFILTERMODEL_H
  
 #include <qsortfilterproxymodel.h>
+#include "itemindexinterface.h"
 
 #include "trackdata.h"
 
 
-class TrackDataItem;
-
-
-class DestinationFilterModel : public QSortFilterProxyModel
+class DestinationFilterModel : public QSortFilterProxyModel, public ItemIndexInterface
 {
     Q_OBJECT
 

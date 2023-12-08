@@ -27,15 +27,10 @@
 
 #include <qfont.h>
 
-#include <qdebug.h>
-
-#include "filesmodel.h"
-#include "trackdata.h"
-
-
 
 DestinationFilterModel::DestinationFilterModel(QObject *pnt)
-    : QSortFilterProxyModel(pnt)
+    : QSortFilterProxyModel(pnt),
+      ItemIndexInterface(this)
 {
     mSourceItems = nullptr;
     mMode = TrackData::None;
@@ -64,9 +59,7 @@ void DestinationFilterModel::setMode(TrackData::Type mode)
 
 bool DestinationFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) const
 {
-    FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
-    QModelIndex idx = filesModel->index(row, 0, pnt);
-    const TrackDataItem *item = filesModel->itemForIndex(idx);
+    const TrackDataItem *item = itemForSourceIndex(sourceModel()->index(row, 0, pnt));
 
     if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (true);
     switch (mMode)
@@ -99,8 +92,7 @@ default:
 
 Qt::ItemFlags DestinationFilterModel::flags(const QModelIndex &idx) const
 {
-    FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
-    const TrackDataItem *item = filesModel->itemForIndex(mapToSource(idx));
+    const TrackDataItem *item = itemForIndex(idx);
 
     bool sourceOk = true;
     switch (mMode)
@@ -244,14 +236,13 @@ QVariant DestinationFilterModel::data(const QModelIndex &idx, int role) const
 {
     if (role!=Qt::FontRole) return (QSortFilterProxyModel::data(idx, role));
 
-    FilesModel *filesModel = qobject_cast<FilesModel *>(sourceModel());
-    TrackDataItem *item = filesModel->itemForIndex(mapToSource(idx));
+    TrackDataItem *item = itemForIndex(idx);
 
     // Everything apart from source items is left unchanged
     if (mSourceItems==nullptr || !mSourceItems->contains(item)) return (QSortFilterProxyModel::data(idx, role));
 
     // Source items are shown in bold
-    QFont f = QSortFilterProxyModel::data(idx,role).value<QFont>();
+    QFont f = QSortFilterProxyModel::data(idx, role).value<QFont>();
     f.setBold(true);
     return (f);
 }

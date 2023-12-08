@@ -33,6 +33,7 @@
 #include <klocalizedstring.h>
 
 #include "folderselectdialogue.h"
+#include "trackdata.h"
 
 
 FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
