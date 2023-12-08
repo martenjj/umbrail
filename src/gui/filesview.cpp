@@ -288,18 +288,14 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMa
         return;						// no more to do
     }
 
-    // TODO: temp, implement ItemIndexInterface::indexForItem()
-    QAbstractItemModel *m = model();
-    QAbstractProxyModel *p = qobject_cast<QAbstractProxyModel *>(m);
-    if (p!=nullptr) m = p->sourceModel();
-    FilesModel *f = qobject_cast<FilesModel *>(m);
-    QModelIndex idx = f->indexForItem(item);
-    if (p!=nullptr) idx = p->mapFromSource(idx);
+    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
+    Q_ASSERT(iii!=nullptr);
+    QModelIndex idx = iii->indexForItem(item);
     qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;
 
-    if (!combine) selectionModel()->clear();
-    selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+    selectionModel()->select(QItemSelection(idx, idx),
+                             (combine ? QItemSelectionModel::Select : QItemSelectionModel::ClearAndSelect));
 
     // If the thing clicked on the map was a track point, only scroll to
     // it if its parent segment is already expanded.  This avoids a long

@@ -27,3 +27,11 @@ TrackDataItem *ItemIndexInterface::itemForSourceIndex(const QModelIndex &idx) co
     Q_ASSERT(iii!=nullptr);
     return (iii->itemForIndex(idx));
 }
+
+
+QModelIndex ItemIndexInterface::indexForItem(const TrackDataItem *item) const
+{
+    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(mSourceModel->sourceModel());
+    Q_ASSERT(iii!=nullptr);
+    return (mSourceModel->mapFromSource(iii->indexForItem(item)));
+}
