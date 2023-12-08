@@ -1127,15 +1127,20 @@ void DeleteItemsCommand::undo()
         TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
         TrackDataItem *parent = mParentItems[i];
         parent->addChildItem(item, mParentIndexes[i]);
-
-        controller()->filesView()->selectItem(item, true);
     }
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
+
+    model()->endLayoutChange();
+
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataItem *parent = mParentItems[i];
+        controller()->filesView()->selectItem(parent->childAt(mParentIndexes[i]), true);
+    }
 
     mParentItems.clear();
     mParentIndexes.clear();
 
-    model()->endLayoutChange();
     controller()->doUpdateMap();
 }
 
