@@ -72,6 +72,11 @@ signals:
 private:
     TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     void expandItem(const QModelIndex &idx);
+    void saveExpansionState(const QModelIndex &idx);
+
+private slots:
+    void slotStartModelReset();
+    void slotFinishModelReset();
 
 private:
     int mSelectedCount;
@@ -79,6 +84,7 @@ private:
     const TrackDataItem *mSelectedItem;
     unsigned long mSelectionId;
     bool mModelBusy;
+    QList<const TrackDataItem *> mExpansionState;
 };
  
 #endif							// FILESVIEW_H

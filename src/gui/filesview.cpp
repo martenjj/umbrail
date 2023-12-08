@@ -39,6 +39,14 @@
 #include "settings.h"
 #include "filesmodel.h"
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Debugging switches							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#undef DEBUG_EXPANSION
+
 
 TrackDataItem *FilesView::itemForIndex(const QModelIndex &idx) const
 {
@@ -92,7 +100,6 @@ FilesView::FilesView(QWidget *pnt)
     // out-of-date IDs until of the order of 4 billion selection/deselection
     // operations (assuming 32-bit longs) have been performed.  That will keep the
     // user occupied for a while...
-
     mSelectionId = 2;
 }
 
@@ -100,8 +107,50 @@ FilesView::FilesView(QWidget *pnt)
 void FilesView::setModel(QAbstractItemModel *mod)
 {
     QTreeView::setModel(mod);
-    connect(mod, &QAbstractItemModel::modelAboutToBeReset, this, [this]() { mModelBusy = true; });
-    connect(mod, &QAbstractItemModel::modelReset, this, [this]() { mModelBusy = false; });
+    connect(mod, &QAbstractItemModel::modelAboutToBeReset, this, &FilesView::slotStartModelReset);
+    connect(mod, &QAbstractItemModel::modelReset, this, &FilesView::slotFinishModelReset);
+}
+
+
+void FilesView::saveExpansionState(const QModelIndex &idx)
+{
+    const int num = model()->rowCount(idx);
+    for (int r = 0; r<num; ++r) saveExpansionState(model()->index(r, 0, idx));
+
+    if (isExpanded(idx)) mExpansionState.append(itemForIndex(idx));
+}
+
+
+void FilesView::slotStartModelReset()
+{
+    mExpansionState.clear();
+    saveExpansionState(QModelIndex());
+#ifdef DEBUG_EXPANSION
+    qDebug() << "saved" << mExpansionState.count() << "expanded items";
+#endif
+    mModelBusy = true;
+}
+
+
+void FilesView::slotFinishModelReset()
+{
+    mModelBusy = false;
+
+    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
+    Q_ASSERT(iii!=nullptr);
+
+    int numExpanded = 0;
+    for (const TrackDataItem *item : mExpansionState)
+    {
+        const QModelIndex idx = iii->indexForItem(item);
+        if (!idx.isValid()) continue;
+        expand(idx);
+        ++numExpanded;
+    }
+
+#ifdef DEBUG_EXPANSION
+    qDebug() << "restored" << numExpanded << "of" << mExpansionState.count() << "expanded items";
+#endif
 }
 
 
