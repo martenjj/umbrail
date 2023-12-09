@@ -33,7 +33,6 @@
 #include <kconfiggroup.h>
 #include <kmessagebox.h>
 
-#include "mainwindow.h"
 #include "filesmodel.h"
 #include "destinationfiltermodel.h"
 #include "trackdata.h"
