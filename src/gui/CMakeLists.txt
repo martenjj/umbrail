@@ -64,6 +64,7 @@ target_link_libraries(${PN}gui
   KF5::I18n
   KF5::ItemViews
   ${PN}core
+  ${PN}models
   ${PN}io
   ${PN}settings
   ${PN}services

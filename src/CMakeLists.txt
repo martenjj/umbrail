@@ -176,6 +176,7 @@ if (QCUSTOMPLOT_INTERNAL)
 endif (QCUSTOMPLOT_INTERNAL)
 
 add_subdirectory(core)
+add_subdirectory(models)
 add_subdirectory(services)
 add_subdirectory(media)
 add_subdirectory(gui)

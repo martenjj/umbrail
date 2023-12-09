@@ -4,7 +4,7 @@
 ##									##
 ##########################################################################
 ##									##
-##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	##
 ##  Home and download page:  <http://github.com/martenjj/umbrail>	##
 ##									##
 ##  This program is free software;  you can redistribute it and/or	##
@@ -26,31 +26,29 @@
 
 #########################################################################
 #									#
-#  Core library								#
+#  Item models								#
 #									#
 #########################################################################
 
-set(core_SRCS
-  trackdata.cpp
-  dataindexer.cpp
-  pluginmanager.cpp
-  units.cpp
-  applicationdata.cpp
-  applicationdatainterface.cpp
-  pointicon.cpp
-  pointiconprovider.cpp
-  category.cpp
-  itemindexinterface.cpp
-  metadatamodel.cpp
+set(models_SRCS
+  filesmodel.cpp
+  fileslistmodel.cpp
+  filesdatamodel.cpp
+  waypointsfiltermodel.cpp
+  homepointsfiltermodel.cpp
+  homepointsdatamodel.cpp
+  destinationfiltermodel.cpp
+  pointsdatamodel.cpp
 )
 
-add_library(${PN}core STATIC ${core_SRCS})
-target_link_libraries(${PN}core
+add_library(${PN}models STATIC ${models_SRCS})
+target_link_libraries(${PN}models
   Qt5::Core
   Qt5::Gui
+  Qt5::Widgets
   KF5::I18n
-  KF5::KIOCore
-  KF5::IconThemes
-#   KF5::ItemModels
-#   KF5::ConfigWidgets
+  KF5::ConfigCore
+  KF5::ConfigWidgets
+  KF5::ItemModels
+  ${PN}core
 )
