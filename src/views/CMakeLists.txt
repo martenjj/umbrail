@@ -4,7 +4,7 @@
 ##									##
 ##########################################################################
 ##									##
-##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	##
 ##  Home and download page:  <http://github.com/martenjj/umbrail>	##
 ##									##
 ##  This program is free software;  you can redistribute it and/or	##
@@ -26,35 +26,26 @@
 
 #########################################################################
 #									#
-#  Map widgets								#
+#  Item views								#
 #									#
 #########################################################################
 
-# see https://cgit.kde.org/marble.git/tree/examples/cpp/hello-marble/CMakeLists.txt.external
-set(MARBLE_LIBRARIES "Marble")
-
-set(map_SRCS
-  mapcontroller.cpp
-  mapview.cpp
-  layerbase.cpp
-  routeslayer.cpp
-  stopslayer.cpp
-  trackslayer.cpp
-  waypointslayer.cpp
-  positioninfodialogue.cpp
-  mapthemedialogue.cpp
+set(views_SRCS
+  filesview.cpp
+  pointsview.cpp
+  createpointdialogue.cpp
+  itemselectdialogue.cpp
+  moveitemdialogue.cpp
 )
 
-add_library(${PN}map STATIC ${map_SRCS})
-target_link_libraries(${PN}map
+add_library(${PN}views STATIC ${views_SRCS})
+target_link_libraries(${PN}views
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
+  KF5::ItemViews
   KF5::XmlGui
   ${PN}core
-  ${PN}settings
   ${PN}gui
-  ${PN}views
-  ${MARBLE_LIBRARIES}
 )
