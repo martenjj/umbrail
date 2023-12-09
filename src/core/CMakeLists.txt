@@ -34,22 +34,13 @@ set(core_SRCS
   trackdata.cpp
   dataindexer.cpp
   pluginmanager.cpp
-  units.cpp
-  metadatamodel.cpp
-  filesmodel.cpp
-  fileslistmodel.cpp
-  filesdatamodel.cpp
-  waypointsfiltermodel.cpp
-  homepointsfiltermodel.cpp
-  homepointsdatamodel.cpp
-  destinationfiltermodel.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
-  pointsdatamodel.cpp
+  itemindexinterface.cpp
   pointicon.cpp
   pointiconprovider.cpp
   category.cpp
-  itemindexinterface.cpp
+  units.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})
@@ -59,6 +50,6 @@ target_link_libraries(${PN}core
   KF5::I18n
   KF5::KIOCore
   KF5::IconThemes
-  KF5::ItemModels
-  KF5::ConfigWidgets
+#   KF5::ItemModels
+#   KF5::ConfigWidgets
 )

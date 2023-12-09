@@ -44,12 +44,7 @@ set(gui_SRCS
   valueslider.cpp
   variableunitdisplay.cpp
   variableunitcombo.cpp
-  filesview.cpp
-  createpointdialogue.cpp
-  itemselectdialogue.cpp
-  moveitemdialogue.cpp
   waypointselectdialogue.cpp
-  pointsview.cpp
   addresseditdialogue.cpp
   categorieseditdialogue.cpp
   categoriesmanagedialogue.cpp
@@ -67,12 +62,9 @@ target_link_libraries(${PN}gui
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
-  KF5::Completion
-  KF5::ConfigCore
-  KF5::ConfigWidgets
   KF5::ItemViews
-  KF5::XmlGui
   ${PN}core
+  ${PN}models
   ${PN}io
   ${PN}settings
   ${PN}services

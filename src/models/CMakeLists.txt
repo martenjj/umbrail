@@ -4,7 +4,7 @@
 ##									##
 ##########################################################################
 ##									##
-##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	##
 ##  Home and download page:  <http://github.com/martenjj/umbrail>	##
 ##									##
 ##  This program is free software;  you can redistribute it and/or	##
@@ -26,35 +26,30 @@
 
 #########################################################################
 #									#
-#  Map widgets								#
+#  Item models								#
 #									#
 #########################################################################
 
-# see https://cgit.kde.org/marble.git/tree/examples/cpp/hello-marble/CMakeLists.txt.external
-set(MARBLE_LIBRARIES "Marble")
-
-set(map_SRCS
-  mapcontroller.cpp
-  mapview.cpp
-  layerbase.cpp
-  routeslayer.cpp
-  stopslayer.cpp
-  trackslayer.cpp
-  waypointslayer.cpp
-  positioninfodialogue.cpp
-  mapthemedialogue.cpp
+set(models_SRCS
+  filesmodel.cpp
+  fileslistmodel.cpp
+  filesdatamodel.cpp
+  waypointsfiltermodel.cpp
+  homepointsfiltermodel.cpp
+  homepointsdatamodel.cpp
+  destinationfiltermodel.cpp
+  pointsdatamodel.cpp
+  metadatamodel.cpp
 )
 
-add_library(${PN}map STATIC ${map_SRCS})
-target_link_libraries(${PN}map
+add_library(${PN}models STATIC ${models_SRCS})
+target_link_libraries(${PN}models
   Qt5::Core
   Qt5::Gui
   Qt5::Widgets
   KF5::I18n
-  KF5::XmlGui
+  KF5::ConfigCore
+  KF5::ConfigWidgets
+  KF5::ItemModels
   ${PN}core
-  ${PN}settings
-  ${PN}gui
-  ${PN}views
-  ${MARBLE_LIBRARIES}
 )
