@@ -12,7 +12,6 @@
 #include "categorieseditdialogue.h"
 #include "listeditwidget.h"
 #include "dataindexer.h"
-#include "metadatamodel.h"
 
 
 static const QString NONESTRING = i18nc("display string for no value", "(none)");
@@ -182,7 +181,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     for (int idx = 0; idx<num; ++idx)
     {
         const QByteArray &name = DataIndexer::name(idx);
-        if (MetadataModel::isInternalTag(name)) continue;
+        if (DataIndexer::isInternalTag(name)) continue;
         // Ignore data which will have been merged, either manually
         // or automatically, already.
         if (name=="sym" || name=="ele" || name=="flags" || name=="origin" ||

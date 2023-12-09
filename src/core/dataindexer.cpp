@@ -200,3 +200,12 @@ QList<QByteArray> DataIndexer::namespacesWithUri()
 {
     return (sUriHash.keys());
 }
+
+
+// Tags only used internally for displaying and editing item properties.
+// Any new internal tag used in MetadataModel must also be added
+// to this list.
+bool DataIndexer::isInternalTag(const QByteArray &nm)
+{
+    return (nm=="name" || nm=="latitude" || nm=="longitude");
+}

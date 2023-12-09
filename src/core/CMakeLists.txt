@@ -34,14 +34,13 @@ set(core_SRCS
   trackdata.cpp
   dataindexer.cpp
   pluginmanager.cpp
-  units.cpp
   applicationdata.cpp
   applicationdatainterface.cpp
+  itemindexinterface.cpp
   pointicon.cpp
   pointiconprovider.cpp
   category.cpp
-  itemindexinterface.cpp
-  metadatamodel.cpp
+  units.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})

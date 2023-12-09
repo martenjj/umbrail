@@ -976,8 +976,7 @@ void FilesController::slotTrackProperties()
     for (int idx = 0; idx<num; ++idx)
     {
         const QByteArray name = DataIndexer::name(idx);
-        if (MetadataModel::isInternalTag(name)) continue;
-							// these handled specially above
+        if (DataIndexer::isInternalTag(name)) continue;	// these handled specially above
         if (!model->isChanged(idx)) continue;		// data not changed in dialogue
         QVariant newData = model->data(idx);		// the new changed data
 

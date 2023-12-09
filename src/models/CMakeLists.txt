@@ -39,6 +39,7 @@ set(models_SRCS
   homepointsdatamodel.cpp
   destinationfiltermodel.cpp
   pointsdatamodel.cpp
+  metadatamodel.cpp
 )
 
 add_library(${PN}models STATIC ${models_SRCS})
