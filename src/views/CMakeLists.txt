@@ -36,6 +36,8 @@ set(views_SRCS
   createpointdialogue.cpp
   itemselectdialogue.cpp
   moveitemdialogue.cpp
+  folderselectdialogue.cpp
+  folderselectwidget.cpp
 )
 
 add_library(${PN}views STATIC ${views_SRCS})
