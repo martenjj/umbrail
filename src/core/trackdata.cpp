@@ -237,8 +237,8 @@ QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataItem *root)
 {
     if (path.isEmpty()) return (nullptr);		// check for null path
-    const QStringList names = path.split('/');		// list of folder names
-
+    const QStringList names = path.split('/', Qt::SkipEmptyParts);
+							// list of folder names
     const TrackDataItem *item = root;
     for (const QString &name : names)			// descend through path names
     {
