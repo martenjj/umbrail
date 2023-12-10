@@ -31,6 +31,7 @@
 #include "applicationdatainterface.h"
 
 class QLineEdit;
+class TrackDataItem;
 
 
 class FolderSelectWidget : public QFrame, public ApplicationDataInterface
@@ -46,6 +47,7 @@ public:
 
 signals:
     void folderChanged(const QString &path);
+    void newFolder(const QString &name, TrackDataItem *pnt);
 
 protected slots:
     void slotSelectFolder();

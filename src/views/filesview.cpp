@@ -352,10 +352,10 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMa
         return;						// no more to do
     }
 
+    qDebug() << "item" << item->name() << "combine?" << combine;
     const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
     Q_ASSERT(iii!=nullptr);
     QModelIndex idx = iii->indexForItem(item);
-    qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;
 
     selectionModel()->select(QItemSelection(idx, idx),
