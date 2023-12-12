@@ -317,18 +317,3 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
 
     MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget());
 }
-
-
-const TrackDataItem *MapController::rootFileItem() const
-{
-    const QAbstractItemModel *filesModel = filesView()->model();
-    Q_ASSERT(filesModel!=nullptr);
-
-    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(filesModel);
-    Q_ASSERT(iii!=nullptr);
-
-    // This constructs a model index for the root item:  row 0, column 0,
-    // no parent.
-    const QModelIndex idx = filesModel->index(0, 0, QModelIndex());
-    return (iii->itemForSourceIndex(idx));
-}

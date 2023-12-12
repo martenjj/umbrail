@@ -61,8 +61,6 @@ public:
     static QString positionToString(double lat, double lon, int zoom);
     static bool positionFromString(const QString &str, double *plat, double *plon, int *pzoom);
 
-    const TrackDataItem *rootFileItem() const;
-
 public slots:               
     void slotGoHome();
     void slotSetHome();

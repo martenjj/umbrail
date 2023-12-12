@@ -199,8 +199,7 @@ void FilesController::saveProperties()
 
 void FilesController::initNew()
 {
-    Q_ASSERT(filesModel()->rootFileItem()==nullptr);
-
+    Q_ASSERT(filesModel()->isEmpty());
     TrackDataFile *fileItem = new TrackDataFile;
     filesModel()->setRootFileItem(fileItem);
 }
@@ -558,7 +557,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
 
     emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->setOptions(options);				// set the export options
-    exp->save(exportTo, filesModel()->rootFileItem());
+    exp->save(exportTo, static_cast<TrackDataFile *>(filesModel()->rootItem()));
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))
@@ -631,7 +630,7 @@ bool FilesController::adjustTimeSpec(QDateTime &dt)
     // Local time needs to be converted to UTC (using the time zone of the file)
     // in order to correspond with the recording times.  This means that a
     // time zone needs to be set for meaningful results.
-    QByteArray zone = filesModel()->rootFileItem()->timeZone().toLocal8Bit();
+    const QByteArray zone = filesModel()->rootItem()->timeZone().toLocal8Bit();
     if (zone.isEmpty()) return (false);			// if none, can't convert
 
     QTimeZone tz(zone);
@@ -653,7 +652,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 {
     int q;						// status for questions
 							// get the file time zone set
-    const QString zone = filesModel()->rootFileItem()->timeZone();
+    const QString zone = filesModel()->rootItem()->timeZone();
     if (zone.isEmpty() && !mWarnedNoTimezone)		// message only once per file
     {
         q = KMessageBox::warningContinueCancel(mainWidget(),
@@ -673,7 +672,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
 
     // Find a folder to place the resulting waypoint in, but do not
     // try to create it at this stage if it does not already exist.
-    TrackDataFolder *destFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, filesModel()->rootFileItem());
+    TrackDataFolder *destFolder = TrackData::findFolderByPath(PHOTO_FOLDER_NAME, filesModel()->rootItem());
 
     for (int i = 0; i<total; ++i)
     {
@@ -731,7 +730,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             {
                 closestDiff = INT_MAX;
                 closestPoint = nullptr;
-                findChildWithTime(filesModel()->rootFileItem(), dt);
+                findChildWithTime(filesModel()->rootItem(), dt);
 
                 if (closestPoint!=nullptr && closestDiff<=Settings::photoTimeThreshold())
                 {
@@ -799,7 +798,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             AddContainerCommand *cmd1 = new AddContainerCommand(this);
             cmd1->setText(i18n("Create Photo Folder"));
             cmd1->setName(PHOTO_FOLDER_NAME);
-            cmd1->setData(TrackData::Folder, filesModel()->rootFileItem());
+            cmd1->setData(TrackData::Folder, filesModel()->rootItem());
             executeCommand(cmd1);
             destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
         }
@@ -897,7 +896,7 @@ default:                    break;
 
 void FilesController::slotCheckTimeZone()
 {
-    TrackDataFile *tdf = filesModel()->rootFileItem();
+    TrackDataFile *tdf = static_cast<TrackDataFile *>(filesModel()->rootItem());
     if (tdf==nullptr) return;				// check model not empty
 
     QString zone = tdf->timeZone();			// get current file time zone
@@ -1323,7 +1322,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
         // This assumes that the folder to be created is at the top level.
         // Safe to assume this, see StopDetectDialogue::slotCommitResults()
         // for why.
-        cmd1->setData(TrackData::Folder, filesModel()->rootFileItem());
+        cmd1->setData(TrackData::Folder, filesModel()->rootItem());
         cmd1->setText(i18n("Create Waypoint Folder"));
         executeCommand(cmd1);
 
@@ -1507,7 +1506,7 @@ QString FilesController::allProjectFilters(bool includeAllFiles)
 
 void FilesController::slotSetTimeZone()
 {
-    TrackDataItem *root = filesModel()->rootFileItem();
+    TrackDataItem *root = filesModel()->rootItem();
     if (root==nullptr) return;
 
 // TODO: simplify, extract the time zone and keep it in a member variable
@@ -1547,8 +1546,11 @@ void FilesController::slotSetTimeZone()
 
 void FilesController::slotManageCategories()
 {
-    CategoryList *cats = filesModel()->rootFileItem()->categories();
-    CategoriesManageDialogue d(cats, mainWidget());	// existing categories, may be none
+    TrackDataFile *tdf = static_cast<TrackDataFile *>(filesModel()->rootItem());
+    if (tdf==nullptr) return;
+
+    CategoryList *cats = tdf->categories();		// existing categories, may be none
+    CategoriesManageDialogue d(cats, mainWidget());
     if (!d.exec()) return;
 
     // TODO: maybe should be undo'able
@@ -1560,7 +1562,7 @@ void FilesController::slotManageCategories()
     {
         if (newCats->count()==0) return;		// none to add, nothing to do
         cats = new CategoryList;			// allocate new and set on root
-        filesModel()->rootFileItem()->setCategories(cats);
+        tdf->setCategories(cats);
     }
 
     cats->clear();

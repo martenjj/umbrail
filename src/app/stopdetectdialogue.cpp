@@ -99,7 +99,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     }
 
     mTimeZone = QTimeZone::utc();			// a sensible default
-    QString zoneName = filesController()->filesModel()->rootFileItem()->metadata("timezone").toString();
+    QString zoneName = filesController()->filesModel()->rootItem()->metadata("timezone").toString();
     if (!zoneName.isEmpty())				// resolve from file time zone
     {
         QTimeZone tz(zoneName.toLatin1());
@@ -145,7 +145,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mFolderSelect = new FolderSelectWidget(this);
     mFolderSelect->setToolTip(i18n("The folder where the located stops will be saved"));
     const QString folderName = i18nc("Name of the default folder for stops", "Stops");
-    const bool folderExists = (TrackData::findFolderByPath(folderName, filesController()->filesModel()->rootFileItem())!=nullptr);
+    const bool folderExists = (TrackData::findFolderByPath(folderName, filesController()->filesModel()->rootItem())!=nullptr);
 							// either existing or placeholder
     mFolderSelect->setFolderPath(folderName, !folderExists);
     connect(mFolderSelect, &FolderSelectWidget::folderChanged, this, &StopDetectDialogue::slotSetButtonStates);
@@ -615,7 +615,7 @@ void StopDetectDialogue::slotCommitResults()
     const QString folderPath = mFolderSelect->folderPath();
     Q_ASSERT(!folderPath.isEmpty());
 
-    TrackDataItem *root = filesController()->filesModel()->rootFileItem();
+    TrackDataItem *root = filesController()->filesModel()->rootItem();
     // The destination folder may not exist at this point,
     // if the default entry has been accepted.
     TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, root);

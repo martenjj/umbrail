@@ -74,20 +74,23 @@ public:
     virtual QStringList mimeTypes() const override;
     virtual QMimeData *mimeData(const QModelIndexList &idxs) const override;
 
-    TrackDataFile *rootFileItem() const			{ return (mRootFileItem); }
-    bool isEmpty() const				{ return (mRootFileItem==nullptr); }
+    Q_DECL_DEPRECATED TrackDataFile *rootFileItem() const;
+    bool isEmpty() const					{ return (mRootItem==nullptr); }
     TrackDataFile *takeRootFileItem();
     void setRootFileItem(TrackDataFile *root);
 
-    // signal changes from the model
+    static void sortByIndexRow(QList<TrackDataItem *> *list);
+
+    // Tell the model to signal changes
     void changedItem(const TrackDataItem *item);
     void startLayoutChange();
     void endLayoutChange();
 
+    // ItemIndexInterface
     TrackDataItem *itemForIndex(const QModelIndex &idx) const override;
     QModelIndex indexForItem(const TrackDataItem *tdi) const override;
 
-    static void sortByIndexRow(QList<TrackDataItem *> *list);
+    TrackDataItem *rootItem() const override			{ return (mRootItem); }
 
 signals:
     void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
@@ -96,7 +99,7 @@ private:
     bool dropMimeDataInternal(bool doit, const QMimeData *data, int row, const QModelIndex &pnt);
 
 private:
-    TrackDataFile *mRootFileItem;
+    TrackDataItem *mRootItem;
 };
  
 #endif							// FILESMODEL_H

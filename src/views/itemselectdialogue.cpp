@@ -114,9 +114,7 @@ void ItemSelectDialogue::setSelectedItem(const TrackDataItem *item)
         return;
     }
 
-    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(destinationModel());
-    Q_ASSERT(iii!=nullptr);
-    QModelIndex idx = iii->indexForItem(item);
+    const QModelIndex idx = ItemIndexInterface::of(destinationModel())->indexForItem(item);
     mTrackList->expand(idx.parent());
     mTrackList->selectionModel()->select(idx, QItemSelectionModel::ClearAndSelect);
 }
@@ -126,10 +124,7 @@ TrackDataItem *ItemSelectDialogue::selectedItem() const
 {
     QModelIndexList selIndexes = mTrackList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (nullptr);
-
-    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(destinationModel());
-    Q_ASSERT(iii!=nullptr);
-    return (iii->itemForIndex(selIndexes.first()));
+    return (ItemIndexInterface::of(destinationModel())->itemForIndex(selIndexes.first()));
 }
 
 

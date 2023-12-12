@@ -96,12 +96,6 @@ void FolderSelectDialogue::setPath(const QString &path)
 {
     qDebug() << path;
 
-    QAbstractItemModel *mod = destinationModel();
-    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(mod);
-    Q_ASSERT(iii!=nullptr);
-    const TrackDataItem *root = iii->itemForIndex(mod->index(0, 0));
-    Q_ASSERT(root!=nullptr);
-
-    TrackDataFolder *selFolder = TrackData::findFolderByPath(path, root);
+    TrackDataFolder *selFolder = TrackData::findFolderByPath(path, ItemIndexInterface::of(destinationModel())->rootItem());
     setSelectedItem(selFolder);				// empty path => NULL => clear selection
 }
