@@ -56,8 +56,8 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     //
     // These names are only used here for internal data;  they are not
     // used anywhere outside of this model.  If any are added here then
-    // they also need to be ignored in isInternaltag() below.  Any checks
-    // for these names elsewhere must use isInternalTag().
+    // they also need to be listed in DataIndexer::isInternaltag().
+    // Any checks for these names elsewhere must use isInternalTag().
     mData->setMetadata(DataIndexer::index("name"), item->name());
     const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
     if (tdp!=nullptr)
@@ -82,12 +82,6 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     const int num = DataIndexer::count();
     mItemChanged.resize(num);
 
-}
-
-
-/* static */ bool MetadataModel::isInternalTag(const QByteArray &nm)
-{
-    return (nm=="name" || nm=="latitude" || nm=="longitude");
 }
 
 

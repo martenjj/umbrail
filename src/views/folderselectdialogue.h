@@ -36,9 +36,12 @@ class FolderSelectDialogue : public ItemSelectDialogue
 
 public:
     explicit FolderSelectDialogue(QWidget *pnt = nullptr);
-    virtual ~FolderSelectDialogue()			{}
+    virtual ~FolderSelectDialogue() = default;
 
     void setPath(const QString &path);
+
+signals:
+    void newFolder(const QString &name, TrackDataItem *pnt);
 
 protected slots:
     void slotNewFolder();

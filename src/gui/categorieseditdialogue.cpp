@@ -94,7 +94,7 @@ CategoriesEditDialogue::CategoriesEditDialogue(const QStringList *itemCats, cons
     hdrItem->setData(COL_SECONDARY, Qt::ToolTipRole, i18nc("@info:tooltip", "<div>Additional secondary categories.<br>For those applications (e.g. Garmin) that can use multiple categories.</div>"));
 
     setMainWidget(mList);
-    connect(mList, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(slotItemChanged(QTreeWidgetItem *, int)));
+    connect(mList, &QTreeWidget::itemChanged, this, &CategoriesEditDialogue::slotItemChanged);
 
     setMinimumSize(350,320);
     setStateSaver(this);
@@ -127,8 +127,8 @@ QStringList CategoriesEditDialogue::categories()
     }
     else if (!cats.isEmpty())				// no primary category,
     {							// but secondary categories set
-        // TODO: is this message useful?
-        KMessageBox::information(this, xi18nc("@info", "No primary category is set.<nl/>The first secondary category, <resource>%1</resource>,<nl/>will be taken as the primary category.", cats.first()));
+        KMessageBox::information(this, xi18nc("@info", "No primary category is set.<nl/>The first secondary category, <resource>%1</resource>,<nl/>will be taken as the primary category.", cats.first()),
+                                 QString(), "noprimarycat");
     }
 
     return (cats);

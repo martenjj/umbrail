@@ -262,27 +262,6 @@ private:
 
 
 
-class DeleteItemsCommand : public FilesCommandBase
-{
-public:
-    DeleteItemsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
-    virtual ~DeleteItemsCommand();
-
-    void setData(const QList<TrackDataItem *> &items);
-
-    void redo() override;
-    void undo() override;
-
-private:
-    QList<TrackDataItem *> mItems;
-    QVector<TrackDataItem *> mParentItems;
-    QVector<int> mParentIndexes;
-    TrackDataContainer *mDeletedItemsContainer;
-};
-
-
-
-
 class MovePointsCommand : public FilesCommandBase
 {
 public:
@@ -396,6 +375,18 @@ private:
     TrackDataItem *mAddedItem;
     bool mWasAdded;
 };
+
+
+
+class DeleteItemsCommand : public ReplaceItemsCommand
+{
+public:
+    DeleteItemsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
+    virtual ~DeleteItemsCommand();
+
+    void setData(const QList<TrackDataItem *> &items);
+};
+
 
 
 #endif							// COMMANDS_H

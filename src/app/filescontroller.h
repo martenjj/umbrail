@@ -79,9 +79,6 @@ public:
     FilesModel *filesModel() const		{ return (mFilesModel); }
     HomePointsDataModel *homePointsModel();
 
-    FilesView *view() const			{ return (mFilesView); }
-    FilesModel *model() const			{ return (mFilesModel); }
-
     void readProperties();
     void saveProperties();
 

@@ -33,7 +33,6 @@
 
 #include "trackdata.h"
 #include "dataindexer.h"
-#include "metadatamodel.h"
 #include "category.h"
 
 // GPX specification: http://www.topografix.com/GPX/1/1/
@@ -301,7 +300,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
         const QByteArray name = DataIndexer::name(idx);
 
         // Always ignore tags which are only used internally.
-        if (MetadataModel::isInternalTag(name)) continue;
+        if (DataIndexer::isInternalTag(name)) continue;
 
         // Get the item metadata value, and ignore it if the value is null.
         const QVariant &v = item->metadata(idx);
@@ -540,6 +539,8 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     str.writeNamespace("http://www.garmin.com/xmlschemas/GpxExtensions/v3", "gpxx");
     str.writeNamespace("http://www.garmin.com/xmlschemas/TrackPointExtension/v1", "gpxtpx");
     str.writeNamespace("http://www.w3.org/2001/XMLSchema-instance", "xsi");
+    // OsmAnd+ namespace may be needed for the category map
+    str.writeNamespace("https://osmand.net", "osmand");
     // our own extensions
     str.writeNamespace(("http://www.keelhaul.me.uk/" PROJECT_NAME), DataIndexer::applicationNamespace());
     // namespace URI from https://code.google.com/p/mytracks/issues/detail?id=276
@@ -550,6 +551,8 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     {
         if (nsp==DataIndexer::applicationNamespace()) continue;	// already added above
         if (nsp=="topografix") continue;			// already added above
+        if (nsp=="osmand") continue;				// already added above
+
         str.writeNamespace(DataIndexer::uriForNamespace(nsp), nsp);
     }
     str.writeCharacters("\n\n  ");
@@ -560,7 +563,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     for (int idx = 0; idx<DataIndexer::count(); ++idx)
     {
         const QByteArray name = DataIndexer::name(idx);
-        if (MetadataModel::isInternalTag(name)) continue;
+        if (DataIndexer::isInternalTag(name)) continue;
         const QVariant &v = item->metadata(idx);
         if (v.isNull()) continue;
         // <link href="http://www.garmin.com"><text>Garmin International</text></link>

@@ -165,6 +165,14 @@ namespace DataIndexer
      **/
     QList<QByteArray> namespacesWithUri();
 
+    /**
+     * Check whether the tag is internal to this application only.
+     *
+     * @param nm The plain internal name
+     * @return @c true if this is an internal tag
+     **/
+    bool isInternalTag(const QByteArray &nm);
+
 } // namespace DataIndexer
 
  

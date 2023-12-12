@@ -55,7 +55,6 @@
 #include "mapview.h"
 #include "trackdata.h"
 #include "valueslider.h"
-#include "mainwindow.h"
 #include "folderselectwidget.h"
 #include "commands.h"
 #include "dataindexer.h"
@@ -150,6 +149,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
 							// either existing or placeholder
     mFolderSelect->setFolderPath(folderName, !folderExists);
     connect(mFolderSelect, &FolderSelectWidget::folderChanged, this, &StopDetectDialogue::slotSetButtonStates);
+    connect(mFolderSelect, &FolderSelectWidget::newFolder, this, &StopDetectDialogue::slotNewFolder);
     fl->addRow(i18n("Destination folder:"), mFolderSelect);
 
     // Warn if there is no time zone set for stop times
@@ -232,7 +232,6 @@ StopDetectDialogue::~StopDetectDialogue()
 {
     mapController()->view()->setStopLayerData(nullptr);
     qDeleteAll(mResultPoints);
-    qDebug() << "done";
 }
 
 
@@ -251,7 +250,6 @@ void StopDetectDialogue::slotShowOnMap()
     const int idx = items.first()->data(Qt::UserRole).toInt();
 
     TrackDataWaypoint *tdw = const_cast<TrackDataWaypoint *>(mResultPoints[idx]);
-
     qDebug() << "index" << idx << tdw->name();
 
     QList<TrackDataItem *> its;
@@ -623,25 +621,15 @@ void StopDetectDialogue::slotCommitResults()
     TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, root);
     if (destFolder==nullptr)				// does not yet exist
     {
-        AddContainerCommand *cmd1 = new AddContainerCommand(filesController());
-
-        // This assumes that the folder to be created is at the top level.
-        // It is safe to assume this, because the FolderSelectWidget line edit
-        // is read only so it is not possible to enter an arbitrary string.
-        // The folderPath will be either the default "Stops", or another which
-        // will have been selected via the FolderSelectDialogue (which must
-        // already exist or have been created).  So it is not possible to
-        // enter an arbitrary folder path which does not yet exist.
-        cmd1->setData(TrackData::Folder, root);
-        cmd1->setName(folderPath);
-        cmd1->setText(i18n("Create Stops Folder"));
-
-        // This will end up with two operations in the undo history,
-        // but unfortunately it is necessary because we need to
-        // specify the destination folder for adding the waypoints.
-        executeCommand(cmd1);
-
-        destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
+        // If a folder is to be created here, it is assumed that it is at the
+        // top level.  It is safe to assume this, because the FolderSelectWidget
+        // line edit is read only so it is not possible to enter an arbitrary
+        // string.  So the folderPath above will be either the default "Stops",
+        // or another which will have been selected via the FolderSelectDialogue
+        // and therefore must either already exist or have been created.  So it is
+        // not possible to enter an arbitrary folder path which does not yet exist.
+        slotNewFolder(folderPath, root);
+        destFolder = TrackData::findFolderByPath(folderPath, root);
     }
     Q_ASSERT(destFolder!=nullptr);			// should now exist in any case
 
@@ -677,4 +665,31 @@ void StopDetectDialogue::slotCommitResults()
     }
 
     executeCommand(cmd);
+}
+
+
+void StopDetectDialogue::slotNewFolder(const QString &name, TrackDataItem *pnt)
+{
+    TrackDataItem *parentItem = (pnt==nullptr ? filesController()->filesModel()->rootFileItem() : pnt);
+    qDebug() << "create" << name << "under" << parentItem->name();
+
+    TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, parentItem);
+    if (foundFolder!=nullptr)
+    {
+        KMessageBox::error(this,
+                           i18n("A folder named <resource>%1</resource> already exists here.", name),
+                           i18n("Folder Exists"));
+        return;
+    };
+
+    AddContainerCommand *cmd1 = new AddContainerCommand(filesController());
+    cmd1->setData(TrackData::Folder, parentItem);
+    cmd1->setName(name);
+    cmd1->setText(i18n("Create Stops Folder"));
+
+    // Immediately create the folder.  This will unfortunately end up with
+    // two operations in the undo history, but it is necessary because we
+    // need to be able to specify the destination folder for adding the
+    // stop points.
+    executeCommand(cmd1);
 }

@@ -61,6 +61,8 @@ protected slots:
     void slotMergeStops();
     void slotCommitResults();
 
+    void slotNewFolder(const QString &name, TrackDataItem *pnt);
+
 private slots:
     void slotDetectStops();
     void slotSetButtonStates();

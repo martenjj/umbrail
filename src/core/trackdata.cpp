@@ -39,7 +39,6 @@
 #include "dataindexer.h"
 #include "pointicon.h"
 #include "pointiconprovider.h"
-#include "metadatamodel.h"
 #include "category.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -238,8 +237,8 @@ QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataItem *root)
 {
     if (path.isEmpty()) return (nullptr);		// check for null path
-    const QStringList names = path.split('/');		// list of folder names
-
+    const QStringList names = path.split('/', Qt::SkipEmptyParts);
+							// list of folder names
     const TrackDataItem *item = root;
     for (const QString &name : names)			// descend through path names
     {
@@ -1196,7 +1195,7 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
     for (int idx = 0; idx<DataIndexer::count(); ++idx)
     {
         const QByteArray &name = DataIndexer::name(idx);
-        if (MetadataModel::isInternalTag(name)) continue;
+        if (DataIndexer::isInternalTag(name)) continue;
         // These metadata items have been merged specially above.
         if (name=="ele" || name=="sym" || name=="StreetAddress" ||
             name=="City" || name=="State" || name=="PostalCode" ||

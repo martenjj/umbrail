@@ -816,12 +816,35 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     // in startElement() and then stored in the element metadata here.
     if (elementText.isEmpty()) return (true);		// ignore if there is none
 
+    TrackDataItem *item = currentItem();		// find innermost current element
+
     QByteArray key = qName;				// namespaced name of the element
     // Ultra GPS Logger tags waypoints with <description> instead of <desc>
     if (key=="description") key = "desc";
-    const int idx = DataIndexer::indexWithNamespace(key);
 
-    TrackDataItem *item = currentItem();		// find innermost current element
+    // Translate some OsmAnd tags to more generic ones
+    if (localName=="amenity_subtype") key = "subtype";
+    else if (localName=="visited_date")
+    {
+        // Ensure that this is stored as a date/time value
+        const QDateTime dt = QDateTime::fromString(elementText, Qt::ISODate);
+        if (item!=nullptr) item->setMetadata("visited", dt);
+        return (true);
+    }
+    // Ignore other OsmAnd tags that are not particularly useful
+    else if (localName.startsWith("collapsable_") ||
+             localName.startsWith("osm_tag_") ||
+             localName.startsWith("amenity_"))
+    {
+        // An XML warning may be too noisy here, but data has been lost.
+        addWarning("tag "+localName.toUpper()+" ignored");
+        return (true);
+    }
+    // Ths OsmAnd "address" value is the geolocated address of a waypoint.
+    // It is not particularly useful to display, but it may be useful for
+    // reference so it is retained.
+
+    const int idx = DataIndexer::indexWithNamespace(key);
     if (item!=nullptr) item->setMetadata(idx, elementText);
     else if (mWithinMetadata) dataRoot()->setMetadata(idx, elementText);
     else addWarning("unrecognised "+localName.toUpper()+" not expected here");
@@ -1011,6 +1034,7 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
     else						// a file load operation
     {
         if (ourCol.isValid() && ourCol!=col) addWarning(QString("COLOR ignored, using %1 value").arg(QString(name).toUpper()));
+        else item->setMetadata(name, col);
     }
     item->setMetadata("color", QVariant());		// clear the COLOR value
 

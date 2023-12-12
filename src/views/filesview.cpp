@@ -350,7 +350,7 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMa
     }
 
     const QModelIndex idx = ItemIndexInterface::of(model())->indexForItem(item);
-    qDebug() << "index" << idx << "combine?" << combine;
+    qDebug() << "item" << item->name() << "combine?" << combine;
     if (!idx.isValid()) return;
 
     selectionModel()->select(QItemSelection(idx, idx),

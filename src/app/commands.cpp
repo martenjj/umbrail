@@ -1054,101 +1054,6 @@ void MoveItemCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Delete Items							//
-//									//
-//  The deleted items (which may be the root of a complete tree) are	//
-//  retained in our container.  The source parents are only referred	//
-//  to and can be simple pointers.					//
-//									//
-//////////////////////////////////////////////////////////////////////////
-
-// TODO: equivalent to ReplaceItemsCommand with no replacement
-
-DeleteItemsCommand::DeleteItemsCommand(FilesController *fc, QUndoCommand *parent)
-    : FilesCommandBase(fc, parent)
-{
-    mDeletedItemsContainer = nullptr;
-}
-
-
-DeleteItemsCommand::~DeleteItemsCommand()
-{
-    delete mDeletedItemsContainer;
-}
-
-
-void DeleteItemsCommand::setData(const QList<TrackDataItem *> &items)
-{
-     mItems = items;
-}
-
-
-void DeleteItemsCommand::redo()
-{
-    Q_ASSERT(!mItems.isEmpty());
-
-    controller()->filesView()->clearSelection();
-    model()->startLayoutChange();
-
-    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new TrackDataContainer;
-    Q_ASSERT(mDeletedItemsContainer->childCount()==0);
-
-    const int num = mItems.count();
-    mParentIndexes.resize(num);
-    mParentItems.resize(num);
-
-    for (int i = 0; i<num; ++i)
-    {
-        TrackDataItem *item = mItems[i];
-        TrackDataItem *parent = item->parent();
-        Q_ASSERT(parent!=nullptr);
-        mParentItems[i] = parent;
-        mParentIndexes[i] = parent->childIndex(item);
-
-        parent->removeChildItem(item);
-        mDeletedItemsContainer->addChildItem(item);
-    }
-
-    model()->endLayoutChange();
-    controller()->doUpdateMap();
-}
-
-
-void DeleteItemsCommand::undo()
-{
-    Q_ASSERT(!mItems.isEmpty());
-    const int num = mItems.count();
-    Q_ASSERT(mParentItems.count()==num);
-    Q_ASSERT(mParentIndexes.count()==num);
-
-    controller()->filesView()->clearSelection();
-    model()->startLayoutChange();
-
-    QList<TrackDataItem *> addedItems;			// for selecting them later
-    for (int i = num-1; i>=0; --i)
-    {
-        TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
-        TrackDataItem *parent = mParentItems[i];
-        parent->addChildItem(item, mParentIndexes[i]);
-        addedItems.append(item);
-    }
-    Q_ASSERT(mDeletedItemsContainer->childCount()==0);
-
-    model()->endLayoutChange();
-
-    for (TrackDataItem *item : qAsConst(addedItems))	// now select those added back
-    {
-        controller()->filesView()->selectItem(item, true);
-    }
-
-    mParentItems.clear();
-    mParentIndexes.clear();
-
-    controller()->doUpdateMap();
-}
-
-//////////////////////////////////////////////////////////////////////////
-//									//
 //  Move Points								//
 //									//
 //  Changes the specified items in place, so we can retain a pointer	//
@@ -1418,9 +1323,14 @@ void AddPhotoCommand::undo()
 //									//
 //  Replace Items							//
 //									//
-//  Remove the specified 'items' from their parent container, which	//
-//  is assumed to be the same for all of them but need not be, and	//
-//  then put the replacement 'item' where the first removed item was.	//
+//  Remove the specified 'removeItems' from their parent container,	//
+//  which in this application must be the same for all of them but	//
+//  need not be, and then put the replacement 'addItem' where the	//
+//  first removed item was.						//
+//									//
+//  The removed items (which may be the root of a complete tree) are	//
+//  retained in our container.  The source parents are only referred	//
+//  to and can be simple pointers.					//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
@@ -1438,7 +1348,7 @@ ReplaceItemsCommand::ReplaceItemsCommand(FilesController *fc, QUndoCommand *pare
 ReplaceItemsCommand::~ReplaceItemsCommand()
 {
     delete mDeletedItemsContainer;
-    delete mAddedItem;
+    if (!mWasAdded) delete mAddedItem;
 }
 
 
@@ -1533,4 +1443,28 @@ void ReplaceItemsCommand::undo()
     mWasAdded = false;
 
     controller()->doUpdateMap();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Delete Items							//
+//									//
+//  This is equivalent to a ReplaceItemsCommand with no replacement.	//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+DeleteItemsCommand::DeleteItemsCommand(FilesController *fc, QUndoCommand *parent)
+    : ReplaceItemsCommand(fc, parent)
+{
+}
+
+
+DeleteItemsCommand::~DeleteItemsCommand()
+{
+}
+
+
+void DeleteItemsCommand::setData(const QList<TrackDataItem *> &items)
+{
+    ReplaceItemsCommand::setData(items, nullptr);
 }

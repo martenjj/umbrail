@@ -32,11 +32,9 @@
 
 set(app_SRCS
   main.cpp
-  commands.cpp
-  filescontroller.cpp
-  folderselectdialogue.cpp
-  folderselectwidget.cpp
   mainwindow.cpp
+  filescontroller.cpp
+  commands.cpp
   settingsdialogue.cpp
   statisticswidget.cpp
   stopdetectdialogue.cpp
