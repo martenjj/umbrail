@@ -137,7 +137,7 @@ void ImportFileCommand::redo()
     // will already have been actioned by the importer, so there is
     // no need to take any account of those here.
 
-    TrackDataFile *root = model()->rootFileItem();
+    TrackDataFile *root = static_cast<TrackDataFile *>(ItemIndexInterface::of(model())->rootItem());
     if (root==nullptr)					// no data in model yet
     {
         // This option should be disabled by the GUI if the model
@@ -293,7 +293,7 @@ again:                  if (j>=importFolder->childCount()) break;
 
 void ImportFileCommand::undo()
 {
-    TrackDataFile *root = model()->rootFileItem();
+    TrackDataFile *root = static_cast<TrackDataFile *>(ItemIndexInterface::of(model())->rootItem());
     Q_ASSERT(root!=nullptr);
 
     if (mImportData==nullptr)				// was set as file root
@@ -757,7 +757,7 @@ void AddContainerCommand::redo()
     Q_ASSERT(mNewItemContainer->childCount()==1);
     TrackDataItem *newItem = mNewItemContainer->takeFirstChildItem();
 
-    if (mParent==nullptr) mParent = model()->rootFileItem();
+    if (mParent==nullptr) mParent = ItemIndexInterface::of(model())->rootItem();
     Q_ASSERT(mParent!=nullptr);
     mParent->addChildItem(newItem);
 

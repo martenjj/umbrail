@@ -675,7 +675,7 @@ bool MainWindow::save(const QUrl &to, const ImporterExporterOptions &options)
     qDebug() << "to" << to;
     if (!to.isValid()) return (false);			// should never happen
 
-    TrackDataFile *tdf = filesController()->filesModel()->rootFileItem();
+    TrackDataItem *tdf = filesController()->filesModel()->rootItem();
     if (tdf==nullptr) return (false);			// should never happen
 
     // metadata from map controller
@@ -705,7 +705,7 @@ void MainWindow::slotSaveProject()
 
     if (save(projectFile, ImporterExporterOptions()))
     {
-        TrackDataFile *tdf = filesController()->filesModel()->rootFileItem();
+        TrackDataFile *tdf = static_cast<TrackDataFile *>(filesController()->filesModel()->rootItem());
         if (tdf!=nullptr) tdf->setFileName(projectFile);
 							// set file name in root item
         mUndoStack->setClean();				// undo history is now clean
@@ -794,7 +794,7 @@ FilesController::Status MainWindow::load(const QUrl &from)
     FilesController::Status status = filesController()->importFile(from, ImporterExporterOptions());
     if (status!=FilesController::StatusOk && status!=FilesController::StatusResave) return (status);
 
-    TrackDataFile *tdf = filesController()->filesModel()->rootFileItem();
+    TrackDataItem *tdf = filesController()->filesModel()->rootItem();
     if (tdf!=nullptr)
     {
         QVariant s = tdf->metadata("position");
@@ -869,7 +869,7 @@ void MainWindow::slotImportFile()
     ImporterExporterOptions::Flags f = ImporterExporterOptions::IgnoreHome;
     if (isPointsListMode()) f |= ImporterExporterOptions::MergeWaypoints;
     const FilesModel *mod = filesController()->filesModel();
-    if (mod->isEmpty() || mod->rootFileItem()->childCount()==0) f |= ImporterExporterOptions::MergeNotAllowed;
+    if (mod->isEmpty() || mod->rootItem()->childCount()==0) f |= ImporterExporterOptions::MergeNotAllowed;
     d.setOptions(ImporterExporterOptions(f));		// default options for dialogue
 
     if (!d.exec()) return;

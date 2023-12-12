@@ -275,7 +275,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     setWindowTitle(mRouteMode ? i18n("Route Profile") : i18n("Track Profile"));
 
     // Resolve the file time zone.
-    QVariant zoneName = filesController()->filesModel()->rootFileItem()->metadata("timezone");
+    QVariant zoneName = filesController()->filesModel()->rootItem()->metadata("timezone");
     if (!zoneName.isNull())
     {
         QTimeZone *tz = new QTimeZone(zoneName.toByteArray());
@@ -438,7 +438,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
     Q_ASSERT(waypointLayer!=nullptr);
     mWaypointLayerable = new WaypointLayerable(mPlot, "waypoints");
 							// only needs to be done once
-    associateWaypoints(filesController()->filesModel()->rootFileItem());
+    associateWaypoints(filesController()->filesModel()->rootItem());
     qDebug() << "found" << mWaypoints.count() << "associated waypoints";
     mWaypointSelection = WaypointSelectDialogue::SelectWaypoints|WaypointSelectDialogue::SelectRoutepoints;
 
