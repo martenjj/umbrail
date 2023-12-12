@@ -48,11 +48,9 @@
 #undef DEBUG_EXPANSION
 
 
-TrackDataItem *FilesView::itemForIndex(const QModelIndex &idx) const
+inline TrackDataItem *FilesView::itemForIndex(const QModelIndex &idx) const
 {
-    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(model());
-    Q_ASSERT(iii!=nullptr);
-    return (iii->itemForIndex(idx));
+    return (ItemIndexInterface::of(model())->itemForIndex(idx));
 }
 
 
@@ -136,8 +134,7 @@ void FilesView::slotFinishModelReset()
 {
     mModelBusy = false;
 
-    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
-    Q_ASSERT(iii!=nullptr);
+    const ItemIndexInterface *iii = ItemIndexInterface::of(model());
 
     int numExpanded = 0;
     for (const TrackDataItem *item : mExpansionState)
@@ -352,9 +349,7 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMa
         return;						// no more to do
     }
 
-    const ItemIndexInterface *iii = dynamic_cast<const ItemIndexInterface *>(model());
-    Q_ASSERT(iii!=nullptr);
-    QModelIndex idx = iii->indexForItem(item);
+    const QModelIndex idx = ItemIndexInterface::of(model())->indexForItem(item);
     qDebug() << "index" << idx << "combine?" << combine;
     if (!idx.isValid()) return;
 

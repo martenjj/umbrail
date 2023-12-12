@@ -172,9 +172,7 @@ void CreatePointDialogue::setSourceLatLong(double lat, double lon)
 void CreatePointDialogue::setDestinationContainer(const TrackDataItem *item)
 {
     Q_ASSERT(item!=nullptr);
-    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(mContainerList->model());
-    Q_ASSERT(iii!=nullptr);
-    const QModelIndex idx = iii->indexForItem(item);
+    const QModelIndex idx = ItemIndexInterface::of(mContainerList->model())->indexForItem(item);
     qDebug() << item->name() << "-> idx" << idx;
 
     if (idx.isValid()) mContainerList->setCurrentIndex(idx);
@@ -199,10 +197,7 @@ TrackDataItem *CreatePointDialogue::selectedContainer() const
 {
     QModelIndexList selIndexes = mContainerList->selectionModel()->selectedIndexes();
     if (selIndexes.count()!=1) return (nullptr);
-
-    ItemIndexInterface *iii = dynamic_cast<ItemIndexInterface *>(mContainerList->model());
-    Q_ASSERT(iii!=nullptr);
-    return (iii->itemForIndex(selIndexes.first()));
+    return (ItemIndexInterface::of(mContainerList->model())->itemForIndex(selIndexes.first()));
 }
 
 

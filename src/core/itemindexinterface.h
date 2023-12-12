@@ -4,6 +4,7 @@
 #define ITEMINDEXINTERFACE_H
 
 
+class QAbstractItemModel;
 class QAbstractProxyModel;
 class QModelIndex;
 class TrackDataItem;
@@ -23,12 +24,14 @@ class TrackDataItem;
 class ItemIndexInterface
 {
 public:
-    explicit ItemIndexInterface(QAbstractProxyModel *pnt);
+    explicit ItemIndexInterface(QAbstractProxyModel *mod);
     virtual ~ItemIndexInterface() = default;
 
     virtual TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     virtual TrackDataItem *itemForSourceIndex(const QModelIndex &idx) const;
     virtual QModelIndex indexForItem(const TrackDataItem *item) const;
+
+    static const ItemIndexInterface *of(QAbstractItemModel *mod);
 
 private:
     QAbstractProxyModel *mSourceModel;
