@@ -35,6 +35,12 @@ QModelIndex ItemIndexInterface::indexForItem(const TrackDataItem *item) const
 }
 
 
+TrackDataItem *ItemIndexInterface::rootItem() const
+{
+    return (of(mSourceModel->sourceModel())->rootItem());
+}
+
+
 /* static */ const ItemIndexInterface *ItemIndexInterface::of(QAbstractItemModel *mod)
 {
     // Although in this application all views' source models are proxy models,

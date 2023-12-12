@@ -7,6 +7,7 @@
 class QAbstractItemModel;
 class QAbstractProxyModel;
 class QModelIndex;
+
 class TrackDataItem;
 
 
@@ -30,6 +31,7 @@ public:
     virtual TrackDataItem *itemForIndex(const QModelIndex &idx) const;
     virtual TrackDataItem *itemForSourceIndex(const QModelIndex &idx) const;
     virtual QModelIndex indexForItem(const TrackDataItem *item) const;
+    virtual TrackDataItem *rootItem() const;
 
     static const ItemIndexInterface *of(QAbstractItemModel *mod);
 

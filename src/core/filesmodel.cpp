@@ -48,7 +48,7 @@ FilesModel::FilesModel(QObject *pnt)
       ItemIndexInterface(nullptr)
 {
     qDebug();
-    mRootFileItem = nullptr;
+    mRootItem = nullptr;
 
     // Drag and drop depends on being able to encode and serialise a pointer.
     Q_ASSERT(sizeof(TrackDataItem *)<=sizeof(qulonglong));
@@ -57,7 +57,7 @@ FilesModel::FilesModel(QObject *pnt)
 
 FilesModel::~FilesModel()
 {
-    delete mRootFileItem;
+    delete mRootItem;
     qDebug() << "done";
 }
 
@@ -86,7 +86,7 @@ QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
     {
         if (isEmpty()) return (QModelIndex());
         if (row>0) return (QModelIndex());
-        return (createIndex(row, col, mRootFileItem));
+        return (createIndex(row, col, mRootItem));
     }
 
     if (row>=tdi->childCount())				// only during initialisation
@@ -220,10 +220,10 @@ default:		return (QVariant());
 
 TrackDataFile *FilesModel::takeRootFileItem()
 {
-    TrackDataFile *root = mRootFileItem;
+    TrackDataFile *root = static_cast<TrackDataFile *>(mRootItem);
     Q_ASSERT(root!=nullptr);
     beginResetModel();
-    mRootFileItem = nullptr;
+    mRootItem = nullptr;
     endResetModel();
     qDebug() << "removing root" << root->name();
     return (root);
@@ -232,10 +232,10 @@ TrackDataFile *FilesModel::takeRootFileItem()
 
 void FilesModel::setRootFileItem(TrackDataFile *root)
 {
-    Q_ASSERT(mRootFileItem==nullptr);
+    Q_ASSERT(mRootItem==nullptr);
     beginResetModel();
     qDebug() << "setting root" << root->name();
-    mRootFileItem = root;
+    mRootItem = root;
     endResetModel();
 }
 
@@ -482,4 +482,10 @@ bool FilesModel::canDropMimeData(const QMimeData *data, Qt::DropAction act,
     // be safe against undefined behaviour because dropMimeDataInternal() does
     // not actually modify any members when called with 'doit' set to false.
     return (const_cast<FilesModel *>(this)->dropMimeDataInternal(false, data, row, pnt));
+}
+
+
+TrackDataFile *FilesModel::rootFileItem() const
+{
+    return (static_cast<TrackDataFile *>(mRootItem));
 }
