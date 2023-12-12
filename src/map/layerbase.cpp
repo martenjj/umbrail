@@ -41,6 +41,7 @@
 #include "mapcontroller.h"
 #include "mapview.h"
 #include "settings.h"
+#include "itemindexinterface.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -139,8 +140,8 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
 
     mSelectionId = filesView()->selectionId();
 
-    const TrackDataItem *filesRoot = mapController()->rootFileItem();
-    if (filesRoot==nullptr) return (false);
+    const TrackDataItem *filesRoot = ItemIndexInterface::of(filesView()->model())->rootItem();
+    if (filesRoot==nullptr) return (false);		// should never happen
 
     // Paint the data in two passes.  The first does all non-selected items,
     // the second selected ones.  This is so that selected items show up
@@ -355,8 +356,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
     if (!isVisible()) return (false);			// no interaction if not visible
 
     MapView *mapView = mapController()->view();
-
-    const TrackDataItem *filesRoot = mapController()->rootFileItem();
+    const TrackDataItem *filesRoot = ItemIndexInterface::of(filesView()->model())->rootItem();
     if (filesRoot==nullptr) return (false);		// should never happen
 
     if (ev->type()==QEvent::MouseButtonPress)
