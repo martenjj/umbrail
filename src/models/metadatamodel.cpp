@@ -74,14 +74,6 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     qDebug() << "parent time zone" << mParentTimeZone << "use parent?" << mUseParentTimeZone;
     mTimeZone = nullptr;
     resolveTimeZone();
-
-    // The same size array is needed to record data that has
-    // been changed.  This must be allocated after all possible
-    // data indexes have been allocated, in order to be of the
-    // correct size.
-    const int num = DataIndexer::count();
-    mItemChanged.resize(num);
-
 }
 
 
@@ -157,7 +149,7 @@ const QVariant MetadataModel::data(int idx) const
 
 bool MetadataModel::isChanged(int idx) const
 {
-    return (mItemChanged.value(idx));
+    return (mItemChanged.value(idx, false));
 }
 
 
