@@ -76,7 +76,11 @@ private:
 
 private:
     TrackDataContainer *mData;
-    QVector<bool> mItemChanged;
+
+    // This is a QMap, even though the indexes are simply ordered integers,
+    // so that it will auto-expand when necessary without having to be
+    // checked for every access.
+    QMap<int,bool> mItemChanged;
 
     QString mParentTimeZone;
     bool mUseParentTimeZone;
