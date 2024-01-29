@@ -93,8 +93,8 @@ if (NOT WIN32)
 endif (NOT WIN32)
 
 set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
-set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "http://phonon.kde.org" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
-set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "http://quickgit.kde.org/?p=libkexiv2.git" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
+set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "https://invent.kde.org/libraries/phonon" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
+set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "https://invent.kde.org/graphics/libkexiv2" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 set_package_properties("LibKFDialog" PROPERTIES DESCRIPTION "KDE Frameworks dialogue utility library" URL "https://github.com/martenjj/libkfdialog" TYPE REQUIRED PURPOSE "Required to build the project")
 set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and data visualization" URL "https://www.qcustomplot.com" TYPE OPTIONAL PURPOSE "Required for the profile display, internal source will be used if not found")
 
