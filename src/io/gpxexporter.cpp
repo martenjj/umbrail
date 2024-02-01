@@ -552,6 +552,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
         if (nsp==DataIndexer::applicationNamespace()) continue;	// already added above
         if (nsp=="topografix") continue;			// already added above
         if (nsp=="osmand") continue;				// already added above
+        if (nsp=="gpxtpx") continue;				// already added above
 
         str.writeNamespace(DataIndexer::uriForNamespace(nsp), nsp);
     }
