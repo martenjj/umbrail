@@ -544,11 +544,24 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
 
         if (!mWithinCategories)
         {
-            return (addError("CATENTRY or GROUP not within CATMAP or POINTS_GROUP"));
+            return (addError("CATENTRY or GROUP not within CATMAP or POINTS_GROUPS"));
         }
 
         QStringRef name = atts.value("name");
-        if (name.isEmpty()) return (addWarning("missing NAME attribute on "+localName.toUpper()+" element"));
+        if (name.isEmpty())
+        {
+            // OsmAnd seems to write out
+            //
+            //   <extensions>
+            //     <osmand:points_groups>
+            //       <group name=""/>
+            //     </osmand:points_groups>
+            //   </extensions>
+            //
+            // at the end of a track recording file.
+            if (localName!="group") addWarning("missing NAME attribute on "+localName.toUpper()+" element");
+            return (true);
+        }
 
         QColor col;					// get the colour, present for both
         QString rgbString = atts.value("color").toString();
