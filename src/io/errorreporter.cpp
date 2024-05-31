@@ -173,7 +173,7 @@ int ErrorReporter::messageCount() const
 {
     int count = 0;
 
-    for (const ErrorRecord *record : qAsConst(mList))
+    for (const ErrorRecord *record : std::as_const(mList))
     {
         if (dynamic_cast<const ErrorRecordMessage *>(record)!=nullptr) ++count;
     }
@@ -186,6 +186,6 @@ QStringList ErrorReporter::messageList() const
 {
     QStringList result;
 
-    for (const ErrorRecord *record : qAsConst(mList)) result.append(record->format());
+    for (const ErrorRecord *record : std::as_const(mList)) result.append(record->format());
     return (result);
 }

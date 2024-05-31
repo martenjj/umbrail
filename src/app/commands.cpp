@@ -221,7 +221,7 @@ void ChangeItemDataCommand::redo()
     mSavedValues.clear();
 
     const int idx = DataIndexer::index(mKey);
-    for (TrackDataItem *item : qAsConst(mDataItems))
+    for (TrackDataItem *item : std::as_const(mDataItems))
     {
         Q_ASSERT(item!=nullptr);
         qDebug() << "item" << item->name() << "data" << mKey << "->" << mNewValue;
@@ -240,7 +240,7 @@ void ChangeItemDataCommand::undo()
     Q_ASSERT(mSavedValues.count()==mDataItems.count());
 
     const int idx = DataIndexer::index(mKey);
-    for (TrackDataItem *item : qAsConst(mDataItems))
+    for (TrackDataItem *item : std::as_const(mDataItems))
     {
         Q_ASSERT(item!=nullptr);
         QVariant savedValue = mSavedValues.takeFirst();

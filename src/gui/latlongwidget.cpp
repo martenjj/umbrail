@@ -121,7 +121,7 @@ void LatLongWidget::setLatLong(double lat, double lon)
     mLatitude = lat;
     mLongitude = lon;
 
-    for (AbstractCoordinateHandler *handler : qAsConst(mHandlers)) handler->setLatLong(lat, lon);
+    for (AbstractCoordinateHandler *handler : std::as_const(mHandlers)) handler->setLatLong(lat, lon);
 }
 
 
@@ -137,7 +137,7 @@ void LatLongWidget::slotValueChanged()
     mLatitude = changedHandler->getLatitude();
     mLongitude = changedHandler->getLongitude();
 
-    for (AbstractCoordinateHandler *handler : qAsConst(mHandlers))
+    for (AbstractCoordinateHandler *handler : std::as_const(mHandlers))
     {
         // apart from the one just changed
         if (handler!=changedHandler) handler->setLatLong(mLatitude, mLongitude);
@@ -159,7 +159,7 @@ bool LatLongWidget::hasAcceptableInput() const
 {
     bool ok = true;					// assume so to start
 
-    for (const AbstractCoordinateHandler *handler : qAsConst(mHandlers))
+    for (const AbstractCoordinateHandler *handler : std::as_const(mHandlers))
     {
         if (!handler->hasAcceptableInput()) ok = false;
     }

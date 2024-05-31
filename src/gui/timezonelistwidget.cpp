@@ -89,7 +89,7 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         zonesByCity.insert(i18n(utc.id().constData()), utc);
     }
 
-    for (const QByteArray &zoneId : qAsConst(zoneIds))
+    for (const QByteArray &zoneId : std::as_const(zoneIds))
     {
         const QTimeZone zone(zoneId);
         const QString continentCity = zone.id();
@@ -107,7 +107,7 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
     }
     std::sort(cities.begin(), cities.end(), localeLessThan);
 
-    for (const QString &key : qAsConst(cities))
+    for (const QString &key : std::as_const(cities))
     {
         const QTimeZone zone = zonesByCity.value(key);
         const QByteArray tzName = zone.id();

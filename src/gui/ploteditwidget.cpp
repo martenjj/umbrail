@@ -188,7 +188,7 @@ QString PlotEditWidget::plotData() const
     qDebug() << "fields" << mFields.count();
 
     QStringList values;
-    for (const QSpinBox *box : qAsConst(mFields)) values.append(QString::number(box->value()));
+    for (const QSpinBox *box : std::as_const(mFields)) values.append(QString::number(box->value()));
     return (values.join(';'));
 }
 

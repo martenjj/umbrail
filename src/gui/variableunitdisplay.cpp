@@ -166,9 +166,9 @@ void VariableUnitDisplay::showEvent(QShowEvent *ev)
     // Run through the sibling chain, and find the longest display
     // width of all their combo boxes.
     int maxSize = 0;
-    for (const VariableUnitDisplay *vud : qAsConst(siblings)) maxSize = qMax(maxSize, vud->mUnitCombo->width());
+    for (const VariableUnitDisplay *vud : std::as_const(siblings)) maxSize = qMax(maxSize, vud->mUnitCombo->width());
     // Set all of the combo boxes to that as their minimum width.
-    for (VariableUnitDisplay *vud : qAsConst(siblings)) vud->mUnitCombo->setMinimumWidth(maxSize);
+    for (VariableUnitDisplay *vud : std::as_const(siblings)) vud->mUnitCombo->setMinimumWidth(maxSize);
 }
 
 
