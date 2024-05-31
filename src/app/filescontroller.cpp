@@ -93,11 +93,11 @@ FilesController::FilesController(QObject *pnt)
 
     mDataModel = new FilesModel(this);
     connect(mDataModel, &FilesModel::dataChanged, this, [this](const QModelIndex &start, const QModelIndex &end){ slotUpdateActionState(); });
+    connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
 
     mView = new FilesView(mainWidget());
     mView->setModel(mDataModel);
-
-    connect(mDataModel, &FilesModel::dragDropItems, this, &FilesController::slotDragDropItems);
+    connect(mView, &FilesView::updateActionState, this, &FilesController::slotUpdateActionState);
 
     mWarnedNoTimezone = false;
 }
