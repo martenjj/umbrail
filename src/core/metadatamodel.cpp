@@ -130,7 +130,7 @@ case Qt::DisplayRole:					// formatted display data
 case COL_NAME:
             return (DataIndexer::name(row));
 case COL_VALUE:
-            switch (v.type())
+            switch (v.typeId())
             {
 case QMetaType::QDateTime:
                 return (v.toDateTime().toString(Qt::ISODate));

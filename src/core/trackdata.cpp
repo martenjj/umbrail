@@ -300,20 +300,20 @@ QVariant TrackData::valueOrNull(const QVariant &value)
     // Do not do this test with QVariant::canConvert(QMetaType::QString),
     // there are many types that can be converted to a QString but we
     // want to make sure that the value really is a string.
-    if (val.type()==QVariant::String || val.type()==QVariant::ByteArray)
+    if (val.typeId()==QVariant::String || val.typeId()==QVariant::ByteArray)
     {
         if (val.toString().isEmpty()) val.clear();
     }
 
     // The same reasoning as above applies to a colour value.
-    if (val.type()==QVariant::Color)
+    if (val.typeId()==QVariant::Color)
     {
         if (!val.value<QColor>().isValid()) val.clear();
     }
 
     // And also to a string list.  No other sort of list is ever
     // stored in item metadata.
-    if (val.type()==QVariant::StringList)
+    if (val.typeId()==QVariant::StringList)
     {
         if (val.toStringList().isEmpty()) val.clear();
     }
