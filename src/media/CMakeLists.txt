@@ -35,19 +35,22 @@ set(media_SRCS
   photoviewer.cpp
 )
 
-if (Phonon4Qt5_FOUND)
+if (Phonon4Qt${QV}_FOUND)
   set(media_SRCS ${media_SRCS} videoviewer.cpp)
   add_definitions("-DHAVE_PHONON=1")
-endif (Phonon4Qt5_FOUND)
+endif ()
 
 add_library(${PN}media STATIC ${media_SRCS})
+target_include_directories(${PN}media PRIVATE ${LIBKFDIALOG_INCLUDES})
 target_link_libraries(${PN}media
-  Qt5::Core
-  KF5::Parts
+  Qt${QV}::Core
+  KF${QV}::Parts
+  KF${QV}::KIOWidgets
   ${PN}core
   ${PN}settings
+  ${LIBKFDIALOG_LIBRARIES}
 )
 
-if (Phonon4Qt5_FOUND)
-  target_link_libraries(${PN}media Phonon::phonon4qt5)
-endif (Phonon4Qt5_FOUND)
+if (Phonon4Qt${QV}_FOUND)
+  target_link_libraries(${PN}media Phonon::phonon4qt${QV})
+endif ()

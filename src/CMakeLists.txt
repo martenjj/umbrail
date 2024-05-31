@@ -43,40 +43,33 @@ option(OPEN_WITH_BING "Enable external map browsing with Bing Maps" ON)
 #									#
 #########################################################################
 
-find_package(Qt5 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO Crash Auth)
+find_package(Qt${QV} ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
+find_package(KF${QV} ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO Crash TextWidgets)
+
+# Needed to build with Marble, otherwise
+#
+#  CMake Error at /usr/lib64/cmake/Marble/MarbleTargets.cmake:61 (set_target_properties):
+#    The link interface of target "Marble" contains:
+#
+#      Qt6::Core5Compat
+#
+#    but the target was not found.  Possible reasons include:
+#
+find_package(Qt${QV} ${QT_MIN_VERSION} REQUIRED COMPONENTS Core5Compat)
 
 find_package(Marble REQUIRED NO_POLICY_SCOPE)
-find_package(Phonon4Qt5 NO_POLICY_SCOPE)
-find_package(KF5KExiv2 NO_POLICY_SCOPE)
+find_package(Phonon4Qt${QV} NO_POLICY_SCOPE)
 find_package(LibKFDialog REQUIRED NO_POLICY_SCOPE)
 
-# find_package(QCustomPlot) is currently untested, my distro
-# does not provide any CMake or package config for QCustomPlot.
-find_package(QCustomPlot NO_POLICY_SCOPE QUIET)
-if (QCustomPlot_FOUND)
-  message(STATUS "Found external QCustomPlot package")
-  set(QCUSTOMPLOT_FOUND TRUE)
-  set(QCUSTOMPLOT_LIB ${QCUSTOMPLOT_LIBRARIES})
-else (QCustomPlot_FOUND)
-  find_library(QCUSTOMPLOT_LIB qcustomplot)
-  find_file(QCUSTOMPLOT_HDR qcustomplot.h)
-
-  if (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
-    message(STATUS "Found external QCustomPlot library")
-    set(QCUSTOMPLOT_FOUND TRUE)
-    get_filename_component(QCUSTOMPLOT_INCLUDES ${QCUSTOMPLOT_HDR} DIRECTORY)
-  else (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
-    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-      message(STATUS "Could not find external QCustomPlot, using internal source")
-      set(QCUSTOMPLOT_FOUND TRUE)
-      set(QCUSTOMPLOT_INTERNAL TRUE)
-      set(QCUSTOMPLOT_LIB "qcustomplot")
-      # No need to set QCUSTOMPLOT_INCLUDES, linking to QCUSTOMPLOT_LIB
-      # will add the internal source directory to the search path.
-    endif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-  endif (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
-endif (QCustomPlot_FOUND)
+if (${QV} GREATER_EQUAL 6)
+  set (KEXIV2_PACKAGE_NAME "KExiv2Qt${QV}")
+else ()
+  set (KEXIV2_PACKAGE_NAME "KF${QV}KExiv2")
+endif ()
+find_package(${KEXIV2_PACKAGE_NAME} NO_POLICY_SCOPE)
+if (${${KEXIV2_PACKAGE_NAME}_FOUND})
+  set (KEXIV2_FOUND ON)
+endif ()
 
 if (QCUSTOMPLOT_FOUND)
   message(STATUS "QCustomPlot library: ${QCUSTOMPLOT_LIB}")
@@ -93,8 +86,8 @@ if (NOT WIN32)
 endif (NOT WIN32)
 
 set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL "http://marble.kde.org" TYPE REQUIRED PURPOSE "Required for map display")
-set_package_properties("Phonon4Qt5" PROPERTIES DESCRIPTION "Multimedia playback library" URL "https://invent.kde.org/libraries/phonon" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
-set_package_properties("KF5KExiv2" PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "https://invent.kde.org/graphics/libkexiv2" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
+set_package_properties("Phonon4Qt${QV}" PROPERTIES DESCRIPTION "Multimedia playback library" URL "https://invent.kde.org/libraries/phonon" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
+set_package_properties(${KEXIV2_PACKAGE_NAME} PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "https://invent.kde.org/graphics/libkexiv2" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 set_package_properties("LibKFDialog" PROPERTIES DESCRIPTION "KDE Frameworks dialogue utility library" URL "https://github.com/martenjj/libkfdialog" TYPE REQUIRED PURPOSE "Required to build the project")
 set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and data visualization" URL "https://www.qcustomplot.com" TYPE OPTIONAL PURPOSE "Required for the profile display, internal source will be used if not found")
 
@@ -127,14 +120,15 @@ remove_definitions("-DQT_NO_FOREACH")
 #									#
 #########################################################################
 
-add_definitions("-DPROJECT_NAME=\\\"${PN}\\\"")
+add_definitions("-DPROJECT_NAME=\"${PN}\"")
+add_definitions("-DKF_DIR=\"kf${QV}\"")
 
 set(ACH_PLUGIN_STRING "uk.me.keelhaul.${PN}.AbstractCoordinateHandler")
 # I don't know exactly where or by what the quoting is being
 # handled differently, but these separate definitions are needed
 # for compliation and automoc!
 set(CMAKE_AUTOMOC_MOC_OPTIONS "-DACH_PLUGIN_IID=\"${ACH_PLUGIN_STRING}\"")
-add_definitions("-DACH_PLUGIN_IID=\\\"${ACH_PLUGIN_STRING}\\\"")
+add_definitions("-DACH_PLUGIN_IID=\"${ACH_PLUGIN_STRING}\"")
 
 if (OPEN_WITH_GOOGLE)
   add_definitions("-DENABLE_OPEN_WITH_GOOGLE")
@@ -152,8 +146,8 @@ endif (OPEN_WITH_BING)
 kconfig_add_kcfg_files(settings_SRCS settings.kcfgc)
 add_library(${PN}settings STATIC ${settings_SRCS})
 target_link_libraries(${PN}settings
-  KF5::ConfigCore
-  KF5::ConfigGui
+  KF${QV}::ConfigCore
+  KF${QV}::ConfigGui
 )
 
 #########################################################################
@@ -161,10 +155,6 @@ target_link_libraries(${PN}settings
 #  Subdirectories							#
 #									#
 #########################################################################
-
-if (QCUSTOMPLOT_INTERNAL)
-  add_subdirectory(../qcustomplot)
-endif (QCUSTOMPLOT_INTERNAL)
 
 add_subdirectory(core)
 add_subdirectory(services)

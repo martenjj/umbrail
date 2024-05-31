@@ -47,11 +47,11 @@ set(map_SRCS
 
 add_library(${PN}map STATIC ${map_SRCS})
 target_link_libraries(${PN}map
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Widgets
-  KF5::I18n
-  KF5::XmlGui
+  Qt${QV}::Core
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
+  KF${QV}::XmlGui
   ${PN}core
   ${PN}settings
   ${PN}gui

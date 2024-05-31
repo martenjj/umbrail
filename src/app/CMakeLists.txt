@@ -57,19 +57,20 @@ if (QCUSTOMPLOT_FOUND)
   endif (NOT QCUSTOMPLOT_INTERNAL)
 endif (QCUSTOMPLOT_FOUND)
 
-if (KF5KExiv2_FOUND)
+if (KEXIV2_FOUND)
   add_definitions("-DHAVE_KEXIV2")
-endif (KF5KExiv2_FOUND)
+endif ()
 
 add_executable(${PN} ${app_SRCS})
 target_link_libraries(${PN}
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Widgets
-  Qt5::PrintSupport
-  KF5::I18n
-  KF5::XmlGui
-  KF5::Crash
+  Qt${QV}::Core
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  Qt${QV}::PrintSupport
+  KF${QV}::I18n
+  KF${QV}::XmlGui
+  KF${QV}::Crash
+  KF${QV}::TextWidgets
   ${PN}core
   ${PN}settings
   ${PN}gui
@@ -78,9 +79,13 @@ target_link_libraries(${PN}
   ${PN}io
   ${LIBKFDIALOG_LIBRARIES}
 )
-if (KF5KExiv2_FOUND)
-  target_link_libraries(${PN} KF5::KExiv2)
-endif (KF5KExiv2_FOUND)
+if (KEXIV2_FOUND)
+  if (${QV} GREATER_EQUAL 6)
+    target_link_libraries(${PN} KExiv2Qt${QV})
+  else ()
+    target_link_libraries(${PN} KF${QV}::KExiv2)
+  endif ()
+endif ()
 if (QCUSTOMPLOT_FOUND)
   target_link_libraries(${PN} ${QCUSTOMPLOT_LIB})
 endif (QCUSTOMPLOT_FOUND)

@@ -33,7 +33,7 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # see https://gcc.gnu.org/wiki/Visibility
-add_definitions("-DPLUGIN_EXPORT='__attribute__ ((visibility (\"default\")))'")
+add_definitions("-DPLUGIN_EXPORT=__attribute__ ((visibility (\"default\")))")
 
 #########################################################################
 #									#
@@ -43,7 +43,7 @@ add_definitions("-DPLUGIN_EXPORT='__attribute__ ((visibility (\"default\")))'")
 
 add_library(${PN}coordinate SHARED abstractcoordinatehandler.cpp)
 set_target_properties(${PN}coordinate PROPERTIES SOVERSION "1.0.0")
-target_link_libraries(${PN}coordinate Qt5::Core Qt5::Gui Qt5::Widgets)
+target_link_libraries(${PN}coordinate Qt${QV}::Core Qt${QV}::Gui Qt${QV}::Widgets)
 
 if (INSTALL_BINARIES)
   install(TARGETS ${PN}coordinate ${INSTALL_TARGETS_DEFAULT_ARGS})
@@ -55,13 +55,15 @@ endif (INSTALL_BINARIES)
 #									#
 #########################################################################
 
+include_directories(${LIBKFDIALOG_INCLUDES})
+
 # Decimal
 add_library(decimalcoordinate MODULE decimalcoordinate.cpp)
 target_link_libraries(decimalcoordinate
   ${PN}coordinate
-  Qt5::Gui
-  Qt5::Widgets
-  KF5::I18n
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
   ${PN}core
   ${LIBKFDIALOG_LIBRARIES}
 )
@@ -73,9 +75,9 @@ endif (INSTALL_BINARIES)
 add_library(dmscoordinate MODULE dmscoordinate.cpp)
 target_link_libraries(dmscoordinate
   ${PN}coordinate
-  Qt5::Gui
-  Qt5::Widgets
-  KF5::I18n
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
   ${PN}core
   ${LIBKFDIALOG_LIBRARIES}
 )
@@ -87,9 +89,9 @@ endif (INSTALL_BINARIES)
 add_library(swisscoordinate MODULE swisscoordinate.cpp)
 target_link_libraries(swisscoordinate
   ${PN}coordinate
-  Qt5::Gui
-  Qt5::Widgets
-  KF5::I18n
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
   ${PN}core
   ${LIBKFDIALOG_LIBRARIES}
 )
@@ -101,10 +103,10 @@ endif (INSTALL_BINARIES)
 add_library(osgbcoordinate MODULE osgbcoordinate.cpp)
 target_link_libraries(osgbcoordinate
   ${PN}coordinate
-  Qt5::Gui
-  Qt5::Widgets
-  KF5::I18n
-  KF5::ConfigWidgets
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
+  KF${QV}::ConfigWidgets
   ${PN}core
   ${LIBKFDIALOG_LIBRARIES}
 )
