@@ -26,6 +26,14 @@
 
 #########################################################################
 #									#
+#  Dependencies								#
+#									#
+#########################################################################
+
+find_package(Qt${QV} ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets)
+
+#########################################################################
+#									#
 #  Compile options for QCustomPlot only					#
 #									#
 #########################################################################
@@ -38,6 +46,11 @@ add_compile_options(-Wno-shadow)
 # warning: 'virtual type class::member()' can be marked override
 add_compile_options(-Wno-suggest-override)
 
+remove_definitions("-DQT_NO_KEYWORDS")
+# TODO: remove this removal when QCustomPlot has been updated
+# to not use 'foreach'
+remove_definitions("-DQT_NO_FOREACH")
+
 #########################################################################
 #									#
 #  Building the target							#
@@ -46,7 +59,7 @@ add_compile_options(-Wno-suggest-override)
 
 add_library(qcustomplot STATIC qcustomplot.cpp)
 target_link_libraries(qcustomplot
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Widgets
+  Qt${QV}::Core
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
 )
