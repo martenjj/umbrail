@@ -84,7 +84,7 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         zoneIds = QTimeZone::availableTimeZoneIds();
         // add UTC to the default list
         QTimeZone utc = QTimeZone::utc();
-        qDebug() << "UTC: dn" << i18n(utc.id().constData()) << "country" << utc.country();
+        qDebug() << "UTC: dn" << i18n(utc.id().constData()) << "territory" << utc.territory();
         cities.append(i18n(utc.id().constData()));
         zonesByCity.insert(i18n(utc.id().constData()), utc);
     }
@@ -130,17 +130,17 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         // from http://stackoverflow.com/questions/24109270/getting-country-code-for-qlocalecountry
         QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage,
                                                           QLocale::AnyScript,
-                                                          zone.country());
+                                                          zone.territory());
         if (!locales.isEmpty())
         {
             countryCode = locales.first().name();
             if (countryCode.contains('_')) countryCode = countryCode.section('_', -1).toLower();
         }
-        else qWarning() << "no locales found for country" << zone.country();
+        else qWarning() << "no locales found for territory" << zone.territory();
 #ifdef DEBUG_ZONES
         qDebug() << "  country code" << countryCode;
 #endif
-        QString countryName = QLocale::countryToString(zone.country());
+        QString countryName = QLocale::territoryToString(zone.territory());
 #ifdef Q_OS_UNIX
         if (countryCode=="C") countryName = i18n("POSIX");
 #endif
