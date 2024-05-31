@@ -32,10 +32,15 @@
 #include <qpixmap.h>
 #include <qtimezone.h>
 #include <qdatetime.h>
-#include <qstandardpaths.h>
 
 #include <klocalizedstring.h>
 
+#include <kguiaddons_version.h>
+#if KGUIADDONS_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <kcountryflagemojiiconengine.h>
+#else
+#include <qstandardpaths.h>
+#endif
 
 #undef DEBUG_ZONES
 
@@ -159,10 +164,17 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         listItem->setText(CommentColumn, comment);
         listItem->setData(CityColumn, ZoneRole, tzName);	// store zone ID in custom role
 
+#if KGUIADDONS_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // Generate the flag using the Noto Emoji font
+        KCountryFlagEmojiIconEngine engine(countryCode);
+        if (!engine.isNull()) listItem->setIcon(RegionColumn, engine.pixmap(QSize(22, 22), QIcon::Normal, QIcon::Off));
+#else
         // Locate the flag from share/kf5/locale/countries/%1/flag.png
+        // which is provided by KDELibs4Support
         QString flag = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
                                               QString("kf5/locale/countries/%1/flag.png").arg(countryCode));
         if (QFile::exists(flag)) listItem->setIcon(RegionColumn, QPixmap(flag));
+#endif
     }
 }
 

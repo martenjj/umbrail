@@ -61,6 +61,7 @@ target_link_libraries(${PN}gui
   KF${QV}::Completion
   KF${QV}::ConfigCore
   KF${QV}::ConfigWidgets
+  KF${QV}::GuiAddons
   KF${QV}::ItemViews
   KF${QV}::XmlGui
   ${PN}core

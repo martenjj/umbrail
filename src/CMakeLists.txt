@@ -44,7 +44,7 @@ option(OPEN_WITH_BING "Enable external map browsing with Bing Maps" ON)
 #########################################################################
 
 find_package(Qt${QV} ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Gui Widgets PrintSupport)
-find_package(KF${QV} ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO Crash TextWidgets)
+find_package(KF${QV} ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui Parts IconThemes ItemViews KIO Crash TextWidgets GuiAddons)
 
 # Needed to build with Marble, otherwise
 #
