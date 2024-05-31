@@ -148,6 +148,11 @@ void MainWindow::init()
 
 MainWindow::~MainWindow()
 {
+    // Disconnect all of its connected signals to avoid the canUndoChanged()
+    // signal getting back to us when QUndoStack::clear() is called internally
+    // during its destruction.
+    disconnect(mUndoStack, nullptr, nullptr, nullptr);
+
     qDebug() << "done";
 }
 
