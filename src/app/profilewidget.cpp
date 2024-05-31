@@ -529,7 +529,7 @@ void ProfileWidget::getPlotData(const TrackDataAbstractPoint *point)
         // do time zone conversion
         if (mTimeZone!=nullptr) dt = dt.toUTC().toTimeZone(*mTimeZone);
 
-        time_t tm = dt.toTime_t();
+        time_t tm = dt.toSecsSinceEpoch();
 
         if (mTimeZone!=nullptr)				// file time zone available
         {

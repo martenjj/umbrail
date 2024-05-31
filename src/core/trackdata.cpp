@@ -25,7 +25,6 @@
 
 #include "trackdata.h"
 
-#include <qregexp.h>
 #include <qdebug.h>
 #include <qtimezone.h>
 #include <qicon.h>
@@ -519,9 +518,9 @@ TrackData::MediaType TrackDataItem::mediaType() const
     QString ns = n.toString();
     // TODO: should get MIME type for extension and then compare against recognised ones
     // or even look for a general category (audio/... video/... image/... respectively)
-    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::MediaAudioNote);
-    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::MediaVideoNote);
-    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::MediaPhoto);
+    if (ns.endsWith(".3gp", Qt::CaseInsensitive)) return (TrackData::MediaAudioNote);
+    if (ns.endsWith(".mp4", Qt::CaseInsensitive)) return (TrackData::MediaVideoNote);
+    if (ns.endsWith(".jpg", Qt::CaseInsensitive)) return (TrackData::MediaPhoto);
     return (TrackData::MediaNormal);
 }
 

@@ -27,7 +27,6 @@
 
 #include <qgridlayout.h>
 #include <qapplication.h>
-#include <qdesktopwidget.h>
 #include <qlabel.h>
 #include <qtimer.h>
 #include <qdebug.h>

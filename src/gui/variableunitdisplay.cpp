@@ -46,7 +46,7 @@ VariableUnitDisplay::VariableUnitDisplay(VariableUnitCombo::DisplayType type, QW
     setObjectName("VariableUnitDisplay");
 
     QHBoxLayout *hb = new QHBoxLayout(this);
-    hb->setMargin(0);
+    hb->setContentsMargins(0, 0, 0, 0);
 
     mValue = 0.0;
 

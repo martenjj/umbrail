@@ -55,6 +55,7 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
 
     mPart = nullptr;
     QString errorString;
+    KPluginFactory::Result<KParts::ReadOnlyPart> result;
 
     QString viewMode = Settings::photoViewMode();	// selected view mode from settings
     qDebug() << "view mode from settings" << viewMode;
@@ -73,10 +74,8 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
         // from https://techbase.kde.org/Development/Tutorials/Using_KParts
         mPart = service->createInstance<KParts::ReadOnlyPart>(this, nullptr, QVariantList(), &errorString);
 #else
-        const KPluginMetaData pluginData("kf5/parts/"+viewMode);
-        auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(pluginData);
-        mPart = result.plugin;
-        if (mPart==nullptr) errorString = result.errorString;
+        const KPluginMetaData pluginData((KF_DIR "/parts/")+viewMode);
+        result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(pluginData);
 #endif
     }
     else
@@ -85,10 +84,11 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
         QMimeType mimeType = db.mimeTypeForUrl(url);
         qDebug() << "mime type" << mimeType.name();	// create part for MIME type
 
-        mPart = KParts::PartLoader::createPartInstanceForMimeType<KParts::ReadOnlyPart>(mimeType.name(),
-                                                                                        this, this, &errorString);
+        result = KParts::PartLoader::instantiatePartForMimeType<KParts::ReadOnlyPart>(mimeType.name(), this, this);
     }
 
+    mPart = result.plugin;
+    errorString = result.errorString;
     if (mPart==nullptr)
     {
         qWarning() << "Unable to create viewer part," << errorString;

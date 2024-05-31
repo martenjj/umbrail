@@ -54,7 +54,7 @@ PlotEditWidget::PlotEditWidget(PlotEditWidget::EntryType type, QWidget *parent)
     mType = type;
 
     mLayout = new QGridLayout(this);
-    mLayout->setMargin(0);
+    mLayout->setContentsMargins(0, 0, 0, 0);
     mLayout->setColumnStretch(1, 1);
 
     QLabel *l = new QLabel(titleFor(type), this);

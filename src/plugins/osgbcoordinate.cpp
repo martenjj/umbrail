@@ -31,7 +31,7 @@
 #include <qcombobox.h>
 #include <qlabel.h>
 #include <qgridlayout.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qdebug.h>
 #include <qpushbutton.h>
 #include <qstandardpaths.h>
@@ -454,17 +454,17 @@ static bool getOSGBFromRef(const QString &refStr, OSGBRef *gridRef)
     qDebug() << refStr;
 #endif
     // check for fully numeric comma-separated gridref format
-    QRegExp rx1("^(\\d+),\\s*(\\d+)$");
-    if (refStr.contains(rx1))
+    const QRegularExpression rx1("^(\\d+),\\s*(\\d+)$");
+    const QRegularExpressionMatch match1 = rx1.match(refStr);
+    if (match1.hasMatch())
     {
-        gridRef->E = rx1.cap(1).toInt();
-        gridRef->N = rx1.cap(2).toInt();
+        gridRef->E = match1.captured(1).toInt();
+        gridRef->N = match1.captured(2).toInt();
         return (true);
     }
 
     // validate format
-    QRegExp rx2("^[A-Z]{2}\\s*[0-9]+\\s*[0-9]+$");
-    rx2.setCaseSensitivity(Qt::CaseInsensitive);
+    const QRegularExpression rx2("^[A-Z]{2}\\s*[0-9]+\\s*[0-9]+$", QRegularExpression::CaseInsensitiveOption);
     if (!refStr.contains(rx2))
     {
         qDebug() << "invalid grid reference" << refStr;
@@ -485,7 +485,7 @@ static bool getOSGBFromRef(const QString &refStr, OSGBRef *gridRef)
     qDebug() << "e100km" << e100km << "n100km" << n100km;
 #endif
     // skip grid letters to get numeric (easting/northing) part of ref
-    QStringList en = refStr.mid(2).trimmed().split(QRegExp("\\s+"));
+    QStringList en = refStr.mid(2).trimmed().split(QRegularExpression("\\s+"));
     // if E/N not whitespace separated, split halfway
     if (en.count()==1)
     {
@@ -631,7 +631,7 @@ QWidget *OSGBCoordinateHandler::createWidget(QWidget *pnt)
 
     mReferenceEdit = new QLineEdit(w);
     // validator which accepts 2, 4, 6, 8 or 10 digits
-    QRegExpValidator *rv = new QRegExpValidator(QRegExp("(\\d\\d){1,5}"), w);
+    QRegularExpressionValidator *rv = new QRegularExpressionValidator(QRegularExpression("(\\d\\d){1,5}"), w);
     mReferenceEdit->setValidator(rv);
     connect(mReferenceEdit, &QLineEdit::textEdited, this, &OSGBCoordinateHandler::slotReferenceChanged);
     gl->addWidget(mReferenceEdit, 0, 4);

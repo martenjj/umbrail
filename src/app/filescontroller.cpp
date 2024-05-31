@@ -359,8 +359,7 @@ static int fileExists(const QUrl &file)
     {
         qDebug() << "stat remote" << file;
 
-        KIO::StatJob *job = KIO::statDetails(file, KIO::StatJob::DestinationSide,
-                                             KIO::StatBasic|KIO::StatResolveSymlink);
+        KIO::StatJob *job = KIO::stat(file, KIO::StatJob::DestinationSide, KIO::StatBasic|KIO::StatResolveSymlink);
         bool ok = job->exec();
         qDebug() << "job result" << ok << "error" << job->error();
 
@@ -601,6 +600,11 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         double lat, lon;
         const TrackDataAbstractPoint *sourcePoint = nullptr;
 
+        QString messageText;
+        QString statusText;
+        bool matched = false;
+        QDateTime dt;
+
 #ifdef HAVE_KEXIV2
         KExiv2 exi(importFrom.toLocalFile());
         qDebug() << "Exiv2 data:";
@@ -608,14 +612,10 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         qDebug() << "  orientation" << exi.getImageOrientation();
 
         // This appears to return the date/time in Qt::LocalTime specification.
-        QDateTime dt = exi.getImageDateTime();
+        dt = exi.getImageDateTime();
         qDebug() << "  datetime" << dt << "spec" << dt.timeSpec();
         bool gpsValid = exi.getGPSInfo(alt,lat,lon);
         qDebug() << "  gps valid?" << gpsValid << "alt" << alt << "lat" << lat << "lon" << lon;
-
-        QString messageText;
-        QString statusText;
-        bool matched = false;
 
         adjustTimeSpec(dt);				// check time, even if using GPS
 
@@ -708,7 +708,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         AddPhotoCommand *cmd2 = new AddPhotoCommand(this, cmd);
         cmd2->setData(importFrom.fileName(), lat, lon, foundFolder, sourcePoint);
         cmd2->setLink(importFrom);
-        cmd2->setTime(dt);
+        if (dt.isValid()) cmd2->setTime(dt);
 
         emit statusMessage(statusText);
     }

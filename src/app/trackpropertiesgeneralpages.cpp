@@ -231,7 +231,7 @@ void TrackItemGeneralPage::addPositionFields(const QList<TrackDataItem *> *items
 
     QWidget *hb = new QWidget(this);
     QHBoxLayout *hlay = new QHBoxLayout(hb);
-    hlay->setMargin(0);
+    hlay->setContentsMargins(0, 0, 0, 0);
     hlay->setSpacing(DialogBase::horizontalSpacing());
     mPositionLabel = new TrackDataLabel(QString(), this);
     hlay->addWidget(mPositionLabel);
@@ -453,7 +453,7 @@ default:				typeName = i18n("(Unknown)");	break;
         QWidget *hb = new QWidget(this);
         hb->setContentsMargins(0, 0, 0, 0);
         QHBoxLayout *hlay = new QHBoxLayout(hb);
-        hlay->setMargin(0);
+        hlay->setContentsMargins(0, 0, 0, 0);
         hlay->setSpacing(DialogBase::horizontalSpacing());
 
         QLabel *l = new QLabel(typeName, this);

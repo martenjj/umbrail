@@ -44,7 +44,7 @@ TimeZoneDisplay::TimeZoneDisplay(QWidget *pnt)
     setObjectName("TimeZoneDisplay");
 
     QGridLayout *gl = new QGridLayout(this);
-    gl->setMargin(0);
+    gl->setContentsMargins(0, 0, 0, 0);
 
     mZoneDisplay = new QLineEdit(this);
     mZoneDisplay->setReadOnly(true);

@@ -212,7 +212,7 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
     double lat = NAN;					// coordinates found
     double lon = NAN;
 
-    QStringRef val = atts.value("lat");
+    QStringView val = atts.value("lat");
     if (!val.isEmpty()) lat = val.toDouble();
     val = atts.value("lon");
     if (!val.isEmpty()) lon = val.toDouble();
@@ -222,7 +222,7 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
 }
 
 
-bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &encoding)
+bool GpxImporter::startDocument(const QStringView &version, const QStringView &encoding)
 {
 #ifdef DEBUG_DETAILED
     std::cerr << std::endl << qPrintable(indent()) << "START DOCUMENT"
@@ -427,7 +427,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
 
     if (localName=="gpx")				// start of a GPX element
     {
-        QStringRef val = atts.value("version");
+        QStringView val = atts.value("version");
         if (!val.isEmpty()) mDataRoot->setMetadata(DataIndexer::index("version"), val.toString());
         val = atts.value("creator");
         if (!val.isEmpty()) mDataRoot->setMetadata(DataIndexer::index("creator"), val.toString());
@@ -540,7 +540,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             return (addError("LINK not within WPT"));
         }
 
-        QStringRef link = atts.value("link");
+        QStringView link = atts.value("link");
         if (link.isEmpty()) link = atts.value("href");
         if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName), link.toString());
         else addWarning("missing LINK/HREF attribute on LINK element");
@@ -731,7 +731,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     TrackDataItem *item = currentItem();		// find innermost current element
     if (item!=nullptr) item->setMetadata(idx, elementText);
     else if (mWithinMetadata) mDataRoot->setMetadata(idx, elementText);
-    else addWarning("unrecognised "+localName.toUpper()+" not expected here");
+    else addWarning(QString("unrecognised %1 not expected here").arg(localName.toUpper()));
 
     return (true);
 }
@@ -767,7 +767,7 @@ bool GpxImporter::endDocument()
 // This is still necessary, because readElementText() will not work
 // as described in startElement().
 
-bool GpxImporter::characters(const QStringRef &ch)
+bool GpxImporter::characters(const QStringView &ch)
 {
 #ifdef DEBUG_DETAILED
     std::cerr << qPrintable(indent()) << "= '" << qPrintable(ch.toLocal8Bit()) << "'" << std::endl;
@@ -841,9 +841,9 @@ bool GpxImporter::needsResave() const
 // needsResave() and the user will be prompted to resave the file in order
 // to update it with the correct namespace declaration.
 
-void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
-                                 const QStringRef &localName,
-                                 const QStringRef &nsPrefix)
+void GpxImporter::checkNamespace(const QStringView &namespaceURI,
+                                 const QStringView &localName,
+                                 const QStringView &nsPrefix)
 {
     if (nsPrefix.isEmpty()) return;			// no namespace to check
 

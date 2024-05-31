@@ -37,6 +37,7 @@
 #include <kio/job.h>
 #include <kio/applicationlauncherjob.h>
 #include <kio/jobuidelegatefactory.h>
+#include <kio/filecopyjob.h>
 
 #ifdef HAVE_PHONON
 #include <phonon/mediaobject.h>
