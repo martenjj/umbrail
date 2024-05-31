@@ -74,7 +74,7 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
         // from https://techbase.kde.org/Development/Tutorials/Using_KParts
         mPart = service->createInstance<KParts::ReadOnlyPart>(this, nullptr, QVariantList(), &errorString);
 #else
-        const KPluginMetaData pluginData((KF_DIR "/parts/")+viewMode);
+        const KPluginMetaData pluginData((QString("kf%1/parts").arg(QT_VERSION_MAJOR))+viewMode);
         result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(pluginData);
 #endif
     }

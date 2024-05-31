@@ -121,7 +121,6 @@ remove_definitions("-DQT_NO_FOREACH")
 #########################################################################
 
 add_definitions("-DPROJECT_NAME=\"${PN}\"")
-add_definitions("-DKF_DIR=\"kf${QV}\"")
 
 set(ACH_PLUGIN_STRING "uk.me.keelhaul.${PN}.AbstractCoordinateHandler")
 # I don't know exactly where or by what the quoting is being
