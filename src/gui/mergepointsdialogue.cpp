@@ -134,7 +134,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
 
     TrackData::WaypointFlags f = TrackData::NewlyImported;
     QStringList combinedOrgs;
-    for (const TrackDataWaypoint *tdw : qAsConst(*mPoints))
+    for (const TrackDataWaypoint *tdw : std::as_const(*mPoints))
     {
         TrackData::WaypointFlags f1 = static_cast<TrackData::WaypointFlags>(tdw->metadata("flags").toInt());
         if (!(f1 & TrackData::NewlyImported)) f &= ~TrackData::NewlyImported;
@@ -190,7 +190,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
             name=="desc" || name=="time" || name=="link" || name=="pointcolor") continue;
 
         QVariant rv;					// result found to be copied
-        for (const TrackDataWaypoint *tdw : qAsConst(*mPoints))
+        for (const TrackDataWaypoint *tdw : std::as_const(*mPoints))
         {						// look at all input points
             QVariant v = tdw->metadata(name);		// data from that point
             if (v.isNull()) continue;			// ignore if there is none
@@ -294,7 +294,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
 
         // Categories - pre-merge the lists
         const QStringList cats = tdw->metadata("category").toStringList();
-        for (const QString &cat : qAsConst(cats))
+        for (const QString &cat : std::as_const(cats))
         {
             if (!mCombinedCats.contains(cat)) mCombinedCats.append(cat);
         }

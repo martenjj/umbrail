@@ -57,16 +57,23 @@ set(gui_SRCS
 )
 
 add_library(${PN}gui STATIC ${gui_SRCS})
+target_include_directories(${PN}gui PRIVATE ${LIBKFDIALOG_INCLUDES})
 target_link_libraries(${PN}gui
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Widgets
-  KF5::I18n
-  KF5::ItemViews
+  Qt${QV}::Core
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
+  KF${QV}::Completion
+  KF${QV}::ConfigCore
+  KF${QV}::ConfigWidgets
+  KF${QV}::GuiAddons
+  KF${QV}::ItemViews
+  KF${QV}::XmlGui
   ${PN}core
   ${PN}models
   ${PN}io
   ${PN}settings
   ${PN}services
   ${PN}coordinate
+  ${LIBKFDIALOG_LIBRARIES}
 )

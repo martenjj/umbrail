@@ -42,10 +42,11 @@ set(io_SRCS
 
 add_library(${PN}io STATIC ${io_SRCS})
 target_link_libraries(${PN}io
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Xml
-  KF5::I18n
-  KF5::ConfigWidgets
+  Qt${QV}::Core
+  Qt${QV}::Core5Compat
+  Qt${QV}::Gui
+  Qt${QV}::Xml
+  KF${QV}::I18n
+  KF${QV}::ConfigWidgets
   ${PN}core
 )

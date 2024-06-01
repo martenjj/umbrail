@@ -170,7 +170,7 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
     double lat = NAN;					// coordinates found
     double lon = NAN;
 
-    QStringRef val = atts.value("lat");
+    QStringView val = atts.value("lat");
     if (!val.isEmpty()) lat = val.toDouble();
     val = atts.value("lon");
     if (!val.isEmpty()) lon = val.toDouble();
@@ -180,7 +180,7 @@ void GpxImporter::getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttrib
 }
 
 
-void GpxImporter::addCategory(const QStringRef &name, const CategoryData &cat)
+void GpxImporter::addCategory(const QStringView &name, const CategoryData &cat)
 {
     // The first time that a valid category has been found,
     // allocate the category map and set it on the root file item.
@@ -197,7 +197,7 @@ void GpxImporter::addCategory(const QStringRef &name, const CategoryData &cat)
 }
 
 
-bool GpxImporter::startDocument(const QStringRef &version, const QStringRef &encoding)
+bool GpxImporter::startDocument(const QStringView &version, const QStringView &encoding)
 {
 #ifdef DEBUG_DETAILED
     std::cerr << std::endl << qPrintable(indent()) << "START DOCUMENT"
@@ -404,7 +404,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
 
     if (localName=="gpx")				// start of a GPX element
     {
-        QStringRef val = atts.value("version");
+        QStringView val = atts.value("version");
         if (!val.isEmpty()) dataRoot()->setMetadata(DataIndexer::index("version"), val.toString());
         val = atts.value("creator");
         if (!val.isEmpty()) dataRoot()->setMetadata(DataIndexer::index("creator"), val.toString());
@@ -529,7 +529,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             return (addError("LINK not within WPT"));
         }
 
-        QStringRef link = atts.value("link");
+        QStringView link = atts.value("link");
         if (link.isEmpty()) link = atts.value("href");
         if (!link.isEmpty()) mCurrentPoint->setMetadata(DataIndexer::indexWithNamespace(qName), link.toString());
         else addWarning("missing LINK/HREF attribute on LINK element");
@@ -547,7 +547,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             return (addError("CATENTRY or GROUP not within CATMAP or POINTS_GROUPS"));
         }
 
-        QStringRef name = atts.value("name");
+        QStringView name = atts.value("name");
         if (name.isEmpty())
         {
             // OsmAnd seems to write out
@@ -559,7 +559,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
             //   </extensions>
             //
             // at the end of a track recording file.
-            if (localName!="group") addWarning("missing NAME attribute on "+localName.toUpper()+" element");
+            if (localName!="group") addWarning(QString("missing NAME attribute on %1 element").arg(localName.toUpper()));
             return (true);
         }
 
@@ -573,9 +573,9 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         }
 
         CategoryData cat(col);				// create the category data
-        const QStringRef iconName = atts.value("icon");	// then collect the remaining
+        const QStringView iconName = atts.value("icon");	// then collect the remaining
         if (!iconName.isEmpty()) cat.setIcon(iconName.toString());
-        const QStringRef shape = atts.value("background");
+        const QStringView shape = atts.value("background");
         if (!shape.isEmpty()) cat.setShape(shape.toString());
 
         addCategory(name, CategoryData(col));		// add entry to categories
@@ -584,7 +584,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     {
         // This is an error because the attribute information will be
         // lost, see endElement().
-        if (!atts.isEmpty()) addError("unknown element "+localName.toUpper()+" with attributes");
+        if (!atts.isEmpty()) addError(QString("unknown element %1 with attributes").arg(localName.toUpper()));
     }
 
     mContainedChars.clear();				// clear element contents
@@ -850,7 +850,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
              localName.startsWith("amenity_"))
     {
         // An XML warning may be too noisy here, but data has been lost.
-        addWarning("tag "+localName.toUpper()+" ignored");
+        addWarning(QString("tag %1 ignored").arg(localName.toUpper()));
         return (true);
     }
     // Ths OsmAnd "address" value is the geolocated address of a waypoint.
@@ -860,7 +860,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     const int idx = DataIndexer::indexWithNamespace(key);
     if (item!=nullptr) item->setMetadata(idx, elementText);
     else if (mWithinMetadata) dataRoot()->setMetadata(idx, elementText);
-    else addWarning("unrecognised "+localName.toUpper()+" not expected here");
+    else addWarning(QString("unrecognised %1 not expected here").arg(localName.toUpper()));
 
     return (true);
 }
@@ -896,7 +896,7 @@ bool GpxImporter::endDocument()
 // This is still necessary, because readElementText() will not work
 // as described in startElement().
 
-bool GpxImporter::characters(const QStringRef &ch)
+bool GpxImporter::characters(const QStringView &ch)
 {
 #ifdef DEBUG_DETAILED
     std::cerr << qPrintable(indent()) << "= '" << qPrintable(ch.toLocal8Bit()) << "'" << std::endl;
@@ -970,9 +970,9 @@ bool GpxImporter::needsResave() const
 // needsResave() and the user will be prompted to resave the file in order
 // to update it with the correct namespace declaration.
 
-void GpxImporter::checkNamespace(const QStringRef &namespaceURI,
-                                 const QStringRef &localName,
-                                 const QStringRef &nsPrefix)
+void GpxImporter::checkNamespace(const QStringView &namespaceURI,
+                                 const QStringView &localName,
+                                 const QStringView &nsPrefix)
 {
     if (nsPrefix.isEmpty()) return;			// no namespace to check
 

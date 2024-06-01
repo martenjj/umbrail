@@ -4,7 +4,7 @@
 ##									##
 ##########################################################################
 ##									##
-##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Copyright (c) 2014-2024 Jonathan Marten <jjm@keelhaul.me.uk>	##
 ##  Home and download page:  <http://github.com/martenjj/umbrail>	##
 ##									##
 ##  This program is free software;  you can redistribute it and/or	##
@@ -24,7 +24,28 @@
 ##########################################################################
 
 project(umbrail)
-set(VERSION "1.0.0")
+cmake_minimum_required(VERSION 3.6)
+
+if (NOT DEFINED QT_MAJOR_VERSION)
+  set(QT_MAJOR_VERSION 6)
+endif ()
+
+if (QT_MAJOR_VERSION EQUAL 6)
+  set(QT_MIN_VERSION "6.3.0")
+  set(KF_MIN_VERSION "6.1.0")
+else ()
+  if (QT_MAJOR_VERSION EQUAL 5)
+    set(QT_MIN_VERSION "5.15.2")
+    set(KF_MIN_VERSION "5.101.0")
+  else ()
+    message(FATAL_ERROR "Expecting to build for either Qt5 or Qt6")
+  endif ()
+endif ()
+
+set(QV ${QT_MAJOR_VERSION})
+set(PN ${CMAKE_PROJECT_NAME})
+
+set(VERSION "${QV}.0.0")
 message(STATUS "Configuring for project '${CMAKE_PROJECT_NAME}' version ${VERSION}")
 
 #########################################################################
@@ -33,9 +54,7 @@ message(STATUS "Configuring for project '${CMAKE_PROJECT_NAME}' version ${VERSIO
 #									#
 #########################################################################
 
-set(QT_MIN_VERSION "5.15.5")
-set(KF5_MIN_VERSION "5.108.0")
-set(ECM_MIN_VERSION ${KF5_MIN_VERSION})
+set(ECM_MIN_VERSION ${KF_MIN_VERSION})
 set(EXIV2_MIN_VERSION "0.24")
 
 find_package(ECM ${ECM_MIN_VERSION} REQUIRED NO_MODULE)
@@ -60,6 +79,39 @@ option(INSTALL_BINARIES "Install the binaries and libraries, turn off for develo
 
 #########################################################################
 #									#
+#  QCustomPlot, system installed or internal copy			#
+#									#
+#########################################################################
+
+# find_package(QCustomPlot) is currently untested, my distro
+# does not provide any CMake or package config for QCustomPlot.
+find_package(QCustomPlot NO_POLICY_SCOPE QUIET)
+if (QCustomPlot_FOUND)
+  message(STATUS "Found external QCustomPlot package")
+  set(QCUSTOMPLOT_FOUND TRUE)
+  set(QCUSTOMPLOT_LIB ${QCUSTOMPLOT_LIBRARIES})
+else (QCustomPlot_FOUND)
+  find_library(QCUSTOMPLOT_LIB qcustomplot)
+  find_file(QCUSTOMPLOT_HDR qcustomplot.h)
+
+  if (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+    message(STATUS "Found external QCustomPlot library")
+    set(QCUSTOMPLOT_FOUND TRUE)
+    get_filename_component(QCUSTOMPLOT_INCLUDES ${QCUSTOMPLOT_HDR} DIRECTORY)
+  else (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
+      message(STATUS "Could not find external QCustomPlot, using internal source")
+      set(QCUSTOMPLOT_FOUND TRUE)
+      set(QCUSTOMPLOT_INTERNAL TRUE)
+      set(QCUSTOMPLOT_LIB "qcustomplot")
+      # No need to set QCUSTOMPLOT_INCLUDES, linking to QCUSTOMPLOT_LIB
+      # will add the internal source directory to the search path.
+    endif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
+  endif (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+endif (QCustomPlot_FOUND)
+
+#########################################################################
+#									#
 #  VCS version tracking							#
 #									#
 #########################################################################
@@ -77,7 +129,9 @@ add_custom_target(vcsversion
 #									#
 #########################################################################
 
-set(PN ${CMAKE_PROJECT_NAME})
+if (QCUSTOMPLOT_INTERNAL)
+  add_subdirectory(qcustomplot)
+endif (QCUSTOMPLOT_INTERNAL)
 
 add_subdirectory(src)
 add_subdirectory(desktop)

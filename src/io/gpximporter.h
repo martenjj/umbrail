@@ -39,7 +39,6 @@ class CategoryData;
 class QXmlStreamReader;
 class QXmlStreamAttributes;
 
-
 class GpxImporter : public ImporterBase
 {
 public:
@@ -70,8 +69,8 @@ protected:
     // with the slight cost of needing to end with an explicit 'return'.
     bool startElement(const QByteArray &localName, const QByteArray &qName, const QXmlStreamAttributes &atts);
     bool endElement(const QByteArray &localName, const QByteArray &qName);
-    bool characters(const QStringRef &ch);
-    bool startDocument(const QStringRef &version, const QStringRef &encoding);
+    bool characters(const QStringView &ch);
+    bool startDocument(const QStringView &version, const QStringView &encoding);
     bool endDocument();
 
     // Again the equivalents of these were originally return type 'bool'
@@ -84,12 +83,12 @@ private:
     QByteArray indent() const;
     TrackDataItem *currentItem() const;
     void getLatLong(TrackDataAbstractPoint *pnt, const QXmlStreamAttributes &atts, const QString &localName);
-    void addCategory(const QStringRef &name, const CategoryData &cat);
+    void addCategory(const QStringView &name, const CategoryData &cat);
     QString elementContents();
 
     void addMessage(ErrorReporter::Severity severity, const QString &msg);
 
-    void checkNamespace(const QStringRef &namespaceURI, const QStringRef &localName, const QStringRef &nsPrefix);
+    void checkNamespace(const QStringView &namespaceURI, const QStringView &localName, const QStringView &nsPrefix);
     bool finaliseElement(TrackDataItem *item);
 
 private:

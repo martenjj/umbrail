@@ -117,7 +117,7 @@ static unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
 
     // Sum segments, and recurse into other containers.
 
-    for (const TrackDataItem *item : qAsConst(*items))
+    for (const TrackDataItem *item : std::as_const(*items))
     {
         tt += sumTotalTravelTime2(item);
     }
@@ -228,7 +228,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     if (num>2 && tdp1!=nullptr)
     {
         const TrackDataAbstractPoint *prev = nullptr;
-        for (const TrackDataItem *item : qAsConst(*items))
+        for (const TrackDataItem *item : std::as_const(*items))
         {
             const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
             Q_ASSERT(tdp!=nullptr);
@@ -247,7 +247,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     bool tracksOnly = false;				// assume so to start
     if (dynamic_cast<const TrackDataFile *>(item1)!=nullptr)
     {							// file at top level
-        for (const TrackDataItem *item : qAsConst(*items))
+        for (const TrackDataItem *item : std::as_const(*items))
         {
             for (int i = 0; i<item->childCount(); ++i)
             {
@@ -265,7 +265,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
 
     // Sum segments and/or routes, and recurse into other containers.
 
-    for (const TrackDataItem *item : qAsConst(*items))
+    for (const TrackDataItem *item : std::as_const(*items))
     {
         dist += sumTotalTravelDistance2(item, tracksOnly);
     }

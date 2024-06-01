@@ -122,7 +122,7 @@ default:    qWarning() << "Unknown plugin type" << type;
         qDebug() << "pluginLibs" << pluginLibs;
 
         auto *pluginList = new QList<QPluginLoader *>;
-        for (const QString &pluginLib : qAsConst(pluginLibs))
+        for (const QString &pluginLib : std::as_const(pluginLibs))
         {
             qDebug() << "loading plugin" << pluginLib;
             QPluginLoader *loader = new QPluginLoader(pluginLib);
@@ -136,7 +136,7 @@ default:    qWarning() << "Unknown plugin type" << type;
     qDebug() << "have" << pluginList->count() << "plugins";
 
     QList<QObject *> pluginObjects;
-    for (QPluginLoader *loader : qAsConst(*pluginList))
+    for (QPluginLoader *loader : std::as_const(*pluginList))
     {
         QObject *obj = loader->instance();
         if (obj==nullptr)

@@ -43,7 +43,7 @@ FolderSelectWidget::FolderSelectWidget(QWidget *pnt)
     setObjectName("FolderSelectWidget");
 
     QHBoxLayout *hb = new QHBoxLayout(this);
-    hb->setMargin(0);
+    hb->setContentsMargins(0, 0, 0, 0);
 
     mDestFolder = new QLineEdit(this);
     mDestFolder->setReadOnly(true);

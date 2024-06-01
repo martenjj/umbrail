@@ -156,7 +156,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
 #ifdef DEBUG_DRAGGING
         qDebug() << className(this).constData() << "paint for drag";
 #endif
-        for (const SelectionRun &run : qAsConst(*mDraggingPoints)) this->doPaintDrag(&run, painter);
+        for (const SelectionRun &run : std::as_const(*mDraggingPoints)) this->doPaintDrag(&run, painter);
     }
 
     return (true);

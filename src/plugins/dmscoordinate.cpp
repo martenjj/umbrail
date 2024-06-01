@@ -102,7 +102,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(mLatitudeDeg, 0, 2, Qt::AlignRight);
     l->setBuddy(mLatitudeDeg);
 
-    l = new QLabel(QString(0xB0), w);
+    l = new QLabel(QString(short(0xB0)), w);
     gl->addWidget(l, 0, 3, Qt::AlignLeft);
 
     mLatitudeMin = new QLineEdit(w);
@@ -143,7 +143,7 @@ QWidget *DMSCoordinateHandler::createWidget(QWidget *pnt)
     gl->addWidget(mLongitudeDeg, 1, 2, Qt::AlignRight);
     l->setBuddy(mLongitudeDeg);
 
-    l = new QLabel(QString(0xB0), w);
+    l = new QLabel(QString(short(0xB0)), w);
     gl->addWidget(l, 1, 3, Qt::AlignLeft);
 
     mLongitudeMin = new QLineEdit(w);

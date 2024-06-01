@@ -25,7 +25,6 @@
 
 #include "trackdata.h"
 
-#include <qregexp.h>
 #include <qdebug.h>
 #include <qtimezone.h>
 #include <qicon.h>
@@ -355,20 +354,20 @@ QVariant TrackData::valueOrNull(const QVariant &value)
     // Do not do this test with QVariant::canConvert(QMetaType::QString),
     // there are many types that can be converted to a QString but we
     // want to make sure that the value really is a string.
-    if (val.type()==QVariant::String || val.type()==QVariant::ByteArray)
+    if (val.typeId()==QVariant::String || val.typeId()==QVariant::ByteArray)
     {
         if (val.toString().isEmpty()) val.clear();
     }
 
     // The same reasoning as above applies to a colour value.
-    if (val.type()==QVariant::Color)
+    if (val.typeId()==QVariant::Color)
     {
         if (!val.value<QColor>().isValid()) val.clear();
     }
 
     // And also to a string list.  No other sort of list is ever
     // stored in item metadata.
-    if (val.type()==QVariant::StringList)
+    if (val.typeId()==QVariant::StringList)
     {
         if (val.toStringList().isEmpty()) val.clear();
     }
@@ -592,9 +591,9 @@ TrackData::MediaType TrackDataItem::mediaType() const
     QString ns = n.toString();
     // TODO: should get MIME type for extension and then compare against recognised ones
     // or even look for a general category (audio/... video/... image/... respectively)
-    if (ns.contains(QRegExp("\\.3gp$", Qt::CaseInsensitive))) return (TrackData::MediaAudioNote);
-    if (ns.contains(QRegExp("\\.mp4$", Qt::CaseInsensitive))) return (TrackData::MediaVideoNote);
-    if (ns.contains(QRegExp("\\.jpg$", Qt::CaseInsensitive))) return (TrackData::MediaPhoto);
+    if (ns.endsWith(".3gp", Qt::CaseInsensitive)) return (TrackData::MediaAudioNote);
+    if (ns.endsWith(".mp4", Qt::CaseInsensitive)) return (TrackData::MediaVideoNote);
+    if (ns.endsWith(".jpg", Qt::CaseInsensitive)) return (TrackData::MediaPhoto);
     return (TrackData::MediaNormal);
 }
 
@@ -1169,7 +1168,7 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
     if (!c2.isEmpty())					// if there is something to merge
     {
         QStringList res = c1;
-        for (const QString &c : qAsConst(c2))
+        for (const QString &c : std::as_const(c2))
         {
             if (!res.contains(c)) res.append(c);
         }

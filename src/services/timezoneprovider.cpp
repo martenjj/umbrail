@@ -28,7 +28,7 @@
 #include <qdebug.h>
 #include <qurl.h>
 #include <qurlquery.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
@@ -86,25 +86,28 @@ void TimeZoneProvider::slotDataResult(KJob *job)
         return;
     }
 
-    QRegExp rx1("<timezoneId>(\\S+)</timezoneId>");
-    QRegExp rx2("<status message=\"([^\"]+)\"");
+    const QRegularExpression rx1("<timezoneId>(\\S+)</timezoneId>");
+    const QRegularExpression rx2("<status message=\"([^\"]+)\"");
 
     const QList<QByteArray> lines = mReceivedData.split('\n');
-    for (const QByteArray &l : lines)
+    for (const QByteArray &l : std::as_const(lines))
     {
-        QString line = QString::fromUtf8(l);
-        if (line.contains(rx1))				// look for time zone ID
+        const QString line = QString::fromUtf8(l);
+
+        const QRegularExpressionMatch match1 = rx1.match(line);
+        if (match1.hasMatch())				// look for time zone ID
         {
-            mTimeZone = rx1.cap(1);
+            mTimeZone = match1.captured(1);
             qDebug() << "from" << line << "got" << mTimeZone;
             emit result(mTimeZone);
             deleteLater();
             return;
         }
 
-        if (line.contains(rx2))				// look for error message
+        const QRegularExpressionMatch match2 = rx2.match(line);
+        if (match2.hasMatch())				// look for error message
         {
-            reportError(rx2.cap(1));
+            reportError(match2.captured(1));
             return;
         }
     }

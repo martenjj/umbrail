@@ -89,7 +89,7 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
         // See if the file uses a KIO protocol which resolves to a
         // local file (e.g. "desktop").  If so, then there is no need to
         // copy the file - just use the equivalent local file directly.
-        KIO::StatJob *job = KIO::statDetails(file, KIO::StatJob::SourceSide, KIO::StatBasic|KIO::StatResolveSymlink);
+        KIO::StatJob *job = KIO::stat(file, KIO::StatJob::SourceSide, KIO::StatBasic|KIO::StatResolveSymlink);
         if (!job->exec())
         {
             reporter()->setError(ErrorReporter::Fatal, i18n("Cannot examine remote file, %1", job->errorString()));

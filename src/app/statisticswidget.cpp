@@ -59,7 +59,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
 
     QVector<const TrackDataAbstractPoint *> points;
     filesController()->filesView()->selectedPoints().swap(points);
-    for (const TrackDataAbstractPoint *tdp : qAsConst(points)) getPointData(tdp);
+    for (const TrackDataAbstractPoint *tdp : std::as_const(points)) getPointData(tdp);
 
     mWidget = new QWidget(this);
     mLayout = new QGridLayout(mWidget);

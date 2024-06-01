@@ -45,11 +45,10 @@ set(core_SRCS
 
 add_library(${PN}core STATIC ${core_SRCS})
 target_link_libraries(${PN}core
-  Qt5::Core
-  Qt5::Gui
-  KF5::I18n
-  KF5::KIOCore
-  KF5::IconThemes
-#   KF5::ItemModels
-#   KF5::ConfigWidgets
+  Qt${QV}::Core
+  Qt${QV}::Gui
+  Qt${QV}::Widgets
+  KF${QV}::I18n
+  KF${QV}::KIOCore
+  KF${QV}::IconThemes
 )

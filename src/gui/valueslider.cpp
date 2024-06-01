@@ -39,7 +39,7 @@ ValueSlider::ValueSlider(QWidget *pnt, int min, int max, bool haveStdButt, int s
     : QWidget(pnt)
 {
     mLayout = new QHBoxLayout(this);
-    mLayout->setMargin(0);
+    mLayout->setContentsMargins(0, 0, 0, 0);
 
     mValue = mStdValue = stdValue;
     mStdButt = nullptr;

@@ -28,6 +28,7 @@
 #include <qcolor.h>
 #include <qdebug.h>
 #include <qqueue.h>
+#include <qpair.h>
 
 #include <QXmlStreamWriter>
 
@@ -48,7 +49,7 @@
 class TagValue : protected QPair<QByteArray,QString>
 {
 public:
-    TagValue(const QByteArray &name, const QString &val) : QPair(name, val) 	{}
+    TagValue(const QByteArray &name, const QString &val) : QPair<QByteArray,QString>(name, val) {}
     ~TagValue() = default;
 
     QByteArray name() const					{ return (first); }
@@ -99,7 +100,7 @@ static void writeQueue(TagQueue *queue, QXmlStreamWriter &str)
 static QString valueString(const QVariant &v)
 {
     QString data;
-    switch (v.type())
+    switch (v.typeId())
     {
 case QMetaType::QDateTime:				// date in ISO format
         data = v.toDateTime().toString(Qt::ISODate);

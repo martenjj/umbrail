@@ -39,11 +39,12 @@ set(services_SRCS
 
 add_library(${PN}services STATIC ${services_SRCS})
 target_link_libraries(${PN}services
-  Qt5::Core
-  Qt5::Gui
-  KF5::I18n
-  KF5::KIOCore KF5::KIOWidgets
-  KF5::WidgetsAddons
+  Qt${QV}::Core
+  Qt${QV}::Core5Compat
+  Qt${QV}::Gui
+  KF${QV}::I18n
+  KF${QV}::KIOCore KF${QV}::KIOWidgets
+  KF${QV}::WidgetsAddons
   ${PN}core
   ${PN}settings
 )

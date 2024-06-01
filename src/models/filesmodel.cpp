@@ -302,7 +302,7 @@ QMimeData *FilesModel::mimeData(const QModelIndexList &idxs) const
     qDebug() << "starting to drag" << idxs.count() << "items";
 
     QByteArray encoded;
-    for (const QModelIndex &idx : qAsConst(idxs))
+    for (const QModelIndex &idx : std::as_const(idxs))
     {
         const TrackDataItem *item = itemForIndex(idx);
         if (item==nullptr) continue;
@@ -348,7 +348,7 @@ static QList<TrackDataItem *> decodeItemData(const QMimeData *data)
     //qDebug() << "decoding" << encoded;
     const QList<QByteArray> ptrs = encoded.split(',');
 
-    for (const QByteArray &b : qAsConst(ptrs))
+    for (const QByteArray &b : std::as_const(ptrs))
     {
         if (b.isEmpty()) continue;
         qulonglong ptrval = b.toULongLong(nullptr, 16);
@@ -454,7 +454,7 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
         // is confusing, and would be a no-op anyway unless the selection is
         // not contiguous.  It is not allowed, even in this unusual case,
         // to avoid a pointless no-op in the undo history.
-        for (const TrackDataItem *item : qAsConst(sourceItems))
+        for (const TrackDataItem *item : std::as_const(sourceItems))
         {
             const int sourceRow = ontoParent->childIndex(item);
             if (row==sourceRow || row==(sourceRow+1)) return (false);

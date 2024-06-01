@@ -174,6 +174,12 @@ void MainWindow::init()
 MainWindow::~MainWindow()
 {
     mapController()->view()->setParent(nullptr);	// avoid double delete
+
+    // Disconnect all of its connected signals to avoid the canUndoChanged()
+    // signal getting back to us when QUndoStack::clear() is called internally
+    // during its destruction.
+    disconnect(mUndoStack, nullptr, nullptr, nullptr);
+
     qDebug() << "done";
 }
 
@@ -197,13 +203,13 @@ void MainWindow::setupActions()
     mImportAction = ac->addAction("file_import");
     mImportAction->setText(i18n("Import File..."));
     mImportAction->setIcon(QIcon::fromTheme("document-import"));
-    ac->setDefaultShortcut(mImportAction, Qt::CTRL+Qt::Key_I);
+    ac->setDefaultShortcut(mImportAction, Qt::CTRL|Qt::Key_I);
     connect(mImportAction, &QAction::triggered, this, &MainWindow::slotImportFile);
 
     mExportAction = ac->addAction("file_export");
     mExportAction->setText(i18n("Export File..."));
     mExportAction->setIcon(QIcon::fromTheme("document-export"));
-    ac->setDefaultShortcut(mExportAction, Qt::CTRL+Qt::Key_E);
+    ac->setDefaultShortcut(mExportAction, Qt::CTRL|Qt::Key_E);
     connect(mExportAction, &QAction::triggered, this, &MainWindow::slotExportFile);
 
     mPhotoAction = ac->addAction("file_add_photo");
@@ -233,28 +239,28 @@ void MainWindow::setupActions()
     mViewModeAction = new KToggleAction(i18n("Points List"), this);
     connect(mViewModeAction, &QAction::triggered, this, &MainWindow::slotViewPointsMode);
     ac->addAction("view_points_mode", mViewModeAction);
-    ac->setDefaultShortcut(mViewModeAction, Qt::CTRL+Qt::SHIFT+Qt::Key_P);
+    ac->setDefaultShortcut(mViewModeAction, Qt::CTRL|Qt::SHIFT|Qt::Key_P);
 
     a = ac->addAction("track_expand_all");
     a->setText(i18n("Expand Tree"));
     a->setIcon(QIcon::fromTheme("application_side_tree"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Period);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::Key_Period);
     connect(a, &QAction::triggered, filesController()->filesView(), &FilesView::slotExpandAll);
 
     a = ac->addAction("track_expand_complete");
     a->setText(i18n("Expand All"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Period);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::ALT|Qt::SHIFT|Qt::Key_Period);
     connect(a, &QAction::triggered, filesController()->filesView(), &QTreeView::expandAll);
 
     a = ac->addAction("track_collapse_all");
     a->setText(i18n("Collapse Tree"));
     a->setIcon(QIcon::fromTheme("application_side_list"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Comma);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::Key_Comma);
     connect(a, &QAction::triggered, filesController()->filesView(), &FilesView::slotCollapseAll);
 
     a = ac->addAction("track_collapse_complete");
     a->setText(i18n("Collapse All"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::ALT+Qt::SHIFT+Qt::Key_Comma);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::ALT|Qt::SHIFT|Qt::Key_Comma);
     connect(a, &QAction::triggered, filesController()->filesView(), &QTreeView::collapseAll);
 
     mAddTrackAction = ac->addAction("edit_add_track");
@@ -332,8 +338,8 @@ void MainWindow::setupActions()
     mPropertiesAction = ac->addAction("track_properties");
     // text set in slotUpdateActionState() below
     QList<QKeySequence> cuts;
-    cuts.append(QKeySequence(Qt::CTRL+Qt::Key_Return));
-    cuts.append(QKeySequence(Qt::CTRL+Qt::Key_Enter));
+    cuts.append(QKeySequence(Qt::CTRL|Qt::Key_Return));
+    cuts.append(QKeySequence(Qt::CTRL|Qt::Key_Enter));
     ac->setDefaultShortcuts(mPropertiesAction, cuts);
     mPropertiesAction->setIcon(QIcon::fromTheme("document-properties"));
     connect(mPropertiesAction, &QAction::triggered, filesController(), &FilesController::slotTrackProperties);
@@ -375,7 +381,7 @@ void MainWindow::setupActions()
     a = ac->addAction("track_play_media");
     a->setText(i18nc("@action:inmenu", "View Media"));
     a->setIcon(QIcon::fromTheme("media-playback-start"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_P);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::Key_P);
     connect(a, &QAction::triggered, this, &MainWindow::slotPlayMedia);
     mPlayMediaAction = a;
 
@@ -411,7 +417,7 @@ void MainWindow::setupActions()
     a->setText(i18n("Go to Home Position"));
     a->setIconText(i18n("Go Home"));
     a->setIcon(QIcon::fromTheme("go-home"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_Home);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::Key_Home);
     connect(a, &QAction::triggered, mapController(), &MapController::slotGoHome);
 
     mMapZoomInAction = ac->addAction(KStandardAction::ZoomIn, "map_zoom_in");
@@ -430,13 +436,13 @@ void MainWindow::setupActions()
     a->setText(i18n("Reset to Standard Zoom"));
     a->setIconText(i18n("Reset Zoom"));
     a->setIcon(QIcon::fromTheme("zoom-original"));
-    ac->setDefaultShortcut(a, Qt::CTRL+Qt::Key_1);
+    ac->setDefaultShortcut(a, Qt::CTRL|Qt::Key_1);
     connect(a, &QAction::triggered, mapController(), &MapController::slotResetZoom);
 
     mMapGoToAction = ac->addAction("map_go_selection");
     mMapGoToAction->setText(i18n("Show on Map"));
     mMapGoToAction->setIcon(QIcon::fromTheme("marble"));
-    ac->setDefaultShortcut(mMapGoToAction, Qt::CTRL+Qt::Key_G);
+    ac->setDefaultShortcut(mMapGoToAction, Qt::CTRL|Qt::Key_G);
     connect(mMapGoToAction, &QAction::triggered, this, &MainWindow::slotMapGotoSelection);
 
     a = ac->addAction("map_select_theme");
@@ -516,7 +522,7 @@ void MainWindow::setupActions()
     a->setIcon(QIcon::fromTheme("flag-black"));
 
     mMapDragAction = new KToggleAction(QIcon::fromTheme("transform-move"), i18n("Move Mode"), this);
-    ac->setDefaultShortcut(mMapDragAction, Qt::CTRL+Qt::Key_M);
+    ac->setDefaultShortcut(mMapDragAction, Qt::CTRL|Qt::Key_M);
     connect(mMapDragAction, &QAction::triggered, this, &MainWindow::slotMapMovePoints);
     ac->addAction("map_move_points", mMapDragAction);
 

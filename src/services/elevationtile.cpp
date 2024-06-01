@@ -34,6 +34,7 @@
 #include <qfile.h>
 #include <qguiapplication.h>
 #include <qcursor.h>
+#include <qregularexpression.h>
 
 #include "settings.h"
 
@@ -223,7 +224,7 @@ bool ElevationTile::loadInternal(QFile &f)
 
         line.resize(len-1);				// remove terminators
 
-        QStringList fields = QString::fromLatin1(line).split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        QStringList fields = QString::fromLatin1(line).split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 							// split into fields
         if (fields.size()==2)				// fields for a header
         {

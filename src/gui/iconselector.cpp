@@ -107,7 +107,7 @@ void IconSelector::slotSourceChanged()
     // list view, instead of sorting the view items afterwards.
     std::sort(names.begin(), names.end());
 
-    for (const QString &name : qAsConst(names))
+    for (const QString &name : std::as_const(names))
     {
         QListWidgetItem *item = new QListWidgetItem(PointIconProvider::self()->icon(name, nsp)->icon(), name);
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);

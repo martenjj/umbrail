@@ -32,10 +32,15 @@
 #include <qpixmap.h>
 #include <qtimezone.h>
 #include <qdatetime.h>
-#include <qstandardpaths.h>
 
 #include <klocalizedstring.h>
 
+#include <kguiaddons_version.h>
+#if KGUIADDONS_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <kcountryflagemojiiconengine.h>
+#else
+#include <qstandardpaths.h>
+#endif
 
 #undef DEBUG_ZONES
 
@@ -79,12 +84,12 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         zoneIds = QTimeZone::availableTimeZoneIds();
         // add UTC to the default list
         QTimeZone utc = QTimeZone::utc();
-        qDebug() << "UTC: dn" << i18n(utc.id().constData()) << "country" << utc.country();
+        qDebug() << "UTC: dn" << i18n(utc.id().constData()) << "territory" << utc.territory();
         cities.append(i18n(utc.id().constData()));
         zonesByCity.insert(i18n(utc.id().constData()), utc);
     }
 
-    for (const QByteArray &zoneId : qAsConst(zoneIds))
+    for (const QByteArray &zoneId : std::as_const(zoneIds))
     {
         const QTimeZone zone(zoneId);
         const QString continentCity = zone.id();
@@ -102,7 +107,7 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
     }
     std::sort(cities.begin(), cities.end(), localeLessThan);
 
-    for (const QString &key : qAsConst(cities))
+    for (const QString &key : std::as_const(cities))
     {
         const QTimeZone zone = zonesByCity.value(key);
         const QByteArray tzName = zone.id();
@@ -125,17 +130,17 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         // from http://stackoverflow.com/questions/24109270/getting-country-code-for-qlocalecountry
         QList<QLocale> locales = QLocale::matchingLocales(QLocale::AnyLanguage,
                                                           QLocale::AnyScript,
-                                                          zone.country());
+                                                          zone.territory());
         if (!locales.isEmpty())
         {
             countryCode = locales.first().name();
             if (countryCode.contains('_')) countryCode = countryCode.section('_', -1).toLower();
         }
-        else qWarning() << "no locales found for country" << zone.country();
+        else qWarning() << "no locales found for territory" << zone.territory();
 #ifdef DEBUG_ZONES
         qDebug() << "  country code" << countryCode;
 #endif
-        QString countryName = QLocale::countryToString(zone.country());
+        QString countryName = QLocale::territoryToString(zone.territory());
 #ifdef Q_OS_UNIX
         if (countryCode=="C") countryName = i18n("POSIX");
 #endif
@@ -159,10 +164,17 @@ TimeZoneListWidget::TimeZoneListWidget(QWidget *parent, const QList<QByteArray> 
         listItem->setText(CommentColumn, comment);
         listItem->setData(CityColumn, ZoneRole, tzName);	// store zone ID in custom role
 
+#if KGUIADDONS_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // Generate the flag using the Noto Emoji font
+        KCountryFlagEmojiIconEngine engine(countryCode);
+        if (!engine.isNull()) listItem->setIcon(RegionColumn, engine.pixmap(QSize(22, 22), QIcon::Normal, QIcon::Off));
+#else
         // Locate the flag from share/kf5/locale/countries/%1/flag.png
+        // which is provided by KDELibs4Support
         QString flag = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
                                               QString("kf5/locale/countries/%1/flag.png").arg(countryCode));
         if (QFile::exists(flag)) listItem->setIcon(RegionColumn, QPixmap(flag));
+#endif
     }
 }
 

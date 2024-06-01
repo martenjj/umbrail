@@ -120,7 +120,7 @@ void MapThemeDialogue::createDisplay()
 
         QWidget *hbox = new QWidget(this);
         QHBoxLayout *hlay = new QHBoxLayout(hbox);
-        hlay->setMargin(0);
+        hlay->setContentsMargins(0, 0, 0, 0);
         hlay->setSpacing(DialogBase::horizontalSpacing());
 
         QLabel *label = new QLabel(hbox);
