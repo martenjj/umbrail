@@ -14,9 +14,6 @@
 #include "dataindexer.h"
 
 
-static const QString NONESTRING = i18nc("display string for no value", "(none)");
-
-
 MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
     : DialogBase(pnt)
 {
@@ -244,6 +241,8 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     mNameEdit->clear();					// reset accumulating fields
     mCombinedCats.clear();
 
+    const QString noneString = i18nc("display string for no value", "(none)");
+
     int idx = 0;					// current combo box index
     for (const TrackDataWaypoint *tdw : *mPoints)
     {
@@ -260,7 +259,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
             // TODO: may need to show namespace
             //PointIcon::namespaceName(pi->nsp())
         }
-        else mSymbolEdit->addItem(QIcon("unknown"), NONESTRING);
+        else mSymbolEdit->addItem(QIcon("unknown"), noneString);
 
         // Colour - non-editable combo box with the alternatives
         v = tdw->metadata("pointcolor");
@@ -271,7 +270,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
             pix.fill(col);
             mColourEdit->addItem(QIcon(pix), col.name(), col);
         }
-        else mColourEdit->addItem(QIcon::fromTheme("edit-none"), NONESTRING);
+        else mColourEdit->addItem(QIcon::fromTheme("edit-none"), noneString);
 
         // Latitude/Longtitude - non-editable combo box with the alternatives
         const double lat = tdw->latitude();
@@ -285,12 +284,12 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         // Elevation - non-editable combo box with the alternatives
         const double elev = tdw->elevation();
         if (!ISNAN(elev)) mElevationEdit->addItem(QString::number(elev, 'f', 1), elev);
-        else mElevationEdit->addItem(NONESTRING);
+        else mElevationEdit->addItem(noneString);
 
         // Time - non-editable combo box with the alternatives
         v = tdw->metadata("time");
         if (!v.isNull()) mTimeEdit->addItem(tdw->formattedTime(), v);
-        else mTimeEdit->addItem(NONESTRING);
+        else mTimeEdit->addItem(noneString);
 
         // Categories - pre-merge the lists
         const QStringList cats = tdw->metadata("category").toStringList();
@@ -301,7 +300,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
 
         // Address - non-editable combo box with the alternatives
         QString addr = tdw->formattedAddress().join(", ");
-        mAddressEdit->addItem((!addr.isEmpty() ? addr : NONESTRING), addr);
+        mAddressEdit->addItem((!addr.isEmpty() ? addr : noneString), addr);
 
         // Status
         TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(tdw->metadata("status").toInt());
@@ -315,13 +314,13 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
             desc.replace('\n', "; ");
             mDescriptionEdit->addItem(desc, v);
         }
-        else mDescriptionEdit->addItem(NONESTRING);
+        else mDescriptionEdit->addItem(noneString);
 
         // Link/Media - non-editable combo box with the alternatives,
         // not supporting the obsolete "media" tag.
         v = tdw->metadata("link");
         if (!v.isNull()) mLinkEdit->addItem(v.toString(), v);
-        else mLinkEdit->addItem(NONESTRING);
+        else mLinkEdit->addItem(noneString);
 
         ++idx;
     }
