@@ -50,9 +50,7 @@ set(app_SRCS
 if (QCUSTOMPLOT_FOUND)
   add_definitions("-DHAVE_QCUSTOMPLOT")
   set(app_SRCS ${app_SRCS} profilewidget.cpp)
-  if (NOT QCUSTOMPLOT_INTERNAL)
-    include_directories(${QCUSTOMPLOT_INCLUDES})
-  endif (NOT QCUSTOMPLOT_INTERNAL)
+  include_directories(${QCUSTOMPLOT_INCLUDES})
 endif (QCUSTOMPLOT_FOUND)
 
 if (KEXIV2_FOUND)

@@ -79,39 +79,6 @@ option(INSTALL_BINARIES "Install the binaries and libraries, turn off for develo
 
 #########################################################################
 #									#
-#  QCustomPlot, system installed or internal copy			#
-#									#
-#########################################################################
-
-# find_package(QCustomPlot) is currently untested, my distro
-# does not provide any CMake or package config for QCustomPlot.
-find_package(QCustomPlot NO_POLICY_SCOPE QUIET)
-if (QCustomPlot_FOUND)
-  message(STATUS "Found external QCustomPlot package")
-  set(QCUSTOMPLOT_FOUND TRUE)
-  set(QCUSTOMPLOT_LIB ${QCUSTOMPLOT_LIBRARIES})
-else (QCustomPlot_FOUND)
-  find_library(QCUSTOMPLOT_LIB qcustomplot)
-  find_file(QCUSTOMPLOT_HDR qcustomplot.h)
-
-  if (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
-    message(STATUS "Found external QCustomPlot library")
-    set(QCUSTOMPLOT_FOUND TRUE)
-    get_filename_component(QCUSTOMPLOT_INCLUDES ${QCUSTOMPLOT_HDR} DIRECTORY)
-  else (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
-    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-      message(STATUS "Could not find external QCustomPlot, using internal source")
-      set(QCUSTOMPLOT_FOUND TRUE)
-      set(QCUSTOMPLOT_INTERNAL TRUE)
-      set(QCUSTOMPLOT_LIB "qcustomplot")
-      # No need to set QCUSTOMPLOT_INCLUDES, linking to QCUSTOMPLOT_LIB
-      # will add the internal source directory to the search path.
-    endif (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/qcustomplot")
-  endif (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
-endif (QCustomPlot_FOUND)
-
-#########################################################################
-#									#
 #  VCS version tracking							#
 #									#
 #########################################################################
@@ -128,10 +95,6 @@ add_custom_target(vcsversion
 #  Subdirectories							#
 #									#
 #########################################################################
-
-if (QCUSTOMPLOT_INTERNAL)
-  add_subdirectory(qcustomplot)
-endif (QCUSTOMPLOT_INTERNAL)
 
 add_subdirectory(src)
 add_subdirectory(desktop)

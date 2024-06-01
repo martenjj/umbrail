@@ -53,7 +53,7 @@ find_package(KF${QV} ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Config XmlGui P
 #
 #      Qt6::Core5Compat
 #
-#    but the target was not found.  Possible reasons include:
+#    but the target was not found.
 #
 find_package(Qt${QV} ${QT_MIN_VERSION} REQUIRED COMPONENTS Core5Compat)
 
@@ -71,12 +71,25 @@ if (${${KEXIV2_PACKAGE_NAME}_FOUND})
   set (KEXIV2_FOUND ON)
 endif ()
 
-if (QCUSTOMPLOT_FOUND)
-  message(STATUS "QCustomPlot library: ${QCUSTOMPLOT_LIB}")
-  message(STATUS "QCustomPlot include: ${QCUSTOMPLOT_INCLUDES}")
-else (QCUSTOMPLOT_FOUND)
+# The master source and some distros, including Gentoo, do
+# not provide any CMake or package config for QCustomPlot.
+# Therefore look for the library and header file only.
+find_library(QCUSTOMPLOT_LIB qcustomplot)
+message(STATUS "QCustomPlot library: ${QCUSTOMPLOT_LIB}")
+find_file(QCUSTOMPLOT_HDR qcustomplot.h)
+if (NOT QCUSTOMPLOT_HDR)
+  find_file(QCUSTOMPLOT_HDR qcustomplot/qcustomplot.h )
+endif ()
+message(STATUS "QCustomPlot header: ${QCUSTOMPLOT_HDR}")
+
+if (QCUSTOMPLOT_LIB AND QCUSTOMPLOT_HDR)
+  set(QCUSTOMPLOT_FOUND TRUE)
+  get_filename_component(QCUSTOMPLOT_INCLUDES ${QCUSTOMPLOT_HDR} DIRECTORY)
+  # List the package in feature_sumary(), from  http://stackoverflow.com/questions/38554732
+  set_property(GLOBAL APPEND PROPERTY PACKAGES_FOUND QCustomPlot)
+else ()
   message(STATUS "QCustomPlot not found, profile plotting will not be available")
-endif (QCUSTOMPLOT_FOUND)
+endif ()
 
 if (NOT WIN32)
   # This sems to be necessary as a consequence of commit cb40e3d6
@@ -89,7 +102,7 @@ set_package_properties("Marble" PROPERTIES DESCRIPTION "Map display library" URL
 set_package_properties("Phonon4Qt${QV}" PROPERTIES DESCRIPTION "Multimedia playback library" URL "https://invent.kde.org/libraries/phonon" TYPE OPTIONAL PURPOSE "Required for playback of audio/video notes")
 set_package_properties(${KEXIV2_PACKAGE_NAME} PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "https://invent.kde.org/graphics/libkexiv2" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 set_package_properties("LibKFDialog" PROPERTIES DESCRIPTION "KDE Frameworks dialogue utility library" URL "https://github.com/martenjj/libkfdialog" TYPE REQUIRED PURPOSE "Required to build the project")
-set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and data visualization" URL "https://www.qcustomplot.com" TYPE OPTIONAL PURPOSE "Required for the profile display, internal source will be used if not found")
+set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and data visualization" URL "http://www.qcustomplot.com" TYPE RECOMMENDED PURPOSE "Required for the elevation/speed profile")
 
 #########################################################################
 #									#
@@ -109,22 +122,9 @@ add_definitions("-DQT_NO_CONTEXTLESS_CONNECT")
 remove_definitions("-DQT_NO_CAST_FROM_ASCII")
 remove_definitions("-DQT_NO_SIGNALS_SLOTS_KEYWORDS")
 remove_definitions("-DQT_NO_KEYWORDS")
-
-# Using the QStringBuilder may well improvce performance, but it means that
-# expressions such as FunctionExpectingQString(FunctionReturningQByteArray()+"foo")
-# fail to compile:
-#
-# src/io/gpxexporter.cpp:522: error: no matching function for call
-#    to 'QXmlStreamWriter::writeStartElement(QStringBuilder<QByteArray, char [8]>)'
-# qxmlstream.h:517: note: candidate 'void QXmlStreamWriter::writeStartElement(const QString&)'
-# qxmlstream.h:517: note: no known conversion for argument 1
-#    from 'QStringBuilder<QByteArray, char [8]>' to 'const QString&'
-# qxmlstream.h:518: note: candidate 'void QXmlStreamWriter::writeStartElement(const QString&,
-#    const QString&)'
-# qxmlstream.h:518: note: candidate expects 2 arguments, 1 provided
-remove_definitions("-DQT_USE_QSTRINGBUILDER")
 # TODO: remove this removal when QCustomPlot has been updated
-# to not use 'foreach'
+# to not use 'foreach'.  It is used in the header file so the
+# calling project must allow it too.
 remove_definitions("-DQT_NO_FOREACH")
 
 #########################################################################
