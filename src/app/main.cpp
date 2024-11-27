@@ -58,6 +58,7 @@
  
 int main(int argc,char *argv[])
 {
+    QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain(PROJECT_NAME);
 
     KAboutData aboutData(PROJECT_NAME,			// componentName
@@ -95,9 +96,14 @@ int main(int argc,char *argv[])
                            "https://www.qcustomplot.com");
 #endif // HAVE_QCUSTOMPLOT
 
-    QApplication app(argc, argv);
+
+    // Set the window icon explicitly for the "About <application>"
+    // dialogue and the "About <application>" menu action.
+    QGuiApplication::setWindowIcon(QIcon::fromTheme(PROJECT_NAME));
+
     KAboutData::setApplicationData(aboutData);
     KCrash::setDrKonqiEnabled(true);
+    KCrash::initialize();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(aboutData.shortDescription());
