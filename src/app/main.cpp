@@ -43,7 +43,7 @@
 #include "mainwindow.h"
 #include "filescontroller.h"
 
-#include "marble/MarbleGlobal.h"
+#include "marble/marble_version.h"
 
 #include "vcsversion.h"
 #ifdef HAVE_QCUSTOMPLOT
@@ -86,7 +86,7 @@ int main(int argc,char *argv[])
                            "https://github.com/martenjj/libkfdialog");
     aboutData.addComponent(i18n("Marble"),
                            i18n("Map display library"),
-                           Marble::MARBLE_VERSION_STRING,
+                           MARBLE_VERSION_STRING,
                            "https://marble.kde.org");
 #ifdef HAVE_QCUSTOMPLOT
     aboutData.addComponent(i18n("QCustomPlot"),
