@@ -271,7 +271,7 @@ void TrackItemStylePage::refreshData()
         const QVariant set = dataModel()->data("symset");
         if (!sym.isNull())
         {
-            const PointIcon *pi = PointIconProvider::self()->icon(sym.toString(), set.toString());
+            const PointIcon *pi = PointIconProvider::self()->icon(sym.toString(), set.toByteArray());
             mIconButton->setIcon(pi->icon());
             mIconNameLabel->setText(sym.toString());
             mIconNspLabel->setText(PointIcon::namespaceDisplayName(pi->nsp()));

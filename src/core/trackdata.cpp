@@ -914,7 +914,7 @@ const PointIcon *TrackDataWaypoint::icon() const
         const QString sym = v.toString();
         if (!sym.isEmpty())				// should always be the case
         {
-            const QString set = metadata("symset").toString();
+            const QByteArray set = metadata("symset").toByteArray();
 #ifdef DEBUG_ICONS
             qDebug() << "for" << name() << "sym" << sym << "set" << set;
 #endif

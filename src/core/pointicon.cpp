@@ -621,7 +621,9 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
 #ifdef DEBUG_ICONS
     qDebug() << "  name not found";
 #endif // DEBUG_ICONS
+
     mIcon = QIcon::fromTheme("unknown");		// last resort fallback
+    if (mNsp==PointIcon::NamespaceUnknown && nsp!=PointIcon::NamespaceAuto) mNsp = nsp;
 }
 
 
@@ -667,7 +669,7 @@ default:				return (i18n("(unknown)"));
 }
 
 
-/* static */ QString PointIcon::namespaceInternalName(PointIcon::IconNamespace nsp)
+/* static */ QByteArray PointIcon::namespaceInternalName(PointIcon::IconNamespace nsp)
 {
     // Only for namespaces which are actual symbol sets.
     switch (nsp)
@@ -679,7 +681,7 @@ default:				return ("");
 }
 
 
-/* static */ PointIcon::IconNamespace PointIcon::namespaceId(const QString &nsn)
+/* static */ PointIcon::IconNamespace PointIcon::namespaceId(const QByteArray &nsn)
 {
     if (nsn=="image") return (PointIcon::NamespaceColour);
     if (nsn=="system") return (PointIcon::NamespaceSystem);

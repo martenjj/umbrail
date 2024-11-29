@@ -120,7 +120,7 @@ const PointIcon *PointIconProvider::icon(const QColor &col)
 }
 
 
-const PointIcon *PointIconProvider::icon(const QString &name, const QString &nsn)
+const PointIcon *PointIconProvider::icon(const QString &name, const QByteArray &nsn)
 {
     return (icon(name, PointIcon::namespaceId(nsn)));
 }

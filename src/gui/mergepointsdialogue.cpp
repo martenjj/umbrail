@@ -258,7 +258,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         if (!v.isNull())
         {
             const QString &sym = v.toString();
-            const QString &set = tdw->metadata("symset").toString();
+            const QByteArray &set = tdw->metadata("symset").toByteArray();
             const PointIcon *pi = PointIconProvider::self()->icon(sym, set);
 
             QString symText = sym;
