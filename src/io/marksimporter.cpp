@@ -124,8 +124,10 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         QString s = grp.readEntry("Name", "");
         if (!s.isEmpty()) pnt->setName(s, true);
 
-        pnt->setMetadata("sym", grp.readEntry("Symbol", ""));
         pnt->setMetadata("desc", grp.readEntry("Desc", ""));
+        pnt->setMetadata("sym", grp.readEntry("Symbol", ""));
+        // Marks files always use the Garmin symbol set.
+        if (!pnt->metadata("sym").isNull()) pnt->setMetadata("symset", "garmin");
 
         TrackData::WaypointFlags flags = static_cast<TrackData::WaypointFlags>(grp.readEntry("Flags", static_cast<int>(TrackData::NoFlags)));
         pnt->setMetadata("flags", static_cast<int>(flags));
