@@ -227,15 +227,18 @@ bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
     if (mev->button()!=Qt::LeftButton) return (false);
 
     // To avoid any potential problems with nested event loops,
-    // execute the dialogue outside of tne event filter.
+    // execute the dialogue outside of the event filter.
     QTimer::singleShot(0, this, [this]()
     {
         const int idx = DataIndexer::index("sym");
+
+        // TODO: also need to pass symset
         IconSelector d(dataModel()->data(idx).toString(), this);
         if (!d.exec()) return;
 
         const QString symName = d.selectedIconName();
-        dataModel()->setData(idx, symName);
+        dataModel()->setData(DataIndexer::index("sym"), symName);
+        dataModel()->setData(DataIndexer::index("symset"), PointIcon::namespaceInternalName(d.selectedNamespace()));
         if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!symName.isEmpty());
 
         refreshData();
@@ -264,13 +267,14 @@ void TrackItemStylePage::refreshData()
         Q_ASSERT(mIconNameLabel!=nullptr);
         Q_ASSERT(mIconNspLabel!=nullptr);
 
-        const QVariant v = dataModel()->data("sym");
-        if (!v.isNull())
+        const QVariant sym = dataModel()->data("sym");
+        const QVariant set = dataModel()->data("symset");
+        if (!sym.isNull())
         {
-            const PointIcon *pi = PointIconProvider::self()->icon(v.toString());
+            const PointIcon *pi = PointIconProvider::self()->icon(sym.toString(), set.toString());
             mIconButton->setIcon(pi->icon());
-            mIconNameLabel->setText(v.toString());
-            mIconNspLabel->setText(PointIcon::namespaceName(pi->nsp()));
+            mIconNameLabel->setText(sym.toString());
+            mIconNspLabel->setText(PointIcon::namespaceDisplayName(pi->nsp()));
         }
         else
         {
