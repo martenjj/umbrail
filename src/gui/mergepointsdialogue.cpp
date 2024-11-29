@@ -119,8 +119,11 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     TrackDataWaypoint *res = new TrackDataWaypoint;	// new merged result point
 
     res->setName(mNameEdit->currentText(), true);
-    res->setMetadata("sym", mSymbolEdit->currentData());
     res->setMetadata("ele", mElevationEdit->currentData());
+
+    const QStringList symData = mSymbolEdit->currentData().toString().split(':');
+    res->setMetadata("sym", symData.value(0));
+    res->setMetadata("symset", symData.value(1));
 
     const QPointF p = mLatLongEdit->currentData().toPointF();
     res->setLatLong(p.x(), p.y());
@@ -184,7 +187,8 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
         if (name=="sym" || name=="ele" || name=="flags" || name=="origin" ||
             name=="category" || name=="status" || name=="StreetAddress" ||
             name=="City" || name=="State" || name=="PostalCode" || name=="Country" ||
-            name=="desc" || name=="time" || name=="link" || name=="pointcolor") continue;
+            name=="desc" || name=="time" || name=="link" || name=="pointcolor" ||
+            name=="symset") continue;
 
         QVariant rv;					// result found to be copied
         for (const TrackDataWaypoint *tdw : std::as_const(*mPoints))
@@ -254,10 +258,16 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         if (!v.isNull())
         {
             const QString &sym = v.toString();
-            const PointIcon *pi = PointIconProvider::self()->icon(sym);
-            mSymbolEdit->addItem(pi->icon(), sym, sym);
-            // TODO: may need to show namespace
-            //PointIcon::namespaceName(pi->nsp())
+            const QString &set = tdw->metadata("symset").toString();
+            const PointIcon *pi = PointIconProvider::self()->icon(sym, set);
+
+            QString symText = sym;
+            if (!set.isEmpty()) symText += QString(" (%1)").arg(PointIcon::namespaceDisplayName(pi->nsp()));
+
+            QString symData = sym;
+            if (!set.isEmpty()) symData += ':'+set;
+
+            mSymbolEdit->addItem(pi->icon(), symText, symData);
         }
         else mSymbolEdit->addItem(QIcon("unknown"), noneString);
 
