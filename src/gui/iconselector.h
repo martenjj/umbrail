@@ -40,7 +40,7 @@ class IconSelector : public DialogBase
     Q_OBJECT
 
 public:
-    explicit IconSelector(const QString &sym, QWidget *pnt = nullptr);
+    explicit IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt = nullptr);
     virtual ~IconSelector() = default;
 
     QString selectedIconName() const;

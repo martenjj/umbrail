@@ -230,15 +230,17 @@ bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
     // execute the dialogue outside of the event filter.
     QTimer::singleShot(0, this, [this]()
     {
-        const int idx = DataIndexer::index("sym");
+        const int symIdx = DataIndexer::index("sym");
+        const int setIdx = DataIndexer::index("symset");
 
         // TODO: also need to pass symset
-        IconSelector d(dataModel()->data(idx).toString(), this);
+        IconSelector d(dataModel()->data(symIdx).toString(),
+                       PointIcon::namespaceId(dataModel()->data(setIdx).toByteArray()), this);
         if (!d.exec()) return;
 
         const QString symName = d.selectedIconName();
-        dataModel()->setData(DataIndexer::index("sym"), symName);
-        dataModel()->setData(DataIndexer::index("symset"), PointIcon::namespaceInternalName(d.selectedNamespace()));
+        dataModel()->setData(symIdx, symName);
+        dataModel()->setData(setIdx, PointIcon::namespaceInternalName(d.selectedNamespace()));
         if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!symName.isEmpty());
 
         refreshData();

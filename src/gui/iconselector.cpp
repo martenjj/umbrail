@@ -36,7 +36,7 @@
 #include "pointiconprovider.h"
 
 
-IconSelector::IconSelector(const QString &sym, QWidget *pnt)
+IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
     : DialogBase(pnt)
 {
     mSelectedName = sym;
@@ -55,6 +55,15 @@ IconSelector::IconSelector(const QString &sym, QWidget *pnt)
     mSourceCombo->addItem(QIcon::fromTheme("logo-garmin"), i18nc("Symbol set name", "Garmin"), PointIcon::NamespaceGarmin);
     mSourceCombo->addItem(QIcon::fromTheme("logo-osmand"), i18nc("Symbol set name", "OsmAnd"), PointIcon::NamespaceOsmand);
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
+
+    // TODO: else select what was last used
+    if (nsp!=PointIcon::NamespaceAuto)
+    {
+        const int idx = mSourceCombo->findData(nsp);
+        if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
+    }
+
+    // TODO: will need a filter bar for large symbol sets
 
     fl->addItem(DialogBase::verticalSpacerItem());
 
@@ -126,7 +135,8 @@ void IconSelector::slotSourceChanged()
         mList->setCurrentItem(selectedItem);
         mList->scrollToItem(selectedItem, QAbstractItemView::PositionAtCenter);
     }
-    setButtonEnabled(QDialogButtonBox::Ok, mList->selectedItems().count()==1);
+
+    slotSelectionChanged();
 }
 
 
