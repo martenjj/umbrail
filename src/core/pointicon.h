@@ -58,7 +58,9 @@ public:
     QPixmap pixmap(int size) const		{ return (mIcon.pixmap(size)); }
 
     static QStringList allNames(PointIcon::IconNamespace nsp);
-    static QString namespaceName(PointIcon::IconNamespace nsp);
+    static QString namespaceDisplayName(PointIcon::IconNamespace nsp);
+    static QString namespaceInternalName(PointIcon::IconNamespace nsp);
+    static PointIcon::IconNamespace namespaceId(const QString &nsn);
 
 protected:
     // Only the PointIconProvider may construct a PointIcon.

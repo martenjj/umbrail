@@ -653,7 +653,7 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
 }
 
 
-/* static */ QString PointIcon::namespaceName(PointIcon::IconNamespace nsp)
+/* static */ QString PointIcon::namespaceDisplayName(PointIcon::IconNamespace nsp)
 {
     switch (nsp)
     {
@@ -664,4 +664,26 @@ case PointIcon::NamespaceOsmand:	return (i18n("OsmAnd"));
 case PointIcon::NamespaceAuto:		return (i18n("(error)"));
 default:				return (i18n("(unknown)"));
     }
+}
+
+
+/* static */ QString PointIcon::namespaceInternalName(PointIcon::IconNamespace nsp)
+{
+    // Only for namespaces which are actual symbol sets.
+    switch (nsp)
+    {
+case PointIcon::NamespaceGarmin:	return ("garmin");
+case PointIcon::NamespaceOsmand:	return ("osmand");
+default:				return ("");
+    }
+}
+
+
+/* static */ PointIcon::IconNamespace PointIcon::namespaceId(const QString &nsn)
+{
+    if (nsn=="image") return (PointIcon::NamespaceColour);
+    if (nsn=="system") return (PointIcon::NamespaceSystem);
+    if (nsn=="garmin") return (PointIcon::NamespaceGarmin);
+    if (nsn=="osmand") return (PointIcon::NamespaceOsmand);
+    return (PointIcon::NamespaceAuto);
 }
