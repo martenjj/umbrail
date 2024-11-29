@@ -56,6 +56,7 @@ static const char *sApplicationTags[] =
     "flags",
     "subtype",						// OsmAnd "amenity_subtype"
     "visited",						// OsmAnd "visited_date"
+    "symset",
     nullptr
 };
 

@@ -907,17 +907,18 @@ const PointIcon *TrackDataWaypoint::icon() const
     // First priority: special waypoint type
     if (mediaType()!=TrackData::MediaNormal) return (TrackDataItem::icon());
 
-    // Second priority: named symbol
+    // Second priority: named symbol with optional named set
     QVariant v = metadata("sym");
     if (!v.isNull())
     {
         const QString sym = v.toString();
         if (!sym.isEmpty())				// should always be the case
         {
+            const QString set = metadata("symset").toString();
 #ifdef DEBUG_ICONS
-            qDebug() << "for" << name() << "sym" << sym;
+            qDebug() << "for" << name() << "sym" << sym << "set" << set;
 #endif
-            const PointIcon *ic = PointIconProvider::self()->icon(sym);
+            const PointIcon *ic = PointIconProvider::self()->icon(sym, set);
             if (ic->isValid()) return (ic);
         }
     }
@@ -1064,6 +1065,7 @@ bool TrackDataWaypoint::canMerge(const TrackDataWaypoint *other, bool positionOn
     const QVariant &s2 = other->metadata("sym");
     if (s1!=s2)
     {
+        // TODO: may also need to compare "symset"
         if (s1.isValid() && s2.isValid())
         {
 #ifdef DEBUG_MERGE
@@ -1127,10 +1129,14 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
     }
 
     // Symbol - accept the first unless that is the default WAYPOINT or blank,
-    // in which case use the other.
+    // in which case use the other.  Use the corresponding symbol set.
     const QVariant &s1 = this->metadata("sym");
     const QVariant &s2 = other->metadata("sym");
-    if (!symbolIsValid(s1) && symbolIsValid(s2)) setMetadata("sym", s2);
+    if (!symbolIsValid(s1) && symbolIsValid(s2))
+    {
+        setMetadata("sym", s2);
+        setMetadata("symset", other->metadata("symset"));
+    }
 
     // Latitude/Longtitude - just accept the first
     // (we know that they are both valid).
@@ -1199,7 +1205,7 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
         if (name=="ele" || name=="sym" || name=="StreetAddress" ||
             name=="City" || name=="State" || name=="PostalCode" ||
             name=="Country" || name=="category" || name=="origin" ||
-            name=="flags") continue;
+            name=="flags" || name=="symset") continue;
 
         const QVariant &m1 = this->metadata(idx);
         const QVariant &m2 = other->metadata(idx);
