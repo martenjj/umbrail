@@ -116,3 +116,9 @@ const PointIcon *PointIconProvider::icon(const QColor &col)
     sIconCache.insert(name, ic, 3);			// coloured item => higher cache cost
     return (ic);
 }
+
+
+const PointIcon *PointIconProvider::icon(const QString &name, const QString &nsn)
+{
+    return (icon(name, PointIcon::namespaceId(nsn)));
+}

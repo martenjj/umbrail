@@ -37,13 +37,14 @@ public:
     static PointIconProvider *self();
 
     const PointIcon *icon(const QString &name, PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto);
+    const PointIcon *icon(const QString &name, const QString &nsn);
     const PointIcon *icon(const QColor &col);
 
     void aboutToQuit() const;
 
 protected:
     explicit PointIconProvider();
-    ~PointIconProvider();
+    ~PointIconProvider() = default;
 };
 
 #endif							// POINTICONPROVIDER_H
