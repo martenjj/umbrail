@@ -37,6 +37,7 @@
 #include "dataindexer.h"
 #include "errorreporter.h"
 #include "category.h"
+#include "pointicon.h"
 
 #ifdef DEBUG_DETAILED
 #include <iostream>
@@ -1050,6 +1051,36 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
         else item->setMetadata(name, col);
     }
     item->setMetadata("color", QVariant());		// clear the COLOR value
+
+    // Check for an OsmAnd icon tag and whether to use that as the symbol name.
+    // That needs to be done here so that it is not necessary to check all of
+    // the "sym", "symset" and "icon" data throughout the application to resolve
+    // which symbol is to be used
+    const QVariant sym = item->metadata("sym");
+    const QVariant set = item->metadata("symset");
+    const QVariant icn = item->metadata("icon");
+
+    static const QString OSMAND_SET_NAME = PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand);
+
+    if (!icn.isNull())
+    {
+        // An OsmAnd-specific ICON value is present.  If the symbol set is
+        // explicitly specified to be for OsmAnd, then use that value as the
+        // symbol.
+        if (!set.isNull() && set==OSMAND_SET_NAME)
+        {
+            item->setMetadata("sym", icn);
+        }
+        else
+        {
+            // No icon set is specified.  Use the OsmAnd icon if there is no explicitly
+            // set SYM value.  Re-exported files will have the SYM set to be the same
+            // as ICON, so the correct symbol will be shown even if there is an
+            // explicit SYM.
+            if (sym.isNull()) item->setMetadata("sym", icn);
+            if (set.isNull()) item->setMetadata("symset", OSMAND_SET_NAME);
+        }
+    }
 
     return (true);
 }

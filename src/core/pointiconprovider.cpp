@@ -80,6 +80,8 @@ PointIconProvider *PointIconProvider::self()
 
 const PointIcon *PointIconProvider::icon(const QString &name, PointIcon::IconNamespace nsp)
 {
+    // TODO: may need to encode name and namespace for cache key
+
     if (sIconCache.contains(name))
     {
 #ifdef DEBUG_CACHE
