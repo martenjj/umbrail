@@ -232,10 +232,10 @@ bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
     {
         const int symIdx = DataIndexer::index("sym");
         const int setIdx = DataIndexer::index("symset");
+        const QVariant set = dataModel()->data(setIdx);
 
-        // TODO: also need to pass symset
         IconSelector d(dataModel()->data(symIdx).toString(),
-                       PointIcon::namespaceId(dataModel()->data(setIdx).toByteArray()), this);
+                       (!set.isNull() ? PointIcon::namespaceId(set.toByteArray()) : PointIcon::NamespaceAuto), this);
         if (!d.exec()) return;
 
         const QString symName = d.selectedIconName();
