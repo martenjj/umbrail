@@ -29,10 +29,12 @@
 #include <qcombobox.h>
 #include <qformlayout.h>
 #include <qpushbutton.h>
+#include <qtimer.h>
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
+#include <klistwidgetsearchline.h>
 
 #include "pointiconprovider.h"
 
@@ -65,7 +67,9 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
         if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
     }
 
-    // TODO: will need a filter bar for large symbol sets
+    KListWidgetSearchLine *search = new KListWidgetSearchLine(this);
+    search->setPlaceholderText(i18n("Symbol name..."));
+    fl->addRow(i18n("Filter:"), search);
 
     fl->addItem(DialogBase::verticalSpacerItem());
 
@@ -82,6 +86,7 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
 
     fl->addRow(mList);
 
+    search->setListWidget(mList);
     setMainWidget(w);
     setStateSaver(this);
     slotSourceChanged();
@@ -90,6 +95,7 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     connect(mSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &IconSelector::slotSourceChanged);
     connect(mList, &QListWidget::itemSelectionChanged, this, &IconSelector::slotSelectionChanged);
     connect(buttonBox()->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, this, &IconSelector::slotClearIcon);
+    connect(search, &QLineEdit::textChanged, this, &IconSelector::slotSelectionChanged);
 }
 
 
@@ -145,7 +151,15 @@ void IconSelector::slotSourceChanged()
 
 void IconSelector::slotSelectionChanged()
 {
-    setButtonEnabled(QDialogButtonBox::Ok, mList->selectedItems().count()==1);
+    // KListWidgetSearchLine works by hiding the items that do not
+    // match the filter.  But the decision here needs to be made after
+    // the filtering has actually been updated, which happens after a
+    // 200ms delay set in KListWidgetSearchLinePrivate::_k_queueSearch().
+    QTimer::singleShot(250, this, [this]()
+    {
+        QListWidgetItem *item = mList->currentItem();
+        setButtonEnabled(QDialogButtonBox::Ok, item!=nullptr && !item->isHidden());
+    });
 }
 
 
