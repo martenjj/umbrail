@@ -671,11 +671,14 @@ default:				return (i18n("(unknown)"));
 
 /* static */ QByteArray PointIcon::namespaceInternalName(PointIcon::IconNamespace nsp)
 {
-    // Only for namespaces which are actual symbol sets.
+    // Only for namespaces which are actual symbol sets.  The "system"
+    // set is a sensible value here, although there is no GUI to
+    // actually assign a system icon to a point.
     switch (nsp)
     {
 case PointIcon::NamespaceGarmin:	return ("garmin");
 case PointIcon::NamespaceOsmand:	return ("osmand");
+case PointIcon::NamespaceSystem:	return ("system");
 default:				return ("");
     }
 }
