@@ -32,12 +32,14 @@
 #include <qdebug.h>
 
 #include <klocalizedstring.h>
+#include <kconfiggroup.h>
 
 #include "pointiconprovider.h"
 
 
 IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
-    : DialogBase(pnt)
+    : DialogBase(pnt),
+      DialogStateSaver(this)
 {
     mSelectedName = sym;
 
@@ -56,8 +58,8 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     mSourceCombo->addItem(QIcon::fromTheme("logo-osmand"), i18nc("Symbol set name", "OsmAnd"), PointIcon::NamespaceOsmand);
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
 
-    // TODO: else select what was last used
-    if (nsp!=PointIcon::NamespaceAuto)
+    mHadInitialNamespace = (nsp!=PointIcon::NamespaceAuto);
+    if (mHadInitialNamespace)
     {
         const int idx = mSourceCombo->findData(nsp);
         if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
@@ -81,6 +83,7 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     fl->addRow(mList);
 
     setMainWidget(w);
+    setStateSaver(this);
     slotSourceChanged();
     slotSelectionChanged();
 
@@ -107,7 +110,7 @@ PointIcon::IconNamespace IconSelector::selectedNamespace() const
 
 void IconSelector::slotSourceChanged()
 {
-    PointIcon::IconNamespace nsp = selectedNamespace();
+    const PointIcon::IconNamespace nsp = selectedNamespace();
 
     mList->clear();
     QListWidgetItem *selectedItem = nullptr;
@@ -150,4 +153,27 @@ void IconSelector::slotClearIcon()
 {
     mList->setCurrentItem(nullptr);
     accept();
+}
+
+
+void IconSelector::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+{
+    grp.writeEntry("SymbolSet", PointIcon::namespaceInternalName(static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt())));
+    DialogStateSaver::saveConfig(dialog, grp);
+}
+
+
+void IconSelector::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+{
+    if (!mHadInitialNamespace)				// only if not set already
+    {
+        const QByteArray lastNsp = grp.readEntry("SymbolSet", QByteArray());
+        if (!lastNsp.isEmpty())
+        {
+            const int idx = mSourceCombo->findData(PointIcon::namespaceId(lastNsp));
+            if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
+        }
+    }
+
+    DialogStateSaver::restoreConfig(dialog, grp);
 }

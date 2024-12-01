@@ -27,6 +27,7 @@
 #define ICONSELECTOR_H
 
 #include <kfdialog/dialogbase.h>
+#include <kfdialog/dialogstatesaver.h>
 
 #include "pointicon.h"
 
@@ -35,7 +36,7 @@ class QListWidget;
 class QComboBox;
 
 
-class IconSelector : public DialogBase
+class IconSelector : public DialogBase, public DialogStateSaver
 {
     Q_OBJECT
 
@@ -45,6 +46,9 @@ public:
 
     QString selectedIconName() const;
     PointIcon::IconNamespace selectedNamespace() const;
+
+    void saveConfig(QDialog *dialog, KConfigGroup &grp) const override;
+    void restoreConfig(QDialog *dialog, const KConfigGroup &grp) override;
 
 private slots:
     void slotSourceChanged();
@@ -56,6 +60,7 @@ private:
     QComboBox *mSourceCombo;
 
     QString mSelectedName;
+    bool mHadInitialNamespace;
 };
 
 #endif							// ICONSELECTOR_H
