@@ -67,9 +67,9 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
         if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
     }
 
-    KListWidgetSearchLine *search = new KListWidgetSearchLine(this);
-    search->setPlaceholderText(i18n("Symbol name..."));
-    fl->addRow(i18n("Filter:"), search);
+    mSearchLine = new KListWidgetSearchLine(this);
+    mSearchLine->setPlaceholderText(i18n("Symbol name..."));
+    fl->addRow(i18n("Filter:"), mSearchLine);
 
     fl->addItem(DialogBase::verticalSpacerItem());
 
@@ -86,7 +86,7 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
 
     fl->addRow(mList);
 
-    search->setListWidget(mList);
+    mSearchLine->setListWidget(mList);
     setMainWidget(w);
     setStateSaver(this);
     slotSourceChanged();
@@ -94,7 +94,13 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     connect(mSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &IconSelector::slotSourceChanged);
     connect(mList, &QListWidget::itemSelectionChanged, this, &IconSelector::slotSelectionChanged);
     connect(buttonBox()->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, this, &IconSelector::slotClearIcon);
-    connect(search, &QLineEdit::textChanged, this, &IconSelector::slotSelectionChanged);
+    connect(mSearchLine, &QLineEdit::textChanged, this, &IconSelector::slotSelectionChanged);
+}
+
+
+IconSelector::~IconSelector()
+{
+    disconnect(mSearchLine, nullptr, nullptr, nullptr);
 }
 
 

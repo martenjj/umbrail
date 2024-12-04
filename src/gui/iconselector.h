@@ -34,6 +34,7 @@
 
 class QListWidget;
 class QComboBox;
+class KListWidgetSearchLine;
 
 
 class IconSelector : public DialogBase, public DialogStateSaver
@@ -42,7 +43,7 @@ class IconSelector : public DialogBase, public DialogStateSaver
 
 public:
     explicit IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt = nullptr);
-    virtual ~IconSelector() = default;
+    virtual ~IconSelector();
 
     QString selectedIconName() const;
     PointIcon::IconNamespace selectedNamespace() const;
@@ -58,6 +59,7 @@ private slots:
 private:
     QListWidget *mList;
     QComboBox *mSourceCombo;
+    KListWidgetSearchLine *mSearchLine;
 
     QString mSelectedName;
     bool mHadInitialNamespace;
