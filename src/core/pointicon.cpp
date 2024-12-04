@@ -270,7 +270,7 @@ static void findOsmandPaths()
 }
 
 
-static void setOsmandPixmap(QIcon *icon, const QString &name)
+static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataItem *item = nullptr)
 {
     const QByteArray svgPath = sOsmandPaths[name];
 #ifdef DEBUG_OSMAND
@@ -284,11 +284,14 @@ static void setOsmandPixmap(QIcon *icon, const QString &name)
 #endif // DEBUG_ICONS
     if (img.isNull()) return;				// SVG image load failed
 
-    // TODO: need to get the background colour and shape from item metadata
+    // TODO: implement the  shape from item metadata
 
-    const QColor bgCol(Qt::red);
-    //const QColor bgCol = item->metadata("pointcolor").value<QColor>();
-    qDebug() << "bgcol" << bgCol;
+    QColor bgCol(Qt::black);
+    if (item!=nullptr)
+    {
+        QColor c = item->metadata("pointcolor").value<QColor>();
+        if (c.isValid()) bgCol = c;
+    }
 
     if (bgCol.isValid())
     {
@@ -884,7 +887,7 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const Tr
         if (!sIsOsmandSetup) findOsmandPaths();
         if (sOsmandPaths.contains(name))
         {
-            setOsmandPixmap(&mIcon, name);
+            setOsmandPixmap(&mIcon, name, item);
             if (!mIcon.isNull())			// always true unless load error
             {
                 mNsp = PointIcon::NamespaceOsmand;
