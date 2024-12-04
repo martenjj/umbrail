@@ -31,6 +31,10 @@
 #include <qimage.h>
 #include <qbitmap.h>
 
+#include <qfile.h>
+#include <qdir.h>
+#include <qpainter.h>
+
 #include <kiconloader.h>
 #include <klocalizedstring.h>
 
@@ -44,6 +48,7 @@
 
 #undef DEBUG_GARMIN
 #undef DEBUG_ICONS
+#define DEBUG_OSMAND
 
 #ifdef DEBUG_GARMIN
 #include <iostream>
@@ -57,6 +62,258 @@
 //////////////////////////////////////////////////////////////////////////
 
 #define COLOURKEY_FG		0xFF00FF		// magenta
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  OsmAnd								//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+static bool sIsOsmandSetup = false;
+static QHash<QString, QByteArray> sOsmandPaths;
+
+// TODO: config default and GUI setting for this path
+static const char *OSMAND_RESBASE = "/ws/osmand/OsmAnd-resources/icons";
+static const char *OSMAND_ALIASFILE = "tools/sortfiles.sh";
+static const char *OSMAND_ICONSDIR = "svg";
+
+
+static void findOsmandPaths()
+{
+    qDebug();
+    sIsOsmandSetup = true;				// note now done (or failed) setup
+
+    // TODO: if the parsed list has been saved from a previous run, then use it
+
+    // The alias file which lists all known icon names and their file paths.
+    QFile aliasFile(QString(OSMAND_RESBASE)+'/'+OSMAND_ALIASFILE);
+    if (!aliasFile.exists())
+    {
+        qWarning() << "OsmAnd alias file" << aliasFile.fileName() << "does not exist";
+        return;
+    }
+    if (!aliasFile.open(QIODevice::ReadOnly|QIODeviceBase::Text))
+    {
+        qWarning() << "Cannot read OsmAnd alias file" << aliasFile.fileName();
+        return;
+    }
+
+    // The directory which contains the corresponding SVG images.
+    QDir iconsDir(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR);
+    if (!iconsDir.exists())
+    {
+        qWarning() << "OsmAnd icons directory" << iconsDir.path() << "does not exist";
+        return;
+    }
+
+    qDebug() << "Reading alias file" << aliasFile.fileName();
+    qDebug() << "SVG icons directory" << iconsDir.path();
+
+    // Read in the OsmAnd icon alias file and extract the icon names and
+    // path aliases from it.
+
+    int numRead = 0;					// total of lines read
+    int numDefs = 0;					// number of definitions parsed
+    int numFound = 0;					// number with SVG files found
+
+    while (!aliasFile.atEnd())
+    {
+        ++numRead;					// count this line read
+        const QByteArray line = aliasFile.readLine().simplified();
+        if (line.isEmpty()) continue;			// simplify whitespace, ignore empty lines
+
+        // Split the line up into space-separated fields.
+        const QList<QByteArray> fields = line.split(' ');
+        const QByteArray cmd = fields.first();
+        QByteArray name;
+        QByteArray alias;
+
+        // Look at the first field, which indicates what sort of line this is.
+        if (cmd=="icon_alias")
+        {
+            //            +--------------- GPX icon name
+            //            |          +---- SVG path alias
+            //            |          |
+            //            v          v
+            // icon_alias industrial landuse_industrial
+
+            if (fields.count()<3) continue;
+            name = fields[1];
+            if (name.startsWith('$')) continue;		// in a shell function body
+            alias = fields[2];
+#ifdef DEBUG_OSMAND
+            qDebug() << cmd << "--" << name << "->" << alias;
+#endif // DEBUG_OSMAND
+        }
+        else if (cmd=="icon")
+        {
+            //      +---- GPX icon name, SVG path alias is the same
+            //      |
+            //      v
+            // icon special_information
+
+            if (fields.count()<2) continue;
+            name = fields[1];
+            if (name.startsWith('$')) continue;		// in a shell function body
+            alias = name;
+#ifdef DEBUG_OSMAND
+            qDebug() << cmd << "--" << name;
+#endif // DEBUG_OSMAND
+        }
+        else continue;					// ignore any other line
+        ++numDefs;					// count this definition found
+
+        // The icon alias gives the relative path to the SVG file, but not
+        // in an obvious way.  The files are in a subdirectory which is the
+        // first part of the pathname, but it is unpredictable whether the
+        // separation happens at the first '_' or a subsequent one.  So
+        // generate a potential pathname by replacing the first '_' with a
+        // slash and see whether such a SVG file exists.  If it does not,
+        // then undo that replacement and try again with the next '_',
+        // repeating until a valid SVG file is found.  In practice the file
+        // always seems to be found after either the first substitution or
+        // the second, or not found at all.
+
+        int prevIndex = -1;
+        QByteArray tryPath;
+        bool triedRewrite = false;
+
+        while (true)
+        {
+            int idx = alias.indexOf('_', prevIndex+1);
+            if (idx==-1)
+            {
+                // All of the '_'s in the alias path have been tried, but no
+                // SVG file has been found.  If the alias has already been
+                // rewritten once, then there is no more that can be done and
+                // the SVG file cannot be found.
+                if (triedRewrite)
+                {
+#ifdef DEBUG_OSMAND
+                    qDebug() << "  not found, and already tried rewrite";
+#endif // DEBUG_OSMAND
+                    break;
+                }
+
+#ifdef DEBUG_OSMAND
+                qDebug() << "  not found";
+#endif // DEBUG_OSMAND
+
+                // No SVG file has been found.  Try rewriting the alias using
+                // these rules, which in their applicable cases gives the true
+                // location of the SVG file.  If the alias is rewritten, set
+                // the 'prevIndex' so that the check starts again immediately
+                // at the expected location.
+                if (alias.endsWith("_small") || alias.endsWith("_small_disused"))
+                {
+                    // ferry_terminal_small = map-small/ferry_terminal_small.svg
+                    // railway_station_small_disused = map-small/railway_station_small_disused.svg
+                    alias.prepend("map-small_");
+                    prevIndex = 8;
+                }
+                else if (alias.startsWith("topo_topo_"))
+                {
+                    // topo_topo_alpine_hut = topo_accomodation/topo_alpine_hut.svg
+                    alias = "topo_accomodation_"+alias.mid(5);
+                    prevIndex = 16;
+                }
+                else if (alias.startsWith("seamark_int1_"))
+                {
+                    // seamark_int1_seamark_j132_weedkelp_shield_night = seamark_int1_shields/seamark_j132_weedkelp_shield_night.svg
+                    alias = "seamark_int1_shields_"+alias.mid(13);
+                    prevIndex = 19;
+                }
+                else
+                {
+                    qDebug() << "  no rewrite known";
+                    break;
+                }
+
+                // If the alias has been rewritten, then note that so that if
+                // the search fails again it will not be retried.
+                triedRewrite = true;
+#ifdef DEBUG_OSMAND
+                qDebug() << "  rewritten to" << alias;
+#endif // DEBUG_OSMAND
+                continue;
+            }
+
+            // Insert a directory separator at the appropriate place in the
+            // path, and add the file extsneion.
+            tryPath = alias;
+            tryPath[idx] = '/';
+            tryPath += ".svg";
+#ifdef DEBUG_OSMAND
+            qDebug() << "  checking for" << iconsDir.absoluteFilePath(tryPath);
+#endif // DEBUG_OSMAND
+
+            if (iconsDir.exists(tryPath))		// relative to base directory
+            {
+#ifdef DEBUG_OSMAND
+                qDebug() << "  found";
+#endif // DEBUG_OSMAND
+
+                // The SVG file has been found.  Note it as the icon path
+                // for the name.
+                sOsmandPaths[name] = tryPath;
+                ++numFound;				// count this icon found
+                break;
+            }
+
+            prevIndex = idx;				// the last split point tried
+        }
+    }
+
+    qDebug() << "read" << numRead << "lines," << numDefs << "icon definitions," << numFound << "SVG icon files";
+
+    // TODO: save the file for subsequent runs
+}
+
+
+static void setOsmandPixmap(QIcon *icon, const QString &name)
+{
+    const QByteArray svgPath = sOsmandPaths[name];
+#ifdef DEBUG_OSMAND
+    qDebug() << "name" << name << "-> svg" << svgPath;
+#endif // DEBUG_ICONS
+    if (svgPath.isEmpty()) return;			// should never happen
+
+    QImage img(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR+'/'+svgPath);
+#ifdef DEBUG_OSMAND
+    qDebug() << "  rendered SVG size" << img.size() << "fmt" << img.format();
+#endif // DEBUG_ICONS
+    if (img.isNull()) return;				// SVG image load failed
+
+    // TODO: need to get the background colour and shape from item metadata
+
+    const QColor bgCol(Qt::red);
+    //const QColor bgCol = item->metadata("pointcolor").value<QColor>();
+    qDebug() << "bgcol" << bgCol;
+
+    if (bgCol.isValid())
+    {
+        QImage bgImg(img.size(), img.format());
+        bgImg.fill(bgCol);
+        QPainter p(&bgImg);
+        p.drawImage(QPoint(1, 1), img, QRect(1, 1, img.width()-2, img.height()-2));
+        p.setPen(Qt::black);
+        p.drawRect(0, 0, bgImg.width()-1, bgImg.height()-1);
+        p.end();
+        img = bgImg;
+    }
+
+    // Finally generate a QPixmap from the image, add the mask
+    // and store it at that size for the icon.
+    QPixmap pix = QPixmap::fromImage(img);
+    //pix.setMask(mask);
+    icon->addPixmap(pix);
+
+    // While we have the pixmap available, scale it to the sizes that
+    // will be used by the application - 32x32 and 16x16 - and store
+    // them for the icon also.
+    icon->addPixmap(pix.scaled(KIconLoader::SizeMedium, KIconLoader::SizeMedium, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    icon->addPixmap(pix.scaled(KIconLoader::SizeSmall, KIconLoader::SizeSmall, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+}
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -343,12 +600,11 @@ static const int garminSizeY = 24;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Static caches for loaded master images				//
+//  Static cache for loaded master images				//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 static QHash<int,QImage> sMasterImages;
-static QHash<int,QImage> sGarminImages;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -618,6 +874,25 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
         }
     }
 
+    // Third try: OsmAnd icons
+    if (nsp==PointIcon::NamespaceAuto || nsp==PointIcon::NamespaceOsmand)
+    {
+#ifdef DEBUG_ICONS
+        qDebug() << "  trying OsmAnd";
+#endif // DEBUG_ICONS
+
+        if (!sIsOsmandSetup) findOsmandPaths();
+        if (sOsmandPaths.contains(name))
+        {
+            setOsmandPixmap(&mIcon, name);
+            if (!mIcon.isNull())			// always true unless load error
+            {
+                mNsp = PointIcon::NamespaceOsmand;
+                return;
+            }
+        }
+    }
+
 #ifdef DEBUG_ICONS
     qDebug() << "  name not found";
 #endif // DEBUG_ICONS
@@ -644,6 +919,8 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
 /* static */ QStringList PointIcon::allNames(PointIcon::IconNamespace nsp)
 {
     QStringList result;
+
+// TODO: for OsmAnd
 
     if (nsp==PointIcon::NamespaceGarmin)
     {
