@@ -918,7 +918,7 @@ const PointIcon *TrackDataWaypoint::icon() const
 #ifdef DEBUG_ICONS
             qDebug() << "for" << name() << "sym" << sym << "set" << set;
 #endif
-            const PointIcon *ic = PointIconProvider::self()->icon(sym, set);
+            const PointIcon *ic = PointIconProvider::self()->icon(sym, set, this);
             if (ic->isValid()) return (ic);
         }
     }

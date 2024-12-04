@@ -28,6 +28,8 @@
 #include <qdebug.h>
 #include <qcache.h>
 
+#include "trackdata.h"
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Debugging switches							//
@@ -78,30 +80,37 @@ PointIconProvider *PointIconProvider::self()
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-const PointIcon *PointIconProvider::icon(const QString &name, PointIcon::IconNamespace nsp)
+const PointIcon *PointIconProvider::icon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item)
 {
-    // TODO: may need to encode name and namespace for cache key
-
-    if (sIconCache.contains(name))
+    QString cacheKey = name+'-'+QString::number(nsp);
+    if (item!=nullptr)
     {
-#ifdef DEBUG_CACHE
-        qDebug() << "found" << name << "in cache";
-#endif
-        return (sIconCache.object(name));
+        QVariant v = item->metadata("background");
+        if (!v.isNull()) cacheKey += '-'+v.toString();
+        v = item->metadata("pointcolor");
+        if (!v.isNull()) cacheKey += '-'+v.toString();
     }
 
-    PointIcon *ic = new PointIcon(name, nsp);		// deleted by cache when expired
+    if (sIconCache.contains(cacheKey))
+    {
+#ifdef DEBUG_CACHE
+        qDebug() << "found" << cacheKey << "in cache";
+#endif
+        return (sIconCache.object(cacheKey));
+    }
+
+    PointIcon *ic = new PointIcon(name, nsp, item);	// deleted by cache when expired
 #ifdef DEBUG_CACHE
     qDebug() << "saving" << name << "valid?" << ic->isValid() << "in cache";
 #endif
-    sIconCache.insert(name, ic, 2);			// named icon => lower cache cost
+    sIconCache.insert(cacheKey, ic, 2);			// named icon => lower cache cost
     return (ic);
 }
 
 
 const PointIcon *PointIconProvider::icon(const QColor &col)
 {
-    const QString name = "colour"+col.name();		// name for this coloured icon
+    const QString name = "colour-"+col.name();		// name for this coloured icon
 
     if (sIconCache.contains(name))
     {
@@ -120,7 +129,7 @@ const PointIcon *PointIconProvider::icon(const QColor &col)
 }
 
 
-const PointIcon *PointIconProvider::icon(const QString &name, const QByteArray &nsn)
+const PointIcon *PointIconProvider::icon(const QString &name, const QByteArray &nsn, const TrackDataItem *item)
 {
-    return (icon(name, PointIcon::namespaceId(nsn)));
+    return (icon(name, PointIcon::namespaceId(nsn), item));
 }

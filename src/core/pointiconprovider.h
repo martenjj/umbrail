@@ -29,6 +29,7 @@
 #include "pointicon.h"
 
 class QColor;
+class TrackDataItem;
 
 
 class PointIconProvider
@@ -36,8 +37,8 @@ class PointIconProvider
 public:
     static PointIconProvider *self();
 
-    const PointIcon *icon(const QString &name, PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto);
-    const PointIcon *icon(const QString &name, const QByteArray &nsn);
+    const PointIcon *icon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item = nullptr);
+    const PointIcon *icon(const QString &name, const QByteArray &nsn, const TrackDataItem *item = nullptr);
     const PointIcon *icon(const QColor &col);
 
     void aboutToQuit() const;

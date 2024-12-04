@@ -29,6 +29,7 @@
 #include <qicon.h>
 
 class QColor;
+class TrackDataItem;
 
 /**
  * @short Provide icons for the GUI and for plotting on the map.
@@ -65,7 +66,7 @@ public:
 protected:
     // Only the PointIconProvider may construct a PointIcon.
     friend class PointIconProvider;
-    explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto);
+    explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item = nullptr);
     explicit PointIcon(const QString &name, const QColor &col);
 
 private:

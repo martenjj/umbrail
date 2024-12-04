@@ -813,7 +813,7 @@ static void setGarminPixmap(QIcon *icon, int idx)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp)
+PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item)
 {
     mName = name;
 #ifdef DEBUG_ICONS
