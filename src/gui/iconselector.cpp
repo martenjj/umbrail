@@ -31,6 +31,7 @@
 #include <qpushbutton.h>
 #include <qtimer.h>
 #include <qdebug.h>
+#include <qguiapplication.h>
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
@@ -123,6 +124,9 @@ void IconSelector::slotSourceChanged()
 {
     const PointIcon::IconNamespace nsp = selectedNamespace();
 
+    // This may take some time for OsmAnd...
+    QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+
     mList->clear();
     QListWidgetItem *selectedItem = nullptr;
     QStringList names = PointIcon::allNames(nsp);
@@ -150,6 +154,7 @@ void IconSelector::slotSourceChanged()
         mList->scrollToItem(selectedItem, QAbstractItemView::PositionAtCenter);
     }
 
+    QGuiApplication::restoreOverrideCursor();
     slotSelectionChanged();
 }
 

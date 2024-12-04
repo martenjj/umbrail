@@ -30,7 +30,6 @@
 #include <qhash.h>
 #include <qimage.h>
 #include <qbitmap.h>
-
 #include <qfile.h>
 #include <qdir.h>
 #include <qpainter.h>
@@ -918,22 +917,38 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
     setIconPixmap(&mIcon, col, KIconLoader::SizeMedium);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Listing icon names							//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 /* static */ QStringList PointIcon::allNames(PointIcon::IconNamespace nsp)
 {
     QStringList result;
 
-// TODO: for OsmAnd
-
     if (nsp==PointIcon::NamespaceGarmin)
     {
         for (int i = 0; i<numGarminNames; ++i) result.append(garminNames[i]);
     }
+    else if (nsp==PointIcon::NamespaceOsmand)
+    {
+        if (!sIsOsmandSetup) findOsmandPaths();
+        // TODO: maybe filter "seamark" names - we don't use them
+        // and they account for about 1/4 of the total
+        result = sOsmandPaths.keys();
+    }
     else qWarning() << "requested for invalid namespace" << nsp;
 
+    // There is no need to sort the result, IconSelector does that.
     return (result);
 }
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Namespaces and display strings					//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 /* static */ QString PointIcon::namespaceDisplayName(PointIcon::IconNamespace nsp)
 {
