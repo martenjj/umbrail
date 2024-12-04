@@ -1029,41 +1029,43 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
     // retain them without any further checking.
     if (dynamic_cast<TrackDataFile *>(item)!=nullptr) return (true);
 
-    // If the COLOR tag is not present, then there is nothing to do.
+    // These checks only need to be performed if the COLOR tag is present.
     const QColor col = item->metadata("color").value<QColor>();
-    if (!col.isValid()) return (true);
-
-    // Note whether this is a point element (POINTCOLOR applies), or
-    // any other element (LINECOLOR applies).  Then note the tag name
-    // as appropriate and get the corresponding colour value.
-    const bool isPoint = (dynamic_cast<TrackDataAbstractPoint *>(item)!=nullptr);
-    const QByteArray &name = (isPoint ? "pointcolor" : "linecolor");
-    const QColor ourCol = item->metadata(name).value<QColor>();
-
-    if (options().hasFlag(ImporterExporterOptions::ImportExport))
-    {							// an import operation
-        if (ourCol.isValid() && ourCol!=col) addWarning(QString("%1 ignored, using COLOR value").arg(QString(name).toUpper()));
-        item->setMetadata(name, col);
-    }
-    else						// a file load operation
+    if (col.isValid())
     {
-        if (ourCol.isValid() && ourCol!=col) addWarning(QString("COLOR ignored, using %1 value").arg(QString(name).toUpper()));
-        else item->setMetadata(name, col);
+        // Note whether this is a point element (POINTCOLOR applies), or
+        // any other element (LINECOLOR applies).  Then note the tag name
+        // as appropriate and get the corresponding colour value.
+        const bool isPoint = (dynamic_cast<TrackDataAbstractPoint *>(item)!=nullptr);
+        const QByteArray &name = (isPoint ? "pointcolor" : "linecolor");
+        const QColor ourCol = item->metadata(name).value<QColor>();
+
+        if (options().hasFlag(ImporterExporterOptions::ImportExport))
+        {						// an import operation
+            if (ourCol.isValid() && ourCol!=col) addWarning(QString("%1 ignored, using COLOR value").arg(QString(name).toUpper()));
+            item->setMetadata(name, col);
+        }
+        else						// a file load operation
+        {
+            if (ourCol.isValid() && ourCol!=col) addWarning(QString("COLOR ignored, using %1 value").arg(QString(name).toUpper()));
+            else item->setMetadata(name, col);
+        }
+
+        item->setMetadata("color", QVariant());		// clear the COLOR value
     }
-    item->setMetadata("color", QVariant());		// clear the COLOR value
 
     // Check for an OsmAnd icon tag and whether to use that as the symbol name.
     // That needs to be done here so that it is not necessary to check all of
     // the "sym", "symset" and "icon" data throughout the application to resolve
     // which symbol is to be used
-    const QVariant sym = item->metadata("sym");
-    const QVariant set = item->metadata("symset");
     const QVariant icn = item->metadata("icon");
-
-    static const QString OSMAND_SET_NAME = PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand);
-
     if (!icn.isNull())
     {
+        const QVariant sym = item->metadata("sym");
+        const QVariant set = item->metadata("symset");
+
+        static const QString OSMAND_SET_NAME = PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand);
+
         // An OsmAnd-specific ICON value is present.  If the symbol set is
         // explicitly specified to be for OsmAnd, then use that value as the
         // symbol.
