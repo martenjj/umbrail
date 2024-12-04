@@ -90,7 +90,6 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     setMainWidget(w);
     setStateSaver(this);
     slotSourceChanged();
-    slotSelectionChanged();
 
     connect(mSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &IconSelector::slotSourceChanged);
     connect(mList, &QListWidget::itemSelectionChanged, this, &IconSelector::slotSelectionChanged);
