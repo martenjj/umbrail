@@ -212,6 +212,13 @@ void TrackItemStylePage::addIconButton()
 
     mIconNspLabel = new QLabel(this);
     mFormLayout->addRow(i18n("Symbol set:"), mIconNspLabel);
+
+    mIconShapeCombo = new QComboBox(this);
+    mIconShapeCombo->addItem(QIcon::fromTheme("shape-circle"), i18nc("@item:inlistbox for icon shape", "Circle"), "circle");
+    mIconShapeCombo->addItem(QIcon::fromTheme("shape-square"), i18nc("@item:inlistbox for icon shape", "Square"), "square");
+    mIconShapeCombo->addItem(QIcon::fromTheme("shape-octagon"), i18nc("@item:inlistbox for icon shape", "Octagon"), "octagon");
+    connect(mIconShapeCombo, &QComboBox::currentIndexChanged, this, &TrackItemStylePage::slotIconShapeChanged);
+    mFormLayout->addRow(i18n("Background shape:"), mIconShapeCombo);
 }
 
 
@@ -250,6 +257,12 @@ bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
 }
 
 
+void TrackItemStylePage::slotIconShapeChanged(int idx)
+{
+    dataModel()->setData(DataIndexer::index("background"), mIconShapeCombo->currentData());
+}
+
+
 void TrackItemStylePage::refreshData()
 {
     if (mLineColourButton!=nullptr)
@@ -268,6 +281,7 @@ void TrackItemStylePage::refreshData()
     {
         Q_ASSERT(mIconNameLabel!=nullptr);
         Q_ASSERT(mIconNspLabel!=nullptr);
+        Q_ASSERT(mIconShapeCombo!=nullptr);
 
         const QVariant sym = dataModel()->data("sym");
         const QVariant set = dataModel()->data("symset");
@@ -286,6 +300,11 @@ void TrackItemStylePage::refreshData()
             mIconNameLabel->setText("");
             mIconNspLabel->setText("");
         }
+
+        const int idx = mIconShapeCombo->findData(dataModel()->data("background").toString());
+        if (idx!=-1) mIconShapeCombo->setCurrentIndex(idx);
+
+        mIconShapeCombo->setEnabled(set.toByteArray()==PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand));
     }
 }
 
@@ -349,6 +368,7 @@ TrackWaypointStylePage::TrackWaypointStylePage(const QList<TrackDataItem *> *ite
     setObjectName("TrackWaypointStylePage");
 
     addIconButton();
+    addSeparatorField();
     addSeparatorField();
     addPointColourButton(i18n("No point colour"));
 

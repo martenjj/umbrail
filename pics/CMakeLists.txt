@@ -44,6 +44,9 @@ set(pics_SRCS
   waypoint-32.png
   # used by TrackItemStylePage
   symbol-blank.png
+  shape-square.png
+  shape-circle.png
+  shape-octagon.png
   # Symbol set provider logos, used by IconSelector
   logo-garmin.png
   logo-osmand.png

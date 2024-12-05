@@ -322,6 +322,10 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
         if (c.isValid()) bgCol = c;
     }
 
+    // TODO: item category or default color, see TrackDataWaypoint::icon()
+
+
+
     // Fill the image background with the colour, then render the SVG
     // image on top of it.
     QPixmap bgPix(ps, ps);

@@ -31,6 +31,7 @@
 
 class QLabel;
 class QCheckBox;
+class QComboBox;
 class KColorButton;
 class KIconButton;
 class TrackDataItem;
@@ -63,11 +64,13 @@ protected:
     KIconButton *mIconButton;
     QLabel *mIconNameLabel;
     QLabel *mIconNspLabel;
+    QComboBox *mIconShapeCombo;
 
     bool mIsTopLevel;
 
 protected slots:
     void slotColourChanged(const QColor &col);
+    void slotIconShapeChanged(int idx);
     void slotInheritChanged(bool on);
 
 private:
