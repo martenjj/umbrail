@@ -75,6 +75,7 @@ static QHash<QString, QByteArray> sOsmandPaths;
 static const char *OSMAND_RESBASE = "/ws/osmand/OsmAnd-resources/icons";
 static const char *OSMAND_ALIASFILE = "tools/sortfiles.sh";
 static const char *OSMAND_ICONSDIR = "svg";
+static const int OSMAND_MAXSIZE = 64;
 
 
 static void findOsmandPaths()
@@ -274,17 +275,33 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
     const QByteArray svgPath = sOsmandPaths[name];
 #ifdef DEBUG_OSMAND
     qDebug() << "name" << name << "-> svg" << svgPath;
-#endif // DEBUG_ICONS
+#endif // DEBUG_OSMAND
     if (svgPath.isEmpty()) return;			// should never happen
 
-    QImage img(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR+'/'+svgPath);
+    QPixmap pix(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR+'/'+svgPath);
+    if (pix.isNull()) return;				// SVG image load failed
+
+    // Most OsmAnd POI icons render at 48x48, but some, in particular
+    // seamarks and those more applicable to landuse, come out much
+    // larger.  We don't need such big images in this application, so
+    // scale them down to limit the maximium size.
+    if (qMax(pix.size().width(), pix.size().height())>OSMAND_MAXSIZE)
+    {
 #ifdef DEBUG_OSMAND
-    qDebug() << "  rendered SVG size" << img.size() << "fmt" << img.format();
-#endif // DEBUG_ICONS
-    if (img.isNull()) return;				// SVG image load failed
+        qDebug() << "  limiting SVG size" << pix.size() << "to" << OSMAND_MAXSIZE;
+#endif // DEBUG_OSMAND
+        pix = pix.scaled(OSMAND_MAXSIZE, OSMAND_MAXSIZE, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+#ifdef DEBUG_OSMAND
+    else qDebug() << "  rendered SVG size" << pix.size();
+#endif // DEBUG_OSMAND
 
-    // TODO: implement the  shape from item metadata
+    const int pw = pix.width();
+    const int ph = pix.height();
 
+
+    // Get the icon colour (which OsmAnd calls "background") from
+    // the item metadata, if it is present.
     QColor bgCol(Qt::black);
     if (item!=nullptr)
     {
@@ -292,21 +309,23 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
         if (c.isValid()) bgCol = c;
     }
 
+    // Fill the image background with the colour, then render the SVG
+    // image on top of it.
     if (bgCol.isValid())
     {
-        QImage bgImg(img.size(), img.format());
-        bgImg.fill(bgCol);
-        QPainter p(&bgImg);
-        p.drawImage(QPoint(1, 1), img, QRect(1, 1, img.width()-2, img.height()-2));
+        QPixmap bgPix(pw, ph);
+        bgPix.fill(bgCol);
+        QPainter p(&bgPix);
+        p.drawPixmap(QPoint(1, 1), pix, QRect(1, 1, pw-2, ph-2));
         p.setPen(Qt::black);
-        p.drawRect(0, 0, bgImg.width()-1, bgImg.height()-1);
+        p.drawRect(0, 0, pw-1, ph-1);
         p.end();
-        img = bgImg;
+        pix = bgPix;
     }
 
-    // Finally generate a QPixmap from the image, add the mask
-    // and store it at that size for the icon.
-    QPixmap pix = QPixmap::fromImage(img);
+    // TODO: implement the  shape from item metadata
+
+    // Finally add the mask and store it at that size for the icon.
     //pix.setMask(mask);
     icon->addPixmap(pix);
 
