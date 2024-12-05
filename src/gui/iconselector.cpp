@@ -61,6 +61,12 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     mSourceCombo->addItem(QIcon::fromTheme("logo-osmand"), i18nc("Symbol set name", "OsmAnd"), PointIcon::NamespaceOsmand);
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
 
+    if (nsp==PointIcon::NamespaceAuto && !sym.isEmpty())
+    {
+        const PointIcon *pi = PointIconProvider::self()->icon(sym, nsp);
+        nsp = pi->nsp();
+    }
+
     mHadInitialNamespace = (nsp!=PointIcon::NamespaceAuto);
     if (mHadInitialNamespace)
     {
