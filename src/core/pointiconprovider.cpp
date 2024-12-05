@@ -54,6 +54,7 @@ static QCache<QString, PointIcon> sIconCache;
 
 PointIconProvider::PointIconProvider()
 {
+    sIconCache.setMaxCost(4000);
     qDebug() << "cache size" << sIconCache.maxCost();
 }
 
@@ -69,8 +70,7 @@ void PointIconProvider::aboutToQuit() const
 
 PointIconProvider *PointIconProvider::self()
 {
-    static PointIconProvider *instance = nullptr;
-    if (instance==nullptr) instance = new PointIconProvider();
+    static PointIconProvider *instance = new PointIconProvider();
     return (instance);
 }
 
