@@ -283,23 +283,34 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
     QPixmap pix(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR+'/'+svgPath);
     if (pix.isNull()) return;				// SVG image load failed
 
-    // Most OsmAnd POI icons render at 48x48, but some, in particular
-    // seamarks and those more applicable to landuse, come out much
-    // larger.  We don't need such big images in this application, so
-    // scale them down to limit the maximium size.
     if (qMax(pix.size().width(), pix.size().height())>OSMAND_MAXSIZE)
     {
+        // Most OsmAnd POI icons render at 48x48, but some, in particular
+        // seamarks and those more applicable to landuse, come out much
+        // larger.  We don't need such big images in this application, so
+        // scale them down to limit the maximium size.
 #ifdef DEBUG_OSMAND
         qDebug() << "  limiting SVG size" << pix.size() << "to" << OSMAND_MAXSIZE;
 #endif // DEBUG_OSMAND
         pix = pix.scaled(OSMAND_MAXSIZE, OSMAND_MAXSIZE, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
+    else if (pix.size().width()!=pix.size().height())
+    {
+        // If the rendered image is not square, then trim it to the minimum.
+        // This simplifies the processing below which can assume a square image.
+        const int minSize = qMin(pix.size().width(), pix.size().height());
+#ifdef DEBUG_OSMAND
+        qDebug() << "  squaring SVG size" << pix.size() << "to" << minSize;
+#endif // DEBUG_OSMAND
+        const int ew = pix.size().width()-minSize;	// extra space in width and height,
+        const int eh = pix.size().height()-minSize;	// one of these must be zero
+        pix = pix.copy(ew/2, eh/2, minSize, minSize);	// copy from original imake
+    }
 #ifdef DEBUG_OSMAND
     else qDebug() << "  rendered SVG size" << pix.size();
 #endif // DEBUG_OSMAND
 
-    const int pw = pix.width()+OSMAND_EXTRA;
-    const int ph = pix.height()+OSMAND_EXTRA;
+    const int ps = pix.width()+OSMAND_EXTRA;		// final grown pixmap size
 
     // Get the icon colour from the item metadata, if it is present.
     // OsmAnd tags this as COLOR, which is saved as the "pointcolor"
@@ -313,27 +324,55 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
 
     // Fill the image background with the colour, then render the SVG
     // image on top of it.
-    QPixmap bgPix(pw, ph);
+    QPixmap bgPix(ps, ps);
     bgPix.fill(bgCol);
     QPainter p1(&bgPix);
     p1.drawPixmap(QPoint(OSMAND_EXTRA/2, OSMAND_EXTRA/2), pix);
-    //p1.setPen(Qt::black);
-    //p1.drawRect(0, 0, pw-1, ph-1);
     p1.end();
     pix = bgPix;
 
-    // TODO: implement the shape from item metadata
+    if (item!=nullptr)					// need this for a background shape
+    {
+        const QVariant shp = item->metadata("background");
+        if (!shp.isNull() && shp!="square")		// has a background shape set, but
+        {						// nothing is needed for a square
+            QBitmap mask(ps, ps);
+            mask.fill(Qt::color0);
+            QPainter p2(&mask);
+            p2.setBrush(Qt::color1);
 
-    QBitmap mask(pw, ph);
-    mask.fill(Qt::color0);
-    QPainter p2(&mask);
-    p2.setBrush(Qt::color1);
-    p2.drawEllipse(QRect(0, 0, pw, ph));
-    p2.end();
+            if (shp=="circle") p2.drawEllipse(QRect(0, 0, ps, ps));
+            else if (shp=="octagon")
+            {
+                const int s = ps/2;			// half the overall size
 
-    // Finally set the mask and store the pixmap at its current
-    // size for the icon.
-    pix.setMask(mask);
+                // This value is half of the octagon side length.  The true
+                // side length should be ps/(1+sqrt(2)) where the divisor is
+                // 2.414 to 3 significant figures.  However, the divisor is set
+                // slightly lower at 24/11 (making it 2.182), to improve the
+                // appearance by making the straight sides of the octagon longer.
+                // Half the value is used as a premature optimisation.
+                const int a = 11*ps/(24*2);
+                QPoint pnts[8];
+
+                pnts[0] = QPoint(s-a, 0);		// top
+                pnts[1] = QPoint(s+a, 0);
+                pnts[2] = QPoint(ps, s-a);		// right
+                pnts[3] = QPoint(ps, s+a);
+                pnts[4] = QPoint(s+a, ps);		// bottom
+                pnts[5] = QPoint(s-a, ps);
+                pnts[6] = QPoint(0, s+a);		// left
+                pnts[7] = QPoint(0, s-a);
+                p2.drawPolygon(pnts, 8);
+            }
+            else qDebug() << "Unknown OsmAnd background shape" << shp.toString();
+
+            p2.end();
+            pix.setMask(mask);
+        }
+    }
+
+    // Finally store the pixmap at its current size for the icon.
     icon->addPixmap(pix);
 
     // While we have the pixmap available, scale it to the sizes that
@@ -347,7 +386,7 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
 //									//
 //  Names and constants for Garmin icons				//
 //									//
-// from https://forums.geocaching.com/GC/index.php?/topic/		//
+//  from https://forums.geocaching.com/GC/index.php?/topic/		//
 //                          277519-garmin-roadtrip-waypoint-symbols	//
 //									//
 //////////////////////////////////////////////////////////////////////////
