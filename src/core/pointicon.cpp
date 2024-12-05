@@ -75,7 +75,9 @@ static QHash<QString, QByteArray> sOsmandPaths;
 static const char *OSMAND_RESBASE = "/ws/osmand/OsmAnd-resources/icons";
 static const char *OSMAND_ALIASFILE = "tools/sortfiles.sh";
 static const char *OSMAND_ICONSDIR = "svg";
-static const int OSMAND_MAXSIZE = 64;
+
+static const int OSMAND_MAXSIZE = 64;			// maximum rendered pixmap size
+static const int OSMAND_EXTRA = 6;			// extra size for border
 
 
 static void findOsmandPaths()
@@ -296,12 +298,12 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
     else qDebug() << "  rendered SVG size" << pix.size();
 #endif // DEBUG_OSMAND
 
-    const int pw = pix.width();
-    const int ph = pix.height();
+    const int pw = pix.width()+OSMAND_EXTRA;
+    const int ph = pix.height()+OSMAND_EXTRA;
 
-
-    // Get the icon colour (which OsmAnd calls "background") from
-    // the item metadata, if it is present.
+    // Get the icon colour from the item metadata, if it is present.
+    // OsmAnd tags this as COLOR, which is saved as the "pointcolor"
+    // metadata when the GPX is imported.
     QColor bgCol(Qt::black);
     if (item!=nullptr)
     {
@@ -311,22 +313,27 @@ static void setOsmandPixmap(QIcon *icon, const QString &name, const TrackDataIte
 
     // Fill the image background with the colour, then render the SVG
     // image on top of it.
-    if (bgCol.isValid())
-    {
-        QPixmap bgPix(pw, ph);
-        bgPix.fill(bgCol);
-        QPainter p(&bgPix);
-        p.drawPixmap(QPoint(1, 1), pix, QRect(1, 1, pw-2, ph-2));
-        p.setPen(Qt::black);
-        p.drawRect(0, 0, pw-1, ph-1);
-        p.end();
-        pix = bgPix;
-    }
+    QPixmap bgPix(pw, ph);
+    bgPix.fill(bgCol);
+    QPainter p1(&bgPix);
+    p1.drawPixmap(QPoint(OSMAND_EXTRA/2, OSMAND_EXTRA/2), pix);
+    //p1.setPen(Qt::black);
+    //p1.drawRect(0, 0, pw-1, ph-1);
+    p1.end();
+    pix = bgPix;
 
-    // TODO: implement the  shape from item metadata
+    // TODO: implement the shape from item metadata
 
-    // Finally add the mask and store it at that size for the icon.
-    //pix.setMask(mask);
+    QBitmap mask(pw, ph);
+    mask.fill(Qt::color0);
+    QPainter p2(&mask);
+    p2.setBrush(Qt::color1);
+    p2.drawEllipse(QRect(0, 0, pw, ph));
+    p2.end();
+
+    // Finally set the mask and store the pixmap at its current
+    // size for the icon.
+    pix.setMask(mask);
     icon->addPixmap(pix);
 
     // While we have the pixmap available, scale it to the sizes that
