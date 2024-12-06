@@ -8,10 +8,10 @@
 
 #include <klocalizedstring.h>
 
-#include "pointiconprovider.h"
 #include "categorieseditdialogue.h"
 #include "listeditwidget.h"
 #include "dataindexer.h"
+#include "pointicon.h"
 
 
 MergePointsDialogue::MergePointsDialogue(QWidget *pnt)
@@ -259,7 +259,7 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         {
             const QString &sym = v.toString();
             const QByteArray &set = tdw->metadata("symset").toByteArray();
-            const PointIcon *pi = PointIconProvider::self()->icon(sym, set);
+            const PointIcon *pi = PointIcon::create(sym, set);
 
             QString symText = sym;
             if (!set.isEmpty()) symText += QString(" (%1)").arg(PointIcon::namespaceDisplayName(pi->nsp()));

@@ -38,7 +38,7 @@ public:
     bool createIcon(QIcon *icon, const QString &name, const QVariant &colour, const QVariant &shape) override;
     QStringList allIconNames() override;
 
-    const char *internalName() const override			{ return ("garmin"); }
+    const char *internalName() const override		{ return ("garmin"); }
     QString displayName() const override;
 };
 

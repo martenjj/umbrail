@@ -38,7 +38,6 @@ set(core_SRCS
   applicationdatainterface.cpp
   itemindexinterface.cpp
   pointicon.cpp
-  pointiconprovider.cpp
   category.cpp
   units.cpp
   abstracticonprovider.cpp

@@ -27,6 +27,7 @@
 
 #include <qdebug.h>
 #include <qstandardpaths.h>
+#include <qcache.h>
 
 #include <kiconloader.h>
 #include <klocalizedstring.h>
@@ -43,6 +44,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #undef DEBUG_ICONS
+#undef DEBUG_CACHE
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -86,6 +88,15 @@ static QList<AbstractIconProvider *> sIconProviders;
 //////////////////////////////////////////////////////////////////////////
 
 static QHash<int,QImage> sMasterImages;
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Static cache for rendered icon images				//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+typedef QCache<QString,PointIcon> PointIconCache;
+Q_GLOBAL_STATIC(PointIconCache, sIconCache, 5000)
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -144,7 +155,7 @@ static void setIconPixmap(QIcon *icon, const QColor &col, int size)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item)
+/* protected */ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item)
 {
     mName = name;
 #ifdef DEBUG_ICONS
@@ -173,7 +184,6 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const Tr
     }
 
     // Second try: icon providers
-
     for (AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
         if (nsp==PointIcon::NamespaceAuto || nsp==provider->namespaceId())
@@ -206,7 +216,7 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const Tr
 }
 
 
-PointIcon::PointIcon(const QString &name, const QColor &col)
+/* protected */ PointIcon::PointIcon(const QString &name, const QColor &col)
 {
     mName = name;
     mNsp = PointIcon::NamespaceColour;
@@ -286,4 +296,78 @@ default:				/* fall through */;
         if (provider->internalName()==nsn) return (provider->namespaceId());
     }
     return (PointIcon::NamespaceAuto);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Cache statistics							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+void PointIcon::aboutToQuit()
+{
+    // Dump statistics.  Done in a separate function called when
+    // the main window is closed, to ensure that they are shown
+    // before the debug streams are closed.
+    qDebug() << "cache used" << sIconCache->size() << "total cost" << sIconCache->totalCost();
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Icon creation							//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+/* static */ const PointIcon *PointIcon::create(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item)
+{
+    QString cacheKey = name+'-'+QString::number(nsp);
+    if (item!=nullptr)
+    {
+        QVariant v = item->metadata("background");
+        if (!v.isNull()) cacheKey += '-'+v.toString();
+        v = item->metadata("pointcolor");
+        if (!v.isNull()) cacheKey += '-'+v.toString();
+    }
+
+    if (sIconCache->contains(cacheKey))
+    {
+#ifdef DEBUG_CACHE
+        qDebug() << "found" << cacheKey << "in cache";
+#endif
+        return (sIconCache->object(cacheKey));
+    }
+
+    PointIcon *ic = new PointIcon(name, nsp, item);	// deleted by cache when expired
+#ifdef DEBUG_CACHE
+    qDebug() << "saving" << name << "valid?" << ic->isValid() << "in cache";
+#endif
+    sIconCache->insert(cacheKey, ic, 2);		// named icon => lower cache cost
+    return (ic);
+}
+
+
+/* static */ const PointIcon *PointIcon::create(const QColor &col)
+{
+    const QString name = "colour-"+col.name();		// name for this coloured icon
+
+    if (sIconCache->contains(name))
+    {
+#ifdef DEBUG_CACHE
+        qDebug() << "found" << name << "in cache";
+#endif
+        return (sIconCache->object(name));
+    }
+
+    PointIcon *ic = new PointIcon(name, col);		// deleted by cache when expired
+#ifdef DEBUG_CACHE
+    qDebug() << "saving" << name << "valid?" << ic->isValid() << "in cache";
+#endif
+    sIconCache->insert(name, ic, 3);			// coloured item => higher cache cost
+    return (ic);
+}
+
+
+/* static */ const PointIcon *PointIcon::create(const QString &name, const QByteArray &nsn, const TrackDataItem *item)
+{
+    return (create(name, PointIcon::namespaceId(nsn), item));
 }

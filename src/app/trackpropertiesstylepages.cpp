@@ -42,7 +42,6 @@
 #include "metadatamodel.h"
 #include "dataindexer.h"
 #include "iconselector.h"
-#include "pointiconprovider.h"
 #include "pointicon.h"
 #include "abstracticonprovider.h"
 
@@ -290,7 +289,7 @@ void TrackItemStylePage::refreshData()
         const QVariant set = dataModel()->data("symset");
         if (!sym.isNull())
         {
-            const PointIcon *pi = PointIconProvider::self()->icon(sym.toString(), set.toByteArray());
+            const PointIcon *pi = PointIcon::create(sym.toString(), set.toByteArray());
             mIconButton->setIcon(pi->icon());
             mIconNameLabel->setText(sym.toString());
             mIconNspLabel->setText(PointIcon::namespaceDisplayName(pi->nsp()));

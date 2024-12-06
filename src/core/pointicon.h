@@ -67,9 +67,15 @@ public:
     static void initProviders();
     static const QList<AbstractIconProvider *> *allProviders();
 
+    static const PointIcon *create(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item = nullptr);
+    static const PointIcon *create(const QString &name, const QByteArray &nsn, const TrackDataItem *item = nullptr);
+    static const PointIcon *create(const QColor &col);
+
+    static void aboutToQuit();
+
 protected:
-    // Only the PointIconProvider may construct a PointIcon.
-    friend class PointIconProvider;
+    // Only thePointIcon itself may construct a PointIcon.  Callers must
+    // use the create() functions above.
     explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item = nullptr);
     explicit PointIcon(const QString &name, const QColor &col);
 

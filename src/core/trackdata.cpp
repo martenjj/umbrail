@@ -37,7 +37,6 @@
 
 #include "dataindexer.h"
 #include "pointicon.h"
-#include "pointiconprovider.h"
 #include "category.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -552,7 +551,7 @@ const PointIcon *TrackDataItem::icon() const
 {
     // Named item type icons are always taken from the "system"
     // (which includes our application) namespace.
-    return (PointIconProvider::self()->icon(this->iconName(), PointIcon::NamespaceSystem));
+    return (PointIcon::create(this->iconName(), PointIcon::NamespaceSystem));
 }
 
 
@@ -918,7 +917,7 @@ const PointIcon *TrackDataWaypoint::icon() const
 #ifdef DEBUG_ICONS
             qDebug() << "for" << name() << "sym" << sym << "set" << set;
 #endif
-            const PointIcon *ic = PointIconProvider::self()->icon(sym, set, this);
+            const PointIcon *ic = PointIcon::create(sym, set, this);
             if (ic->isValid()) return (ic);
         }
     }
@@ -939,7 +938,7 @@ const PointIcon *TrackDataWaypoint::icon() const
 #ifdef DEBUG_ICONS
             qDebug() << "for" << name() << "colour" << col.name();
 #endif
-            const PointIcon *ic = PointIconProvider::self()->icon(col);
+            const PointIcon *ic = PointIcon::create(col);
             if (ic->isValid()) return (ic);
         }
     }
@@ -963,7 +962,7 @@ const PointIcon *TrackDataWaypoint::icon() const
 #ifdef DEBUG_ICONS
                     qDebug() << "for" << name() << "category" << cat << "->" << col.name();
 #endif
-                    const PointIcon *ic = PointIconProvider::self()->icon(col);
+                    const PointIcon *ic = PointIcon::create(col);
                     if (ic->isValid()) return (ic);
                 }
             }

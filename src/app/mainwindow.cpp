@@ -73,7 +73,6 @@
 #include "statisticswidget.h"
 #include "mediaplayer.h"
 #include "stopdetectdialogue.h"
-#include "pointiconprovider.h"
 #include "importfiledialogue.h"
 #include "exportfiledialogue.h"
 #include "homepointsdatamodel.h"
@@ -584,8 +583,6 @@ void MainWindow::slotNewProject()
 
 void MainWindow::closeEvent(QCloseEvent *ev)
 {
-    PointIconProvider::self()->aboutToQuit();		// dump cache statistics
-
     KConfigGroup grp = Settings::self()->config()->group(CONFIG_GROUP);
     saveProperties(grp);
     grp.sync();

@@ -39,7 +39,6 @@
 #include <klistwidgetsearchline.h>
 
 #include "abstracticonprovider.h"
-#include "pointiconprovider.h"
 
 
 IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
@@ -70,7 +69,7 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
 
     if (nsp==PointIcon::NamespaceAuto && !sym.isEmpty())
     {
-        const PointIcon *pi = PointIconProvider::self()->icon(sym, nsp);
+        const PointIcon *pi = PointIcon::create(sym, nsp);
         nsp = pi->nsp();
     }
 
@@ -151,7 +150,7 @@ void IconSelector::slotSourceChanged()
 
     for (const QString &name : std::as_const(names))
     {
-        QListWidgetItem *item = new QListWidgetItem(PointIconProvider::self()->icon(name, nsp)->icon(), name);
+        QListWidgetItem *item = new QListWidgetItem(PointIcon::create(name, nsp)->icon(), name);
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         // AutoToolTipDelegate does not work for this sort of view,
         // so unconditionally set the tool tip.

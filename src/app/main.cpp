@@ -144,5 +144,7 @@ int main(int argc,char *argv[])
         w->show();
     }
 
-    return (app.exec());
+    int s = app.exec();
+    PointIcon::aboutToQuit();				// dump cache statistics
+    return (s);
 }
