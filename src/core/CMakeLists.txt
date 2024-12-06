@@ -41,6 +41,9 @@ set(core_SRCS
   pointiconprovider.cpp
   category.cpp
   units.cpp
+  abstracticonprovider.cpp
+  garminiconprovider.cpp
+  osmandiconprovider.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})
