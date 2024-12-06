@@ -25,19 +25,14 @@
 
 #include "abstracticonprovider.h"
 
-// #include <qobject.h>
-
-// #include "pointicon.h"
+#include "pointicon.h"
 
 
-
-
-
-
-
-
+static PointIcon::IconNamespace sProviderNsp = PointIcon::NamespaceProvider;
 
 
 AbstractIconProvider::AbstractIconProvider()
 {
+    mNsp = sProviderNsp;
+    sProviderNsp = static_cast<PointIcon::IconNamespace>(int(sProviderNsp)+1);
 }

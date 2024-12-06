@@ -43,6 +43,8 @@
 #include "dataindexer.h"
 #include "iconselector.h"
 #include "pointiconprovider.h"
+#include "pointicon.h"
+#include "abstracticonprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -214,6 +216,7 @@ void TrackItemStylePage::addIconButton()
     mFormLayout->addRow(i18n("Symbol set:"), mIconNspLabel);
 
     mIconShapeCombo = new QComboBox(this);
+    mIconShapeCombo->addItem(QIcon::fromTheme("edit-delete"), i18nc("@item:inlistbox for icon shape", "(None)"), "");
     mIconShapeCombo->addItem(QIcon::fromTheme("shape-circle"), i18nc("@item:inlistbox for icon shape", "Circle"), "circle");
     mIconShapeCombo->addItem(QIcon::fromTheme("shape-square"), i18nc("@item:inlistbox for icon shape", "Square"), "square");
     mIconShapeCombo->addItem(QIcon::fromTheme("shape-octagon"), i18nc("@item:inlistbox for icon shape", "Octagon"), "octagon");
@@ -304,7 +307,16 @@ void TrackItemStylePage::refreshData()
         const int idx = mIconShapeCombo->findData(dataModel()->data("background").toString());
         if (idx!=-1) mIconShapeCombo->setCurrentIndex(idx);
 
-        mIconShapeCombo->setEnabled(set.toByteArray()==PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand));
+        mIconShapeCombo->setEnabled(false);
+        const auto *providers = PointIcon::allProviders();
+        for (const AbstractIconProvider *provider : std::as_const(*providers))
+        {
+            if (set.toByteArray()==provider->internalName())
+            {
+                mIconShapeCombo->setEnabled(provider->supportsShape());
+                break;
+            }
+        }
     }
 }
 

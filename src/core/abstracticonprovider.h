@@ -40,13 +40,17 @@ class AbstractIconProvider
 public:
     virtual ~AbstractIconProvider() = default;
 
-    virtual PointIcon::IconNamespace namespaceId() const = 0;
     virtual const char *internalName() const = 0;
     virtual QString displayName() const = 0;
+
     virtual QStringList allIconNames() = 0;
 
     virtual bool createIcon(QIcon *icon, const QString &name,
                             const QVariant &colour, const QVariant &shape) = 0;
+
+    PointIcon::IconNamespace namespaceId() const	{ return (mNsp); }
+    virtual bool supportsShape() const			{ return (false); }
+
 protected:
     AbstractIconProvider();
 

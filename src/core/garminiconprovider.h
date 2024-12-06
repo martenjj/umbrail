@@ -38,7 +38,6 @@ public:
     bool createIcon(QIcon *icon, const QString &name, const QVariant &colour, const QVariant &shape) override;
     QStringList allIconNames() override;
 
-    PointIcon::IconNamespace namespaceId() const override	{ return (PointIcon::NamespaceGarmin); }
     const char *internalName() const override			{ return ("garmin"); }
     QString displayName() const override;
 };

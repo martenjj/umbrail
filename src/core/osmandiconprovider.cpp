@@ -276,7 +276,7 @@ static void findOsmandPaths()
 OsmandIconProvider::OsmandIconProvider()
     : AbstractIconProvider()
 {
-    qDebug();
+    qDebug() << "allocated nsp" << namespaceId();
 }
 
 

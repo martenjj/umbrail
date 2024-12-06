@@ -37,6 +37,7 @@
 #include <kconfiggroup.h>
 #include <klistwidgetsearchline.h>
 
+#include "abstracticonprovider.h"
 #include "pointiconprovider.h"
 
 
@@ -57,9 +58,14 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
 
     mSourceCombo = new QComboBox(this);
     mSourceCombo->setSizePolicy(QSizePolicy::Expanding, mSourceCombo->sizePolicy().verticalPolicy());
-    mSourceCombo->addItem(QIcon::fromTheme("logo-garmin"), i18nc("Symbol set name", "Garmin"), PointIcon::NamespaceGarmin);
-    mSourceCombo->addItem(QIcon::fromTheme("logo-osmand"), i18nc("Symbol set name", "OsmAnd"), PointIcon::NamespaceOsmand);
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
+
+    const auto *providers = PointIcon::allProviders();
+    for (const AbstractIconProvider *provider : std::as_const(*providers))
+    {
+        const QString iconName = QString("logo-")+provider->internalName();
+        mSourceCombo->addItem(QIcon::fromTheme(iconName), provider->displayName(), provider->namespaceId());
+    }
 
     if (nsp==PointIcon::NamespaceAuto && !sym.isEmpty())
     {

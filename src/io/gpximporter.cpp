@@ -1064,12 +1064,10 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
         const QVariant sym = item->metadata("sym");
         const QVariant set = item->metadata("symset");
 
-        static const QString OSMAND_SET_NAME = PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand);
-
         // An OsmAnd-specific ICON value is present.  If the symbol set is
         // explicitly specified to be for OsmAnd, then use that value as the
         // symbol.
-        if (!set.isNull() && set==OSMAND_SET_NAME)
+        if (!set.isNull() && set=="osmand")
         {
             item->setMetadata("sym", icn);
         }
@@ -1080,7 +1078,7 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
             // as ICON, so the correct symbol will be shown even if there is an
             // explicit SYM.
             if (sym.isNull()) item->setMetadata("sym", icn);
-            if (set.isNull()) item->setMetadata("symset", OSMAND_SET_NAME);
+            if (set.isNull()) item->setMetadata("symset", "osmand");
         }
     }
 

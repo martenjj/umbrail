@@ -401,7 +401,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
         }
         else if (name=="symset")			// symbol set name
         {
-            if (v.toString()==PointIcon::namespaceInternalName(PointIcon::NamespaceOsmand))
+            if (v=="osmand")
             {
                 // For an explicitly specified OsmAnd symbol name, output the
                 // internal "sym" data as the OsmAnd-specific ICON tag.

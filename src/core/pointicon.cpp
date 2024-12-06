@@ -57,9 +57,17 @@ static QList<AbstractIconProvider *> sIconProviders;
 {
     if (!sIconProviders.isEmpty()) return;
 
+    // The order in which providers are registered here sets their priority
+    // for name search and the GUI.
     sIconProviders.append(new GarminIconProvider);
     sIconProviders.append(new OsmandIconProvider);
     qDebug() << "have" << sIconProviders.count() << "icon providers";
+}
+
+
+/* static */ const QList<AbstractIconProvider *> *PointIcon::allProviders()
+{
+    return (&sIconProviders);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -166,7 +174,6 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const Tr
 
     // Second try: icon providers
 
-    initProviders();
     for (AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
         if (nsp==PointIcon::NamespaceAuto || nsp==provider->namespaceId())
@@ -220,7 +227,6 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
 
 /* static */ QStringList PointIcon::allNames(PointIcon::IconNamespace nsp)
 {
-    initProviders();
     for (AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
         // There is no need to sort the result, IconSelector does that.
@@ -243,11 +249,15 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
     {
 case PointIcon::NamespaceColour:	return (i18n("Image"));
 case PointIcon::NamespaceSystem:	return (i18n("System"));
-case PointIcon::NamespaceGarmin:	return (i18n("Garmin"));
-case PointIcon::NamespaceOsmand:	return (i18n("OsmAnd"));
 case PointIcon::NamespaceAuto:		return (i18n("(error)"));
-default:				return (i18n("(unknown)"));
+default:				/* fall through */;
     }
+
+    for (const AbstractIconProvider *provider : std::as_const(sIconProviders))
+    {
+        if (provider->namespaceId()==nsp) return (provider->displayName());
+    }
+    return (i18n("(unknown)"));
 }
 
 
@@ -256,13 +266,13 @@ default:				return (i18n("(unknown)"));
     // Only for namespaces which are actual symbol sets.  The "system"
     // set is a sensible value here, although there is no GUI to
     // actually assign a system icon to a point.
-    switch (nsp)
+    if (nsp==PointIcon::NamespaceSystem) return ("system");
+
+    for (const AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
-case PointIcon::NamespaceGarmin:	return ("garmin");
-case PointIcon::NamespaceOsmand:	return ("osmand");
-case PointIcon::NamespaceSystem:	return ("system");
-default:				return ("");
+        if (provider->namespaceId()==nsp) return (provider->internalName());
     }
+    return ("");
 }
 
 
@@ -270,7 +280,10 @@ default:				return ("");
 {
     if (nsn=="image") return (PointIcon::NamespaceColour);
     if (nsn=="system") return (PointIcon::NamespaceSystem);
-    if (nsn=="garmin") return (PointIcon::NamespaceGarmin);
-    if (nsn=="osmand") return (PointIcon::NamespaceOsmand);
+
+    for (const AbstractIconProvider *provider : std::as_const(sIconProviders))
+    {
+        if (provider->internalName()==nsn) return (provider->namespaceId());
+    }
     return (PointIcon::NamespaceAuto);
 }

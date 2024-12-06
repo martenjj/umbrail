@@ -495,7 +495,7 @@ static void setGarminPixmap(QIcon *icon, int idx)
 GarminIconProvider::GarminIconProvider()
     : AbstractIconProvider()
 {
-    qDebug();
+    qDebug() << "allocated nsp" << namespaceId();
 }
 
 

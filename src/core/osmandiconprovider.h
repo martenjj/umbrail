@@ -38,8 +38,8 @@ public:
     bool createIcon(QIcon *icon, const QString &name, const QVariant &colour, const QVariant &shape) override;
     QStringList allIconNames() override;
 
-    PointIcon::IconNamespace namespaceId() const override	{ return (PointIcon::NamespaceOsmand); }
     const char *internalName() const override			{ return ("osmand"); }
+    bool supportsShape() const override				{ return (true); }
     QString displayName() const override;
 };
 

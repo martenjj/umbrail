@@ -30,6 +30,8 @@
 
 class QColor;
 class TrackDataItem;
+class AbstractIconProvider;
+
 
 /**
  * @short Provide icons for the GUI and for plotting on the map.
@@ -46,8 +48,7 @@ public:
         NamespaceUnknown,
         NamespaceColour,
         NamespaceSystem,
-        NamespaceGarmin,
-        NamespaceOsmand
+        NamespaceProvider				// must be last
     };
 
     ~PointIcon() = default;
@@ -64,6 +65,7 @@ public:
     static PointIcon::IconNamespace namespaceId(const QByteArray &nsn);
 
     static void initProviders();
+    static const QList<AbstractIconProvider *> *allProviders();
 
 protected:
     // Only the PointIconProvider may construct a PointIcon.
