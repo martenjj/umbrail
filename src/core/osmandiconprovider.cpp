@@ -84,9 +84,6 @@ static void findOsmandPaths()
 
     // TODO: if the parsed list has been saved from a previous run, then use it
 
-    // TODO: maybe filter "seamark" names - we don't use them
-    // and they account for about 1/4 of the total
-
     // The alias file which lists all known icon names and their file paths.
     QFile aliasFile(QString(OSMAND_RESBASE)+'/'+OSMAND_ALIASFILE);
     if (!aliasFile.exists())
@@ -164,6 +161,10 @@ static void findOsmandPaths()
         }
         else continue;					// ignore any other line
         ++numDefs;					// count this definition found
+
+        // For now ignore the "seamark" icons, they are not useful for land
+        // mapping and there are lots and lots of them.
+        if (alias.startsWith("seamark_")) continue;
 
         // The icon alias gives the relative path to the SVG file, but not
         // in an obvious way.  The files are in a subdirectory which is the
