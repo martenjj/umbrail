@@ -32,6 +32,7 @@
 #include <qdir.h>
 #include <qpainter.h>
 #include <qdebug.h>
+#include <qelapsedtimer.h>
 
 #include <klocalizedstring.h>
 #include <kiconloader.h>
@@ -77,6 +78,9 @@ static void findOsmandPaths()
 {
     qDebug();
     sIsOsmandSetup = true;				// note now done (or failed) setup
+
+    QElapsedTimer timer;
+    timer.start();
 
     // TODO: if the parsed list has been saved from a previous run, then use it
 
@@ -265,6 +269,8 @@ static void findOsmandPaths()
     qDebug() << "read" << numRead << "lines," << numDefs << "icon definitions," << numFound << "SVG icon files";
 
     // TODO: save the file for subsequent runs
+
+    qDebug() << "listing took" << (timer.nsecsElapsed()/1000000) << "ms";
 }
 
 //////////////////////////////////////////////////////////////////////////

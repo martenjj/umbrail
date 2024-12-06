@@ -32,6 +32,7 @@
 #include <qtimer.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
+#include <qelapsedtimer.h>
 
 #include <klocalizedstring.h>
 #include <kconfiggroup.h>
@@ -138,6 +139,8 @@ void IconSelector::slotSourceChanged()
 
     // This may take some time for OsmAnd...
     QGuiApplication::setOverrideCursor(Qt::WaitCursor);
+    QElapsedTimer timer;
+    timer.start();
 
     mList->clear();
     QListWidgetItem *selectedItem = nullptr;
@@ -168,6 +171,7 @@ void IconSelector::slotSourceChanged()
 
     QGuiApplication::restoreOverrideCursor();
     slotSelectionChanged();
+    qDebug() << "display took" << (timer.nsecsElapsed()/1000000) << "ms for" << names.count() << "icons";
 }
 
 
