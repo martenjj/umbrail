@@ -46,21 +46,20 @@
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Icon providers							//
+//  Icon provider registration						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-static QList<AbstractIconProvider *> *sIconProviders = nullptr;
+static QList<AbstractIconProvider *> sIconProviders;
 
 
-static void initProviders()
+/* static */ void PointIcon::initProviders()
 {
-    if (sIconProviders!=nullptr) return;
+    if (!sIconProviders.isEmpty()) return;
 
-    sIconProviders = new QList<AbstractIconProvider *>;
-    sIconProviders->append(new GarminIconProvider);
-    sIconProviders->append(new OsmandIconProvider);
-    qDebug() << "have" << sIconProviders->count() << "icon providers";
+    sIconProviders.append(new GarminIconProvider);
+    sIconProviders.append(new OsmandIconProvider);
+    qDebug() << "have" << sIconProviders.count() << "icon providers";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,7 +167,7 @@ PointIcon::PointIcon(const QString &name, PointIcon::IconNamespace nsp, const Tr
     // Second try: icon providers
 
     initProviders();
-    for (AbstractIconProvider *provider : std::as_const(*sIconProviders))
+    for (AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
         if (nsp==PointIcon::NamespaceAuto || nsp==provider->namespaceId())
         {
@@ -222,7 +221,7 @@ PointIcon::PointIcon(const QString &name, const QColor &col)
 /* static */ QStringList PointIcon::allNames(PointIcon::IconNamespace nsp)
 {
     initProviders();
-    for (AbstractIconProvider *provider : std::as_const(*sIconProviders))
+    for (AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
         // There is no need to sort the result, IconSelector does that.
         if (provider->namespaceId()==nsp) return (provider->allIconNames());

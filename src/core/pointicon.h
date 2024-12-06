@@ -63,6 +63,8 @@ public:
     static QByteArray namespaceInternalName(PointIcon::IconNamespace nsp);
     static PointIcon::IconNamespace namespaceId(const QByteArray &nsn);
 
+    static void initProviders();
+
 protected:
     // Only the PointIconProvider may construct a PointIcon.
     friend class PointIconProvider;

@@ -42,6 +42,7 @@
 
 #include "mainwindow.h"
 #include "filescontroller.h"
+#include "pointicon.h"
 
 #include "marble/marble_version.h"
 
@@ -114,6 +115,8 @@ int main(int argc,char *argv[])
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
+
+    PointIcon::initProviders();				// set up icon providers
 
     MainWindow *w = nullptr;
     QStringList args = parser.positionalArguments();
