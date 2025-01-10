@@ -871,6 +871,7 @@ void FilesController::slotTrackProperties()
     }
 
     const QVariant oldDesc = item->metadata("desc");	// save for check later
+    const QVariant oldStatus = item->metadata("status");
 
     // The remaining metadata
     const int num = model->rowCount();			// same as DataIndexer::count()
@@ -902,15 +903,18 @@ void FilesController::slotTrackProperties()
     }
 
     // Workflow help: If a media waypoint description has been set where it
-    // was previously empty, and the waypoint status has not been set, then
-    // set the status to "To Do".
+    // was previously empty, and the waypoint status has not been set or is
+    // being set, then set the status to "To Do".
     if (item->mediaType()!=TrackData::MediaNormal)
     {
-        if (oldDesc.isNull() && !model->data("desc").isNull() && model->data("status").isNull())
+        if (oldDesc.isNull() && !model->data("desc").isNull())
         {
-            ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
-            cmd4->setDataItems(items);
-            cmd4->setData("status", QString::number(TrackData::StatusTodo));
+            if (oldStatus.isNull() && model->data("status").isNull())
+            {
+                ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
+                cmd4->setDataItems(items);
+                cmd4->setData("status", QString::number(TrackData::StatusTodo));
+            }
         }
     }
 
