@@ -870,6 +870,8 @@ void FilesController::slotTrackProperties()
         }
     }
 
+    const QVariant oldDesc = item->metadata("desc");	// save for check later
+
     // The remaining metadata
     const int num = model->rowCount();			// same as DataIndexer::count()
     for (int idx = 0; idx<num; ++idx)
@@ -897,6 +899,19 @@ void FilesController::slotTrackProperties()
         cmd3->setDataItems(items);
         // TODO: overload setData() to take an index
         cmd3->setData(DataIndexer::name(idx), newData);
+    }
+
+    // Workflow help: If a media waypoint description has been set where it
+    // was previously empty, and the waypoint status has not been set, then
+    // set the status to "To Do".
+    if (item->mediaType()!=TrackData::MediaNormal)
+    {
+        if (oldDesc.isNull() && !model->data("desc").isNull() && model->data("status").isNull())
+        {
+            ChangeItemDataCommand *cmd4 = new ChangeItemDataCommand(this, cmd);
+            cmd4->setDataItems(items);
+            cmd4->setData("status", QString::number(TrackData::StatusTodo));
+        }
     }
 
     if (cmd->childCount()==0)				// anything to actually do?
