@@ -39,6 +39,8 @@
 #include <kaboutdata.h>
 #include <klocalizedstring.h>
 #include <kcrash.h>
+#include <kicontheme.h>
+#include <kstylemanager.h>
 
 #include "mainwindow.h"
 #include "filescontroller.h"
@@ -59,8 +61,16 @@
  
 int main(int argc,char *argv[])
 {
+    // Use the intended icon theme for the platform and user configuration,
+    // see https://cullmann.io/posts/kde-applications-and-icons/
+    KIconTheme::initTheme();
+
     QApplication app(argc, argv);
     KLocalizedString::setApplicationDomain(PROJECT_NAME);
+
+    // Use the intended style for the platform and user configuration,
+    // see again https://cullmann.io/posts/kde-applications-and-icons/
+    KStyleManager::initStyle();
 
     KAboutData aboutData(PROJECT_NAME,			// componentName
                          i18n("Umbrail"),		// displayName
