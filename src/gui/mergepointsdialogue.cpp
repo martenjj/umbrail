@@ -122,8 +122,9 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     res->setMetadata("ele", mElevationEdit->currentData());
 
     const QStringList symData = mSymbolEdit->currentData().toString().split(':');
-    res->setMetadata("sym", symData.value(0));
-    res->setMetadata("symset", symData.value(1));
+    const QByteArray symSet = symData.value(1).toLatin1();
+    res->setMetadata(PointIcon::metadataKey(symSet), symData.value(0));
+    res->setMetadata("symset", symSet);
 
     const QPointF p = mLatLongEdit->currentData().toPointF();
     res->setLatLong(p.x(), p.y());
@@ -188,7 +189,7 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
             name=="category" || name=="status" || name=="StreetAddress" ||
             name=="City" || name=="State" || name=="PostalCode" || name=="Country" ||
             name=="desc" || name=="time" || name=="link" || name=="pointcolor" ||
-            name=="symset") continue;
+            name=="symset" || name=="icon") continue;
 
         QVariant rv;					// result found to be copied
         for (const TrackDataWaypoint *tdw : std::as_const(*mPoints))
@@ -248,31 +249,26 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
     const QString noneString = i18nc("display string for no value", "(none)");
 
     int idx = 0;					// current combo box index
-    for (const TrackDataWaypoint *tdw : *mPoints)
+    for (const TrackDataWaypoint *tdw : std::as_const(*mPoints))
     {
         // Name - editable combo box with the alternatives
         mNameEdit->addItem(tdw->name());
 
         // Symbol - non-editable combo box with the alternatives
-        QVariant v = tdw->metadata("sym");
-        if (!v.isNull())
+        const PointIcon *pi = tdw->icon();
+        const PointIcon::IconNamespace nsp = pi->nsp();
+        const QByteArray nsn = PointIcon::namespaceInternalName(nsp);
+        if (!nsn.isEmpty())				// so must be a provider namespace
         {
-            const QString &sym = v.toString();
-            const QByteArray &set = tdw->metadata("symset").toByteArray();
-            const PointIcon *pi = PointIcon::create(sym, set);
-
-            QString symText = sym;
-            if (!set.isEmpty()) symText += QString(" (%1)").arg(PointIcon::namespaceDisplayName(pi->nsp()));
-
-            QString symData = sym;
-            if (!set.isEmpty()) symData += ':'+set;
-
+            const QString sym = tdw->metadata(PointIcon::metadataKey(nsn)).toString();
+            const QString symText = sym+" ("+PointIcon::namespaceDisplayName(nsp)+')';
+            const QString symData = sym+':'+nsn;
             mSymbolEdit->addItem(pi->icon(), symText, symData);
         }
         else mSymbolEdit->addItem(QIcon("unknown"), noneString);
 
         // Colour - non-editable combo box with the alternatives
-        v = tdw->metadata("pointcolor");
+        QVariant v = tdw->metadata("pointcolor");
         if (!v.isNull())
         {
             const QColor &col = v.value<QColor>();
