@@ -1054,33 +1054,18 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
         item->setMetadata("color", QVariant());		// clear the COLOR value
     }
 
-    // Check for an OsmAnd icon tag and whether to use that as the symbol name.
-    // That needs to be done here so that it is not necessary to check all of
-    // the "sym", "symset" and "icon" data throughout the application to resolve
-    // which symbol is to be used
+    // Try to identify whether any map symbol in the file applies to Garmin
+    // or to OsmAnd.  If this can be unambiguously identified - that is,
+    // there is only a SYM or an ICON tag present - then set the SYMSET
+    // hint appropriately so as to simplify lookup within the application.
+    // If both are present then do not set or change any such hint, the
+    // priority for display will be resolved in TrackDataWaypoint::icon().
     const QVariant icn = item->metadata("icon");
-    if (!icn.isNull())
-    {
-        const QVariant sym = item->metadata("sym");
-        const QVariant set = item->metadata("symset");
+    const QVariant sym = item->metadata("sym");
+    const QVariant set = item->metadata("symset");
 
-        // An OsmAnd-specific ICON value is present.  If the symbol set is
-        // explicitly specified to be for OsmAnd, then use that value as the
-        // symbol.
-        if (!set.isNull() && set=="osmand")
-        {
-            item->setMetadata("sym", icn);
-        }
-        else
-        {
-            // No icon set is specified.  Use the OsmAnd icon if there is no explicitly
-            // set SYM value.  Re-exported files will have the SYM set to be the same
-            // as ICON, so the correct symbol will be shown even if there is an
-            // explicit SYM.
-            if (sym.isNull()) item->setMetadata("sym", icn);
-            if (set.isNull()) item->setMetadata("symset", "osmand");
-        }
-    }
+    if (!icn.isNull() && sym.isNull() && set.isNull()) item->setMetadata("symset", "osmand");
+    if (!sym.isNull() && icn.isNull() && set.isNull()) item->setMetadata("symset", "garmin");
 
     return (true);
 }
