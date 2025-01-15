@@ -39,6 +39,7 @@ public:
     QStringList allIconNames() override;
 
     const char *internalName() const override		{ return ("garmin"); }
+    QByteArray metadataKey() const override		{ return ("sym"); }
     QString displayName() const override;
 };
 

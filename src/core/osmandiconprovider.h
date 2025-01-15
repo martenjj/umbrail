@@ -39,6 +39,7 @@ public:
     QStringList allIconNames() override;
 
     const char *internalName() const override		{ return ("osmand"); }
+    QByteArray metadataKey() const override		{ return ("icon"); }
     bool supportsShape() const override			{ return (true); }
     QString displayName() const override;
 };

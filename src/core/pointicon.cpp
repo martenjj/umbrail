@@ -288,6 +288,7 @@ default:				/* fall through */;
 
 /* static */ PointIcon::IconNamespace PointIcon::namespaceId(const QByteArray &nsn)
 {
+    if (nsn.isEmpty()) return (PointIcon::NamespaceAuto);
     if (nsn=="image") return (PointIcon::NamespaceColour);
     if (nsn=="system") return (PointIcon::NamespaceSystem);
 
@@ -296,6 +297,19 @@ default:				/* fall through */;
         if (provider->internalName()==nsn) return (provider->namespaceId());
     }
     return (PointIcon::NamespaceAuto);
+}
+
+
+/* static */ QByteArray PointIcon::metadataKey(const QByteArray &nsn)
+{
+    if (nsn.isEmpty()) return ("");			// no namespace specified
+
+    for (const AbstractIconProvider *provider : std::as_const(sIconProviders))
+    {
+        if (provider->internalName()==nsn) return (provider->metadataKey());
+    }
+
+    return ("");					// no namespace recognised
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -514,6 +514,7 @@ QVariant TrackDataItem::metadata(int idx) const
 QVariant TrackDataItem::metadata(const QByteArray &key) const
 {
     if (mMetadata==nullptr) return (QVariant());
+    if (key.isEmpty()) return (QVariant());
     return (metadata(DataIndexer::index(key)));
 }
 
@@ -895,6 +896,22 @@ bool TrackDataWaypoint::isMediaType() const
 }
 
 
+/* private */ const PointIcon *TrackDataWaypoint::createPointIcon(const QByteArray &set) const
+{
+    const QVariant v = metadata(PointIcon::metadataKey(set));
+    if (v.isNull()) return (nullptr);
+
+    const QString sym = v.toString();
+    if (sym.isEmpty()) return (nullptr);		// should never happen
+#ifdef DEBUG_ICONS
+    qDebug() << "for" << name() << "sym" << sym << "set" << set;
+#endif
+    const PointIcon *ic = PointIcon::create(sym, set, this);
+    if (ic->isValid()) return (ic);
+    return (nullptr);
+}
+
+
 // Special icons for waypoints.
 //
 // Falling back to the base TrackDataItem::icon() will
@@ -906,21 +923,24 @@ const PointIcon *TrackDataWaypoint::icon() const
     // First priority: special waypoint type
     if (mediaType()!=TrackData::MediaNormal) return (TrackDataItem::icon());
 
-    // Second priority: named symbol with optional named set
-    QVariant v = metadata("sym");
-    if (!v.isNull())
+    QVariant v;
+    const PointIcon *ic;
+
+    // Second priority: named symbol with specified symbol set
+    const QByteArray set = metadata("symset").toByteArray();
+    if (!set.isEmpty())
     {
-        const QString sym = v.toString();
-        if (!sym.isEmpty())				// should always be the case
-        {
-            const QByteArray set = metadata("symset").toByteArray();
-#ifdef DEBUG_ICONS
-            qDebug() << "for" << name() << "sym" << sym << "set" << set;
-#endif
-            const PointIcon *ic = PointIcon::create(sym, set, this);
-            if (ic->isValid()) return (ic);
-        }
+        ic = createPointIcon(set);
+        if (ic!=nullptr) return (ic);
     }
+
+    // Next priority: named symbol but with no explicitly specified symbol set.
+    // The priority order of OsmAnd first and then Garmin is arbitary here, but
+    // is chosen for the primary expected usage of the application.
+    ic = createPointIcon("osmand");
+    if (ic!=nullptr) return (ic);
+    ic = createPointIcon("garmin");
+    if (ic!=nullptr) return (ic);
 
     // Third priority: explicit point colour or fallback colour
     //
@@ -938,7 +958,7 @@ const PointIcon *TrackDataWaypoint::icon() const
 #ifdef DEBUG_ICONS
             qDebug() << "for" << name() << "colour" << col.name();
 #endif
-            const PointIcon *ic = PointIcon::create(col);
+            ic = PointIcon::create(col);
             if (ic->isValid()) return (ic);
         }
     }
@@ -962,7 +982,7 @@ const PointIcon *TrackDataWaypoint::icon() const
 #ifdef DEBUG_ICONS
                     qDebug() << "for" << name() << "category" << cat << "->" << col.name();
 #endif
-                    const PointIcon *ic = PointIcon::create(col);
+                    ic = PointIcon::create(col);
                     if (ic->isValid()) return (ic);
                 }
             }

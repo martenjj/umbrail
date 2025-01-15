@@ -503,6 +503,9 @@ public:
 
 protected:
     QString iconName() const override;
+
+private:
+    const PointIcon *createPointIcon(const QByteArray &set) const;
 };
 
 //////////////////////////////////////////////////////////////////////////

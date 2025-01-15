@@ -42,6 +42,7 @@ public:
 
     virtual const char *internalName() const = 0;
     virtual QString displayName() const = 0;
+    virtual QByteArray metadataKey() const = 0;
 
     virtual QStringList allIconNames() = 0;
 

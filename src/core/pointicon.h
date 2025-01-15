@@ -63,6 +63,7 @@ public:
     static QString namespaceDisplayName(PointIcon::IconNamespace nsp);
     static QByteArray namespaceInternalName(PointIcon::IconNamespace nsp);
     static PointIcon::IconNamespace namespaceId(const QByteArray &nsn);
+    static QByteArray metadataKey(const QByteArray &nsn);
 
     static void initProviders();
     static const QList<AbstractIconProvider *> *allProviders();
