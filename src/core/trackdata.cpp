@@ -38,6 +38,7 @@
 #include "dataindexer.h"
 #include "pointicon.h"
 #include "category.h"
+#include "abstracticonprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -935,14 +936,14 @@ const PointIcon *TrackDataWaypoint::icon() const
     }
 
     // Next priority: named symbol but with no explicitly specified symbol set.
-    // The priority order of OsmAnd first and then Garmin is arbitary here, but
-    // is chosen for the primary expected usage of the application.
-
-    // TODO: use PointIcon::allProviders() to get priority
-    ic = createPointIcon("osmand");
-    if (ic!=nullptr) return (ic);
-    ic = createPointIcon("garmin");
-    if (ic!=nullptr) return (ic);
+    // The priority order is set by the order in which the providers are
+    // created in PointIcon::initProviders().
+    const auto *providers = PointIcon::allProviders();
+    for (const AbstractIconProvider *provider : std::as_const(*providers))
+    {
+        ic = createPointIcon(provider->internalName());
+        if (ic!=nullptr) return (ic);
+    }
 
     // Third priority: explicit point colour or fallback colour
     //

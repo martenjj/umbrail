@@ -296,11 +296,18 @@ void TrackItemStylePage::refreshData()
 
         const PointIcon::IconNamespace nsp = PointIcon::namespaceId(mIconNamespace);
         QVariant sym = dataModel()->data(PointIcon::metadataKey(mIconNamespace));
-        // TODO: priority also decided in TrackDataWaypoint::icon(), implement
-        // a PointIcon::providerPriority() list to centralise or can use
-        // PointIcon::allProviders()
-        if (sym.isNull()) sym = dataModel()->data(PointIcon::metadataKey("osmand"));
-        if (sym.isNull()) sym = dataModel()->data(PointIcon::metadataKey("garmin"));
+        if (sym.isNull())
+        {
+            // Either there is no explicit symbol set specified, or the icon name
+            // was not set in its appropriate metadata.  Look for the name
+            // using the metadata tag for each icon provider in turn.
+            const auto *providers = PointIcon::allProviders();
+            for (const AbstractIconProvider *provider : std::as_const(*providers))
+            {
+                sym = dataModel()->data(PointIcon::metadataKey(provider->internalName()));
+                if (!sym.isNull()) break;
+            }
+        }
 
         mIconName = sym.toString();
         mIconNameLabel->setText(mIconName);
