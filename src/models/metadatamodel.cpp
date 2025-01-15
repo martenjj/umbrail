@@ -155,6 +155,7 @@ bool MetadataModel::isChanged(int idx) const
 
 const QVariant MetadataModel::data(const QByteArray &nm) const
 {
+    if (nm.isEmpty()) return (QVariant());
     return (data(DataIndexer::index(nm)));
 }
 
@@ -183,6 +184,12 @@ void MetadataModel::setData(int idx, const QVariant &value)
     if (idx==DataIndexer::index("timezone")) resolveTimeZone();
 							// update time zone data
     emit metadataChanged(idx);				// signal that data changed
+}
+
+
+void MetadataModel::setData(const QByteArray &nm, const QVariant &value)
+{
+    if (!nm.isEmpty()) setData(DataIndexer::index(nm), value);
 }
 
 

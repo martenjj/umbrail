@@ -51,6 +51,7 @@ public:
     const QVariant data(int idx) const;
     const QVariant data(const QByteArray &nm) const;
     void setData(int idx, const QVariant &value);
+    void setData(const QByteArray &nm, const QVariant &value);
     bool isChanged(int idx) const;
 
     const QTimeZone *timeZone() const			{ return (mTimeZone); }

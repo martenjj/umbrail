@@ -239,18 +239,25 @@ bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
     // execute the dialogue outside of the event filter.
     QTimer::singleShot(0, this, [this]()
     {
-        const int symIdx = DataIndexer::index("sym");
-        const int setIdx = DataIndexer::index("symset");
-        const QVariant set = dataModel()->data(setIdx);
-
-        IconSelector d(dataModel()->data(symIdx).toString(),
-                       (!set.isNull() ? PointIcon::namespaceId(set.toByteArray()) : PointIcon::NamespaceAuto), this);
+        IconSelector d(mIconName, PointIcon::namespaceId(mIconNamespace), this);
         if (!d.exec()) return;
 
-        const QString symName = d.selectedIconName();
-        dataModel()->setData(symIdx, symName);
-        dataModel()->setData(setIdx, PointIcon::namespaceInternalName(d.selectedNamespace()));
-        if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!symName.isEmpty());
+        const QString newSym = d.selectedIconName();
+        if (!newSym.isEmpty())				// setting a new symbol
+        {
+            const QByteArray newSet = PointIcon::namespaceInternalName(d.selectedNamespace());
+            dataModel()->setData(PointIcon::metadataKey(newSet), newSym);
+            dataModel()->setData("symset", newSet);
+        }
+        else						// clearing the symbol
+        {
+            dataModel()->setData(PointIcon::metadataKey(mIconNamespace), QVariant());
+            dataModel()->setData("symset", QVariant());
+        }
+
+        // TODO: this may not be the right thing to do for OsmAnd icons,
+        // may need a new icon provider parameter supportsColour().
+        if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!newSym.isEmpty());
 
         refreshData();
     });
@@ -285,13 +292,23 @@ void TrackItemStylePage::refreshData()
         Q_ASSERT(mIconNspLabel!=nullptr);
         Q_ASSERT(mIconShapeCombo!=nullptr);
 
-        const QVariant sym = dataModel()->data("sym");
-        const QVariant set = dataModel()->data("symset");
-        if (!sym.isNull())
+        mIconNamespace = dataModel()->data("symset").toByteArray();
+
+        const PointIcon::IconNamespace nsp = PointIcon::namespaceId(mIconNamespace);
+        QVariant sym = dataModel()->data(PointIcon::metadataKey(mIconNamespace));
+        // TODO: priority also decided in TrackDataWaypoint::icon(), implement
+        // a PointIcon::providerPriority() list to centralise or can use
+        // PointIcon::allProviders()
+        if (sym.isNull()) sym = dataModel()->data(PointIcon::metadataKey("osmand"));
+        if (sym.isNull()) sym = dataModel()->data(PointIcon::metadataKey("garmin"));
+
+        mIconName = sym.toString();
+        mIconNameLabel->setText(mIconName);
+
+        if (!mIconName.isEmpty())
         {
-            const PointIcon *pi = PointIcon::create(sym.toString(), set.toByteArray());
+            const PointIcon *pi = PointIcon::create(mIconName, nsp);
             mIconButton->setIcon(pi->icon());
-            mIconNameLabel->setText(sym.toString());
             mIconNspLabel->setText(PointIcon::namespaceDisplayName(pi->nsp()));
         }
         else
@@ -299,7 +316,6 @@ void TrackItemStylePage::refreshData()
             // Set an explicit icon so that the button will initially
             // show at the specified size.
             mIconButton->setIcon("symbol-blank");
-            mIconNameLabel->setText("");
             mIconNspLabel->setText("");
         }
 
@@ -310,7 +326,7 @@ void TrackItemStylePage::refreshData()
         const auto *providers = PointIcon::allProviders();
         for (const AbstractIconProvider *provider : std::as_const(*providers))
         {
-            if (set.toByteArray()==provider->internalName())
+            if (provider->internalName()==mIconNamespace)
             {
                 mIconShapeCombo->setEnabled(provider->supportsShape());
                 break;

@@ -66,6 +66,9 @@ protected:
     QLabel *mIconNspLabel;
     QComboBox *mIconShapeCombo;
 
+    QByteArray mIconNamespace;
+    QString mIconName;
+
     bool mIsTopLevel;
 
 protected slots:

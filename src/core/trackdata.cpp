@@ -937,6 +937,8 @@ const PointIcon *TrackDataWaypoint::icon() const
     // Next priority: named symbol but with no explicitly specified symbol set.
     // The priority order of OsmAnd first and then Garmin is arbitary here, but
     // is chosen for the primary expected usage of the application.
+
+    // TODO: use PointIcon::allProviders() to get priority
     ic = createPointIcon("osmand");
     if (ic!=nullptr) return (ic);
     ic = createPointIcon("garmin");
