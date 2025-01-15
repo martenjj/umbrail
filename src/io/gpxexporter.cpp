@@ -399,26 +399,6 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
         {						// only if not zero
             if (v.toInt()!=0) toQueue.enqueue(name, valueString(v));
         }
-        else if (name=="symset")			// symbol set name
-        {
-            if (v=="osmand")
-            {
-                // For an explicitly specified OsmAnd symbol name, output the
-                // internal "sym" data as the OsmAnd-specific ICON tag.
-                const QVariant sym = item->metadata("sym");
-                if (!sym.isNull()) toQueue.enqueue("icon", valueString(sym));
-            }
-
-            // And this tag value itself.
-            toQueue.enqueue(name, valueString(v));
-        }
-        else if (name=="icon")				// OsmAnd icon name
-        {
-            // Only output this value (unchanged from import) if the symbol set
-            // is not explicitly specified.  If it is explicitly specified then
-            // the ICON value will be output by "symset" above.
-            if (item->metadata("symset").isNull()) toQueue.enqueue(name, valueString(v));
-        }
         else						// any other tag
         {
             toQueue.enqueue(name, valueString(v));
