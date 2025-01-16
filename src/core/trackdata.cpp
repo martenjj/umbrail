@@ -815,7 +815,6 @@ int TrackDataAbstractPoint::timeTo(const TrackDataAbstractPoint *other) const
     return (time().secsTo(other->time()));
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFolder							//
@@ -1016,6 +1015,8 @@ QStringList TrackDataWaypoint::formattedAddress() const
 #define NAMEMIN			10			// minimum for prefix match
 #define WAYPOINT		"Waypoint"		// default symbol name
 
+static const QList<QByteArray> symbolTags = { "sym", "icon", "symset" };
+
 
 static inline bool symbolIsValid(const QVariant &sym)
 {
@@ -1045,7 +1046,7 @@ static TrackData::WaypointFlags mergedFlags(TrackData::WaypointFlags flags1, Tra
 //  Merge criteria for automatic merging:
 //
 //    Name		either match exactly, or one an exact prefix of the other
-//    Symbol		either match exactly, or one is WAYPOINT or blank
+//    Symbol/icon/set	either match exactly, or one is blank
 //    Lat/Long		both present and equal within LATLONGTOL
 //    Elevation         if both present, must match within ELEVTOL
 //    Address		if both present, must match exactly
@@ -1076,24 +1077,28 @@ bool TrackDataWaypoint::canMerge(const TrackDataWaypoint *other, bool positionOn
         if (n1.left(preflen)!=n2.left(preflen))
         {
 #ifdef DEBUG_MERGE
-            qDebug() << "can't merge - name";
+            qDebug() << "can't merge - NAME";
 #endif
             return (false);
         }
     }
 
-    // Symbol
-    const QVariant &s1 = this->metadata("sym");
-    const QVariant &s2 = other->metadata("sym");
-    if (s1!=s2)
+    // Symbol, icon and set
+    for (const QByteArray &tag : std::as_const(symbolTags))
     {
-        // TODO: may also need to compare "symset"
-        if (s1.isValid() && s2.isValid())
+        const QVariant &s1 = this->metadata(tag);
+        const QVariant &s2 = other->metadata(tag);
+        if (s1!=s2)
         {
+            // This also checks SYMSET for the default waypoint name,
+            // but that value is not likely to be seen in a file.
+            if (symbolIsValid(s1) && symbolIsValid(s2))
+            {
 #ifdef DEBUG_MERGE
-            qDebug() << "can't merge - sym" << s2 << s1;
+                qDebug() << "can't merge -" << tag.toUpper() << s2 << s1;
 #endif
-            return (false);
+                return (false);
+            }
         }
     }
 
@@ -1105,7 +1110,7 @@ bool TrackDataWaypoint::canMerge(const TrackDataWaypoint *other, bool positionOn
         if (fabs(e1-e2)>ELEVTOL)
         {
 #ifdef DEBUG_MERGE
-            qDebug() << "can't merge - ele" << e2 << e1;
+            qDebug() << "can't merge - ELE" << e2 << e1;
 #endif
             return (false);
         }
@@ -1150,14 +1155,12 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
         }
     }
 
-    // Symbol - accept the first unless that is the default WAYPOINT or blank,
-    // in which case use the other.  Use the corresponding symbol set.
-    const QVariant &s1 = this->metadata("sym");
-    const QVariant &s2 = other->metadata("sym");
-    if (!symbolIsValid(s1) && symbolIsValid(s2))
+    // Symbol/icon/set - accept the first unless that is the default WAYPOINT
+    // or blank, in which case use the other.  Treat each tag individually,
+    // do not do any consistency checks or reconciliation of the values together.
+    for (const QByteArray &tag : std::as_const(symbolTags))
     {
-        setMetadata("sym", s2);
-        setMetadata("symset", other->metadata("symset"));
+        if (!symbolIsValid(this->metadata(tag))) setMetadata(tag, other->metadata(tag));
     }
 
     // Latitude/Longtitude - just accept the first

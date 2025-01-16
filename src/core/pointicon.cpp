@@ -60,7 +60,10 @@ static QList<AbstractIconProvider *> sIconProviders;
     if (!sIconProviders.isEmpty()) return;
 
     // The order in which providers are registered here sets their priority
-    // for name search and the GUI.
+    // for name search and the GUI.  Although in our current workflow we are
+    // likely to have more emphasis on OsmAnd, Garmin is placed here first
+    // because a search of its smaller number of icons will be faster than
+    // OsmAnd's thousands.
     sIconProviders.append(new GarminIconProvider);
     sIconProviders.append(new OsmandIconProvider);
     qDebug() << "have" << sIconProviders.count() << "icon providers";
