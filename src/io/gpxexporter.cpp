@@ -575,7 +575,7 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
     }
     str.writeEndElement();				// </metadata>
 
-    // file <extensions>, category list if present - as appropriate for
+    // File <extensions>, category list if present - as appropriate for
     // either a save or an export.
     mCategoriesList = item->categories();
     if (mCategoriesList!=nullptr && mCategoriesList->count()>0)

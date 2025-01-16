@@ -574,12 +574,12 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         }
 
         CategoryData cat(col);				// create the category data
-        const QStringView iconName = atts.value("icon");	// then collect the remaining
+        const QStringView iconName = atts.value("icon");
         if (!iconName.isEmpty()) cat.setIcon(iconName.toString());
         const QStringView shape = atts.value("background");
         if (!shape.isEmpty()) cat.setShape(shape.toString());
-
-        addCategory(name, CategoryData(col));		// add entry to categories
+							// then collect the remaining
+        addCategory(name, cat);				// add entry to categories
     }
     else						// start of unrecognised element
     {

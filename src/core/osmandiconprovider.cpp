@@ -76,7 +76,6 @@ static const int OSMAND_EXTRA = 6;			// extra size for border
 
 static void findOsmandPaths()
 {
-    qDebug();
     sIsOsmandSetup = true;				// note now done (or failed) setup
 
     QElapsedTimer timer;
