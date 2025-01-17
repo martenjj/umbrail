@@ -112,9 +112,12 @@ ErrorRecordFile::ErrorRecordFile(const QUrl &file)
 
 QString ErrorRecordFile::format() const
 {
-    return (i18n("<font color=\"%1\">In file</font> <filename>%2</filename><font color=\"%1\">:</font>",
-                 errorColour(KColorScheme::InactiveText),
-                 mFile.toDisplayString()));
+    // As in FilesController::reportFileError(), this two stage substitution is
+    // needed to be able to mix KUIT markup and standard HTML in a single message.
+    QString msg = xi18nc("@info with placeholders", "#1#In file#2# <filename>%1</filename>#1#:#2#", mFile.toDisplayString());
+    msg.replace("#1#", "<font color=\""+errorColour(KColorScheme::InactiveText)+"\">");
+    msg.replace("#2#", "</font>");
+    return (msg);
 }
 
 

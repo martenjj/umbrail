@@ -63,7 +63,6 @@ static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expect
     }
 
     QVariant n = item->metadata("link");		// first try saved media name
-    if (n.isNull()) n = item->metadata("media");	// compatibility with old metadata
     if (n.isNull()) n = item->name();			// then the waypoint name
     qDebug() << "item" << item->name() << "link" << n.toString();
 
@@ -77,7 +76,7 @@ static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expect
             if (errorMsg)				// want an error message?
             {
                 KMessageBox::error(nullptr,
-                                   i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
+                                   xi18nc("@info", "Media file not found:<nl/><filename>%1</filename>", file.toDisplayString()),
                                    i18n("Cannot play media file"));
             }
 
@@ -118,7 +117,6 @@ void MediaPlayer::playVideoNote(const TrackDataItem *item)
     if (!file.isValid()) return;
 
     // TODO: selectable external player output with a config setting,
-    // see krepton//src/sounds.cpp
 
 #ifdef HAVE_PHONON
     VideoViewer *v = new VideoViewer(file, nullptr);
