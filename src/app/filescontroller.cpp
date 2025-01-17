@@ -391,7 +391,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, cons
         return (FilesController::StatusFailed);
     }
 
-    emit statusMessage(i18n("Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
+    emit statusMessage(xi18nc("@info", "Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
     imp->setOptions(options);				// set the import options
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
 
@@ -554,7 +554,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
 
     if (options.hasFlag(ImporterExporterOptions::SelectionOnly)) exp->setSelectionId(filesView()->selectionId());
 
-    emit statusMessage(i18n("Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
+    emit statusMessage(xi18nc("@info", "Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->setOptions(options);				// set the export options
     exp->save(exportTo, static_cast<TrackDataFile *>(filesModel()->rootItem()));
 

@@ -76,7 +76,7 @@ static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expect
             if (errorMsg)				// want an error message?
             {
                 KMessageBox::error(nullptr,
-                                   i18n("Media file not found:<br><filename>%1</filename>", file.toDisplayString()),
+                                   xi18nc("@info", "Media file not found:<nl/><filename>%1</filename>", file.toDisplayString()),
                                    i18n("Cannot play media file"));
             }
 
