@@ -431,7 +431,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
 
         QColor col = explicitColour;
         if (!col.isValid()) col = categoryColour;
-        if (col.isValid() && col.alpha()==255)
+        if (TrackData::colourUnlessInherit(col).isValid())
         {
             // NavMarks applied a workaround for OsmAnd+ (as of version 2.0.4)
             // which seemed to have a problem managing colours set for waypoints.

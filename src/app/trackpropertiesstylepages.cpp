@@ -117,22 +117,6 @@ void TrackItemStylePage::addPointColourButton(const QString &text)
     mPointInheritCheck->setProperty("isLine", false);
 }
 
-//  The state of the colour selection - colour and inherit flag - needs to be
-//  able to be stored in a single metadata item.  Since we do not support
-//  alpha blending of item colours, the alpha component of the colour value
-//  is used to encode the inherit flags, with 255 meaning a colour to be used
-//  and 254 meaning inherit.  This is stored and maintained in the item
-//  metadata and GPX files so that the colour persists throughout, except in
-//  some special cases where only the RGB is used for compatibility.  Any use
-//  of the colour should test for validity using (isValid() && alpha()==255).
-//
-//  By experimentation:	QColor::fromString("#234567").alpha() = 255
-//			QColor::fromString("#FE234567").alpha() = 254
-//			QColor::fromString("#FF234567").alpha() = 255
-//
-//  The inherit flag is encoded in that way, instead of setting the colour value
-//  to an invalid QColor, so that the RGB value is not lost when the inherit flag
-//  is toggled.
 
 static inline const char *colourKey(bool isLine)
 {
@@ -194,7 +178,7 @@ void TrackItemStylePage::slotInheritChanged(bool on)
 void TrackItemStylePage::setColourButtons(KColorButton *colBut, QCheckBox *inheritBut, bool isLine)
 {
     const QColor col = getColourData(isLine);		// combined colour as stored
-    const bool inherit = (col.alpha()!=255);		// has it alpha component?
+    const bool inherit = (col.alpha()!=255);		// has it an alpha component?
     const QColor rgbcol = QColor(col.rgb());		// remove any alpha component
     qDebug() << "line?" << isLine << "col" << col << "inherit?" << inherit;
 

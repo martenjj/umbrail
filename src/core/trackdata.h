@@ -218,6 +218,24 @@ namespace TrackData
 
     QVariant valueOrNull(const QVariant &v);
 
+    //  The state of an item's colour data - colour and inherit flag - needs to be
+    //  able to be stored in a single metadata item.  Since we do not support
+    //  alpha blending of item colours, the alpha component of the colour value
+    //  is used to encode the inherit flag, with 255 meaning a colour to be used
+    //  and 254 meaning inherit.  This is stored and maintained in the item
+    //  metadata and GPX files so that the colour persists throughout, except in
+    //  some special cases where only the RGB is used for compatibility.  Any use
+    //  of the colour should test for validity using TrackData::colourUnlessInherit().
+    //
+    //  By experimentation:  QColor::fromString("#234567").alpha() = 255
+    //                       QColor::fromString("#FE234567").alpha() = 254
+    //                       QColor::fromString("#FF234567").alpha() = 255
+    //                       QColor().alpha() = 255
+    //
+    //  The inherit flag is encoded in this way, instead of setting the colour value
+    //  to an invalid QColor, so that the RGB value is not lost when the inherit flag
+    //  is toggled.
+    //
     // The overload taking a QColor must appear before the one taking a QVariant,
     // otherwise there is a compile (GCC 14) and runtime error:
     //
