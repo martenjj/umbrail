@@ -126,6 +126,10 @@ void TrackItemStylePage::addPointColourButton(const QString &text)
 //  some special cases where only the RGB is used for compatibility.  Any use
 //  of the colour should test for validity using (isValid() && alpha()==255).
 //
+//  By experimentation:	QColor::fromString("#234567").alpha() = 255
+//			QColor::fromString("#FE234567").alpha() = 254
+//			QColor::fromString("#FF234567").alpha() = 255
+//
 //  The inherit flag is encoded in that way, instead of setting the colour value
 //  to an invalid QColor, so that the RGB value is not lost when the inherit flag
 //  is toggled.

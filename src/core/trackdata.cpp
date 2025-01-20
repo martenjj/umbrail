@@ -334,9 +334,9 @@ QStringList TrackData::formattedAddress(const QVariant &street,
 }
 
 
-QVariant TrackData::valueOrNull(const QVariant &value)
+QVariant TrackData::valueOrNull(const QVariant &v)
 {
-    QVariant val = value;				// provided new value
+    QVariant val = v;					// provided new value
 
     // Strings are a special case;  setting a null string item sets a null QVariant
     // as the value.  This is so that QVariant::isNull() can be used to test the
@@ -552,7 +552,8 @@ QString TrackDataItem::timeZone() const
 const PointIcon *TrackDataItem::icon() const
 {
     // Named item type icons are always taken from the "system"
-    // (which includes our application) namespace.
+    // (which includes our application) namespace.  The colour
+    // and shape do not apply to an icon in that namespace.
     return (PointIcon::create(this->iconName(), PointIcon::NamespaceSystem));
 }
 
@@ -896,19 +897,89 @@ bool TrackDataWaypoint::isMediaType() const
 }
 
 
-/* private */ const PointIcon *TrackDataWaypoint::createPointIcon(const QByteArray &set) const
-{
-    const QVariant v = metadata(PointIcon::metadataKey(set));
-    if (v.isNull()) return (nullptr);
+// Get the item category data, if the item has a category set and
+// the file has a category map defining that category.
 
-    const QString sym = v.toString();
-    if (sym.isEmpty()) return (nullptr);		// should never happen
-#ifdef DEBUG_ICONS
-    qDebug() << "for" << name() << "sym" << sym << "set" << set;
-#endif
-    const PointIcon *ic = PointIcon::create(sym, set, this);
-    if (ic->isValid()) return (ic);
-    return (nullptr);
+// TODO: category retrieval needs to be via a pointer for efficiency
+
+static const CategoryData findCategoryData(const TrackDataItem *item)
+{
+    CategoryData d;
+
+    const QVariant cats = item->metadata("category");
+    if (!cats.isNull())
+    {							// first (primary) category only
+        const QString cat = cats.toStringList().first();
+        const TrackDataFile *root = item->root();	// go up to the root file item
+        if (root!=nullptr)				// should always have been found
+        {
+            // If the file has categories available, then get the data for
+            // the waypoint category from the map.  If the category is not
+            // defined in the map then CategoryList::category() will return
+            // a default-constructed CategoryData via QMap::value().
+            const CategoryList *catMap = root->categories();
+            if (catMap!=nullptr) d = catMap->category(cat);
+        }
+    }
+
+    return (d);
+}
+
+
+// Find a metadata item which may be directly from the item itself, or
+// defined for the item's category, or set for a parent item up to the
+// root.
+
+static QVariant findInheritedMetadata(const TrackDataItem *item, int idx, bool wantColour)
+{
+    // First try the item metadata directly.
+    QVariant v = item->metadata(idx);
+    // Do not use that value, however, if it signifies an inherited colour.
+    if (wantColour && !TrackData::colourUnlessInherit(v).isValid()) v.clear();
+
+    if (v.isNull())
+    {
+        // Then try the item category, if it is set and the file has
+        // a category map defining that category.
+        const CategoryData &catData = findCategoryData(item);
+        if (wantColour)					// want a colour value
+        {
+            const QColor &col = TrackData::colourUnlessInherit(catData.colour());
+            if (col.isValid()) v = col;			// valid colour is set
+        }
+        else						// want a string value
+        {
+            const QString &str = catData.shape();
+            if (!str.isEmpty()) v = str;		// valid shape is set
+        }
+    }
+
+    if (v.isNull())
+    {
+        // Next try the item's parents, up to and including the root.  Only
+        // the metadata which is requested is searched along this chain, not
+        // a category.
+        const TrackDataItem *pnt = item->parent();
+        while (pnt!=nullptr)
+        {
+            v = pnt->metadata(idx);
+            if (!v.isNull())				// metadata found, but check colour
+            {
+                if (wantColour)				// want a colour value,
+                {					// but only if not inheriting
+                    const QColor &col = TrackData::colourUnlessInherit(v);
+                    if (!col.isValid()) v.clear();
+                }
+            }
+
+            if (!v.isNull()) break;
+            pnt = pnt->parent();
+        }
+    }
+
+    // Return the value found, or a null variant if there was none.
+    // If none was found then the caller will apply an appropriate default.
+    return (v);
 }
 
 
@@ -920,79 +991,125 @@ bool TrackDataWaypoint::isMediaType() const
 
 const PointIcon *TrackDataWaypoint::icon() const
 {
-    // First priority: special waypoint type
+    // First priority:  special waypoint type
     if (mediaType()!=TrackData::MediaNormal) return (TrackDataItem::icon());
 
     QVariant v;
     const PointIcon *ic;
 
-    // Second priority: named symbol with specified symbol set
-    const QByteArray set = metadata("symset").toByteArray();
-    if (!set.isEmpty())
-    {
-        ic = createPointIcon(set);
-        if (ic!=nullptr) return (ic);
-    }
-
-    // Next priority: named symbol but with no explicitly specified symbol set.
+    // Next resolve the icon name - if there is none then there is no point
+    // in trying an icon provider.  However, we need to either know the
+    // intended icon namespace, or try the providers in priority order,
+    // in order to know which metadata tag the name will be stored under.
     // The priority order is set by the order in which the providers are
     // created in PointIcon::initProviders().
+    const QByteArray set = metadata("symset").toByteArray();
+    const AbstractIconProvider *usedProvider = nullptr;
     const auto *providers = PointIcon::allProviders();
     for (const AbstractIconProvider *provider : std::as_const(*providers))
     {
-        ic = createPointIcon(provider->internalName());
-        if (ic!=nullptr) return (ic);
+        if (!set.isEmpty() && set!=provider->internalName()) continue;
+        v = metadata(provider->metadataKey());
+        if (!v.isNull())
+        {
+            usedProvider = provider;
+            break;
+        }
     }
 
-    // Third priority: explicit point colour or fallback colour
-    //
-    // As originally noted for MapView::resolvePointColour(), point colour
-    // is currently not inherited.  If set on this item then it will be used,
-    // otherwise waypoints will use the category colour or the default icon.
-    // The top level file item colour or the application default waypoint
-    // colour is never actually used.
-    v = metadata("pointcolor");
-    if (!v.isNull())
+    if (v.isNull())
     {
-        const QColor col = v.value<QColor>();
-        if (col.isValid() && col.alpha()==255)		// valid colour and not inherit
+        // If there is no name then try the waypoint category, which may
+        // have a default icon name defined.  In imported files this will
+        // only be present for OsmAnd, but keep the lookup non-specific.
+        const CategoryData &catData = findCategoryData(this);
+        const QString &icn = catData.icon();
+        if (!icn.isEmpty()) v = icn;
+    }
+
+    // All of the possible icon name sources have now been tried.
+    const QString name = v.toString();
+
+    // As well as the waypoint icon name, the colour and background shape
+    // need to be resolved at this stage.  This is so that they can be
+    // used to generate the icon image if the icon turns out to be an OsmAnd
+    // one, either explicitly specified or found by name matching.  Even
+    // if there is no icon name or the provider does not require a colour,
+    // it will be used to generate the default "star" image.
+    //
+    // The inheritance priority for colour and shape is first any explicitly
+    // specified for the waypoint, then from the category if defined, then
+    // explicitly specified for any parent items up to the root.  Category,
+    // if it needs to be used, is taken from the waypoint's primary category
+    // only and is not inherited.
+    //
+    // Colour and shape are searched in this way independently, except that
+    // the default shape is determined by the icon provider and for OsmAnd
+    // icons is effectively "square".  The default colour is again determined
+    // by the icon provider;  in theory they should use the application default
+    // if an icon colour is meaningful but currently the OsmAnd icon provider
+    // does not.
+    //
+    // As originally noted for MapView::resolvePointColour(), the point colour
+    // was not inherited from a parent folder or file and the application
+    // default waypoint colour was never used.  However, in the interests of
+    // consistency the parent search is now done, but the application default
+    // colour is not curently used because that would need this core library
+    // to have access to the application settings.
+
+    // Colour may be needed below, but shape is only needed if there is an
+    // icon name.
+    const QVariant col = findInheritedMetadata(this, DataIndexer::index("pointcolor"), true);
+
+    if (!name.isEmpty())
+    {
+        const QVariant shp = findInheritedMetadata(this, DataIndexer::index("background"), false);
+
+        // Second priority:  if an icon name has been found, use the
+        // appropriate provider found earlier (recorded in 'usedProvider')
+        // to try to create an icon image.  If the icon name was taken from
+        // the category map then no provider will have been found, so a name
+        // search in provider priority order will be done by PointIcon.
+        //
+        // This may give incorrect results in the case where, for example,
+        // the waypoint metadata is:
+        //
+        //   symset	(null)
+        //   sym	an invalid Garmin name
+        //   icon	a valid OsmAnd name
+        //
+        // because finding the non-null "sym" earlier, at a higher priority,
+        // would have noted the provider as Garmin.  The create() below will
+        // then try to create a Garmin icon with that name and fail;  however,
+        // the valid OsmAnd name will not be tried.  This scenario is not
+        // likely to happen with either files correctly saved from this
+        // application (because they will include an explicit "symset"), or
+        // files imported from OsmAnd (because they will not contain the "sym"
+        // tag anyway).
+        PointIcon::IconNamespace nsp = (usedProvider!=nullptr ? usedProvider->namespaceId() : PointIcon::NamespaceAuto);
+        ic = PointIcon::create(name, nsp, col, shp);
+        if (ic->isValid()) return (ic);
+    }
+
+    // Third priority: if there is no icon name but there is a colour, then
+    // generate the standard "star" symbol.
+    if (!col.isNull())
+    {
+        const QColor c = TrackData::colourUnlessInherit(col);
+        if (c.isValid())				// valid colour and not inherit
         {
 #ifdef DEBUG_ICONS
-            qDebug() << "for" << name() << "colour" << col.name();
+            qDebug() << "for" << name() << "colour" << c.name();
 #endif
-            ic = PointIcon::create(col);
+            ic = PointIcon::create(c);
             if (ic->isValid()) return (ic);
         }
     }
 
-    // Fourth priority: colour for category
-    v = metadata("category");
-    if (!v.isNull())
-    {
-        const QString cat = v.toStringList().first();	// first (primary) category only
-        const TrackDataFile *root = this->root();	// go up to the root file item
-        if (root!=nullptr)				// should always have been found
-        {
-            // If the file has categories available, then get the colour for
-            // the waypoint category.
-            const CategoryList *catMap = root->categories();
-            if (catMap!=nullptr)			// categories set for file
-            {
-                const QColor col = catMap->category(cat).colour();
-                if (col.isValid())			// colour is defined for category
-                {
-#ifdef DEBUG_ICONS
-                    qDebug() << "for" << name() << "category" << cat << "->" << col.name();
-#endif
-                    ic = PointIcon::create(col);
-                    if (ic->isValid()) return (ic);
-                }
-            }
-        }
-    }
-
-    // Lowest priority: default icon
-    // waypointType() must be TrackData::WaypointNormal here
+    // Lowest priority:  the default icon.  mediaType() was checked at
+    // the start and so we know that it must be TrackData::WaypointNormal
+    // here.  In this case TrackDataWaypoint::iconName() will always return
+    // the default "favorites".
     return (TrackDataItem::icon());
 }
 

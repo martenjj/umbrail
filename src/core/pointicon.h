@@ -27,9 +27,9 @@
 #define POINTICON_H
 
 #include <qicon.h>
+#include <qvariant.h>
 
 class QColor;
-class TrackDataItem;
 class AbstractIconProvider;
 
 
@@ -68,17 +68,16 @@ public:
     static void initProviders();
     static const QList<AbstractIconProvider *> *allProviders();
 
-    static const PointIcon *create(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item = nullptr);
-    static const PointIcon *create(const QString &name, const QByteArray &nsn, const TrackDataItem *item = nullptr);
-    static const PointIcon *create(const QColor &col);
+    static const PointIcon *create(const QString &name, PointIcon::IconNamespace nsp, const QVariant &colour = QVariant(), const QVariant &shape = QVariant());
+    static const PointIcon *create(const QColor &colour);
 
     static void aboutToQuit();
 
 protected:
-    // Only thePointIcon itself may construct a PointIcon.  Callers must
+    // Only the PointIcon itself may construct a PointIcon.  Callers must
     // use the create() functions above.
-    explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp, const TrackDataItem *item = nullptr);
-    explicit PointIcon(const QString &name, const QColor &col);
+    explicit PointIcon(const QString &name, PointIcon::IconNamespace nsp, const QVariant &colour, const QVariant &shape);
+    explicit PointIcon(const QString &name, const QColor &colour);
 
 private:
     QString mName;

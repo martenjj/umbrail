@@ -33,6 +33,7 @@
 #include <qdatetime.h>
 #include <qvector.h>
 #include <qurl.h>
+#include <qcolor.h>
 
 #define ISNAN(x)		std::isnan(x)		// to cover variations
 
@@ -211,11 +212,20 @@ namespace TrackData
      *
      * @param path Path of the folder to find, names separated by '/'
      * @param item Root item to start path search from
-     * @return The specified folder if it exists, otherwise, @c nullptr
+     * @return The specified folder if it exists, otherwise, @c NULL
      **/
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
 
-    QVariant valueOrNull(const QVariant &value);
+    QVariant valueOrNull(const QVariant &v);
+
+    // The overload taking a QColor must appear before the one taking a QVariant,
+    // otherwise there is a compile (GCC 14) and runtime error:
+    //
+    //   src/core/trackdata.h:221: warning: infinite recursion detected
+    //   src/core/trackdata.h:221: note: recursive call
+    //
+    inline QColor colourUnlessInherit(const QColor &c)		{ return (c.alpha()==255 ? c : QColor()); }
+    inline QColor colourUnlessInherit(const QVariant &v)	{ return (colourUnlessInherit(v.value<QColor>())); }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -503,9 +513,6 @@ public:
 
 protected:
     QString iconName() const override;
-
-private:
-    const PointIcon *createPointIcon(const QByteArray &set) const;
 };
 
 //////////////////////////////////////////////////////////////////////////
