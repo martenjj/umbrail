@@ -32,7 +32,7 @@
 
 class QLabel;
 class QCheckBox;
-class QComboBox;
+class SymbolShapeCombo;
 class KColorButton;
 class SymbolIconButton;
 class TrackDataItem;
@@ -63,7 +63,7 @@ protected:
     SymbolIconButton *mIconButton;
     QLabel *mIconNameLabel;
     QLabel *mIconNspLabel;
-    QComboBox *mIconShapeCombo;
+    SymbolShapeCombo *mIconShapeCombo;
 
     QByteArray mIconNamespace;
     QString mIconName;
@@ -72,9 +72,9 @@ protected:
 
 protected slots:
     void slotColourChanged(const QColor &col);
-    void slotIconShapeChanged(int idx);
     void slotInheritChanged(bool on);
     void slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp);
+    void slotIconShapeChanged(const QString &shape);
 
 private:
     QColor getColourData(bool isLine);

@@ -39,6 +39,7 @@
 #include "metadatamodel.h"
 #include "dataindexer.h"
 #include "symboliconbutton.h"
+#include "symbolshapecombo.h"
 #include "abstracticonprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -196,12 +197,8 @@ void TrackItemStylePage::addIconButton()
     mIconNspLabel = new QLabel(this);
     mFormLayout->addRow(i18n("Symbol set:"), mIconNspLabel);
 
-    mIconShapeCombo = new QComboBox(this);
-    mIconShapeCombo->addItem(QIcon::fromTheme("edit-delete"), i18nc("@item:inlistbox for icon shape", "(None)"), "");
-    mIconShapeCombo->addItem(QIcon::fromTheme("shape-circle"), i18nc("@item:inlistbox for icon shape", "Circle"), "circle");
-    mIconShapeCombo->addItem(QIcon::fromTheme("shape-square"), i18nc("@item:inlistbox for icon shape", "Square"), "square");
-    mIconShapeCombo->addItem(QIcon::fromTheme("shape-octagon"), i18nc("@item:inlistbox for icon shape", "Octagon"), "octagon");
-    connect(mIconShapeCombo, &QComboBox::currentIndexChanged, this, &TrackItemStylePage::slotIconShapeChanged);
+    mIconShapeCombo = new SymbolShapeCombo(this);
+    connect(mIconShapeCombo, &SymbolShapeCombo::shapeSelected, this, &TrackItemStylePage::slotIconShapeChanged);
     mFormLayout->addRow(i18n("Background shape:"), mIconShapeCombo);
 }
 
@@ -228,9 +225,9 @@ void TrackItemStylePage::slotSymbolSelected(const QString &iconName, PointIcon::
 }
 
 
-void TrackItemStylePage::slotIconShapeChanged(int idx)
+void TrackItemStylePage::slotIconShapeChanged(const QString &shape)
 {
-    dataModel()->setData(DataIndexer::index("background"), mIconShapeCombo->currentData());
+    dataModel()->setData(DataIndexer::index("background"), shape);
 }
 
 
@@ -288,9 +285,7 @@ void TrackItemStylePage::refreshData()
             mIconNspLabel->setText("");
         }
 
-        const int idx = mIconShapeCombo->findData(dataModel()->data("background").toString());
-        if (idx!=-1) mIconShapeCombo->setCurrentIndex(idx);
-
+        mIconShapeCombo->setShape(dataModel()->data("background").toString());
         mIconShapeCombo->setEnabled(false);
         const auto *providers = PointIcon::allProviders();
         for (const AbstractIconProvider *provider : std::as_const(*providers))
