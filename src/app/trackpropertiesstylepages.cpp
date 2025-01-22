@@ -28,12 +28,9 @@
 #include <qformlayout.h>
 #include <qcheckbox.h>
 #include <qdebug.h>
-#include <qevent.h>
-#include <qtimer.h>
 
 #include <klocalizedstring.h>
 #include <kcolorbutton.h>
-#include <kiconbutton.h>
 
 #include "trackdata.h"
 #include "trackdatalabel.h"
@@ -41,8 +38,7 @@
 #include "mapview.h"
 #include "metadatamodel.h"
 #include "dataindexer.h"
-#include "symboliconselector.h"
-#include "pointicon.h"
+#include "symboliconbutton.h"
 #include "abstracticonprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -189,11 +185,9 @@ void TrackItemStylePage::setColourButtons(KColorButton *colBut, QCheckBox *inher
 
 void TrackItemStylePage::addIconButton()
 {
-    mIconButton = new KIconButton(this);
-    mIconButton->setIconSize(KIconLoader::SizeMedium);
-    mIconButton->setButtonIconSize(KIconLoader::SizeMedium);
+    mIconButton = new SymbolIconButton(this);
     mIconButton->setEnabled(!isReadOnly());
-    if (!isReadOnly()) mIconButton->installEventFilter(this);
+    connect(mIconButton, &SymbolIconButton::symbolSelected, this, &TrackItemStylePage::slotSymbolSelected);
     mFormLayout->addRow(i18n("Symbol:"), mIconButton);
 
     mIconNameLabel = new QLabel(this);
@@ -212,45 +206,25 @@ void TrackItemStylePage::addIconButton()
 }
 
 
-bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
+void TrackItemStylePage::slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp)
 {
-    // We do not want the KIconButton to open the standard KIconDialog
-    // on a click, but rather to replace it with our own IconSelector
-    // with the repertoire of GPS icons.  Therefore we intercept the
-    // button click and handle it here, without passing the event on.
-    if (obj!=mIconButton) return (false);
-    if (ev->type()!=QEvent::MouseButtonRelease) return (false);
-    QMouseEvent *mev = static_cast<QMouseEvent *>(ev);
-    if (mev->button()!=Qt::LeftButton) return (false);
-
-    // To avoid any potential problems with nested event loops,
-    // execute the dialogue outside of the event filter.
-    QTimer::singleShot(0, this, [this]()
+    if (!iconName.isEmpty())				// setting a new symbol
     {
-        SymbolIconSelector d(mIconName, PointIcon::namespaceId(mIconNamespace), this);
-        if (!d.exec()) return;
+        const QByteArray newSet = PointIcon::namespaceInternalName(nsp);
+        dataModel()->setData(PointIcon::metadataKey(newSet), iconName);
+        dataModel()->setData("symset", newSet);
+    }
+    else						// clearing the symbol
+    {
+        dataModel()->setData(PointIcon::metadataKey(mIconNamespace), QVariant());
+        dataModel()->setData("symset", QVariant());
+    }
 
-        const QString newSym = d.selectedIconName();
-        if (!newSym.isEmpty())				// setting a new symbol
-        {
-            const QByteArray newSet = PointIcon::namespaceInternalName(d.selectedNamespace());
-            dataModel()->setData(PointIcon::metadataKey(newSet), newSym);
-            dataModel()->setData("symset", newSet);
-        }
-        else						// clearing the symbol
-        {
-            dataModel()->setData(PointIcon::metadataKey(mIconNamespace), QVariant());
-            dataModel()->setData("symset", QVariant());
-        }
+    // TODO: this may not be the right thing to do for OsmAnd icons,
+    // may need a new icon provider parameter supportsColour().
+    if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!iconName.isEmpty());
 
-        // TODO: this may not be the right thing to do for OsmAnd icons,
-        // may need a new icon provider parameter supportsColour().
-        if (mPointInheritCheck!=nullptr) mPointInheritCheck->setChecked(!newSym.isEmpty());
-
-        refreshData();
-    });
-
-    return (true);					// have handled the event
+    refreshData();
 }
 
 

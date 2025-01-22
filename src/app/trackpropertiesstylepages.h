@@ -27,13 +27,14 @@
 #define TRACKPROPERTIESSTYLEPAGES_H
 
 #include "trackpropertiespage.h"
+#include "pointicon.h"
 
 
 class QLabel;
 class QCheckBox;
 class QComboBox;
 class KColorButton;
-class KIconButton;
+class SymbolIconButton;
 class TrackDataItem;
 
 
@@ -52,8 +53,6 @@ protected:
     void addPointColourButton(const QString &text = QString());
     void addIconButton();
 
-    virtual bool eventFilter(QObject *obj, QEvent *ev) override;
-
 protected:
     KColorButton *mLineColourButton;
     QCheckBox *mLineInheritCheck;
@@ -61,7 +60,7 @@ protected:
     KColorButton *mPointColourButton;
     QCheckBox *mPointInheritCheck;
 
-    KIconButton *mIconButton;
+    SymbolIconButton *mIconButton;
     QLabel *mIconNameLabel;
     QLabel *mIconNspLabel;
     QComboBox *mIconShapeCombo;
@@ -75,6 +74,7 @@ protected slots:
     void slotColourChanged(const QColor &col);
     void slotIconShapeChanged(int idx);
     void slotInheritChanged(bool on);
+    void slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp);
 
 private:
     QColor getColourData(bool isLine);
