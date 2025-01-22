@@ -23,8 +23,8 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef ICONSELECTOR_H
-#define ICONSELECTOR_H
+#ifndef SYMBOLICONSELECTOR_H
+#define SYMBOLICONSELECTOR_H
 
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>
@@ -37,13 +37,13 @@ class QComboBox;
 class KListWidgetSearchLine;
 
 
-class IconSelector : public DialogBase, public DialogStateSaver
+class SymbolIconSelector : public DialogBase, public DialogStateSaver
 {
     Q_OBJECT
 
 public:
-    explicit IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt = nullptr);
-    virtual ~IconSelector();
+    explicit SymbolIconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt = nullptr);
+    virtual ~SymbolIconSelector();
 
     QString selectedIconName() const;
     PointIcon::IconNamespace selectedNamespace() const;
@@ -65,4 +65,4 @@ private:
     bool mHadInitialNamespace;
 };
 
-#endif							// ICONSELECTOR_H
+#endif							// SYMBOLICONSELECTOR_H

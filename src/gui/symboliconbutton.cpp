@@ -30,7 +30,7 @@
 
 #include <klocalizedstring.h>
 
-#include "iconselector.h"
+#include "symboliconselector.h"
 
 
 SymbolIconButton::SymbolIconButton(QWidget *pnt)
@@ -80,7 +80,7 @@ void SymbolIconButton::setSymbol(const QString &iconName, PointIcon::IconNamespa
 bool SymbolIconButton::eventFilter(QObject *obj, QEvent *ev)
 {
     // We do not want the KIconButton to open the standard KIconDialog
-    // on a click, but rather to replace it with our own IconSelector
+    // on a click, but rather to replace it with our own SymbolIconSelector
     // with the repertoire of GPS icons.  Therefore we intercept the
     // button click and handle it here, without passing the event on.
     if (ev->type()!=QEvent::MouseButtonRelease) return (false);
@@ -92,7 +92,7 @@ bool SymbolIconButton::eventFilter(QObject *obj, QEvent *ev)
     // the dialogue and emit the signal outside of the event filter.
     QTimer::singleShot(0, this, [this]()
     {
-        IconSelector dlg(mIconName, mNsp, this);
+        SymbolIconSelector dlg(mIconName, mNsp, this);
         if (!dlg.exec()) return;
 
         emit symbolSelected(dlg.selectedIconName(), dlg.selectedNamespace());

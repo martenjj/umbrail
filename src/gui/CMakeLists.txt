@@ -49,7 +49,7 @@ set(gui_SRCS
   categorieseditdialogue.cpp
   categoriesmanagedialogue.cpp
   flagseditdialogue.cpp
-  iconselector.cpp
+  symboliconselector.cpp
   symboliconbutton.cpp
   importfiledialogue.cpp
   mergepointsdialogue.cpp

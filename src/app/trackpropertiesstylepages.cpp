@@ -41,7 +41,7 @@
 #include "mapview.h"
 #include "metadatamodel.h"
 #include "dataindexer.h"
-#include "iconselector.h"
+#include "symboliconselector.h"
 #include "pointicon.h"
 #include "abstracticonprovider.h"
 
@@ -227,7 +227,7 @@ bool TrackItemStylePage::eventFilter(QObject *obj, QEvent *ev)
     // execute the dialogue outside of the event filter.
     QTimer::singleShot(0, this, [this]()
     {
-        IconSelector d(mIconName, PointIcon::namespaceId(mIconNamespace), this);
+        SymbolIconSelector d(mIconName, PointIcon::namespaceId(mIconNamespace), this);
         if (!d.exec()) return;
 
         const QString newSym = d.selectedIconName();

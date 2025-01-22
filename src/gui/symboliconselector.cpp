@@ -23,7 +23,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-#include "iconselector.h"
+#include "symboliconselector.h"
 
 #include <qlistwidget.h>
 #include <qcombobox.h>
@@ -41,13 +41,13 @@
 #include "abstracticonprovider.h"
 
 
-IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
+SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
     : DialogBase(pnt),
       DialogStateSaver(this)
 {
     mSelectedName = sym;
 
-    setObjectName("IconSelector");
+    setObjectName("SymbolIconSelector");
     setWindowTitle(i18n("Select Symbol"));
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel|QDialogButtonBox::Reset);
     setButtonText(QDialogButtonBox::Ok, i18nc("@action:button", "Select"));
@@ -104,20 +104,20 @@ IconSelector::IconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWi
     setStateSaver(this);
     slotSourceChanged();
 
-    connect(mSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &IconSelector::slotSourceChanged);
-    connect(mList, &QListWidget::itemSelectionChanged, this, &IconSelector::slotSelectionChanged);
-    connect(buttonBox()->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, this, &IconSelector::slotClearIcon);
-    connect(mSearchLine, &QLineEdit::textChanged, this, &IconSelector::slotSelectionChanged);
+    connect(mSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SymbolIconSelector::slotSourceChanged);
+    connect(mList, &QListWidget::itemSelectionChanged, this, &SymbolIconSelector::slotSelectionChanged);
+    connect(buttonBox()->button(QDialogButtonBox::Reset), &QAbstractButton::clicked, this, &SymbolIconSelector::slotClearIcon);
+    connect(mSearchLine, &QLineEdit::textChanged, this, &SymbolIconSelector::slotSelectionChanged);
 }
 
 
-IconSelector::~IconSelector()
+SymbolIconSelector::~SymbolIconSelector()
 {
     disconnect(mSearchLine, nullptr, nullptr, nullptr);
 }
 
 
-QString IconSelector::selectedIconName() const
+QString SymbolIconSelector::selectedIconName() const
 {
     QList<QListWidgetItem *> sel = mList->selectedItems();
     if (sel.isEmpty()) return (QString());
@@ -126,13 +126,13 @@ QString IconSelector::selectedIconName() const
 }
 
 
-PointIcon::IconNamespace IconSelector::selectedNamespace() const
+PointIcon::IconNamespace SymbolIconSelector::selectedNamespace() const
 {
     return (static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt()));
 }
 
 
-void IconSelector::slotSourceChanged()
+void SymbolIconSelector::slotSourceChanged()
 {
     const PointIcon::IconNamespace nsp = selectedNamespace();
 
@@ -174,7 +174,7 @@ void IconSelector::slotSourceChanged()
 }
 
 
-void IconSelector::slotSelectionChanged()
+void SymbolIconSelector::slotSelectionChanged()
 {
     // KListWidgetSearchLine works by hiding the items that do not
     // match the filter.  But the decision here needs to be made after
@@ -188,21 +188,21 @@ void IconSelector::slotSelectionChanged()
 }
 
 
-void IconSelector::slotClearIcon()
+void SymbolIconSelector::slotClearIcon()
 {
     mList->setCurrentItem(nullptr);
     accept();
 }
 
 
-void IconSelector::saveConfig(QDialog *dialog, KConfigGroup &grp) const
+void SymbolIconSelector::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
     grp.writeEntry("SymbolSet", PointIcon::namespaceInternalName(static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt())));
     DialogStateSaver::saveConfig(dialog, grp);
 }
 
 
-void IconSelector::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
+void SymbolIconSelector::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
     if (!mHadInitialNamespace)				// only if not set already
     {
