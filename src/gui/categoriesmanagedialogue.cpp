@@ -41,6 +41,9 @@
 #include <kconfiggroup.h>
 #include <kcolorbutton.h>
 
+#include "pointicon.h"
+#include "trackdata.h"
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  CategoryEditDialogue						//
@@ -212,12 +215,28 @@ static inline void setItemData(QTreeWidgetItem *item, const QString &name, const
     item->setText(COL_NAME, name);
     item->setData(COL_COLOUR, Qt::UserRole, cat->colour());
 
-    QString s = cat->icon();
-    item->setData(COL_ICON, Qt::UserRole, s);
-    item->setText(COL_ICON, (!s.isEmpty() ? s : i18nc("@item:intable value not set", "(none)")));
-    s = cat->shape();
-    item->setData(COL_SHAPE, Qt::UserRole, s);
-    item->setText(COL_SHAPE, (!s.isEmpty() ? s : i18nc("@item:intable value not set", "(none)")));
+    const QString icn = cat->icon();
+    const QString shp = cat->shape();
+
+    item->setData(COL_ICON, Qt::UserRole, icn);
+    item->setIcon(COL_ICON, QIcon());
+    if (!icn.isEmpty())
+    {
+        item->setText(COL_ICON, icn);
+        // This call must pass a null QVariant if there is no shape,
+        // otherwise OsmandIconProvider will warn that it is unknown.
+        const PointIcon *ic = PointIcon::create(icn, PointIcon::NamespaceAuto,
+                                                cat->colour(),
+                                                (!shp.isEmpty() ? shp : QVariant()));
+        if (ic!=nullptr) item->setIcon(COL_ICON, ic->icon());
+    }
+    else
+    {
+        item->setText(COL_ICON, i18nc("@item:intable value not set", "(none)"));
+    }
+
+    item->setData(COL_SHAPE, Qt::UserRole, shp);
+    item->setText(COL_SHAPE, (!shp.isEmpty() ? shp : i18nc("@item:intable value not set", "(none)")));
 }
 
 
