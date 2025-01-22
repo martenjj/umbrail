@@ -35,6 +35,8 @@
 #include <qformlayout.h>
 #include <qlineedit.h>
 #include <qscrollbar.h>
+#include <qboxlayout.h>
+#include <qtoolbutton.h>
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
@@ -65,8 +67,20 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
     connect(mNameEdit, &QLineEdit::textEdited, this, &CategoryEditDialogue::slotUpdateButtonStates);
     lay->addRow(i18n("Name:"), mNameEdit);
 
+    QHBoxLayout *hlay = new QHBoxLayout(w);
+    hlay->setContentsMargins(0, 0, 0, 0);
+
     mColourButton = new KColorButton(w);
-    lay->addRow(i18n("Colour:"), mColourButton);
+    hlay->addWidget(mColourButton);
+    hlay->addStretch(1);
+
+    QToolButton *but = new QToolButton(w);
+    but->setIcon(QIcon::fromTheme("edit-clear"));
+    but->setToolTip(i18nc("@info:tooltip", "Clear the category colour"));
+    connect(but, &QAbstractButton::clicked, this, &CategoryEditDialogue::slotClearColour);
+    hlay->addWidget(but);
+
+    lay->addRow(i18n("Colour:"), hlay);
 
     mIconEdit = new QLineEdit(w);
     lay->addRow(i18n("Icon:"), mIconEdit);
@@ -97,6 +111,12 @@ QString CategoryEditDialogue::name() const
 void CategoryEditDialogue::slotUpdateButtonStates()
 {
     setButtonEnabled(QDialogButtonBox::Ok, !mNameEdit->text().isEmpty());
+}
+
+
+void CategoryEditDialogue::slotClearColour()
+{
+    mColourButton->setColor(QColor());
 }
 
 
@@ -219,7 +239,7 @@ static inline void setItemData(QTreeWidgetItem *item, const QString &name, const
     const QString shp = cat->shape();
 
     item->setData(COL_ICON, Qt::UserRole, icn);
-    item->setIcon(COL_ICON, QIcon());
+    item->setIcon(COL_ICON, QIcon::fromTheme("symbol-blank"));
     if (!icn.isEmpty())
     {
         item->setText(COL_ICON, icn);

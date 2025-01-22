@@ -56,7 +56,8 @@ public:
     const CategoryData *category() const		{ return (&mCategory); }
 
 protected slots:
-    virtual void accept() override;
+    void accept() override;
+    void slotClearColour();
 
 private slots:
     void slotUpdateButtonStates();
