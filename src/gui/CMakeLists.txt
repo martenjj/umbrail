@@ -51,6 +51,7 @@ set(gui_SRCS
   flagseditdialogue.cpp
   symboliconselector.cpp
   symboliconbutton.cpp
+  symbolshapecombo.cpp
   importfiledialogue.cpp
   mergepointsdialogue.cpp
   listeditwidget.cpp

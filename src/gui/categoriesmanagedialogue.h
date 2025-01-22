@@ -39,6 +39,7 @@ class QPushButton;
 class QLineEdit;
 class KColorButton;
 class SymbolIconButton;
+class SymbolShapeCombo;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -65,12 +66,13 @@ protected slots:
 private slots:
     void slotUpdateButtonStates();
     void slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp);
+    void slotShapeSelected(const QString &shape);
 
 private:
     QLineEdit *mNameEdit;
     KColorButton *mColourButton;
     SymbolIconButton *mIconButton;
-    QLineEdit *mShapeEdit;
+    SymbolShapeCombo *mShapeCombo;
 
     CategoryData mCategory;
 };

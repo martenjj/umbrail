@@ -44,6 +44,7 @@
 #include <kcolorbutton.h>
 
 #include "symboliconbutton.h"
+#include "symbolshapecombo.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -85,14 +86,16 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
     connect(mIconButton, &SymbolIconButton::symbolSelected, this, &CategoryEditDialogue::slotSymbolSelected);
     lay->addRow(i18n("Symbol:"), mIconButton);
 
-    mShapeEdit = new QLineEdit(w);
-    lay->addRow(i18n("Shape:"), mShapeEdit);
+    mShapeCombo = new SymbolShapeCombo(w);
+    connect(mShapeCombo, &SymbolShapeCombo::shapeSelected, this, &CategoryEditDialogue::slotShapeSelected);
+    lay->addRow(i18n("Shape:"), mShapeCombo);
 
     if (cat!=nullptr)					// original category data provided
     {
+        mCategory = *cat;				// take a copy to return later
         mColourButton->setColor(cat->colour());
         mIconButton->setSymbol(cat->icon());
-        mShapeEdit->setText(cat->shape());
+        mShapeCombo->setShape(cat->shape());
     }
 
     setMainWidget(w);
@@ -105,6 +108,12 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
 void CategoryEditDialogue::slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp)
 {
     mCategory.setIcon(iconName);
+}
+
+
+void CategoryEditDialogue::slotShapeSelected(const QString &shape)
+{
+    mCategory.setShape(shape);
 }
 
 
@@ -129,8 +138,6 @@ void CategoryEditDialogue::slotClearColour()
 void CategoryEditDialogue::accept()
 {
     mCategory.setColour(mColourButton->color());
-    mCategory.setShape(mShapeEdit->text());		// TODO: shape combo
-
     DialogBase::accept();
 }
 
