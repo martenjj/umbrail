@@ -43,8 +43,7 @@
 #include <kconfiggroup.h>
 #include <kcolorbutton.h>
 
-#include "pointicon.h"
-#include "trackdata.h"
+#include "symboliconbutton.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -82,8 +81,9 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
 
     lay->addRow(i18n("Colour:"), hlay);
 
-    mIconEdit = new QLineEdit(w);
-    lay->addRow(i18n("Icon:"), mIconEdit);
+    mIconButton = new SymbolIconButton(this);
+    connect(mIconButton, &SymbolIconButton::symbolSelected, this, &CategoryEditDialogue::slotSymbolSelected);
+    lay->addRow(i18n("Symbol:"), mIconButton);
 
     mShapeEdit = new QLineEdit(w);
     lay->addRow(i18n("Shape:"), mShapeEdit);
@@ -91,7 +91,7 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
     if (cat!=nullptr)					// original category data provided
     {
         mColourButton->setColor(cat->colour());
-        mIconEdit->setText(cat->icon());
+        mIconButton->setSymbol(cat->icon());
         mShapeEdit->setText(cat->shape());
     }
 
@@ -99,6 +99,12 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
     w->setMinimumWidth(250);
     slotUpdateButtonStates();
     mNameEdit->setFocus(Qt::OtherFocusReason);
+}
+
+
+void CategoryEditDialogue::slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp)
+{
+    mCategory.setIcon(iconName);
 }
 
 
@@ -123,7 +129,6 @@ void CategoryEditDialogue::slotClearColour()
 void CategoryEditDialogue::accept()
 {
     mCategory.setColour(mColourButton->color());
-    mCategory.setIcon(mIconEdit->text());		// TODO: icon selector
     mCategory.setShape(mShapeEdit->text());		// TODO: shape combo
 
     DialogBase::accept();

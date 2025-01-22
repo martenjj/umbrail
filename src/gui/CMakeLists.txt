@@ -50,6 +50,7 @@ set(gui_SRCS
   categoriesmanagedialogue.cpp
   flagseditdialogue.cpp
   iconselector.cpp
+  symboliconbutton.cpp
   importfiledialogue.cpp
   mergepointsdialogue.cpp
   listeditwidget.cpp
@@ -68,6 +69,7 @@ target_link_libraries(${PN}gui
   KF${QV}::ConfigWidgets
   KF${QV}::GuiAddons
   KF${QV}::ItemViews
+  KF${QV}::IconWidgets
   KF${QV}::XmlGui
   ${PN}core
   ${PN}models

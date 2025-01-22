@@ -31,12 +31,14 @@
 #include <kfdialog/dialogstatesaver.h>
 
 #include "category.h"
+#include "pointicon.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;
 class QPushButton;
 class QLineEdit;
 class KColorButton;
+class SymbolIconButton;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -57,16 +59,18 @@ public:
 
 protected slots:
     void accept() override;
+
     void slotClearColour();
 
 private slots:
     void slotUpdateButtonStates();
+    void slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp);
 
 private:
     QLineEdit *mNameEdit;
-    QLineEdit *mIconEdit;
-    QLineEdit *mShapeEdit;
     KColorButton *mColourButton;
+    SymbolIconButton *mIconButton;
+    QLineEdit *mShapeEdit;
 
     CategoryData mCategory;
 };
