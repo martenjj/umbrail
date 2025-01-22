@@ -53,14 +53,21 @@ public:
     virtual ~CategoryEditDialogue() = default;
 
     QString name() const;
-    CategoryData category() const;
+    const CategoryData *category() const		{ return (&mCategory); }
+
+protected slots:
+    virtual void accept() override;
 
 private slots:
     void slotUpdateButtonStates();
 
 private:
     QLineEdit *mNameEdit;
+    QLineEdit *mIconEdit;
+    QLineEdit *mShapeEdit;
     KColorButton *mColourButton;
+
+    CategoryData mCategory;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,8 +97,7 @@ protected slots:
     virtual void accept() override;
 
 private:
-    void createDisplay();
-    QTreeWidgetItem *addCategoryItem(const QString &name, const CategoryData &cat);
+    QTreeWidgetItem *addCategoryItem(const QString &name, const CategoryData *cat);
 
 private slots:
     void slotUpdateButtonStates();

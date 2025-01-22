@@ -34,6 +34,7 @@
 #include <qdebug.h>
 #include <qformlayout.h>
 #include <qlineedit.h>
+#include <qscrollbar.h>
 
 #include <klocalizedstring.h>
 #include <kmessagebox.h>
@@ -64,9 +65,17 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
     mColourButton = new KColorButton(w);
     lay->addRow(i18n("Colour:"), mColourButton);
 
+    mIconEdit = new QLineEdit(w);
+    lay->addRow(i18n("Icon:"), mIconEdit);
+
+    mShapeEdit = new QLineEdit(w);
+    lay->addRow(i18n("Shape:"), mShapeEdit);
+
     if (cat!=nullptr)					// original category data provided
     {
         mColourButton->setColor(cat->colour());
+        mIconEdit->setText(cat->icon());
+        mShapeEdit->setText(cat->shape());
     }
 
     setMainWidget(w);
@@ -82,17 +91,19 @@ QString CategoryEditDialogue::name() const
 }
 
 
-CategoryData CategoryEditDialogue::category() const
-{
-    CategoryData res;
-    res.setColour(mColourButton->color());
-    return (res);
-}
-
-
 void CategoryEditDialogue::slotUpdateButtonStates()
 {
     setButtonEnabled(QDialogButtonBox::Ok, !mNameEdit->text().isEmpty());
+}
+
+
+void CategoryEditDialogue::accept()
+{
+    mCategory.setColour(mColourButton->color());
+    mCategory.setIcon(mIconEdit->text());		// TODO: icon selector
+    mCategory.setShape(mShapeEdit->text());		// TODO: shape combo
+
+    DialogBase::accept();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -122,6 +133,8 @@ enum COLUMN
 {
     COL_COLOUR,						// colour square
     COL_NAME,                                           // category name
+    COL_ICON,                                           // default icon
+    COL_SHAPE,						// background shape
     COL_COUNT                                           // how many - must be last
 };
 
@@ -130,8 +143,6 @@ CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWi
     : DialogBase(pnt),
       DialogStateSaver(this)
 {
-    if (cats!=nullptr) mCategories.addCategories(cats);	// copy original categories
-
     setObjectName("CategoriesManageDialogue");
     setWindowTitle(i18n("Manage Categories"));
     setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
@@ -152,11 +163,14 @@ CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWi
 
     QStringList hdrs;
     hdrs << i18nc("@title:column", "Colour") << i18nc("@title:column", "Category");
+    hdrs << i18nc("@title:column", "Icon") << i18nc("@title:column", "Shape");
     mList->setHeaderLabels(hdrs);
 
     QTreeWidgetItem *hdrItem = mList->headerItem();
     hdrItem->setData(COL_COLOUR, Qt::ToolTipRole, i18nc("@info:tooltip", "The colour used by OsmAnd+ to display the category icons"));
     hdrItem->setData(COL_NAME, Qt::ToolTipRole, i18nc("@info:tooltip", "The name of the category"));
+    hdrItem->setData(COL_ICON, Qt::ToolTipRole, i18nc("@info:tooltip", "The icon for the category"));
+    hdrItem->setData(COL_SHAPE, Qt::ToolTipRole, i18nc("@info:tooltip", "The background shape used by OsmAnd+"));
 
     lay->addWidget(mList, 0, 0, 4, 1);
 
@@ -182,33 +196,47 @@ CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWi
     setMainWidget(w);
     setStateSaver(this);
 
-    createDisplay();
+    mList->clear();
+    if (cats!=nullptr)
+    {
+        const QStringList catNames = cats->allNames();
+        for (const QString &name : std::as_const(catNames)) addCategoryItem(name, cats->category(name));
+    }
+
     slotUpdateButtonStates();
 }
 
 
-static inline void setItemData(QTreeWidgetItem *item, const QString &name, const QColor &col)
+static inline void setItemData(QTreeWidgetItem *item, const QString &name, const CategoryData *cat)
 {
     item->setText(COL_NAME, name);
-    item->setData(COL_COLOUR, Qt::UserRole, col);
+    item->setData(COL_COLOUR, Qt::UserRole, cat->colour());
+
+    QString s = cat->icon();
+    item->setData(COL_ICON, Qt::UserRole, s);
+    item->setText(COL_ICON, (!s.isEmpty() ? s : i18nc("@item:intable value not set", "(none)")));
+    s = cat->shape();
+    item->setData(COL_SHAPE, Qt::UserRole, s);
+    item->setText(COL_SHAPE, (!s.isEmpty() ? s : i18nc("@item:intable value not set", "(none)")));
 }
 
 
-QTreeWidgetItem *CategoriesManageDialogue::addCategoryItem(const QString &name, const CategoryData &cat)
+static inline QString getItemData(const QTreeWidgetItem *item, CategoryData *cat)
+{
+    cat->setColour(item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
+    cat->setIcon(item->data(COL_ICON, Qt::UserRole).value<QString>());
+    cat->setShape(item->data(COL_SHAPE, Qt::UserRole).value<QString>());
+    return (item->text(COL_NAME));
+}
+
+
+QTreeWidgetItem *CategoriesManageDialogue::addCategoryItem(const QString &name, const CategoryData *cat)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem;
-    setItemData(item, name, cat.colour());
+    setItemData(item, name, cat);
     item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
     mList->addTopLevelItem(item);
     return (item);
-}
-
-
-void CategoriesManageDialogue::createDisplay()
-{
-    mList->clear();
-    const QStringList catNames = mCategories.allNames();
-    for (const QString &name : std::as_const(catNames)) addCategoryItem(name, *mCategories.category(name));
 }
 
 
@@ -233,11 +261,12 @@ void CategoriesManageDialogue::slotEditCategory()
 
     QTreeWidgetItem *item = sel.first();
     CategoryData cat;
-    cat.setColour(item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
-    CategoryEditDialogue d(item->text(COL_NAME), &cat, this);
+    QString name = getItemData(item, &cat);
+
+    CategoryEditDialogue d(name, &cat, this);
     if (!d.exec()) return;
 
-    setItemData(item, d.name(), d.category().colour());
+    setItemData(item, d.name(), d.category());
     mList->sortItems(COL_NAME, Qt::AscendingOrder);
     mList->scrollToItem(item);
 }
@@ -246,7 +275,7 @@ void CategoriesManageDialogue::slotEditCategory()
 void CategoriesManageDialogue::slotDeleteCategory()
 {
     QList<QTreeWidgetItem *> sel = mList->selectedItems();
-    int num = sel.count();
+    const int num = sel.count();
     if (num==0) return;
 
     QString query;
@@ -273,6 +302,9 @@ void CategoriesManageDialogue::slotUpdateButtonStates()
     int num = mList->selectedItems().count();
     mEditButton->setEnabled(num==1);
     mDeleteButton->setEnabled(num>0);
+
+    // Avoids an annoying jump to the left if the list widget is too small.
+    mList->horizontalScrollBar()->setValue(0);
 }
 
 
@@ -299,8 +331,8 @@ void CategoriesManageDialogue::accept()
     {
         const QTreeWidgetItem *item = mList->topLevelItem(i);
         CategoryData cat;
-        cat.setColour(item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
-        mCategories.addCategory(item->text(COL_NAME), cat);
+        QString name = getItemData(item, &cat);
+        mCategories.addCategory(name, cat);
     }
 
     DialogBase::accept();
