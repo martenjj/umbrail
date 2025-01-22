@@ -900,11 +900,9 @@ bool TrackDataWaypoint::isMediaType() const
 // Get the item category data, if the item has a category set and
 // the file has a category map defining that category.
 
-// TODO: category retrieval needs to be via a pointer for efficiency
-
-static const CategoryData findCategoryData(const TrackDataItem *item)
+static const CategoryData *findCategoryData(const TrackDataItem *item)
 {
-    CategoryData d;
+    const CategoryData *d = nullptr;
 
     const QVariant cats = item->metadata("category");
     if (!cats.isNull())
@@ -941,16 +939,19 @@ static QVariant findInheritedMetadata(const TrackDataItem *item, int idx, bool w
     {
         // Then try the item category, if it is set and the file has
         // a category map defining that category.
-        const CategoryData &catData = findCategoryData(item);
-        if (wantColour)					// want a colour value
+        const CategoryData *catData = findCategoryData(item);
+        if (catData!=nullptr)
         {
-            const QColor &col = TrackData::colourUnlessInherit(catData.colour());
-            if (col.isValid()) v = col;			// valid colour is set
-        }
-        else						// want a string value
-        {
-            const QString &str = catData.shape();
-            if (!str.isEmpty()) v = str;		// valid shape is set
+            if (wantColour)				// want a colour value
+            {
+                const QColor &col = TrackData::colourUnlessInherit(catData->colour());
+                if (col.isValid()) v = col;		// valid colour is set
+            }
+            else					// want a string value
+            {
+                const QString &str = catData->shape();
+                if (!str.isEmpty()) v = str;		// valid shape is set
+            }
         }
     }
 
@@ -1022,9 +1023,12 @@ const PointIcon *TrackDataWaypoint::icon() const
         // If there is no name then try the waypoint category, which may
         // have a default icon name defined.  In imported files this will
         // only be present for OsmAnd, but keep the lookup non-specific.
-        const CategoryData &catData = findCategoryData(this);
-        const QString &icn = catData.icon();
-        if (!icn.isEmpty()) v = icn;
+        const CategoryData *catData = findCategoryData(this);
+        if (catData!=nullptr)
+        {
+            const QString &icn = catData->icon();
+            if (!icn.isEmpty()) v = icn;
+        }
     }
 
     // All of the possible icon name sources have now been tried.

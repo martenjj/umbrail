@@ -40,14 +40,25 @@
 
 void CategoryList::addCategory(const QString &name, const CategoryData &cat, bool overwrite)
 {
-    if (!overwrite && mCategoryMap.contains(name))
+    if (mCategoryMap.contains(name))			// name already known
     {
-        qDebug() << "not overwriting" << name;
-        return;
-    }
+        if (!overwrite)					// overwrite not allowed
+        {
+            qDebug() << "not overwriting" << name;
+            return;
+        }
 
-    qDebug() << "adding" << name;
-    mCategoryMap.insert(name, cat);
+        const int idx = mCategoryMap[name];		// index of current category item
+        qDebug() << "overwriting" << name << "@" << idx;
+        mCategoryList[idx] = cat;			// overwrite existing entry
+    }
+    else						// name not already known
+    {
+        const int idx = mCategoryList.count();		// index of appended category item
+        qDebug() << "adding" << name << "@" << idx;
+        mCategoryList.append(cat);
+        mCategoryMap.insert(name, idx);
+    }
 }
 
 
@@ -56,7 +67,7 @@ void CategoryList::addCategories(const CategoryList *cats, bool overwrite)
     qDebug() << "starting with" << mCategoryMap.count() << "categories";
     for (const QString &name : cats->allNames())
     {
-        addCategory(name, cats->category(name), overwrite);
+        addCategory(name, *cats->category(name), overwrite);
     }
     qDebug() << "finished with" << mCategoryMap.count() << "categories";
 }

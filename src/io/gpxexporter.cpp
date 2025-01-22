@@ -382,7 +382,11 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
                 // Get the colour defined for the primary category,
                 // which will be output later if no explicit colour
                 // is defined.
-                if (mCategoriesList!=nullptr) categoryColour = mCategoriesList->category(primaryCategory).colour();
+                if (mCategoriesList!=nullptr)
+                {
+                    const CategoryData *cat = mCategoriesList->category(primaryCategory);
+                    if (cat!=nullptr) categoryColour = cat->colour();
+                }
             }
 
             // For Garmin, the full list of categories is written out inside
@@ -601,13 +605,16 @@ bool GpxExporter::saveTo(QIODevice *dev, const TrackDataFile *item)
             else str.writeEmptyElement(DataIndexer::applicationNamespace()+":catentry");
             str.writeAttribute("name", name);
 
-            const CategoryData &cat = mCategoriesList->category(name);
-            const QColor col = cat.colour();
-            if (col.isValid()) str.writeAttribute("color", col.name());
-            const QString icon = cat.icon();
-            if (!icon.isEmpty()) str.writeAttribute("icon", icon);
-            const QString shape = cat.shape();
-            if (!shape.isEmpty()) str.writeAttribute("background", shape);
+            const CategoryData *cat = mCategoriesList->category(name);
+            if (cat!=nullptr)
+            {
+                const QColor col = cat->colour();
+                if (col.isValid()) str.writeAttribute("color", col.name());
+                const QString icon = cat->icon();
+                if (!icon.isEmpty()) str.writeAttribute("icon", icon);
+                const QString shape = cat->shape();
+                if (!shape.isEmpty()) str.writeAttribute("background", shape);
+            }
         }
 
         str.writeEndElement();				// </catmap> or </points_groups>
