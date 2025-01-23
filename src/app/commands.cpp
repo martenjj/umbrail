@@ -150,6 +150,10 @@ void ImportFileCommand::redo()
     }
     else
     {
+        int importPoints = 0;
+        int mergedPoints = 0;
+        int importOthers = 0;
+
         model()->startLayoutChange();
 
         if (mOptions.hasFlag(ImporterExporterOptions::MergeWaypoints))
@@ -201,6 +205,8 @@ again:                  if (j>=importFolder->childCount()) break;
                         TrackDataWaypoint *importWpt = dynamic_cast<TrackDataWaypoint *>(importFolder->childAt(j));
                         if (importWpt==nullptr) continue;
 
+                        ++importPoints;
+
                         // Compare it against all of the existing points in this folder.
                         for (int k = 0; k<existingFolder->childCount(); ++k)
                         {
@@ -215,6 +221,7 @@ again:                  if (j>=importFolder->childCount()) break;
                             {
                                 existingWpt->mergeWith(importWpt);
                                 importFolder->removeChildItem(importWpt);
+                                ++mergedPoints;
                                 goto again;		// continue checks with next
                             }				// (also exits this nested loop)
                         }
@@ -256,7 +263,9 @@ again:                  if (j>=importFolder->childCount()) break;
         while (mImportData->childCount()>0)
         {
             TrackDataItem *tdi = mImportData->takeFirstChildItem();
-            if (tdi!=nullptr) root->addChildItem(tdi);
+            if (tdi==nullptr) continue;
+            root->addChildItem(tdi);
+            ++importOthers;
         }
 
         // Merge any categories defined in the import data with the existing
@@ -284,6 +293,9 @@ again:                  if (j>=importFolder->childCount()) break;
 
         model()->endLayoutChange();
         Q_ASSERT(mImportData->childCount()==0);		// should have taken everything
+
+        mStatusMessage = i18n("%1 waypoints, %2 new, %3 merged, %4 others", importPoints,
+                              (importPoints-mergedPoints), mergedPoints, importOthers);
     }
 
     controller()->filesView()->clearSelection();
