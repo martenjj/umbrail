@@ -981,8 +981,34 @@ void FilesController::slotTrackProperties()
     {
         const QByteArray name = DataIndexer::name(idx);
         if (DataIndexer::isInternalTag(name)) continue;	// these handled specially above
-        if (!model->isChanged(idx)) continue;		// data not changed in dialogue
         QVariant newData = model->data(idx);		// the new changed data
+
+        // Workflow help: if a waypoint has been edited, then ask whether
+        // to clear the "Newly Imported" flag.
+        if (name=="flags" && !model->isChanged(idx))	// if not explicitly changed
+        {
+            TrackData::WaypointFlags f = static_cast<TrackData::WaypointFlags>(newData.toInt());
+            if (f & TrackData::NewlyImported)
+            {
+                int s = KMessageBox::questionTwoActions(mainWidget(),
+                                                        xi18ncp("@info", "The waypoint <resource>%2</resource> has been updated.<nl/>Clear its <resource>Newly&nbsp;Imported</resource> flag?",
+                                                                "%1 waypoints have been updated.<nl/>Clear their <resource>Newly&nbsp;Imported</resource> flags?",
+                                                                items.count(), newItemName),
+                                                        i18n("Clear Waypoint Flag"),
+                                                        KStandardGuiItem::clear(),
+                                                        KGuiItem(i18nc("@action:button", "Retain"), KStandardGuiItem::cancel().icon()),
+                                                        "clearnewflag");
+                if (s==KMessageBox::PrimaryAction)
+                {
+                    f &= ~TrackData::NewlyImported;
+                    newData = QVariant::fromValue(f);
+                }
+            }
+        }
+        else
+        {
+            if (!model->isChanged(idx)) continue;	// data not changed in dialogue
+        }
 
         if (name=="status")				// changing waypoint status
         {						// ignore if "No change"
