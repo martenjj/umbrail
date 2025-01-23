@@ -31,6 +31,7 @@ private:
     KUrlRequester *mUrlRequester;
     QCheckBox *mNoHomeCheck;
     QCheckBox *mMergeWaypointsCheck;
+    QCheckBox *mMarkNewWaypointsCheck;
 };
 
 

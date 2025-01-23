@@ -47,6 +47,10 @@ ImportFileDialogue::ImportFileDialogue(const QString &filter, QWidget *pnt)
     mMergeWaypointsCheck->setChecked(false);
     form->addRow("", mMergeWaypointsCheck);
 
+    mMarkNewWaypointsCheck = new QCheckBox(i18nc("@option:check", "Mark newly imported waypoints"));
+    mMarkNewWaypointsCheck->setChecked(false);
+    form->addRow("", mMarkNewWaypointsCheck);
+
     setMinimumWidth(450);
 }
 
@@ -56,6 +60,7 @@ void ImportFileDialogue::setOptions(const ImporterExporterOptions &opts)
     mNoHomeCheck->setChecked(opts.hasFlag(ImporterExporterOptions::IgnoreHome));
     if (opts.hasFlag(ImporterExporterOptions::MergeNotAllowed)) mMergeWaypointsCheck->setEnabled(false);
     else mMergeWaypointsCheck->setChecked(opts.hasFlag(ImporterExporterOptions::MergeWaypoints));
+    mMarkNewWaypointsCheck->setChecked(opts.hasFlag(ImporterExporterOptions::MarkNewWaypoints));
 }
 
 
@@ -79,5 +84,6 @@ ImporterExporterOptions ImportFileDialogue::options() const
     ImporterExporterOptions::Flags f = ImporterExporterOptions::NoFlags;
     if (mNoHomeCheck->isChecked()) f |= ImporterExporterOptions::IgnoreHome;
     if (mMergeWaypointsCheck->isChecked()) f |= ImporterExporterOptions::MergeWaypoints;
+    if (mMarkNewWaypointsCheck->isChecked()) f |= ImporterExporterOptions::MarkNewWaypoints;
     return (ImporterExporterOptions(f));
 }

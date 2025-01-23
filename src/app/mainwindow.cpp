@@ -870,7 +870,8 @@ void MainWindow::slotImportFile()
     ImportFileDialogue d(FilesController::allImportFilters(), this);
 
     ImporterExporterOptions::Flags f = ImporterExporterOptions::IgnoreHome;
-    if (isPointsListMode()) f |= ImporterExporterOptions::MergeWaypoints;
+    if (isPointsListMode()) f |= ImporterExporterOptions::MergeWaypoints|ImporterExporterOptions::MarkNewWaypoints;
+
     const FilesModel *mod = filesController()->filesModel();
     if (mod->isEmpty() || mod->rootItem()->childCount()==0) f |= ImporterExporterOptions::MergeNotAllowed;
     d.setOptions(ImporterExporterOptions(f));		// default options for dialogue
@@ -879,7 +880,6 @@ void MainWindow::slotImportFile()
     ImporterExporterOptions opts = d.options();		// actual options from dialogue
     f = opts.flags();					// actual flags from dialogue
     f |= ImporterExporterOptions::ImportExport;		// add options for import operation
-    if (isPointsListMode()) f |= ImporterExporterOptions::MarkNewWaypoints;
     opts.setFlags(f);
 
     // Importing with merged waypoints cannot be undone and may cause data
