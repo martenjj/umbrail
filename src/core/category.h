@@ -38,16 +38,16 @@ public:
 
     void setColour(const QColor &colour)		{ mColour = colour; }
     void setIcon(const QString &iconName) 		{ mIconName = iconName; }
-    void setShape(const QString &shape) 		{ mShape = shape; }
+    void setShape(const QByteArray &shape) 		{ mShape = shape; }
 
     QColor colour() const				{ return (mColour); }
     QString icon() const				{ return (mIconName); }
-    QString shape() const				{ return (mShape); }
+    QByteArray shape() const				{ return (mShape); }
 
 private:
     QColor mColour;
     QString mIconName;
-    QString mShape;
+    QByteArray mShape;
 };
 
 

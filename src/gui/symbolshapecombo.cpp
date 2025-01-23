@@ -43,15 +43,15 @@ SymbolShapeCombo::SymbolShapeCombo(QWidget *pnt)
 }
 
 
-void SymbolShapeCombo::setShape(const QString &shape)
+void SymbolShapeCombo::setShape(const QByteArray &shape)
 {
     QSignalBlocker block(this);
-    const int idx = findData(shape);
+    const int idx = findData(shape, Qt::UserRole, Qt::MatchFixedString);
     if (idx!=-1) setCurrentIndex(idx);
 }
 
 
 void SymbolShapeCombo::slotIconShapeChanged(int idx)
 {
-    emit shapeSelected(currentData().toString());
+    emit shapeSelected(currentData().toByteArray());
 }

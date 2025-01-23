@@ -577,7 +577,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         const QStringView iconName = atts.value("icon");
         if (!iconName.isEmpty()) cat.setIcon(iconName.toString());
         const QStringView shape = atts.value("background");
-        if (!shape.isEmpty()) cat.setShape(shape.toString());
+        if (!shape.isEmpty()) cat.setShape(shape.toLatin1());
 							// then collect the remaining
         addCategory(name, cat);				// add entry to categories
     }

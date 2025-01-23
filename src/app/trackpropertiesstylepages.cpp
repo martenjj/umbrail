@@ -285,7 +285,7 @@ void TrackItemStylePage::refreshData()
             mIconNspLabel->setText("");
         }
 
-        mIconShapeCombo->setShape(dataModel()->data("background").toString());
+        mIconShapeCombo->setShape(dataModel()->data("background").toByteArray());
         mIconShapeCombo->setEnabled(false);
         const auto *providers = PointIcon::allProviders();
         for (const AbstractIconProvider *provider : std::as_const(*providers))

@@ -38,10 +38,10 @@ public:
     virtual ~SymbolShapeCombo() = default;
 
 public slots:
-    void setShape(const QString &shape);
+    void setShape(const QByteArray &shape);
 
 signals:
-    void shapeSelected(const QString &shape);
+    void shapeSelected(const QByteArray &shape);
 
 private slots:
     void slotIconShapeChanged(int idx);

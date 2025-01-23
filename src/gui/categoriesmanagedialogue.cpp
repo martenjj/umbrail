@@ -111,7 +111,7 @@ void CategoryEditDialogue::slotSymbolSelected(const QString &iconName, PointIcon
 }
 
 
-void CategoryEditDialogue::slotShapeSelected(const QString &shape)
+void CategoryEditDialogue::slotShapeSelected(const QByteArray &shape)
 {
     mCategory.setShape(shape);
 }
@@ -248,7 +248,7 @@ static inline void setItemData(QTreeWidgetItem *item, const QString &name, const
     item->setData(COL_COLOUR, Qt::UserRole, cat->colour());
 
     const QString icn = cat->icon();
-    const QString shp = cat->shape();
+    const QByteArray shp = cat->shape();
 
     item->setData(COL_ICON, Qt::UserRole, icn);
     item->setIcon(COL_ICON, QIcon::fromTheme("symbol-blank"));
@@ -275,8 +275,8 @@ static inline void setItemData(QTreeWidgetItem *item, const QString &name, const
 static inline QString getItemData(const QTreeWidgetItem *item, CategoryData *cat)
 {
     cat->setColour(item->data(COL_COLOUR, Qt::UserRole).value<QColor>());
-    cat->setIcon(item->data(COL_ICON, Qt::UserRole).value<QString>());
-    cat->setShape(item->data(COL_SHAPE, Qt::UserRole).value<QString>());
+    cat->setIcon(item->data(COL_ICON, Qt::UserRole).toString());
+    cat->setShape(item->data(COL_SHAPE, Qt::UserRole).toByteArray());
     return (item->text(COL_NAME));
 }
 

@@ -66,7 +66,7 @@ protected slots:
 private slots:
     void slotUpdateButtonStates();
     void slotSymbolSelected(const QString &iconName, PointIcon::IconNamespace nsp);
-    void slotShapeSelected(const QString &shape);
+    void slotShapeSelected(const QByteArray &shape);
 
 private:
     QLineEdit *mNameEdit;
