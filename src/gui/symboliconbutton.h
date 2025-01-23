@@ -41,6 +41,10 @@ public:
 
     PointIcon::IconNamespace iconNamespace() const	{ return (mNsp); }
 
+    // Do not use these KIconButton methods, use setSymbol() instead.
+    void setIcon(const QIcon &icon) = delete;
+    void setIcon(const QString &name) = delete;
+
 public slots:
     void setSymbol(const QString &iconName, PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto);
 

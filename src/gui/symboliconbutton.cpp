@@ -56,15 +56,18 @@ void SymbolIconButton::setSymbol(const QString &iconName, PointIcon::IconNamespa
         if (pi!=nullptr)
         {
             if (mNsp==PointIcon::NamespaceAuto) mNsp = pi->nsp();
-            setIcon(pi->icon());
+            KIconButton::setIcon(pi->icon());
         }
-        else setIcon("unknown");
+        else KIconButton::setIcon("unknown");
     }
     else
     {
         // Set an explicit icon so that the button will initially
         // show at the specified size.
-        setIcon("symbol-blank");
+        //
+        // KIconButton::setIcon() with a QString icon name parameter
+        // automatically calls QIcon::fromTheme() with the icon name.
+        KIconButton::setIcon("symbol-blank");
     }
 
     if (isEnabled())					// only if clicking will do anything

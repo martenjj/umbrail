@@ -270,20 +270,8 @@ void TrackItemStylePage::refreshData()
 
         mIconName = sym.toString();
         mIconNameLabel->setText(mIconName);
-
-        if (!mIconName.isEmpty())
-        {
-            const PointIcon *pi = PointIcon::create(mIconName, nsp);
-            mIconButton->setIcon(pi->icon());
-            mIconNspLabel->setText(PointIcon::namespaceDisplayName(pi->nsp()));
-        }
-        else
-        {
-            // Set an explicit icon so that the button will initially
-            // show at the specified size.
-            mIconButton->setIcon("symbol-blank");
-            mIconNspLabel->setText("");
-        }
+        mIconButton->setSymbol(mIconName, nsp);
+        mIconNspLabel->setText(!mIconName.isEmpty() ? PointIcon::namespaceDisplayName(nsp) : "");
 
         mIconShapeCombo->setShape(dataModel()->data("background").toByteArray());
         mIconShapeCombo->setEnabled(false);
