@@ -151,9 +151,15 @@ static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 }
 
 
-static bool isAddressTag(const QByteArray &name)
+static QByteArray mapAddressTag(const QByteArray &name)
 {
-    return (name=="streetaddress" || name=="city" || name=="state" || name=="postalcode" || name=="country");
+    // Unfortunately this cannot be done with a simple case fold operation...
+    if (name=="streetaddress") return ("StreetAddress");
+    if (name=="city") return ("City");
+    if (name=="state") return ("State");
+    if (name=="postalcode") return ("PostalCode");
+    if (name=="country") return ("Country");
+    return ("");
 }
 
 
@@ -393,19 +399,31 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
             // the <gpxx:WaypointExtensions> block, along with the address.
             for (const QString &cat : cats) categoriesQueue.enqueue("gpxx:Category", cat);
         }
-        else if (isAddressTag(name))
-        {
-            // For Garmin, the address is written out inside the
-            // <gpxx:WaypointExtensions> block, along with the categories.
-            addressQueue.enqueue(name, v.toString());
-        }
         else if (name=="flags")				// waypoint flags,
         {						// only if not zero
             if (v.toInt()!=0) toQueue.enqueue(name, valueString(v));
         }
         else						// any other tag
         {
-            toQueue.enqueue(name, valueString(v));
+            const QByteArray mappedAddress = mapAddressTag(name);
+            if (!mappedAddress.isEmpty())		// see if an address tag
+            {
+                // For OsmAnd and normal saving, the tags are written out
+                // as they are.
+                extensionsQueue.enqueue(name, v.toString());
+
+                if (options().hasFlag(ImporterExporterOptions::ImportExport))
+                {
+                    // In addition to those, for Garmin export, the address is
+                    // written out inside the <gpxx:WaypointExtensions> block,
+                    // along with the categories.
+                    addressQueue.enqueue("gpxx:"+mappedAddress, v.toString());
+                }
+            }
+            else
+            {
+                toQueue.enqueue(name, valueString(v));
+            }
         }
     }
 
