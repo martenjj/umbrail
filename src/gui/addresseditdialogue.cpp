@@ -28,9 +28,8 @@
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qtextedit.h>
-#include <qformlayout.h>
+#include <qgridlayout.h>
 #include <qdebug.h>
-
 #include <qpushbutton.h>
 
 #include <klocalizedstring.h>
@@ -55,44 +54,63 @@ AddressEditDialogue::AddressEditDialogue(MetadataModel *model, QWidget *pnt)
     mModel = model;
 
     QWidget *w = new QWidget(this);
-    QFormLayout *lay = new QFormLayout(w);
-    // TODO: use a QGridLayout so that "Preview" can be set to stretch
+    QGridLayout *lay = new QGridLayout(w);
 
     mStreetEdit = new QLineEdit(w);
     mStreetEdit->setClearButtonEnabled(true);
     connect(mStreetEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
-    lay->addRow(i18n("Street:"), mStreetEdit);
+    lay->addWidget(mStreetEdit, 0, 1);
+    QLabel *l = new QLabel(i18n("Street:"), w);
+    l->setBuddy(mStreetEdit);
+    lay->addWidget(l, 0, 0, Qt::AlignRight);
 
     mCityEdit = new QLineEdit(w);
     mCityEdit->setClearButtonEnabled(true);
     connect(mCityEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
-    lay->addRow(i18n("City:"), mCityEdit);
+    lay->addWidget(mCityEdit, 1, 1);
+    l = new QLabel(i18n("City:"), w);
+    l->setBuddy(mCityEdit);
+    lay->addWidget(l, 1, 0, Qt::AlignRight);
 
     mStateEdit = new QLineEdit(w);
     mStateEdit->setClearButtonEnabled(true);
     connect(mStateEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
-    lay->addRow(i18n("State:"), mStateEdit);
+    lay->addWidget(mStateEdit, 2, 1);
+    l = new QLabel(i18n("State:"), w);
+    l->setBuddy(mStateEdit);
+    lay->addWidget(l, 2, 0, Qt::AlignRight);
 
     mPostCodeEdit = new QLineEdit(w);
     mPostCodeEdit->setClearButtonEnabled(true);
     connect(mPostCodeEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
-    lay->addRow(i18n("Post Code:"), mPostCodeEdit);
+    lay->addWidget(mPostCodeEdit, 3, 1);
+    l = new QLabel(i18n("Post Code:"), w);
+    l->setBuddy(mPostCodeEdit);
+    lay->addWidget(l, 3, 0, Qt::AlignRight);
 
     // TODO: country a dropdown of known ones
     mCountryEdit = new QLineEdit(w);
     mCountryEdit->setClearButtonEnabled(true);
     connect(mCountryEdit, &QLineEdit::textEdited, this, &AddressEditDialogue::slotTextChanged);
-    lay->addRow(i18n("Country:"), mCountryEdit);
-
-    lay->addItem(DialogBase::verticalSpacerItem());
+    lay->addWidget(mCountryEdit, 4, 1);
+    l = new QLabel(i18n("Country:"), w);
+    l->setBuddy(mCountryEdit);
+    lay->addWidget(l, 4, 0, Qt::AlignRight);
 
     mAddressPreview = new QTextEdit(w);
     mAddressPreview->setReadOnly(true);
     mAddressPreview->setLineWrapMode(QTextEdit::NoWrap);
     mAddressPreview->setTabChangesFocus(true);
     mAddressPreview->setWordWrapMode(QTextOption::NoWrap);
-    mAddressPreview->setMaximumHeight(80);
-    lay->addRow(i18n("Preview:"),  mAddressPreview);
+    mAddressPreview->setMinimumHeight(100);
+    lay->addWidget(mAddressPreview, 6, 1, Qt::AlignTop);
+    l = new QLabel(i18n("Preview:"), w);
+    lay->addWidget(l, 6, 0, Qt::AlignTop|Qt::AlignRight);
+
+    lay->setRowStretch(6, 1);
+    lay->setColumnStretch(1, 1);
+    lay->setRowMinimumHeight(5, DialogBase::verticalSpacing());
+
 
     setMainWidget(w);
     w->setMinimumWidth(300);
