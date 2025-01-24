@@ -632,11 +632,11 @@ void TrackItemDetailPage::refreshData()
 
     if (mAddressLabel!=nullptr)
     {
-        const QStringList addr = TrackData::formattedAddress(dataModel()->data("StreetAddress"),
-                                                             dataModel()->data("City"),
-                                                             dataModel()->data("State"),
-                                                             dataModel()->data("PostalCode"),
-                                                             dataModel()->data("Country"));
+        const QStringList addr = TrackData::formattedAddress(dataModel()->data("streetaddress"),
+                                                             dataModel()->data("city"),
+                                                             dataModel()->data("state"),
+                                                             dataModel()->data("postalcode"),
+                                                             dataModel()->data("country"));
 
         if (!addr.isEmpty()) mAddressLabel->setList(addr);
         else mAddressLabel->setList(QStringList() << i18nc("no value set", "(None)"));

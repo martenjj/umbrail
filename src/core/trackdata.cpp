@@ -1124,9 +1124,9 @@ const PointIcon *TrackDataWaypoint::icon() const
 
 QStringList TrackDataWaypoint::formattedAddress() const
 {
-    return (TrackData::formattedAddress(metadata("StreetAddress"), metadata("City"),
-                                        metadata("State"), metadata("PostalCode"),
-                                        metadata("Country")));
+    return (TrackData::formattedAddress(metadata("streetaddress"), metadata("city"),
+                                        metadata("state"), metadata("postalcode"),
+                                        metadata("country")));
 }
 
 
@@ -1307,11 +1307,11 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
         // "address" (semicolon separated for display/edit, convert ';'
         // to ',' on import) and assemble/decompose it on import/export?
 
-        this->setMetadata("StreetAddress", other->metadata("StreetAddress"));
-        this->setMetadata("City", other->metadata("City"));
-        this->setMetadata("State", other->metadata("State"));
-        this->setMetadata("PostalCode", other->metadata("PostalCode"));
-        this->setMetadata("Country", other->metadata("Country"));
+        this->setMetadata("streetaddress", other->metadata("streetaddress"));
+        this->setMetadata("city", other->metadata("city"));
+        this->setMetadata("state", other->metadata("state"));
+        this->setMetadata("postalcode", other->metadata("postalcode"));
+        this->setMetadata("country", other->metadata("country"));
     }
 
     // Categories - merge the two lists.
@@ -1348,9 +1348,9 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
         const QByteArray &name = DataIndexer::name(idx);
         if (DataIndexer::isInternalTag(name)) continue;
         // These metadata items have been merged specially above.
-        if (name=="ele" || name=="sym" || name=="StreetAddress" ||
-            name=="City" || name=="State" || name=="PostalCode" ||
-            name=="Country" || name=="category" || name=="origin" ||
+        if (name=="ele" || name=="sym" || name=="streetaddress" ||
+            name=="city" || name=="state" || name=="postalcode" ||
+            name=="country" || name=="category" || name=="origin" ||
             name=="flags" || name=="symset") continue;
 
         const QVariant &m1 = this->metadata(idx);

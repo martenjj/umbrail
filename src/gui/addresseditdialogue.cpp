@@ -56,6 +56,7 @@ AddressEditDialogue::AddressEditDialogue(MetadataModel *model, QWidget *pnt)
 
     QWidget *w = new QWidget(this);
     QFormLayout *lay = new QFormLayout(w);
+    // TODO: use a QGridLayout so that "Preview" can be set to stretch
 
     mStreetEdit = new QLineEdit(w);
     mStreetEdit->setClearButtonEnabled(true);
@@ -103,21 +104,21 @@ AddressEditDialogue::AddressEditDialogue(MetadataModel *model, QWidget *pnt)
 
 void AddressEditDialogue::slotAccept()
 {
-    mModel->setData(DataIndexer::index("StreetAddress"), mStreetEdit->text());
-    mModel->setData(DataIndexer::index("City"), mCityEdit->text());
-    mModel->setData(DataIndexer::index("State"), mStateEdit->text());
-    mModel->setData(DataIndexer::index("PostalCode"), mPostCodeEdit->text());
-    mModel->setData(DataIndexer::index("Country"), mCountryEdit->text());
+    mModel->setData(DataIndexer::index("streetaddress"), mStreetEdit->text());
+    mModel->setData(DataIndexer::index("city"), mCityEdit->text());
+    mModel->setData(DataIndexer::index("state"), mStateEdit->text());
+    mModel->setData(DataIndexer::index("postalcode"), mPostCodeEdit->text());
+    mModel->setData(DataIndexer::index("country"), mCountryEdit->text());
 }
 
 
 void AddressEditDialogue::slotReset()
 {
-    mStreetEdit->setText(mModel->data("StreetAddress").toString());
-    mCityEdit->setText(mModel->data("City").toString());
-    mStateEdit->setText(mModel->data("State").toString());
-    mPostCodeEdit->setText(mModel->data("PostalCode").toString());
-    mCountryEdit->setText(mModel->data("Country").toString());
+    mStreetEdit->setText(mModel->data("streetaddress").toString());
+    mCityEdit->setText(mModel->data("city").toString());
+    mStateEdit->setText(mModel->data("state").toString());
+    mPostCodeEdit->setText(mModel->data("postalcode").toString());
+    mCountryEdit->setText(mModel->data("country").toString());
 
     slotTextChanged();					// update the preview
 }

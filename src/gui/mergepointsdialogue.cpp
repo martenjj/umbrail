@@ -162,11 +162,11 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
     // Therefore copy the components individually from the selected
     // source point.
     const TrackDataWaypoint *src = mPoints->at(mAddressEdit->currentIndex());
-    res->setMetadata("StreetAddress", src->metadata("StreetAddress"));
-    res->setMetadata("City", src->metadata("City"));
-    res->setMetadata("State", src->metadata("State"));
-    res->setMetadata("PostalCode", src->metadata("PostalCode"));
-    res->setMetadata("Country", src->metadata("Country"));
+    res->setMetadata("streetaddress", src->metadata("streetaddress"));
+    res->setMetadata("city", src->metadata("city"));
+    res->setMetadata("state", src->metadata("state"));
+    res->setMetadata("postalcode", src->metadata("postalcode"));
+    res->setMetadata("country", src->metadata("country"));
 
     // Other metadata that is simply copied as selected.
     res->setMetadata("desc", mDescriptionEdit->currentData());
@@ -186,8 +186,8 @@ TrackDataWaypoint *MergePointsDialogue::resultPoint()
         // Ignore data which will have been merged, either manually
         // or automatically, already.
         if (name=="sym" || name=="ele" || name=="flags" || name=="origin" ||
-            name=="category" || name=="status" || name=="StreetAddress" ||
-            name=="City" || name=="State" || name=="PostalCode" || name=="Country" ||
+            name=="category" || name=="status" || name=="streetaddress" ||
+            name=="city" || name=="state" || name=="postalcode" || name=="country" ||
             name=="desc" || name=="time" || name=="link" || name=="pointcolor" ||
             name=="symset" || name=="icon") continue;
 

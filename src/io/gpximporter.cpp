@@ -854,9 +854,42 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
         addWarning(QString("tag %1 ignored").arg(localName.toUpper()));
         return (true);
     }
+
     // Ths OsmAnd "address" value is the geolocated address of a waypoint.
     // It is not particularly useful to display, but it may be useful for
-    // reference so it is retained.
+    // reference so it is retained as is.
+
+    // TODO: display as "Location"
+
+    //
+    // OsmAnd stores the user entered address components (which may not be
+    // the same as the "address" above) using the same tags as Garmin, but
+    // all in lower case and within the <extensions> but not within nested
+    // <gpxx:WaypointExtension> and <gpxx:Address>.
+    //
+    // Files saved by this application will therefore have the OsmAnd tags
+    // before the Garmin ones.  So each Garmin tag seen here is checked to
+    // see whether the corresponding OsmAnd tag has already been seen, and
+    // if so then whether the value is the same.  If this is the case then
+    // the Garmin tag can simply be ignored.  If the Garmin tag exists but
+    // the OsmAnd tag does not, then the value is set as the OsmAnd tag.
+    // The result is that the mixed case Garmin tags should never be seen
+    // within the application.
+
+    if (localName=="StreetAddress" || localName=="City" || localName=="State" ||
+        localName=="PostalCode" || localName=="Country")
+    {
+        const QByteArray osmandName = localName.toLower();
+        const QVariant osmandData = item->metadata(osmandName);
+        if (osmandData.isNull()) item->setMetadata(osmandName, elementText);
+        else if (elementText!=osmandData.toString())
+        {
+            addWarning(QString("address %1 value mismatch, have '%2' here '%3'")
+                       .arg(localName.toUpper()).arg(osmandData.toString()).arg(elementText));
+        }
+
+        return (true);
+    }
 
     const int idx = DataIndexer::indexWithNamespace(key);
     if (item!=nullptr) item->setMetadata(idx, elementText);

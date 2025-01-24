@@ -153,7 +153,7 @@ static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 
 static bool isAddressTag(const QByteArray &name)
 {
-    return (name=="StreetAddress" || name=="City" || name=="State" || name=="PostalCode" || name=="Country");
+    return (name=="streetaddress" || name=="city" || name=="state" || name=="postalcode" || name=="country");
 }
 
 

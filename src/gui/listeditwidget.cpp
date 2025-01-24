@@ -8,8 +8,6 @@
 #include <klocalizedstring.h>
 
 
-// TODO: can use also in TrackPropertiesDetailPages?
-
 ListEditWidget::ListEditWidget(QWidget *pnt)
     : QWidget(pnt)
 {

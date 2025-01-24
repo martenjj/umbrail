@@ -145,11 +145,11 @@ bool MarksImporter::loadFrom(QIODevice *dev)
         {
             // Values from 'enum AddressTag' in navmarks/src/pointdata.h
             // No metadata item will be set if the string valus is empty.
-            pnt->setMetadata(DataIndexer::indexWithNamespace("StreetAddress", "gpxx"), l.value(0));
-            pnt->setMetadata(DataIndexer::indexWithNamespace("City", "gpxx"), l.value(1));
-            pnt->setMetadata(DataIndexer::indexWithNamespace("State", "gpxx"), l.value(2));
-            pnt->setMetadata(DataIndexer::indexWithNamespace("PostalCode", "gpxx"), l.value(3));
-            pnt->setMetadata(DataIndexer::indexWithNamespace("Country", "gpxx"), l.value(4));
+            pnt->setMetadata("streetaddress", l.value(0));
+            pnt->setMetadata("city", l.value(1));
+            pnt->setMetadata("state", l.value(2));
+            pnt->setMetadata("postalcode", l.value(3));
+            pnt->setMetadata("country", l.value(4));
         }
 
         pnt->setMetadata("category", grp.readEntry("Categories", QStringList()));
