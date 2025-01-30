@@ -354,15 +354,16 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
     p1.end();
     pix = bgPix;
 
-    if (!shape.isNull() && shape!="square")		// has a background shape set, but
-    {							// nothing is needed for a square
+    const QByteArray &osmShape = shape.toByteArray();	// get the background shape set
+    if (osmShape!="square")				// nothing needed for a square
+    {
         QBitmap mask(ps, ps);
         mask.fill(Qt::color0);
         QPainter p2(&mask);
         p2.setBrush(Qt::color1);
 
-        if (shape=="circle") p2.drawEllipse(QRect(0, 0, ps, ps));
-        else if (shape=="octagon")
+        if (osmShape.isEmpty() || osmShape=="circle") p2.drawEllipse(QRect(0, 0, ps, ps));
+        else if (osmShape=="octagon")
         {
             const int s = ps/2;				// half the overall size
 
@@ -385,7 +386,7 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
             pnts[7] = QPoint(0, s-a);
             p2.drawPolygon(pnts, 8);
         }
-        else qDebug() << "Unknown OsmAnd background shape" << shape.toString();
+        else qDebug() << "Unknown OsmAnd background shape" << shape;
 
         p2.end();
         pix.setMask(mask);
