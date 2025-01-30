@@ -210,6 +210,19 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
 
+    // Although in theory any item could have "flags" metadata, only waypoints
+    // have a GUI to set them and so for efficiency only check the flags if the
+    // item really is a waypoint.
+    if (tdw!=nullptr)
+    {
+        // The NoExport flag, of course, only takes effect if this is an export.
+        if (options().hasFlag(ImporterExporterOptions::ImportExport))
+        {
+            const TrackData::WaypointFlags f = static_cast<TrackData::WaypointFlags>(item->metadata("flags").toInt());
+            if (f & TrackData::NoExport) return (true);
+        }
+    }
+
     // Output queues for each tag type.  This one if for is top level
     // items which appear immediately under the element tag.
     TagQueue toplevelQueue;
@@ -379,12 +392,19 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
             cats2.removeAll("Address Book");		// remove Garmin default category
             if (!cats2.isEmpty())			// more categories remain
             {
-                const QString &primaryCategory = cats2.first();
+                QString primaryCategory = cats2.first();
+                // Put the OsmAnd "Home" and "Work" points in a separate category,
+                // regardless of the original item category.
+                if (!newName.isEmpty()) primaryCategory = "Navigation";
+
                 // <category>Shopping</category>
                 toQueue.enqueue(name, primaryCategory);
                 // <type>Shopping</type>
                 toQueue.enqueue("type", primaryCategory);
 
+                // TODO: this may not be necessary for OsmAnd, because it does
+                // the fallback to the category colour itself.
+                //
                 // Get the colour defined for the primary category,
                 // which will be output later if no explicit colour
                 // is defined.
@@ -402,6 +422,10 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
         else if (name=="flags")				// waypoint flags,
         {						// only if not zero
             if (v.toInt()!=0) toQueue.enqueue(name, valueString(v));
+        }
+        else if (name=="address")			// one line address, only if not
+        {						// a navigation (home/work) point
+            if (newName.isEmpty()) toQueue.enqueue(name, valueString(v));
         }
         else						// any other tag
         {
@@ -428,8 +452,15 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     }
 
     // If this item is being renamed - that is, it is the copy of either
-    // the "Home" or "Work" points - then record the original point.
-    if (!newName.isEmpty() && item->hasExplicitName()) extensionsQueue.enqueue("source", item->name());
+    // the "Home" or "Work" points - then record the original point and
+    // also set the "address" (which is displayed as a subtitle on the
+    // navigation screen) to the name of the original point.
+    if (!newName.isEmpty())
+    {
+        if (item->hasExplicitName()) extensionsQueue.enqueue("source", item->name());
+        extensionsQueue.enqueue("osmand:point_type", newName);
+        extensionsQueue.enqueue("address", item->name());
+    }
 
     // Ensure that the containing folder path for a waypoint is
     // written out.  It is not stored as a property of the waypoint,
