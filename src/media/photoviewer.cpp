@@ -103,6 +103,7 @@ PhotoViewer::PhotoViewer(const QUrl &url, QWidget *pnt)
     setupGUI(KXmlGuiWindow::ToolBar|KXmlGuiWindow::Keys);
     createGUI(mPart);
     setFocusPolicy(Qt::StrongFocus);
+    setFocus(Qt::OtherFocusReason);
     fixupMenuBar(menuBar());
 
     setAutoSaveSettings(objectName(), true);
