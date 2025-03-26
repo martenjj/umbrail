@@ -80,6 +80,54 @@ TrackItemGeneralPage::TrackItemGeneralPage(const QList<TrackDataItem *> *items, 
 }
 
 
+TrackItemGeneralPage::~TrackItemGeneralPage()
+{
+    // Disconnect all signals from the description text edit, to avoid a
+    // crash when destroying this page if spell checking is enabled.  The
+    // signals are not needed any more.
+    //
+    // ASSERT failure in TrackItemGeneralPage:
+    //   "Called object is not of the correct type (class destructor may have already run)",
+    //   file /usr/include/qt6/QtCore/qobjectdefs_impl.h, line 130
+    // Thread 1 "umbrail" received signal SIGABRT, Aborted.
+    //
+    // #6   qt_assert_x(char const*, char const*, char const*, int)
+    // #7   QtPrivate::assertObjectType<TrackItemGeneralPage>
+    //      at /usr/include/qt6/QtCore/qobjectdefs_impl.h:130
+    // #8   QtPrivate::assertObjectType<TrackItemGeneralPage>()
+    //      at /usr/include/qt6/QtCore/qobjectdefs_impl.h:576
+    // #9   QtPrivate::FunctorCall()
+    //      at /usr/include/qt6/QtCore/qobjectdefs_impl.h:150
+    // ---
+    // #14  QWidgetTextControl::qt_metacall(QMetaObject::Call, int, void**)
+    // #15  doActivate<false>(QObject*, int, void**)
+    // #16  QTextDocumentPrivate::finishEdit()
+    // #17  QSyntaxHighlighter::setDocument(QTextDocument*)
+    // #18  QSyntaxHighlighter::~QSyntaxHighlighter()
+    // #19  Sonnet::Highlighter::~Highlighter()
+    //      at tier1/sonnet/src/ui/highlighter.cpp:168
+    // #20  QObjectPrivate::deleteChildren()
+    // #21  QObject::~QObject()
+    // #22  Sonnet::SpellCheckDecorator::~SpellCheckDecorator()
+    // ---
+    // #24  KTextDecorator::~KTextDecorator()
+    //      at tier3/ktextwidgets/src/widgets/ktextedit.cpp:32
+    // #25  KTextEditPrivate::~KTextEditPrivate()
+    //      at tier3/ktextwidgets/src/widgets/ktextedit_p.h:47
+    // #26  KTextEditPrivate::~KTextEditPrivate()
+    //      at tier3/ktextwidgets/src/widgets/ktextedit_p.h:56
+    // ---
+    // #30  KTextEdit::~KTextEdit()
+    //      at tier3/ktextwidgets/src/widgets/ktextedit.cpp:258
+    // #31  QObjectPrivate::deleteChildren()
+    // #32  QWidget::~QWidget()
+    // #33  TrackWaypointGeneralPage::~TrackWaypointGeneralPage()
+    //      at app/trackpropertiesgeneralpages.h:170
+    //
+    if (mDescEdit!= nullptr) disconnect(mDescEdit, nullptr, nullptr, nullptr);
+}
+
+
 bool TrackItemGeneralPage::isDataValid() const
 {
     const QString &name = dataModel()->data("name").toString();

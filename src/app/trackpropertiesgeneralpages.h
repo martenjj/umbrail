@@ -50,7 +50,7 @@ class TrackItemGeneralPage : public TrackPropertiesPage
     Q_OBJECT
 
 public:
-    virtual ~TrackItemGeneralPage() = default;
+    virtual ~TrackItemGeneralPage();
 
     virtual QString typeText(int count) const = 0;
     virtual bool isDataValid() const override;
