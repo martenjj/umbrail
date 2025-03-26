@@ -45,6 +45,7 @@
 #include <kmessagebox.h>
 #include <kactioncollection.h>
 #include <klinkitemselectionmodel.h>
+#include <kstringhandler.h>
 
 #include <kio/statjob.h>
 #include <kio/filecopyjob.h>
@@ -870,10 +871,14 @@ case TrackData::Trackpoint: if (selCount==1) msg = i18n("Selected point '%1'", n
 
 case TrackData::Waypoint:   if (selCount==1)
                             {
-                                const QString wptStatus = TrackData::formattedWaypointStatus(
-                                    static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
-                                if (!wptStatus.isEmpty()) msg = i18n("Selected waypoint '%1' (%2)", name, wptStatus);
-                                else msg = i18n("Selected waypoint '%1'", name);
+                                msg = i18n("Selected waypoint '%1'", name);
+                                const QString wptStatus = TrackData::formattedWaypointStatus(static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
+                                if (!wptStatus.isEmpty()) msg += (" ("+wptStatus+")");
+
+                                QString wptDesc = tdi->metadata("desc").toString();
+                                int idx = wptDesc.indexOf('\n');
+                                if (idx!=-1) wptDesc = wptDesc.left(idx);
+                                if (!wptDesc.isEmpty()) msg += (" \""+KStringHandler::rsqueeze(wptDesc, 50)+"\"");
                             }
                             else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", selCount);
                             break;
