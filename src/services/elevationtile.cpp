@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -179,7 +179,7 @@ QUrl ElevationTile::sourceUrl() const
     if (apiKey.isEmpty()) apiKey = "demoapikeyot2022";
     query.addQueryItem("API_Key", apiKey);
 
-    QUrl u("http://portal.opentopography.org/API/globaldem", QUrl::StrictMode);
+    QUrl u("https://portal.opentopography.org/API/globaldem", QUrl::StrictMode);
     u.setQuery(query);
     return (u);
 }
@@ -216,13 +216,13 @@ bool ElevationTile::loadInternal(QFile &f)
             break;
         }
 
-        if (line[len]!='\0' || line[len-1]!='\n')	// check properly terminated
+        if (line[len-1]!='\n')				// check properly terminated
         {
             qWarning() << "Short line while parsing, at line" << lineno;
             continue;
         }
 
-        line.resize(len-1);				// remove terminators
+        line.resize(len-1);				// remove the terminator
 
         QStringList fields = QString::fromLatin1(line).split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
 							// split into fields
