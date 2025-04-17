@@ -4,7 +4,7 @@
 ##									##
 ##########################################################################
 ##									##
-##  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	##
+##  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	##
 ##  Home and download page:  <http://github.com/martenjj/umbrail>	##
 ##									##
 ##  This program is free software;  you can redistribute it and/or	##
@@ -54,3 +54,7 @@ target_link_libraries(${PN}core
   KF${QV}::KIOCore
   KF${QV}::IconThemes
 )
+
+if (OSMAND_ICONS_PATH)
+  add_compile_definitions("OSMAND_ICONS_PATH=\"${OSMAND_ICONS_PATH}\"")
+endif ()

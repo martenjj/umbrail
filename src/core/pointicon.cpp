@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -34,7 +34,10 @@
 
 #include "abstracticonprovider.h"
 #include "garminiconprovider.h"
+
+#ifdef OSMAND_ICONS_PATH
 #include "osmandiconprovider.h"
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -64,7 +67,9 @@ static QList<AbstractIconProvider *> sIconProviders;
     // because a search of its smaller number of icons will be faster than
     // OsmAnd's thousands.
     sIconProviders.append(new GarminIconProvider);
+#ifdef OSMAND_ICONS_PATH
     sIconProviders.append(new OsmandIconProvider);
+#endif
     qDebug() << "have" << sIconProviders.count() << "icon providers";
 }
 
