@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -61,7 +61,7 @@ static QHash<QString, QByteArray> sOsmandPaths;
 //////////////////////////////////////////////////////////////////////////
 
 // TODO: config default and GUI setting for this path
-static const char *OSMAND_RESBASE = "/ws/osmand/OsmAnd-resources/icons";
+static const char *OSMAND_ICONSBASE = "icons";
 static const char *OSMAND_ALIASFILE = "tools/sortfiles.sh";
 static const char *OSMAND_ICONSDIR = "svg";
 
@@ -78,13 +78,17 @@ static void findOsmandPaths()
 {
     sIsOsmandSetup = true;				// note now done (or failed) setup
 
+#ifndef OSMAND_ICONS_PATH
+    qWarning() << "OsmAnd icons path not defined, no icons available";
+#else
+
     QElapsedTimer timer;
     timer.start();
 
     // TODO: if the parsed list has been saved from a previous run, then use it
 
     // The alias file which lists all known icon names and their file paths.
-    QFile aliasFile(QString(OSMAND_RESBASE)+'/'+OSMAND_ALIASFILE);
+    QFile aliasFile(QString(OSMAND_ICONS_PATH)+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ALIASFILE);
     if (!aliasFile.exists())
     {
         qWarning() << "OsmAnd alias file" << aliasFile.fileName() << "does not exist";
@@ -97,7 +101,7 @@ static void findOsmandPaths()
     }
 
     // The directory which contains the corresponding SVG images.
-    QDir iconsDir(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR);
+    QDir iconsDir(QString(OSMAND_ICONS_PATH)+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ICONSDIR);
     if (!iconsDir.exists())
     {
         qWarning() << "OsmAnd icons directory" << iconsDir.path() << "does not exist";
@@ -271,6 +275,7 @@ static void findOsmandPaths()
     // TODO: save the file for subsequent runs
 
     qDebug() << "listing took" << (timer.nsecsElapsed()/1000000) << "ms";
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -299,6 +304,10 @@ QString OsmandIconProvider::displayName() const
 
 bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVariant &colour, const QVariant &shape)
 {
+#ifndef OSMAND_ICONS_PATH
+    return (false);
+#else
+
     if (!sIsOsmandSetup) findOsmandPaths();
     if (!sOsmandPaths.contains(name)) return (false);
 
@@ -308,7 +317,7 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
 #endif // DEBUG_OSMAND
     if (svgPath.isEmpty()) return (false);		// should never happen
 
-    QPixmap pix(QString(OSMAND_RESBASE)+'/'+OSMAND_ICONSDIR+'/'+svgPath);
+    QPixmap pix(QString(OSMAND_ICONS_PATH)+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ICONSDIR+'/'+svgPath);
     if (pix.isNull()) return (false);			// SVG image load failed
 
     if (qMax(pix.size().width(), pix.size().height())>OSMAND_MAXSIZE)
@@ -332,7 +341,7 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
 #endif // DEBUG_OSMAND
         const int ew = pix.size().width()-minSize;	// extra space in width and height,
         const int eh = pix.size().height()-minSize;	// one of these must be zero
-        pix = pix.copy(ew/2, eh/2, minSize, minSize);	// copy from original imake
+        pix = pix.copy(ew/2, eh/2, minSize, minSize);	// copy from original image
     }
 #ifdef DEBUG_OSMAND
     else qDebug() << "  rendered SVG size" << pix.size();
@@ -402,6 +411,7 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
     icon->addPixmap(pix.scaled(KIconLoader::SizeSmall, KIconLoader::SizeSmall, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     return (true);					// icon created
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
