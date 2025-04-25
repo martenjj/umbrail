@@ -36,3 +36,9 @@ AbstractIconProvider::AbstractIconProvider()
     mNsp = sProviderNsp;
     sProviderNsp = static_cast<PointIcon::IconNamespace>(int(sProviderNsp)+1);
 }
+
+
+void AbstractIconProvider::setOption(const QString &key, const QString &value)
+{
+    qWarning() << "provider" << QByteArray(internalName()) << "does not implement options";
+}

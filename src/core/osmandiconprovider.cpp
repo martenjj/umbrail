@@ -53,6 +53,7 @@
 
 static bool sIsOsmandSetup = false;
 static QHash<QString, QByteArray> sOsmandPaths;
+static QString sIconsDirectory;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -78,9 +79,11 @@ static void findOsmandPaths()
 {
     sIsOsmandSetup = true;				// note now done (or failed) setup
 
-#ifndef OSMAND_ICONS_PATH
-    qWarning() << "OsmAnd icons path not defined, no icons available";
-#else
+    if (sIconsDirectory.isEmpty())
+    {
+        qWarning() << "OsmAnd icons path not defined, no icons available";
+        return;
+    }
 
     QElapsedTimer timer;
     timer.start();
@@ -88,7 +91,7 @@ static void findOsmandPaths()
     // TODO: if the parsed list has been saved from a previous run, then use it
 
     // The alias file which lists all known icon names and their file paths.
-    QFile aliasFile(QString(OSMAND_ICONS_PATH)+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ALIASFILE);
+    QFile aliasFile(sIconsDirectory+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ALIASFILE);
     if (!aliasFile.exists())
     {
         qWarning() << "OsmAnd alias file" << aliasFile.fileName() << "does not exist";
@@ -101,7 +104,7 @@ static void findOsmandPaths()
     }
 
     // The directory which contains the corresponding SVG images.
-    QDir iconsDir(QString(OSMAND_ICONS_PATH)+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ICONSDIR);
+    QDir iconsDir(sIconsDirectory+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ICONSDIR);
     if (!iconsDir.exists())
     {
         qWarning() << "OsmAnd icons directory" << iconsDir.path() << "does not exist";
@@ -275,7 +278,6 @@ static void findOsmandPaths()
     // TODO: save the file for subsequent runs
 
     qDebug() << "listing took" << (timer.nsecsElapsed()/1000000) << "ms";
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,10 +306,6 @@ QString OsmandIconProvider::displayName() const
 
 bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVariant &colour, const QVariant &shape)
 {
-#ifndef OSMAND_ICONS_PATH
-    return (false);
-#else
-
     if (!sIsOsmandSetup) findOsmandPaths();
     if (!sOsmandPaths.contains(name)) return (false);
 
@@ -317,7 +315,7 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
 #endif // DEBUG_OSMAND
     if (svgPath.isEmpty()) return (false);		// should never happen
 
-    QPixmap pix(QString(OSMAND_ICONS_PATH)+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ICONSDIR+'/'+svgPath);
+    QPixmap pix(sIconsDirectory+'/'+OSMAND_ICONSBASE+'/'+OSMAND_ICONSDIR+'/'+svgPath);
     if (pix.isNull()) return (false);			// SVG image load failed
 
     if (qMax(pix.size().width(), pix.size().height())>OSMAND_MAXSIZE)
@@ -411,7 +409,6 @@ bool OsmandIconProvider::createIcon(QIcon *icon, const QString &name, const QVar
     icon->addPixmap(pix.scaled(KIconLoader::SizeSmall, KIconLoader::SizeSmall, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     return (true);					// icon created
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -424,4 +421,16 @@ QStringList OsmandIconProvider::allIconNames()
 {
     if (!sIsOsmandSetup) findOsmandPaths();
     return (sOsmandPaths.keys());
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Options set by application						//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+void OsmandIconProvider::setOption(const QString &key, const QString &value)
+{
+    if (key=="iconsDirectory") sIconsDirectory = value;
+    sIsOsmandSetup = false;				// next time with new value
 }

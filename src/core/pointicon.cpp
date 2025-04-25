@@ -34,10 +34,7 @@
 
 #include "abstracticonprovider.h"
 #include "garminiconprovider.h"
-
-#ifdef OSMAND_ICONS_PATH
 #include "osmandiconprovider.h"
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -67,9 +64,8 @@ static QList<AbstractIconProvider *> sIconProviders;
     // because a search of its smaller number of icons will be faster than
     // OsmAnd's thousands.
     sIconProviders.append(new GarminIconProvider);
-#ifdef OSMAND_ICONS_PATH
     sIconProviders.append(new OsmandIconProvider);
-#endif
+
     qDebug() << "have" << sIconProviders.count() << "icon providers";
 }
 
@@ -380,4 +376,30 @@ void PointIcon::aboutToQuit()
 #endif
     sIconCache->insert(name, ic, 3);			// coloured item => higher cache cost
     return (ic);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Options for us or for a specified provider				//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+/* static */ void PointIcon::setProviderOption(const QByteArray &nsn, const QString &key, const QString &value)
+{
+    qDebug() << "for provider" << nsn << "option" << key << "=" << value;
+
+    if (nsn.isEmpty())					// an internal option,
+    {							// there are none at present
+    }
+    else						// option for the named provider
+    {
+        for (AbstractIconProvider *provider : std::as_const(sIconProviders))
+        {
+            if (provider->internalName()==nsn)
+            {
+                provider->setOption(key, value);
+                break;
+            }
+        }
+    }
 }

@@ -37,8 +37,6 @@
 option(OPEN_WITH_GOOGLE "Enable external map browsing with Google Maps" ON)
 option(OPEN_WITH_BING "Enable external map browsing with Bing Maps" ON)
 
-set(OSMAND_ICONS "/ws/OsmAnd-resources" CACHE PATH "OsmAnd icon directory, a clone of 'https://github.com/osmandapp/OsmAnd-resources.git'")
-
 #########################################################################
 #									#
 #  Dependencies								#
@@ -105,20 +103,6 @@ set_package_properties("Phonon4Qt${QV}" PROPERTIES DESCRIPTION "Multimedia playb
 set_package_properties(${KEXIV2_PACKAGE_NAME} PROPERTIES DESCRIPTION "Wrapper around Exiv2 library" URL "https://invent.kde.org/graphics/libkexiv2" TYPE OPTIONAL PURPOSE "Required for geolocation of photos")
 set_package_properties("LibKFDialog" PROPERTIES DESCRIPTION "KDE Frameworks dialogue utility library" URL "https://github.com/martenjj/libkfdialog" TYPE REQUIRED PURPOSE "Required to build the project")
 set_package_properties("QCustomPlot" PROPERTIES DESCRIPTION "Qt plotting and data visualization" URL "http://www.qcustomplot.com" TYPE RECOMMENDED PURPOSE "Required for the elevation/speed profile")
-
-if (NOT (${OSMAND_ICONS} STREQUAL ""))
-  message(CHECK_START "Checking for OsmAnd resources in ${OSMAND_ICONS}")
-  find_path(OSMAND_ICONS_PATH "icons/tools/sortfiles.sh"
-    PATHS "${OSMAND_ICONS}" NO_DEFAULT_PATH)
-  if (OSMAND_ICONS_PATH)
-    message(CHECK_PASS "found")
-  else ()
-    message(CHECK_FAIL "not found")
-    message(WARNING "OsmAnd resources not found (set OSMAND_ICONS), icons will not be available")
-  endif ()
-else ()
-  message(WARNING "OsmAnd resources disabled (OSMAND_ICONS not set), icons will not be available")
-endif ()
 
 #########################################################################
 #									#

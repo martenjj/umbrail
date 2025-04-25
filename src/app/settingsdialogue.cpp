@@ -50,6 +50,7 @@
 
 #include "settings.h"
 #include "filescontroller.h"
+#include "pointicon.h"
 #include "timezonelistdialogue.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -94,8 +95,16 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
     connect(buttonBox()->button(QDialogButtonBox::RestoreDefaults), &QAbstractButton::clicked, page, &SettingsPage::slotDefaults);
     addPage(page);
 
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, &SettingsDialogue::initSettings);
+
     setMinimumSize(440, 360);
     new DialogStateSaver(this);
+}
+
+
+/* static */ void SettingsDialogue::initSettings()
+{
+    PointIcon::setProviderOption("osmand", "iconsDirectory", Settings::osmandIconsDirectory());
 }
 
 //////////////////////////////////////////////////////////////////////////

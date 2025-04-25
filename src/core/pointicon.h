@@ -73,6 +73,8 @@ public:
 
     static void aboutToQuit();
 
+    static void setProviderOption(const QByteArray &nsn, const QString &key, const QString &value);
+
 protected:
     // Only the PointIcon itself may construct a PointIcon.  Callers must
     // use the create() functions above.

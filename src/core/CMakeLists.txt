@@ -54,7 +54,3 @@ target_link_libraries(${PN}core
   KF${QV}::KIOCore
   KF${QV}::IconThemes
 )
-
-if (OSMAND_ICONS_PATH)
-  add_compile_definitions("OSMAND_ICONS_PATH=\"${OSMAND_ICONS_PATH}\"")
-endif ()

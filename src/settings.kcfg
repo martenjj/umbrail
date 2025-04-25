@@ -69,6 +69,13 @@
       <tooltip>The directory where OsmAnd+ audio notes are stored.</tooltip>
       <default code="true">QUrl::fromLocalFile(QDir::homePath()+'/')</default>
     </entry>
+
+    <entry name="OsmandIconsDirectory" type="Path">
+      <label>OsmAnd icons:</label>
+      <tooltip>&lt;div&gt;The directory where OsmAnd+ icon sources are available.&lt;/div&gt;&lt;nl/&gt;&lt;div&gt;This should be a clone of &lt;u&gt;https://github.com/osmandapp/OsmAnd-resources&lt;/u&gt;&lt;/div&gt;.</tooltip>
+      <default>/ws/osmand/OsmAnd-resources</default>
+    </entry>
+
   </group>
 
   <group name="Import">

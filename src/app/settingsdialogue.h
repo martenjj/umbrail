@@ -46,6 +46,9 @@ class SettingsDialogue : public KPageDialog
 public:
     explicit SettingsDialogue(QWidget *pnt = nullptr);
     virtual ~SettingsDialogue() = default;
+
+public slots:
+    static void initSettings();
 };
 
 

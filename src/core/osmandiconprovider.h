@@ -42,6 +42,8 @@ public:
     QByteArray metadataKey() const override		{ return ("icon"); }
     bool supportsShape() const override			{ return (true); }
     QString displayName() const override;
+
+    void setOption(const QString &key, const QString &value) override;
 };
 
 #endif							// OSMANDICONPROVIDER_H
