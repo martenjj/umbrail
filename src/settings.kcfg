@@ -70,10 +70,9 @@
       <default code="true">QUrl::fromLocalFile(QDir::homePath()+'/')</default>
     </entry>
 
-    <entry name="OsmandIconsDirectory" type="Path">
+    <entry name="OsmandIconsDirectory" type="Url">
       <label>OsmAnd icons:</label>
-      <tooltip>&lt;div&gt;The directory where OsmAnd+ icon sources are available.&lt;/div&gt;&lt;nl/&gt;&lt;div&gt;This should be a clone of &lt;u&gt;https://github.com/osmandapp/OsmAnd-resources&lt;/u&gt;&lt;/div&gt;.</tooltip>
-      <default>/ws/osmand/OsmAnd-resources</default>
+      <tooltip>&lt;p&gt;A directory where OsmAnd+ icon sources are available.&lt;/p&gt;&lt;p&gt;This should be a clone of &lt;u&gt;https://github.com/osmandapp/OsmAnd-resources&lt;/u&gt;.&lt;/p&gt;</tooltip>
     </entry>
 
   </group>

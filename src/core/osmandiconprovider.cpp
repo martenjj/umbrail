@@ -78,6 +78,7 @@ static const int OSMAND_EXTRA = 6;			// extra size for border
 static void findOsmandPaths()
 {
     sIsOsmandSetup = true;				// note now done (or failed) setup
+    sOsmandPaths.clear();				// start with a new empty map
 
     if (sIconsDirectory.isEmpty())
     {

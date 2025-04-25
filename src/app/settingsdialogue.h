@@ -112,6 +112,7 @@ private slots:
 private:
     QCheckBox *mTimezoneCheck;
     KUrlRequester *mAudioNotesRequester;
+    KUrlRequester *mOsmandIconsRequester;
 };
 
 

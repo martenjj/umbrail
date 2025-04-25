@@ -104,7 +104,7 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
 
 /* static */ void SettingsDialogue::initSettings()
 {
-    PointIcon::setProviderOption("osmand", "iconsDirectory", Settings::osmandIconsDirectory());
+    PointIcon::setProviderOption("osmand", "iconsDirectory", Settings::osmandIconsDirectory().toLocalFile());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -278,10 +278,18 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
     ski = Settings::self()->audioNotesDirectoryItem();
     Q_ASSERT(ski!=nullptr);
     mAudioNotesRequester = new KUrlRequester(w);
-    mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly);
+    mAudioNotesRequester->setMode(KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly);
     mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
     mAudioNotesRequester->setToolTip(ski->toolTip());
     fl->addRow(ski->label(), mAudioNotesRequester);
+
+    ski = Settings::self()->osmandIconsDirectoryItem();
+    Q_ASSERT(ski!=nullptr);
+    mOsmandIconsRequester = new KUrlRequester(w);
+    mOsmandIconsRequester->setMode(KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly);
+    mOsmandIconsRequester->setUrl(Settings::osmandIconsDirectory());
+    mOsmandIconsRequester->setToolTip(ski->toolTip());
+    fl->addRow(ski->label(), mOsmandIconsRequester);
 
     slotItemChanged();
 }
@@ -292,8 +300,12 @@ void SettingsFilesPage::slotSave()
     Settings::setFileCheckTimezone(mTimezoneCheck->isChecked());
 
     QUrl u = mAudioNotesRequester->url().adjusted(QUrl::StripTrailingSlash);
-    u.setPath(u.path()+'/');
+    if (u.isValid()) u.setPath(u.path()+'/');
     Settings::setAudioNotesDirectory(u);
+
+    u = mOsmandIconsRequester->url().adjusted(QUrl::StripTrailingSlash);
+    if (u.isValid()) u.setPath(u.path()+'/');
+    Settings::setOsmandIconsDirectory(u);
 }
 
 
@@ -306,6 +318,10 @@ void SettingsFilesPage::slotDefaults()
     kcsi = Settings::self()->audioNotesDirectoryItem();
     kcsi->setDefault();
     mAudioNotesRequester->setUrl(Settings::audioNotesDirectory());
+
+    kcsi = Settings::self()->osmandIconsDirectoryItem();
+    kcsi->setDefault();
+    mOsmandIconsRequester->setUrl(Settings::osmandIconsDirectory());
 
     slotItemChanged();
 }
