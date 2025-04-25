@@ -52,7 +52,7 @@ class CategoryEditDialogue : public DialogBase
     Q_OBJECT
 
 public:
-    explicit CategoryEditDialogue(const QString &name, const CategoryData *cat, QWidget *pnt = nullptr);
+    explicit CategoryEditDialogue(const QString &name, bool multiple, const CategoryData *cat, QWidget *pnt = nullptr);
     virtual ~CategoryEditDialogue() = default;
 
     QString name() const;

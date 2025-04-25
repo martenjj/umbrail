@@ -52,7 +52,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryData *cat, QWidget *pnt)
+CategoryEditDialogue::CategoryEditDialogue(const QString &name, bool multiple, const CategoryData *cat, QWidget *pnt)
     : DialogBase(pnt)
 {
     setObjectName("CategoryEditDialogue");
@@ -63,7 +63,13 @@ CategoryEditDialogue::CategoryEditDialogue(const QString &name, const CategoryDa
     QFormLayout *lay = new QFormLayout(w);
 
     mNameEdit = new QLineEdit(w);
-    mNameEdit->setText(name);
+    mNameEdit->setPlaceholderText(i18n("Enter name..."));
+    if (multiple)
+    {
+        mNameEdit->setText(i18n("Multiple Categories"));
+        mNameEdit->setEnabled(false);
+    }
+    else mNameEdit->setText(name);
     connect(mNameEdit, &QLineEdit::textEdited, this, &CategoryEditDialogue::slotUpdateButtonStates);
     lay->addRow(i18n("Name:"), mNameEdit);
 
@@ -119,7 +125,7 @@ void CategoryEditDialogue::slotShapeSelected(const QByteArray &shape)
 
 QString CategoryEditDialogue::name() const
 {
-    return (mNameEdit->text());
+    return (mNameEdit->isEnabled() ? mNameEdit->text() : QString());
 }
 
 
@@ -244,7 +250,7 @@ CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWi
 
 static inline void setItemData(QTreeWidgetItem *item, const QString &name, const CategoryData *cat)
 {
-    item->setText(COL_NAME, name);
+    if (!name.isEmpty()) item->setText(COL_NAME, name);
     item->setData(COL_COLOUR, Qt::UserRole, cat->colour());
 
     const QString icn = cat->icon();
@@ -294,7 +300,7 @@ QTreeWidgetItem *CategoriesManageDialogue::addCategoryItem(const QString &name, 
 // TODO: check for duplication
 void CategoriesManageDialogue::slotNewCategory()
 {
-    CategoryEditDialogue d("", nullptr, this);
+    CategoryEditDialogue d("", false, nullptr, this);
     if (!d.exec()) return;
 
     QTreeWidgetItem *item = addCategoryItem(d.name(), d.category());
@@ -308,18 +314,25 @@ void CategoriesManageDialogue::slotNewCategory()
 void CategoriesManageDialogue::slotEditCategory()
 {
     QList<QTreeWidgetItem *> sel = mList->selectedItems();
-    if (sel.count()!=1) return;
+    if (sel.isEmpty()) return;
 
-    QTreeWidgetItem *item = sel.first();
+    QTreeWidgetItem *firstItem = sel.first();
     CategoryData cat;
-    QString name = getItemData(item, &cat);
+    QString name = getItemData(firstItem, &cat);
 
-    CategoryEditDialogue d(name, &cat, this);
+    CategoryEditDialogue d(name, (sel.count()>1), &cat, this);
     if (!d.exec()) return;
 
-    setItemData(item, d.name(), d.category());
+    for (QTreeWidgetItem *item : std::as_const(sel))
+    {
+        // If editing multiple items, CategoryEditDialogue::name() will
+        // return a null string and setItemData() will not change the
+        // item's category name.
+        setItemData(item, d.name(), d.category());
+    }
+
     mList->sortItems(COL_NAME, Qt::AscendingOrder);
-    mList->scrollToItem(item);
+    mList->scrollToItem(firstItem);
 }
 
 
@@ -351,7 +364,7 @@ void CategoriesManageDialogue::slotDeleteCategory()
 void CategoriesManageDialogue::slotUpdateButtonStates()
 {
     int num = mList->selectedItems().count();
-    mEditButton->setEnabled(num==1);
+    mEditButton->setEnabled(num>=1);
     mDeleteButton->setEnabled(num>0);
 
     // Avoids an annoying jump to the left if the list widget is too small.
