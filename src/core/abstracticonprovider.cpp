@@ -35,6 +35,7 @@ AbstractIconProvider::AbstractIconProvider()
 {
     mNsp = sProviderNsp;
     sProviderNsp = static_cast<PointIcon::IconNamespace>(int(sProviderNsp)+1);
+    mEnabled = true;
 }
 
 

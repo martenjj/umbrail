@@ -53,11 +53,15 @@ public:
     PointIcon::IconNamespace namespaceId() const	{ return (mNsp); }
     virtual bool supportsShape() const			{ return (false); }
 
+    bool isEnabled() const				{ return (mEnabled); }
+    void setEnabled(bool on)				{ mEnabled = on; }
+
 protected:
     AbstractIconProvider();
 
 private:
     PointIcon::IconNamespace mNsp;
+    bool mEnabled;
 };
 
 #endif							// ABSTRACTICONPROVIDER_H

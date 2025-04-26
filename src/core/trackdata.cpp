@@ -1003,12 +1003,14 @@ const PointIcon *TrackDataWaypoint::icon() const
     // intended icon namespace, or try the providers in priority order,
     // in order to know which metadata tag the name will be stored under.
     // The priority order is set by the order in which the providers are
-    // created in PointIcon::initProviders().
+    // created in PointIcon::initProviders().  If a provider is not enabled,
+    // it is ignored here.
     const QByteArray set = metadata("symset").toByteArray();
     const AbstractIconProvider *usedProvider = nullptr;
     const auto *providers = PointIcon::allProviders();
     for (const AbstractIconProvider *provider : std::as_const(*providers))
     {
+        if (!provider->isEnabled()) continue;
         if (!set.isEmpty() && set!=provider->internalName()) continue;
         v = metadata(provider->metadataKey());
         if (!v.isNull())
@@ -1049,7 +1051,7 @@ const PointIcon *TrackDataWaypoint::icon() const
     //
     // Colour and shape are searched in this way independently, except that
     // the default shape is determined by the icon provider and for OsmAnd
-    // icons is effectively "square".  The default colour is again determined
+    // icons is effectively "circle".  The default colour is again determined
     // by the icon provider;  in theory they should use the application default
     // if an icon colour is meaningful but currently the OsmAnd icon provider
     // does not.

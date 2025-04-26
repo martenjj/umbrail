@@ -190,9 +190,10 @@ static void setIconPixmap(QIcon *icon, const QColor &col, int size)
         }
     }
 
-    // Second try: icon providers
+    // Second try: enabled icon providers
     for (AbstractIconProvider *provider : std::as_const(sIconProviders))
     {
+        if (nsp==PointIcon::NamespaceAuto && !provider->isEnabled()) continue;
         if (nsp==PointIcon::NamespaceAuto || nsp==provider->namespaceId())
         {
 #ifdef DEBUG_ICONS
@@ -397,7 +398,8 @@ void PointIcon::aboutToQuit()
         {
             if (provider->internalName()==nsn)
             {
-                provider->setOption(key, value);
+                if (key=="enabled") provider->setEnabled(static_cast<bool>(value.toInt()));
+                else provider->setOption(key, value);
                 break;
             }
         }

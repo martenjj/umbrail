@@ -104,6 +104,7 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
 
 /* static */ void SettingsDialogue::initSettings()
 {
+    //PointIcon::setProviderOption("garmin", "enabled", "0");
     PointIcon::setProviderOption("osmand", "iconsDirectory", Settings::osmandIconsDirectory().toLocalFile());
 }
 
