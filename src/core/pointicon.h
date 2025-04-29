@@ -67,6 +67,7 @@ public:
 
     static void initProviders();
     static const QList<AbstractIconProvider *> *allProviders();
+    static AbstractIconProvider *provider(PointIcon::IconNamespace nsp);
 
     static const PointIcon *create(const QString &name, PointIcon::IconNamespace nsp, const QVariant &colour = QVariant(), const QVariant &shape = QVariant());
     static const PointIcon *create(const QColor &colour);
@@ -74,6 +75,7 @@ public:
     static void aboutToQuit();
 
     static void setProviderOption(const QByteArray &nsn, const QString &key, const QString &value);
+    static void clearIconCache();
 
 protected:
     // Only the PointIcon itself may construct a PointIcon.  Callers must

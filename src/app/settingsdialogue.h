@@ -37,6 +37,7 @@ class QLineEdit;
 class KColorButton;
 class KUrlRequester;
 class KPluralHandlingSpinBox;
+class QListWidget;
 
 
 class SettingsDialogue : public KPageDialog
@@ -85,12 +86,16 @@ protected slots:
     void slotItemChanged() override;
 
 private:
+    void updateIconProviderList();
+
+private:
     KColorButton *mLineColourButton;
     KColorButton *mPointColourButton;
     QCheckBox *mSelectedUseSystemCheck;
     QCheckBox *mShowTrackArrowsCheck;
     KColorButton *mSelectedOuterButton;
     KColorButton *mSelectedInnerButton;
+    QListWidget *mIconProviderList;
 };
 
 

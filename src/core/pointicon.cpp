@@ -75,6 +75,17 @@ static QList<AbstractIconProvider *> sIconProviders;
     return (&sIconProviders);
 }
 
+
+/* static */ AbstractIconProvider *PointIcon::provider(PointIcon::IconNamespace nsp)
+{
+    for (AbstractIconProvider *provider : std::as_const(sIconProviders))
+    {
+        if (provider->namespaceId()==nsp) return (provider);
+    }
+
+    return (nullptr);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  Colour key for provided colour - must agree with colour used in	//
@@ -387,7 +398,7 @@ void PointIcon::aboutToQuit()
 
 /* static */ void PointIcon::setProviderOption(const QByteArray &nsn, const QString &key, const QString &value)
 {
-    qDebug() << "for provider" << nsn << "option" << key << "=" << value;
+    qDebug() << "for" << nsn << "option" << key << "=" << value;
 
     if (nsn.isEmpty())					// an internal option,
     {							// there are none at present
@@ -404,4 +415,11 @@ void PointIcon::aboutToQuit()
             }
         }
     }
+}
+
+
+/* static */ void PointIcon::clearIconCache()
+{
+    qDebug();
+    sIconCache->clear();
 }

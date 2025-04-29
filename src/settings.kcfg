@@ -43,6 +43,11 @@
       <tooltip>Use the system selection colours for selected points.</tooltip>
       <default>true</default>
     </entry>
+
+    <entry name="DisabledIconProviders" type="StringList">
+      <label>Use icon sources:</label>
+      <tooltip>The icon sources that will be used to display waypoint images.</tooltip>
+    </entry>
   </group>
 
   <group name="Files">

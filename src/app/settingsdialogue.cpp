@@ -35,6 +35,7 @@
 #include <qdebug.h>
 #include <qlineedit.h>
 #include <qlabel.h>
+#include <qlistwidget.h>
 
 #include <klocalizedstring.h>
 #include <kpagedialog.h>
@@ -52,6 +53,7 @@
 #include "filescontroller.h"
 #include "pointicon.h"
 #include "timezonelistdialogue.h"
+#include "abstracticonprovider.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -104,8 +106,17 @@ SettingsDialogue::SettingsDialogue(QWidget *pnt)
 
 /* static */ void SettingsDialogue::initSettings()
 {
-    //PointIcon::setProviderOption("garmin", "enabled", "0");
     PointIcon::setProviderOption("osmand", "iconsDirectory", Settings::osmandIconsDirectory().toLocalFile());
+
+    const QStringList disabled = Settings::disabledIconProviders();
+    const auto *providers = PointIcon::allProviders();
+    for (const AbstractIconProvider *provider : std::as_const(*providers))
+    {
+        const QByteArray &nsn = provider->internalName();
+        PointIcon::setProviderOption(nsn, "enabled", (disabled.contains(nsn) ? "0" : "1"));
+    }
+
+    PointIcon::clearIconCache();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,6 +186,31 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mSelectedInnerButton->setToolTip(kcsi->toolTip());
     fl->addRow(kcsi->label(), mSelectedInnerButton);
 
+    fl->addItem(DialogBase::verticalSpacerItem());
+
+    mIconProviderList = new QListWidget(w);
+    mIconProviderList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    mIconProviderList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    kcsi = Settings::self()->disabledIconProvidersItem();
+    mIconProviderList->setToolTip(kcsi->toolTip());
+    fl->addRow(kcsi->label(), mIconProviderList);
+
+    // If a maximum size is not set then the list box forces the dialogue
+    // to expand beyond the restored size.  There will not be very many
+    // icon providers, so this should be big enough.
+    mIconProviderList->setMaximumSize(200, 80);
+
+    const auto *providers = PointIcon::allProviders();
+    for (const AbstractIconProvider *provider : std::as_const(*providers))
+    {
+        const QString iconName = QString("logo-")+provider->internalName();
+        QListWidgetItem *item = new QListWidgetItem(QIcon::fromTheme(iconName), provider->displayName());
+        item->setData(Qt::UserRole, static_cast<int>(provider->namespaceId()));
+        item->setFlags(Qt::ItemIsEnabled|Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemNeverHasChildren);
+        mIconProviderList->addItem(item);
+    }
+    updateIconProviderList();
+
     slotItemChanged();
 }
 
@@ -187,6 +223,17 @@ void SettingsMapStylePage::slotSave()
     Settings::setSelectedMarkInner(mSelectedInnerButton->color());
     Settings::setSelectedUseSystemColours(mSelectedUseSystemCheck->isChecked());
     Settings::setShowTrackArrows(mShowTrackArrowsCheck->isChecked());
+
+    QStringList disabled;
+    const int num = mIconProviderList->count();
+    for (int row = 0; row<num; ++row)
+    {
+        QListWidgetItem *item = mIconProviderList->item(row);
+        const AbstractIconProvider *provider = PointIcon::provider(static_cast<PointIcon::IconNamespace>(item->data(Qt::UserRole).toInt()));
+        if (provider==nullptr) continue;
+        if (item->checkState()!=Qt::Checked) disabled.append(provider->internalName());
+    }
+    Settings::setDisabledIconProviders(disabled);
 }
 
 
@@ -215,6 +262,10 @@ void SettingsMapStylePage::slotDefaults()
     kcsi->setDefault();
     mSelectedInnerButton->setColor(Settings::selectedMarkInner());
 
+    kcsi = Settings::self()->disabledIconProvidersItem();
+    kcsi->setDefault();
+    updateIconProviderList();
+
     slotItemChanged();
 }
 
@@ -224,6 +275,20 @@ void SettingsMapStylePage::slotItemChanged()
     bool syscol = mSelectedUseSystemCheck->isChecked();
     mSelectedOuterButton->setEnabled(!syscol);
     mSelectedInnerButton->setEnabled(!syscol);
+}
+
+
+void SettingsMapStylePage::updateIconProviderList()
+{
+    const QStringList disabled = Settings::disabledIconProviders();
+    const int num = mIconProviderList->count();
+    for (int row = 0; row<num; ++row)
+    {
+        QListWidgetItem *item = mIconProviderList->item(row);
+        const AbstractIconProvider *provider = PointIcon::provider(static_cast<PointIcon::IconNamespace>(item->data(Qt::UserRole).toInt()));
+        if (provider==nullptr) continue;
+        item->setCheckState(disabled.contains(provider->internalName()) ? Qt::Unchecked : Qt::Checked);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
