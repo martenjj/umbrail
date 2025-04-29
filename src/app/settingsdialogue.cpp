@@ -165,14 +165,18 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mShowTrackArrowsCheck->setToolTip(kcsi->toolTip());
     fl->addRow("", mShowTrackArrowsCheck);
 
-    fl->addItem(DialogBase::verticalSpacerItem());
+    kcsi = Settings::self()->selectionGroupTitleItem();
+    Q_ASSERT(kcsi!=nullptr);
+    QGroupBox *g = new QGroupBox(kcsi->label(), w);
+    g->setFlat(true);
+    fl->addRow(g);
 
     kcsi = Settings::self()->selectedUseSystemColoursItem();
     mSelectedUseSystemCheck = new QCheckBox(kcsi->label(), w);
     mSelectedUseSystemCheck->setChecked(Settings::selectedUseSystemColours());
     connect(mSelectedUseSystemCheck, &QAbstractButton::toggled, this, &SettingsMapStylePage::slotItemChanged);
     mSelectedUseSystemCheck->setToolTip(kcsi->toolTip());
-    fl->addRow(i18n("Selection:"), mSelectedUseSystemCheck);
+    fl->addRow("", mSelectedUseSystemCheck);
 
     mSelectedOuterButton = new KColorButton(Settings::selectedMarkOuter(), w);
     mSelectedOuterButton->setAlphaChannelEnabled(false);
@@ -186,7 +190,11 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     mSelectedInnerButton->setToolTip(kcsi->toolTip());
     fl->addRow(kcsi->label(), mSelectedInnerButton);
 
-    fl->addItem(DialogBase::verticalSpacerItem());
+    kcsi = Settings::self()->iconsGroupTitleItem();
+    Q_ASSERT(kcsi!=nullptr);
+    g = new QGroupBox(kcsi->label(), w);
+    g->setFlat(true);
+    fl->addRow(g);
 
     mIconProviderList = new QListWidget(w);
     mIconProviderList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
