@@ -47,15 +47,6 @@
       <tooltip>Use the system selection colours for selected points.</tooltip>
       <default>true</default>
     </entry>
-
-    <entry name="IconsGroupTitle" type="String">
-      <label>Waypoint Icons</label>
-    </entry>
-
-    <entry name="DisabledIconProviders" type="StringList">
-      <label>Use icon sources:</label>
-      <tooltip>The icon sources that will be used to display waypoint images.</tooltip>
-    </entry>
   </group>
 
   <group name="Files">
@@ -197,6 +188,21 @@
       <default>3</default>
       <min>1</min>
       <max>13</max>
+    </entry>
+  </group>
+
+  <group name="Symbols">
+
+    <entry name="IconsGroupTitle" type="String">
+      <label>Waypoint Icons</label>
+    </entry>
+
+    <entry name="DisabledIconProviders" type="StringList">
+      <label>Use icon sources:</label>
+      <tooltip>The icon sources that will be used to display waypoint images.</tooltip>
+    </entry>
+
+    <entry name="RecentIcons" key="Recent" type="StringList">
     </entry>
   </group>
 

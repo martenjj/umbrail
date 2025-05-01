@@ -63,6 +63,7 @@ private:
 
     QString mSelectedName;
     bool mHadInitialNamespace;
+    QStringList mRecent;
 };
 
 #endif							// SYMBOLICONSELECTOR_H

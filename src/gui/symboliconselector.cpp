@@ -39,6 +39,10 @@
 #include <klistwidgetsearchline.h>
 
 #include "abstracticonprovider.h"
+#include "settings.h"
+
+
+#define MAX_RECENT		50			// maximum size of history
 
 
 SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
@@ -58,6 +62,7 @@ SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamesp
 
     mSourceCombo = new QComboBox(this);
     mSourceCombo->setSizePolicy(QSizePolicy::Expanding, mSourceCombo->sizePolicy().verticalPolicy());
+    mSourceCombo->addItem(QIcon::fromTheme("view-history"), i18n("Recent"));
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
 
     const auto *providers = PointIcon::allProviders();
@@ -128,13 +133,24 @@ QString SymbolIconSelector::selectedIconName() const
 
 PointIcon::IconNamespace SymbolIconSelector::selectedNamespace() const
 {
-    return (static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt()));
+    // If a real symbol set is selected in the source combo box,
+    // then use that.
+    PointIcon::IconNamespace nsp = static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt());
+    if (nsp!=PointIcon::NamespaceAuto) return (nsp);
+
+    // If displaying the "Recent" symbols, then use the namespace ID
+    // that was set for the selected symbol item by slotSourceChanged().
+    QList<QListWidgetItem *> sel = mList->selectedItems();
+    if (sel.isEmpty()) return (nsp);
+    QListWidgetItem *item = sel.first();
+    return (static_cast<PointIcon::IconNamespace>(item->data(Qt::UserRole).toInt()));
 }
 
 
 void SymbolIconSelector::slotSourceChanged()
 {
-    const PointIcon::IconNamespace nsp = selectedNamespace();
+    const PointIcon::IconNamespace nsp = static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt());
+    const bool isRecent = (nsp==PointIcon::NamespaceAuto);
 
     // This may take some time for OsmAnd...
     QGuiApplication::setOverrideCursor(Qt::WaitCursor);
@@ -143,22 +159,44 @@ void SymbolIconSelector::slotSourceChanged()
 
     mList->clear();
     QListWidgetItem *selectedItem = nullptr;
-    QStringList names = PointIcon::allNames(nsp);
-    // Hopefully more efficient to sort the names before creating the
-    // list view, instead of sorting the view items afterwards.
-    std::sort(names.begin(), names.end());
+
+    QStringList names = (isRecent ? mRecent : PointIcon::allNames(nsp));
+    // Hopefully more efficient to sort the names before creating
+    // the list view, instead of sorting the view items afterwards.
+    // The recent history is not sorted but is left with the most
+    // recently used at the start, as set by saveConfig().
+    if (!isRecent) std::sort(names.begin(), names.end());
 
     for (const QString &name : std::as_const(names))
     {
-        QListWidgetItem *item = new QListWidgetItem(PointIcon::create(name, nsp)->icon(), name);
+        QString thisName = name;
+        PointIcon::IconNamespace thisNsp = nsp;
+        QString thisTip = thisName;
+
+        if (isRecent)
+        {
+            // The name from the saved history is in the form "name:symset".
+            // Split it into those two parts and format them for display.
+            const int idx = name.indexOf(':');
+            if (idx!=-1)
+            {
+                thisName = name.left(idx);
+                thisNsp = PointIcon::namespaceId(name.mid(idx+1).toLatin1());
+                thisTip = thisName+" ("+PointIcon::namespaceDisplayName(thisNsp)+")";
+            }
+        }
+
+        QListWidgetItem *item = new QListWidgetItem(PointIcon::create(thisName, thisNsp)->icon(), thisName);
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         // AutoToolTipDelegate does not work for this sort of view,
         // so unconditionally set the tool tip.
-        item->setToolTip(name);
+        item->setToolTip(thisTip);
         item->setSizeHint(QSize(80, 50));
+        // This is needed to retrieve the namespace that a "Recent" icon belongs to.
+        item->setData(Qt::UserRole, thisNsp);
         mList->addItem(item);
 
-        if (name==mSelectedName) selectedItem = item;
+        if (!isRecent && name==mSelectedName) selectedItem = item;
     }
 
     if (selectedItem!=nullptr)
@@ -198,7 +236,18 @@ void SymbolIconSelector::slotClearIcon()
 void SymbolIconSelector::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 {
     grp.writeEntry("SymbolSet", PointIcon::namespaceInternalName(static_cast<PointIcon::IconNamespace>(mSourceCombo->currentData().toInt())));
+
     DialogStateSaver::saveConfig(dialog, grp);
+
+    QString name = selectedIconName();
+    if (name.isEmpty()) return;
+    name += ":"+PointIcon::namespaceInternalName(selectedNamespace());
+
+    QStringList r = mRecent;				// need to update the list
+    if (r.contains(name)) r.removeAll(name);		// remove any already there
+    r.prepend(name);					// put most recent at front
+    if (r.count()>MAX_RECENT) r.resize(MAX_RECENT);	// enforce the size limit
+    Settings::setRecentIcons(r);
 }
 
 
@@ -213,6 +262,8 @@ void SymbolIconSelector::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
             if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
         }
     }
+
+    mRecent = Settings::recentIcons();
 
     DialogStateSaver::restoreConfig(dialog, grp);
 }
