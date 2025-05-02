@@ -107,6 +107,7 @@ SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamesp
     // in restoreConfig() below.
 
     mSearchLine->setListWidget(mList);
+    mSearchLine->setFocus(Qt::OtherFocusReason);
     setMainWidget(w);
     setStateSaver(this);
 
