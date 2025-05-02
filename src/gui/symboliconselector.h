@@ -62,7 +62,7 @@ private:
     KListWidgetSearchLine *mSearchLine;
 
     QString mSelectedName;
-    bool mHadInitialNamespace;
+    PointIcon::IconNamespace mInitialNamespace;
     QStringList mRecent;
 };
 

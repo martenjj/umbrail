@@ -50,6 +50,7 @@ SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamesp
       DialogStateSaver(this)
 {
     mSelectedName = sym;
+    mInitialNamespace = PointIcon::NamespaceAuto;
 
     setObjectName("SymbolIconSelector");
     setWindowTitle(i18n("Select Symbol"));
@@ -62,7 +63,7 @@ SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamesp
 
     mSourceCombo = new QComboBox(this);
     mSourceCombo->setSizePolicy(QSizePolicy::Expanding, mSourceCombo->sizePolicy().verticalPolicy());
-    mSourceCombo->addItem(QIcon::fromTheme("view-history"), i18n("Recent"));
+    mSourceCombo->addItem(QIcon::fromTheme("view-history"), i18n("Recent"), PointIcon::NamespaceAuto);
     fl->addRow(i18n("Symbol set:"), mSourceCombo);
 
     const auto *providers = PointIcon::allProviders();
@@ -72,18 +73,18 @@ SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamesp
         mSourceCombo->addItem(QIcon::fromTheme(iconName), provider->displayName(), provider->namespaceId());
     }
 
+    // If no explicit icon namespace is specified, then see whether any
+    // of the icon providers recognise the name.  If so then use that
+    // provider's namespace.
     if (nsp==PointIcon::NamespaceAuto && !sym.isEmpty())
     {
         const PointIcon *pi = PointIcon::create(sym, nsp);
         nsp = pi->nsp();
     }
 
-    mHadInitialNamespace = (nsp!=PointIcon::NamespaceAuto);
-    if (mHadInitialNamespace)
-    {
-        const int idx = mSourceCombo->findData(nsp);
-        if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
-    }
+    // Just note the initial namespace for now;  it will be checked and
+    // used to set up the GUI options in restoreConfig().
+    mInitialNamespace = nsp;
 
     mSearchLine = new KListWidgetSearchLine(this);
     mSearchLine->setPlaceholderText(i18n("Symbol name..."));
@@ -101,13 +102,13 @@ SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamesp
     mList->setSpacing(DialogBase::verticalSpacing());
     mList->setResizeMode(QListView::Adjust);
     mList->setMinimumWidth(400);
-
     fl->addRow(mList);
+    // The list will be generated for the selected symbol set
+    // in restoreConfig() below.
 
     mSearchLine->setListWidget(mList);
     setMainWidget(w);
     setStateSaver(this);
-    slotSourceChanged();
 
     connect(mSourceCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SymbolIconSelector::slotSourceChanged);
     connect(mList, &QListWidget::itemSelectionChanged, this, &SymbolIconSelector::slotSelectionChanged);
@@ -253,17 +254,28 @@ void SymbolIconSelector::saveConfig(QDialog *dialog, KConfigGroup &grp) const
 
 void SymbolIconSelector::restoreConfig(QDialog *dialog, const KConfigGroup &grp)
 {
-    if (!mHadInitialNamespace)				// only if not set already
-    {
-        const QByteArray lastNsp = grp.readEntry("SymbolSet", QByteArray());
-        if (!lastNsp.isEmpty())
-        {
-            const int idx = mSourceCombo->findData(PointIcon::namespaceId(lastNsp));
-            if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
-        }
-    }
+    DialogStateSaver::restoreConfig(dialog, grp);
 
     mRecent = Settings::recentIcons();
+    QTimer::singleShot(0, this, &SymbolIconSelector::slotSourceChanged);
 
-    DialogStateSaver::restoreConfig(dialog, grp);
+    PointIcon::IconNamespace nsp = PointIcon::NamespaceAuto;
+    // If 'nsp' is NamespaceAuto this will return NULL.
+    const AbstractIconProvider *provider = PointIcon::provider(nsp);
+
+    if (provider!=nullptr && provider->isEnabled())
+    {
+        qDebug() << "using specified provider" << provider->internalName();
+        nsp = provider->namespaceId();
+    }
+    else
+    {
+        const QByteArray nsn = grp.readEntry("SymbolSet", QByteArray());
+        // If 'nsn' is a null or unrecognised string this will return NamespaceAuto
+        nsp = PointIcon::namespaceId(nsn);
+    }
+
+    // If 'nsp' is NamespaceAuto this will return the index of "Recent"
+    const int idx = mSourceCombo->findData(nsp);
+    if (idx!=-1) mSourceCombo->setCurrentIndex(idx);
 }

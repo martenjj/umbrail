@@ -78,9 +78,12 @@ static QList<AbstractIconProvider *> sIconProviders;
 
 /* static */ AbstractIconProvider *PointIcon::provider(PointIcon::IconNamespace nsp)
 {
-    for (AbstractIconProvider *provider : std::as_const(sIconProviders))
+    if (nsp!=PointIcon::NamespaceAuto)
     {
-        if (provider->namespaceId()==nsp) return (provider);
+        for (AbstractIconProvider *provider : std::as_const(sIconProviders))
+        {
+            if (provider->namespaceId()==nsp) return (provider);
+        }
     }
 
     return (nullptr);
