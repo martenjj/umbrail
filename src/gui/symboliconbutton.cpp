@@ -83,13 +83,24 @@ void SymbolIconButton::setSymbol(const QString &iconName, PointIcon::IconNamespa
 bool SymbolIconButton::eventFilter(QObject *obj, QEvent *ev)
 {
     // We do not want the KIconButton to open the standard KIconDialog
-    // on a click, but rather to replace it with our own SymbolIconSelector
-    // with the repertoire of GPS icons.  Therefore we intercept the
-    // button click and handle it here, without passing the event on.
-    if (ev->type()!=QEvent::MouseButtonRelease) return (false);
-    QMouseEvent *mev = static_cast<QMouseEvent *>(ev);
-    if (mev->button()!=Qt::LeftButton) return (false);
+    // on a click or key press, but rather to replace it with our own
+    // SymbolIconSelector with the repertoire of GPS icons.  Therefore
+    // we intercept the button click or key press and handle it here,
+    // without passing the event on.
+
     if (!isEnabled()) return (false);			// no action if not enabled
+    if (ev->type()==QEvent::MouseButtonRelease)		// click with left button
+    {
+        QMouseEvent *mev = static_cast<QMouseEvent *>(ev);
+        if (mev->button()!=Qt::LeftButton) return (false);
+    }
+    else if (ev->type()==QEvent::KeyPress)		// Return or Space keys
+    {
+        if (!hasFocus()) return (false);		// only if currently has focus
+        const int k = static_cast<QKeyEvent *>(ev)->key();
+        if (k!=Qt::Key_Return && k!=Qt::Key_Enter && k!=Qt::Key_Space) return (false);
+    }
+    else return (false);
 
     // To avoid any potential problems with nested event loops, execute
     // the dialogue and emit the signal outside of the event filter.
