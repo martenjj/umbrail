@@ -42,7 +42,7 @@
 #include "settings.h"
 
 
-#define MAX_RECENT		50			// maximum size of history
+#define MAX_RECENT		100			// maximum size of history
 
 
 SymbolIconSelector::SymbolIconSelector(const QString &sym, PointIcon::IconNamespace nsp, QWidget *pnt)
