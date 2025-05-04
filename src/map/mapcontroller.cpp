@@ -93,9 +93,12 @@ void MapController::readProperties()
 
 void MapController::saveProperties()
 {
-    QString s = positionToString(mHomeLat, mHomeLong, mHomeZoom);
-    qDebug() << "home" << s;
-    Settings::setMapHome(s);
+    if (!isReadOnly())
+    {
+        QString s = positionToString(mHomeLat, mHomeLong, mHomeZoom);
+        qDebug() << "home" << s;
+        Settings::setMapHome(s);
+    }
 
     view()->saveProperties();
 }
@@ -137,20 +140,29 @@ void MapController::slotSetHome()
     double lat = view()->centerLatitude();
     double lng = view()->centerLongitude();
 
-    if (KMessageBox::questionTwoActions(mainWidget(),
-                                        xi18nc("@info", "Set home position to <emphasis strong=\"1\">%1</emphasis>?", TrackData::formattedLatLong(lat, lng)),
-                                        i18n("Set Home Position?"),
-                                        // KStandardGuiItem::yes() used same icon as ok()
-                                        KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
-                                        KStandardGuiItem::cancel(),
-                                        "setHome")!=KMessageBox::PrimaryAction) return;
+    const QString pos = TrackData::formattedLatLong(lat, lng);
+    if (!isReadOnly())
+    {
+        if (KMessageBox::questionTwoActions(mainWidget(),
+                                            xi18nc("@info", "Set home position to <emphasis strong=\"1\">%1</emphasis>?", pos),
+                                            i18n("Set Home Position?"),
+                                            // KStandardGuiItem::yes() used same icon as ok()
+                                            KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
+                                            KStandardGuiItem::cancel(),
+                                            "setHome")!=KMessageBox::PrimaryAction) return;
+    }
+
     mHomeLat = lat;
     mHomeLong = lng;
     // TODO: do this here?
     //mHomeZoom = view()->zoom();
 
-    emit statusMessage(i18n("Home position set to %1", TrackData::formattedLatLong(mHomeLat, mHomeLong)));
-    emit modified();
+    if (isReadOnly()) emit statusMessage(i18n("Home position set to %1 for this session", pos));
+    else
+    {
+        emit statusMessage(i18n("Home position set to %1", pos));
+        emit modified();
+    }
 }
 
 
@@ -158,15 +170,23 @@ void MapController::slotSetZoom()
 {
     int zoom = view()->zoom();
 
-    if (KMessageBox::questionTwoActions(mainWidget(),
-                                        xi18nc("@info", "Set standard zoom to <emphasis strong=\"1\">%1</emphasis>?", zoom),
-                                        i18n("Set Standard Zoom?"),
-                                        KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
-                                        KStandardGuiItem::cancel(),
-                                        "setZoom")!=KMessageBox::PrimaryAction) return;
+    if (!isReadOnly())
+    {
+        if (KMessageBox::questionTwoActions(mainWidget(),
+                                            xi18nc("@info", "Set standard zoom to <emphasis strong=\"1\">%1</emphasis>?", zoom),
+                                            i18n("Set Standard Zoom?"),
+                                            KGuiItem(i18n("Set"), KStandardGuiItem::ok().icon()),
+                                            KStandardGuiItem::cancel(),
+                                            "setZoom")!=KMessageBox::PrimaryAction) return;
+    }
+
     mHomeZoom = zoom;
-    emit statusMessage(i18n("Standard zoom set to %1", mHomeZoom));
-    emit modified();
+    if (isReadOnly()) emit statusMessage(i18n("Standard zoom set to %1 for this session", zoom));
+    else
+    {
+        emit statusMessage(i18n("Standard zoom set to %1", zoom));
+        emit modified();
+    }
 }
 
 
