@@ -27,11 +27,13 @@
 #define CATEGORIESMANAGEDIALOGUE_H
 
 #include <qstyleditemdelegate.h>
+
 #include <kfdialog/dialogbase.h>
 #include <kfdialog/dialogstatesaver.h>
 
 #include "category.h"
 #include "pointicon.h"
+#include "applicationdatainterface.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -83,7 +85,7 @@ private:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class CategoriesManageDialogue : public DialogBase, public DialogStateSaver
+class CategoriesManageDialogue : public DialogBase, public DialogStateSaver, public ApplicationDataInterface
 {
     Q_OBJECT
 

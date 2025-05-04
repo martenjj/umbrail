@@ -26,7 +26,8 @@
 #ifndef APPLICATIONDATAINTERFACE_H
 #define APPLICATIONDATAINTERFACE_H
 
-class QObject;
+#include <qobject.h>					// for the Q_DISABLE_COPY_MOVE macro
+
 class QWidget;
 class QUndoCommand;
 
@@ -75,6 +76,8 @@ protected:
 
 private:
     ApplicationData *mApplicationData;
+
+    Q_DISABLE_COPY_MOVE(ApplicationDataInterface)
 };
 
 #endif							// APPLICATIONDATAINTERFACE_H

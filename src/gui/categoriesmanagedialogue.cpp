@@ -182,11 +182,12 @@ enum COLUMN
 
 CategoriesManageDialogue::CategoriesManageDialogue(const CategoryList *cats, QWidget *pnt)
     : DialogBase(pnt),
-      DialogStateSaver(this)
+      DialogStateSaver(this),
+      ApplicationDataInterface(pnt)
 {
     setObjectName("CategoriesManageDialogue");
     setWindowTitle(i18n("Manage Categories"));
-    setButtons(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
+    setButtons(isReadOnly() ? QDialogButtonBox::Close : QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
 
     QWidget *w = new QWidget(this);
     QGridLayout *lay = new QGridLayout(w);
@@ -363,6 +364,14 @@ void CategoriesManageDialogue::slotDeleteCategory()
 
 void CategoriesManageDialogue::slotUpdateButtonStates()
 {
+    if (isReadOnly())
+    {
+        mNewButton->setEnabled(false);
+        mEditButton->setEnabled(false);
+        mDeleteButton->setEnabled(false);
+        return;
+    }
+
     int num = mList->selectedItems().count();
     mEditButton->setEnabled(num>=1);
     mDeleteButton->setEnabled(num>0);
