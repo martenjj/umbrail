@@ -298,6 +298,8 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     {
         elementText = mXmlReader->readElementText();
         const double ele = elementText.toDouble();
+        if (ISNAN(ele)) return (addWarning("Value \""+elementText+"\" ignored for ELE"));
+
         TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
 
         // The explicit use of QVariant(double) seems to be needed, otherwise there is

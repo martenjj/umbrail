@@ -464,13 +464,28 @@ void StopDetectDialogue::slotDetectStops()
 
 void StopDetectDialogue::slotMergeStops()
 {
-    QList<QListWidgetItem *> items = mResultsList->selectedItems();
+    const QList<QListWidgetItem *> items = mResultsList->selectedItems();
     const int num = items.count();
     qDebug() << num << "points";
     if (num<2) return;
 
-    const int idx1 = items.first()->data(Qt::UserRole).toInt();
-    const int idx2 = items.last()->data(Qt::UserRole).toInt();
+    // These two indexes need to be those of the first and last points
+    // (in the display list and in mResultPoints) regardless of the
+    // selection ordering.  This is so that the two loops below, merging
+    // subsequent points into the first and then removing the merged points,
+    // work as expected.
+    //
+    // The QListWidget's selection mode is set to ContiguousSelection, so
+    // we know that there cannot be any gaps in the index sequence.
+    int idx1 = INT_MAX;
+    int idx2 = INT_MIN;
+    for (const QListWidgetItem *item : std::as_const(items))
+    {
+        const int idx = item->data(Qt::UserRole).toInt();
+        if (idx<idx1) idx1 = idx;
+        if (idx>idx2) idx2 = idx;
+    }
+    qDebug() << "indexes" << idx1 << "-" << idx2;
 
     TrackDataWaypoint *firstPoint = const_cast<TrackDataWaypoint *>(mResultPoints[idx1]);
     qDebug() << "first point" << firstPoint->name();	// data for first point
