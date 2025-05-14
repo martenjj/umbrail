@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+
+	<mime-type type="application/x-navmarks-waypoints">
+		<sub-class-of type="text/plain"/>
+		<glob pattern="*.marks" />
+		<comment>NavMarks waypoints</comment>
+		<generic-icon name="x-navmarks-waypoints"/>
+	</mime-type>
+
+	<mime-type type="application/x-datasend-waypoints">
+		<sub-class-of type="text/plain"/>
+		<glob pattern="*.wpt" />
+		<comment>DataSend waypoints</comment>
+		<generic-icon name="text-plain"/>
+	</mime-type>
+
+</mime-info>

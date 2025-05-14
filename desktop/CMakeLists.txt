@@ -28,6 +28,7 @@ include(ECMInstallIcons)
 set(icons_SRCS
   32-apps-${PN}.png
   64-apps-${PN}.png
+  32-mimetypes-application-x-navmarks-waypoints.png
 )
 
 ecm_install_icons(ICONS ${icons_SRCS} DESTINATION ${KDE_INSTALL_ICONDIR})
@@ -35,3 +36,4 @@ ecm_install_icons(ICONS ${icons_SRCS} DESTINATION ${KDE_INSTALL_ICONDIR})
 install(FILES mainui.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/${PN} RENAME ${PN}ui.rc)
 install(FILES viewerui.rc DESTINATION ${KDE_INSTALL_KXMLGUIDIR}/${PN})
 install(FILES app.desktop DESTINATION ${KDE_INSTALL_APPDIR} RENAME ${PN}.desktop)
+install(FILES ${PN}-mime.xml DESTINATION ${KDE_INSTALL_MIMEDIR})
