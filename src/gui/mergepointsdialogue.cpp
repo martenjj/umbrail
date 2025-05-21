@@ -272,9 +272,14 @@ void MergePointsDialogue::setPoints(const QList<const TrackDataWaypoint *> *poin
         if (!v.isNull())
         {
             const QColor &col = v.value<QColor>();
+            QString colName = col.name();
+            // An alpha value not 255 means this item has no colour;  that is,
+            // it is inherited from an ancestor or from the item category.
+            if (col.alpha()!=255) colName += i18n(" (inherited)");
+
             QPixmap pix(16, 16);
             pix.fill(col);
-            mColourEdit->addItem(QIcon(pix), col.name(), col);
+            mColourEdit->addItem(QIcon(pix), colName, col);
         }
         else mColourEdit->addItem(QIcon::fromTheme("edit-none"), noneString);
 
