@@ -887,7 +887,31 @@ case TrackData::Routepoint: if (selCount==1) msg = i18n("Selected routepoint '%1
                             else msg = i18np("Selected %1 routepoint", "Selected %1 routepoints", selCount);
                             break;
 
-case TrackData::Folder:     if (selCount==1) msg = i18n("Selected folder '%1'", name);
+case TrackData::Folder:     if (selCount==1)
+                            {
+                                int numWaypoint = 0;
+                                int numTodo = 0;
+                                int numDone = 0;
+
+                                const int num = tdi->childCount();
+                                for (int i = 0; i<num; ++i)
+                                {
+                                    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi->childAt(i));
+                                    if (tdw==nullptr) continue;
+                                    ++numWaypoint;
+
+                                    switch (tdw->metadata("status").toInt())
+                                    {
+case TrackData::StatusTodo:             ++numTodo;	break;
+case TrackData::StatusDone:             ++numDone;	break;
+                                    };
+                                }
+
+                                const int numOther = numWaypoint-(numTodo+numDone);
+                                if ((numTodo+numDone)==0) msg = i18n("Selected folder '%1': %2 waypoints", name, numWaypoint);
+                                else if (numOther==0) msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %4 to do", name, numWaypoint, numDone, numTodo);
+                                else msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %5 other, %4 to do", name, numWaypoint, numDone, numTodo, numOther);
+                            }
                             else msg = i18np("Selected %1 folder", "Selected %1 folders", selCount);
                             break;
 
