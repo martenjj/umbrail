@@ -91,6 +91,7 @@ private:
     double mHomeLat;
     double mHomeLong;
     int mHomeZoom;
+    int mPreviousZoom;
 };
  
 #endif							// MAPCONTROLLER_H

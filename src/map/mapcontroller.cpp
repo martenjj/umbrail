@@ -57,6 +57,7 @@ MapController::MapController(QObject *pnt)
     mHomeLat = 51.436019;				// default to here
     mHomeLong = -0.352764;
     mHomeZoom = 2300;
+    mPreviousZoom = -1;
 
     mThemeManager = nullptr;				// created on demand
 }
@@ -227,7 +228,7 @@ void MapController::slotSaveImage()
     }
     else
     {
-        emit statusMessage(i18n("Saved map image to '%1'", file.toDisplayString()));
+        emit statusMessage(xi18nc("@info", "Saved map image to <filename>%1</filename>", file.toDisplayString()));
     }
 
     view()->showOverlays(currentOverlays);
@@ -243,12 +244,20 @@ void MapController::slotShowPosition(const QString &pos)
 
 void MapController::slotZoomChanged(int zoom)
 {
-    //qDebug() << zoom << "min" << view()->minimumZoom() << "max" << view()->maximumZoom();
+    // This is called by the MarbleWidget::zoomChanged signal, which is
+    // actually sent every time the map is not only zoomed but also moved
+    // or scrolled.  So track the previous zoom and only act if the zoom
+    // has actually changed.
+    if (zoom==mPreviousZoom) return;
+    mPreviousZoom = zoom;
+
+    // This signal tells the MainWindow to enable or diable the "Zoom In"
+    // and "Zoom Out" actions appropriately.
     emit mapZoomChanged((zoom<(view()->maximumZoom())),
                         (zoom>(view()->minimumZoom())));
-// TODO: improve display, check against scale bar!
-    emit statusMessage(i18n("At zoom %1 = %2 km", zoom,
-                            view()->distanceFromZoom(zoom)));
+
+    // TODO: improve display, check against scale bar!
+    emit statusMessage(i18n("At zoom %1 = %2 km", zoom, view()->distanceFromZoom(zoom)));
 }
 
 
