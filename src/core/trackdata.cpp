@@ -501,21 +501,6 @@ QIcon TrackDataItem::icon() const
 }
 
 
-// Return a status message indicating that one or more of this item type
-// is selected by the user in the application's GUI.  It is displayed in
-// the status bar by FilesController::slotUpdateActionState().  A mixed
-// selection is handled specially there and will never be seen here.
-//
-// This base class implementation should never be called, because all
-// derived classes need to implement their own.
-QString TrackDataItem::statusMessage(int num) const
-{
-    qDebug() << "Called for a TrackDataItem of type" << type();
-    if (num==1) return (i18n("Selected item '%1'", name()));
-    else return (i18np("Selected %1 item", "Selected %1 items", num));
-}
-
-
 // Although in practice media and stops are only expected to be
 // associated with TrackDataWaypoint items, this is in TrackDataItem
 // so that the temporary untyped item provided by MetadataModel can
@@ -811,8 +796,8 @@ QString TrackDataFolder::statusMessage(int num) const
         int numTodo = 0;
         int numDone = 0;
 
-        const int num = childCount();
-        for (int i = 0; i<num; ++i)
+        const int childs = childCount();
+        for (int i = 0; i<childs; ++i)
         {
             const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(childAt(i));
             if (tdw==nullptr) continue;

@@ -220,7 +220,12 @@ public:
     bool hasExplicitName() const			{ return (mExplicitName); }
 
     virtual QIcon icon() const;
-    virtual QString statusMessage(int num) const;
+
+    // Return a status message indicating that one or more of this item type
+    // is selected by the user in the application's GUI.  It is displayed in
+    // the status bar by FilesController::slotUpdateActionState().  A mixed
+    // selection is handled specially there and will never be seen here.
+    virtual QString statusMessage(int num) const = 0;
 
     int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
     TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
@@ -285,8 +290,9 @@ public:
     explicit TrackDataContainer();
     virtual ~TrackDataContainer() = default;
 
-    TrackData::Type type() const override	{ return (TrackData::None); }
-    virtual QString iconName() const override	{ return (QString()); }
+    TrackData::Type type() const override			{ return (TrackData::None); }
+    virtual QString iconName() const override			{ return (QString()); }
+    virtual QString statusMessage(int num) const override	{ return (QString()); }
 };
 
 //////////////////////////////////////////////////////////////////////////
