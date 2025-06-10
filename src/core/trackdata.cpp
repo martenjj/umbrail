@@ -32,6 +32,7 @@
 
 #include <klocalizedstring.h>
 #include <kiconloader.h>
+#include <kstringhandler.h>
 
 #include <kio/global.h>
 
@@ -500,9 +501,24 @@ QIcon TrackDataItem::icon() const
 }
 
 
+// Return a status message indicating that one or more of this item type
+// is selected by the user in the application's GUI.  It is displayed in
+// the status bar by FilesController::slotUpdateActionState().  A mixed
+// selection is handled specially there and will never be seen here.
+//
+// This base class implementation should never be called, because all
+// derived classes need to implement their own.
+QString TrackDataItem::statusMessage(int num) const
+{
+    qDebug() << "Called for a TrackDataItem of type" << type();
+    if (num==1) return (i18n("Selected item '%1'", name()));
+    else return (i18np("Selected %1 item", "Selected %1 items", num));
+}
+
+
 // Although in practice media and stops are only expected to be
 // associated with TrackDataWaypoint items, this is in TrackDataItem
-// so that the temporary item untyped provided by MetadataModel can
+// so that the temporary untyped item provided by MetadataModel can
 // be checked in the same way.
 TrackData::MediaType TrackDataItem::mediaType() const
 {
@@ -565,6 +581,13 @@ QString TrackDataFile::iconName() const
     return (KIO::iconNameForUrl(mFileName));
 }
 
+
+QString TrackDataFile::statusMessage(int num) const
+{
+    if (num==1) return (i18n("Selected file '%1'", name()));
+    else return (i18np("Selected %1 file", "Selected %1 files", num));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataTrack							//
@@ -577,6 +600,13 @@ TrackDataTrack::TrackDataTrack()
 #ifdef MEMORY_TRACKING
     ++allocTrack;
 #endif
+}
+
+
+QString TrackDataTrack::statusMessage(int num) const
+{
+    if (num==1) return (i18n("Selected track '%1'", name()));
+    else return (i18np("Selected %1 track", "Selected %1 tracks", num));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -607,6 +637,13 @@ TimeRange TrackDataSegment::timeSpan() const
     const TrackDataTrackpoint *lastPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(num-1));
     Q_ASSERT(lastPoint!=nullptr);
     return (TimeRange(firstPoint->time(), lastPoint->time()));
+}
+
+
+QString TrackDataSegment::statusMessage(int num) const
+{
+    if (num==1) return (i18n("Selected segment '%1'", name()));
+    else return (i18np("Selected %1 segment", "Selected %1 segments", num));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -764,6 +801,39 @@ QString TrackDataFolder::path() const
     return (p.join("/"));
 }
 
+
+QString TrackDataFolder::statusMessage(int num) const
+{
+    QString msg;
+    if (num==1)
+    {
+        int numWaypoint = 0;
+        int numTodo = 0;
+        int numDone = 0;
+
+        const int num = childCount();
+        for (int i = 0; i<num; ++i)
+        {
+            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(childAt(i));
+            if (tdw==nullptr) continue;
+            ++numWaypoint;
+
+            switch (tdw->metadata("status").toInt())
+            {
+case TrackData::StatusTodo:     ++numTodo;	break;
+case TrackData::StatusDone:     ++numDone;	break;
+            }
+        }
+
+        const int numOther = numWaypoint-(numTodo+numDone);
+        if ((numTodo+numDone)==0) msg = i18n("Selected folder '%1': %2 waypoints", name(), numWaypoint);
+        else if (numOther==0) msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %4 to do", name(), numWaypoint, numDone, numTodo);
+        else msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %5 other, %4 to do", name(), numWaypoint, numDone, numTodo, numOther);
+    }
+    else msg = i18np("Selected %1 folder", "Selected %1 folders", num);
+    return (msg);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataTrackpoint							//
@@ -776,6 +846,13 @@ TrackDataTrackpoint::TrackDataTrackpoint()
 #ifdef MEMORY_TRACKING
     ++allocTrackpoint;
 #endif
+}
+
+
+QString TrackDataTrackpoint::statusMessage(int num) const
+{
+    if (num==1) return (i18n("Selected point '%1'", name()));
+    else return (i18np("Selected %1 point", "Selected %1 points", num));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -804,6 +881,25 @@ case TrackData::MediaPhoto:		return ("image-x-generic");
 case TrackData::MediaStop:		return ("media-playback-stop");
 default:				return ("unknown");
     }
+}
+
+
+QString TrackDataWaypoint::statusMessage(int num) const
+{
+    QString msg;
+    if (num==1)
+    {
+        msg = i18n("Selected waypoint '%1'", name());
+        const QString wptStatus = TrackData::formattedWaypointStatus(static_cast<TrackData::WaypointStatus>(metadata("status").toInt()), true);
+        if (!wptStatus.isEmpty()) msg += (" ("+wptStatus+")");
+
+        QString wptDesc = metadata("desc").toString();
+        int idx = wptDesc.indexOf('\n');
+        if (idx!=-1) wptDesc = wptDesc.left(idx);
+        if (!wptDesc.isEmpty()) msg += (" \""+KStringHandler::rsqueeze(wptDesc, 50)+"\"");
+    }
+    else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", num);
+    return (msg);
 }
 
 
@@ -845,6 +941,13 @@ TrackDataRoute::TrackDataRoute()
 #endif
 }
 
+
+QString TrackDataRoute::statusMessage(int num) const
+{
+    if (num==1) return (i18n("Selected route '%1'", name()));
+    else return (i18np("Selected %1 route", "Selected %1 routes", num));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataRoutepoint							//
@@ -857,6 +960,13 @@ TrackDataRoutepoint::TrackDataRoutepoint()
 #ifdef MEMORY_TRACKING
     ++allocRoutepoint;
 #endif
+}
+
+
+QString TrackDataRoutepoint::statusMessage(int num) const
+{
+    if (num==1) return (i18n("Selected routepoint '%1'", name()));
+    else return (i18np("Selected %1 routepoint", "Selected %1 routepoints", num));
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -220,6 +220,7 @@ public:
     bool hasExplicitName() const			{ return (mExplicitName); }
 
     virtual QIcon icon() const;
+    virtual QString statusMessage(int num) const;
 
     int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
     TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
@@ -301,6 +302,7 @@ public:
     virtual ~TrackDataFile() = default;
 
     TrackData::Type type() const override		{ return (TrackData::File); }
+    virtual QString statusMessage(int num) const override;
 
     QUrl fileName() const				{ return (mFileName); }
     void setFileName(const QUrl &file);
@@ -331,6 +333,7 @@ public:
     virtual ~TrackDataTrack() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Track); }
+    virtual QString statusMessage(int num) const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -355,6 +358,7 @@ public:
     virtual ~TrackDataSegment() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Segment); }
+    virtual QString statusMessage(int num) const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -381,6 +385,7 @@ public:
     virtual ~TrackDataFolder() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Folder); }
+    virtual QString statusMessage(int num) const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -442,6 +447,8 @@ public:
     virtual ~TrackDataTrackpoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Trackpoint); }
+    virtual QString statusMessage(int num) const override;
+
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -466,6 +473,8 @@ public:
     virtual ~TrackDataWaypoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Waypoint); }
+    virtual QString statusMessage(int num) const override;
+
 
     QIcon icon() const override;
 
@@ -494,6 +503,8 @@ public:
     virtual ~TrackDataRoute() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Route); }
+    virtual QString statusMessage(int num) const override;
+
 
     QString iconName() const override			{ return ("chart_route"); }
 
@@ -517,6 +528,7 @@ public:
     virtual ~TrackDataRoutepoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Routepoint); }
+    virtual QString statusMessage(int num) const override;
 
     // There is a "chart_routepoint" icon (present for completeness),
     // but the flag looks better on the map and plot.  So use it in the
