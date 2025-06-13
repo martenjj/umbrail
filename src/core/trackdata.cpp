@@ -573,6 +573,12 @@ QString TrackDataFile::statusMessage(int num) const
     else return (i18np("Selected %1 file", "Selected %1 files", num));
 }
 
+
+QString TrackDataFile::toolTip() const
+{
+    return (i18np("File '%2' with %1 item", "File %2 with %1 items", childCount(), fileName().toDisplayString()));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataTrack							//
@@ -592,6 +598,12 @@ QString TrackDataTrack::statusMessage(int num) const
 {
     if (num==1) return (i18n("Selected track '%1'", name()));
     else return (i18np("Selected %1 track", "Selected %1 tracks", num));
+}
+
+
+QString TrackDataTrack::toolTip() const
+{
+    return (i18np("Track with %1 segment", "Track with %1 segments", childCount()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -629,6 +641,12 @@ QString TrackDataSegment::statusMessage(int num) const
 {
     if (num==1) return (i18n("Selected segment '%1'", name()));
     else return (i18np("Selected %1 segment", "Selected %1 segments", num));
+}
+
+
+QString TrackDataSegment::toolTip() const
+{
+    return (i18np("Segment with %1 point", "Segment with %1 points", childCount()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -756,7 +774,6 @@ int TrackDataAbstractPoint::timeTo(const TrackDataAbstractPoint *other) const
     return (time().secsTo(other->time()));
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataFolder							//
@@ -819,6 +836,12 @@ case TrackData::StatusDone:     ++numDone;	break;
     return (msg);
 }
 
+
+QString TrackDataFolder::toolTip() const
+{
+    return (i18np("Folder with %1 item", "Folder with %1 items", childCount()));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataTrackpoint							//
@@ -838,6 +861,13 @@ QString TrackDataTrackpoint::statusMessage(int num) const
 {
     if (num==1) return (i18n("Selected point '%1'", name()));
     else return (i18np("Selected %1 point", "Selected %1 points", num));
+}
+
+
+QString TrackDataTrackpoint::toolTip() const
+{
+    // TODO: hide elevation if none
+    return (i18n("Point at %1, elevation %2", formattedTime(true), formattedElevation()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -888,6 +918,15 @@ QString TrackDataWaypoint::statusMessage(int num) const
 }
 
 
+QString TrackDataWaypoint::toolTip() const
+{
+    // TODO: hide elevation if none
+    const QString wptStatus = formattedWaypointStatus(static_cast<TrackData::WaypointStatus>(metadata("status").toInt()), true);
+    return (!wptStatus.isEmpty() ? i18n("Waypoint at %1, elevation %2 (%3)", formattedTime(true), formattedElevation(), wptStatus)
+                                 : i18n("Waypoint at %1, elevation %2", formattedTime(true), formattedElevation()));
+}
+
+
 bool TrackDataWaypoint::isMediaType() const
 {
     const TrackData::MediaType wpt = mediaType();
@@ -933,6 +972,12 @@ QString TrackDataRoute::statusMessage(int num) const
     else return (i18np("Selected %1 route", "Selected %1 routes", num));
 }
 
+
+QString TrackDataRoute::toolTip() const
+{
+    return (i18np("Route with %1 point", "Route with %1 points", childCount()));
+}
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataRoutepoint							//
@@ -952,6 +997,13 @@ QString TrackDataRoutepoint::statusMessage(int num) const
 {
     if (num==1) return (i18n("Selected routepoint '%1'", name()));
     else return (i18np("Selected %1 routepoint", "Selected %1 routepoints", num));
+}
+
+
+QString TrackDataRoutepoint::toolTip() const
+{
+    // TODO: hide elevation if none
+    return (i18n("Routepoint, elevation %1", formattedElevation()));
 }
 
 //////////////////////////////////////////////////////////////////////////

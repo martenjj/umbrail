@@ -175,31 +175,7 @@ case Qt::ToolTipRole:
         {
 case COL_NAME:
             {
-                QString tip;
-
-                if (dynamic_cast<const TrackDataFolder *>(tdi)!=nullptr) tip = i18np("Folder with %1 item", "Folder with %1 items", tdi->childCount());
-                else if (dynamic_cast<const TrackDataTrack *>(tdi)!=nullptr) tip = i18np("Track with %1 segment", "Track with %1 segments", tdi->childCount());
-                else if (dynamic_cast<const TrackDataSegment *>(tdi)!=nullptr) tip = i18np("Segment with %1 point", "Segment with %1 points", tdi->childCount());
-                else if (dynamic_cast<const TrackDataRoute *>(tdi)!=nullptr) tip = i18np("Route with %1 point", "Route with %1 points", tdi->childCount());
-                else
-                {
-                    const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(tdi);
-                    if (tdf!=nullptr) tip = i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString());
-                    else
-                    {
-                        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(tdi);
-                        if (dynamic_cast<const TrackDataTrackpoint *>(tdp)!=nullptr) tip = i18n("Point at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                        else if (dynamic_cast<const TrackDataWaypoint *>(tdp)!=nullptr)
-                        {
-                            const QString wptStatus = TrackData::formattedWaypointStatus(
-                                static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
-                            if (!wptStatus.isEmpty()) tip = i18n("Waypoint at %1, elevation %2 (%3)", tdp->formattedTime(true), tdp->formattedElevation(), wptStatus);
-                            else tip = i18n("Waypoint at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                        }
-                        else if (dynamic_cast<const TrackDataRoutepoint *>(tdp)!=nullptr) tip = i18n("Routepoint, elevation %1", tdp->formattedElevation());
-                    }
-                }
-
+                QString tip = tdi->toolTip();
                 if (!tip.isEmpty())
                 {
                     QString desc = tdi->metadata("desc").toString();
