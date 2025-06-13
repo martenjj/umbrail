@@ -866,8 +866,9 @@ QString TrackDataTrackpoint::statusMessage(int num) const
 
 QString TrackDataTrackpoint::toolTip() const
 {
-    // TODO: hide elevation if none
-    return (i18n("Point at %1, elevation %2", formattedTime(true), formattedElevation()));
+    const double e = elevation();
+    return (ISNAN(e) ? i18n("Point at time %1", formattedTime(true))
+                     : i18n("Point at time %1, elevation %2", formattedTime(true), formattedElevation()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -920,10 +921,21 @@ QString TrackDataWaypoint::statusMessage(int num) const
 
 QString TrackDataWaypoint::toolTip() const
 {
-    // TODO: hide elevation if none
+    // This and similar logic for other types is indeed an I18N
+    // word puzzle, but the only alternative is a proliferation
+    // of messages.
+    QString res = i18n("Waypoint");
+
+    const QDateTime dt = time();
+    if (dt.isValid()) res += i18n(" at time %1", formattedTime(true));
+
+    const double e = elevation();
+    if (!ISNAN(e)) res += i18n(", elevation %1", formattedElevation());
+
     const QString wptStatus = formattedWaypointStatus(static_cast<TrackData::WaypointStatus>(metadata("status").toInt()), true);
-    return (!wptStatus.isEmpty() ? i18n("Waypoint at %1, elevation %2 (%3)", formattedTime(true), formattedElevation(), wptStatus)
-                                 : i18n("Waypoint at %1, elevation %2", formattedTime(true), formattedElevation()));
+    if (!wptStatus.isEmpty()) res += QString(" (%1)").arg(wptStatus);
+
+    return (res);
 }
 
 
@@ -1002,8 +1014,8 @@ QString TrackDataRoutepoint::statusMessage(int num) const
 
 QString TrackDataRoutepoint::toolTip() const
 {
-    // TODO: hide elevation if none
-    return (i18n("Routepoint, elevation %1", formattedElevation()));
+    // Elevation is rare for routepoints, with no GUI to set it.
+    return (i18n("Routepoint"));
 }
 
 //////////////////////////////////////////////////////////////////////////
