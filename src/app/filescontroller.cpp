@@ -45,7 +45,6 @@
 #include <kmessagebox.h>
 #include <kactioncollection.h>
 #include <klinkitemselectionmodel.h>
-#include <kstringhandler.h>
 
 #include <kio/statjob.h>
 #include <kio/filecopyjob.h>
@@ -844,80 +843,7 @@ void FilesController::slotUpdateActionState()
     else
     {
         const TrackDataItem *tdi = filesView()->selectedItem();
-        const QString name = tdi->name();
-        QString msg = "";
-
-        switch (selType)
-        {
-case TrackData::File:       if (selCount==1) msg = i18n("Selected file '%1'", name);
-                            else msg = i18np("Selected %1 file", "Selected %1 files", selCount);
-                            break;
-
-case TrackData::Track:      if (selCount==1) msg = i18n("Selected track '%1'", name);
-                            else msg = i18np("Selected %1 track", "Selected %1 tracks", selCount);
-                            break;
-
-case TrackData::Segment:    if (selCount==1) msg = i18n("Selected segment '%1'", name);
-                            else msg = i18np("Selected %1 segment", "Selected %1 segments", selCount);
-                            break;
-
-case TrackData::Route:      if (selCount==1) msg = i18n("Selected route '%1'", name);
-                            else msg = i18np("Selected %1 route", "Selected %1 routes", selCount);
-                            break;
-
-case TrackData::Trackpoint: if (selCount==1) msg = i18n("Selected point '%1'", name);
-                            else msg = i18np("Selected %1 point", "Selected %1 points", selCount);
-                            break;
-
-case TrackData::Waypoint:   if (selCount==1)
-                            {
-                                msg = i18n("Selected waypoint '%1'", name);
-                                const QString wptStatus = TrackData::formattedWaypointStatus(static_cast<TrackData::WaypointStatus>(tdi->metadata("status").toInt()), true);
-                                if (!wptStatus.isEmpty()) msg += (" ("+wptStatus+")");
-
-                                QString wptDesc = tdi->metadata("desc").toString();
-                                int idx = wptDesc.indexOf('\n');
-                                if (idx!=-1) wptDesc = wptDesc.left(idx);
-                                if (!wptDesc.isEmpty()) msg += (" \""+KStringHandler::rsqueeze(wptDesc, 50)+"\"");
-                            }
-                            else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", selCount);
-                            break;
-
-case TrackData::Routepoint: if (selCount==1) msg = i18n("Selected routepoint '%1'", name);
-                            else msg = i18np("Selected %1 routepoint", "Selected %1 routepoints", selCount);
-                            break;
-
-case TrackData::Folder:     if (selCount==1)
-                            {
-                                int numWaypoint = 0;
-                                int numTodo = 0;
-                                int numDone = 0;
-
-                                const int num = tdi->childCount();
-                                for (int i = 0; i<num; ++i)
-                                {
-                                    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(tdi->childAt(i));
-                                    if (tdw==nullptr) continue;
-                                    ++numWaypoint;
-
-                                    switch (tdw->metadata("status").toInt())
-                                    {
-case TrackData::StatusTodo:             ++numTodo;	break;
-case TrackData::StatusDone:             ++numDone;	break;
-                                    };
-                                }
-
-                                const int numOther = numWaypoint-(numTodo+numDone);
-                                if ((numTodo+numDone)==0) msg = i18n("Selected folder '%1': %2 waypoints", name, numWaypoint);
-                                else if (numOther==0) msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %4 to do", name, numWaypoint, numDone, numTodo);
-                                else msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %5 other, %4 to do", name, numWaypoint, numDone, numTodo, numOther);
-                            }
-                            else msg = i18np("Selected %1 folder", "Selected %1 folders", selCount);
-                            break;
-
-default:                    break;
-        }
-
+        const QString msg = tdi->statusMessage(selCount);
         if (!msg.isEmpty()) emit statusMessage(msg);
     }
 

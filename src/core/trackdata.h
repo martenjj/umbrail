@@ -265,6 +265,16 @@ public:
 
     virtual const PointIcon *icon() const;
 
+    // Return a status message indicating that one or more of this item type
+    // is selected by the user in the application's GUI.  It is displayed in
+    // the status bar by FilesController::slotUpdateActionState().  A mixed
+    // selection is handled specially there and will never be seen here.
+    virtual QString statusMessage(int num) const = 0;
+
+    // Return a tool tip for the hovered item in the application's GUI.
+    // This only ever applies to a single item.
+    virtual QString toolTip() const = 0;
+
     int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
     TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
     int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=nullptr); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
@@ -329,8 +339,10 @@ public:
     explicit TrackDataContainer();
     virtual ~TrackDataContainer() = default;
 
-    TrackData::Type type() const override	{ return (TrackData::None); }
-    virtual QString iconName() const override	{ return (QString()); }
+    TrackData::Type type() const override			{ return (TrackData::None); }
+    virtual QString iconName() const override			{ return (QString()); }
+    virtual QString statusMessage(int num) const override	{ Q_UNUSED(num); return (QString()); }
+    virtual QString toolTip() const override			{ return (QString()); }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -346,6 +358,8 @@ public:
     virtual ~TrackDataFile();
 
     TrackData::Type type() const override		{ return (TrackData::File); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     QUrl fileName() const				{ return (mFileName); }
     void setFileName(const QUrl &file);
@@ -379,6 +393,8 @@ public:
     virtual ~TrackDataTrack() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Track); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -403,6 +419,8 @@ public:
     virtual ~TrackDataSegment() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Segment); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -429,6 +447,8 @@ public:
     virtual ~TrackDataFolder() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Folder); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -490,6 +510,8 @@ public:
     virtual ~TrackDataTrackpoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Trackpoint); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -514,6 +536,8 @@ public:
     virtual ~TrackDataWaypoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Waypoint); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     const PointIcon *icon() const override;
 
@@ -546,6 +570,8 @@ public:
     virtual ~TrackDataRoute() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Route); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)
@@ -570,6 +596,8 @@ public:
     virtual ~TrackDataRoutepoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Routepoint); }
+    virtual QString statusMessage(int num) const override;
+    virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
     DEFINE_PROPERTIES_PAGE(Detail)

@@ -35,31 +35,7 @@ QVariant FilesDataModel::data(const QModelIndex &idx, int role) const
 
     if (role==Qt::ToolTipRole && col==ColumnName)
     {
-        QString tip;
-
-        if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr) tip = i18np("Folder with %1 item", "Folder with %1 items", item->childCount());
-        else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr) tip = i18np("Track with %1 segment", "Track with %1 segments", item->childCount());
-        else if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr) tip = i18np("Segment with %1 point", "Segment with %1 points", item->childCount());
-        else if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr) tip = i18np("Route with %1 point", "Route with %1 points", item->childCount());
-        else
-        {
-            const TrackDataFile *tdf = dynamic_cast<const TrackDataFile *>(item);
-            if (tdf!=nullptr) tip = i18np("File %2 with %1 item", "File %2 with %1 items", tdf->childCount(), tdf->fileName().toDisplayString());
-            else
-            {
-                const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
-                if (dynamic_cast<const TrackDataTrackpoint *>(tdp)!=nullptr) tip = i18n("Point at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                else if (dynamic_cast<const TrackDataWaypoint *>(tdp)!=nullptr)
-                {
-                    tip = i18n("Waypoint at %1, elevation %2", tdp->formattedTime(true), tdp->formattedElevation());
-                    const TrackData::WaypointStatus s = static_cast<TrackData::WaypointStatus>(item->metadata("status").toInt());
-                    const QString wptStatus = TrackData::formattedWaypointStatus(s, true);
-                    if (!wptStatus.isEmpty()) tip = i18n("%1 (%2)", tip, wptStatus);
-                }
-                else if (dynamic_cast<const TrackDataRoutepoint *>(tdp)!=nullptr) tip = i18n("Routepoint, elevation %1", tdp->formattedElevation());
-            }
-        }
-
+        QString tip = item->toolTip();
         if (!tip.isEmpty())
         {
             QString desc = item->metadata("desc").toString();
