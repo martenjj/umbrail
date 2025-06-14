@@ -200,7 +200,7 @@ TrackDataFolder *ImporterBase::getFolder(const QString &path)
 
     const QStringList folders = path.split('/');
     Q_ASSERT(!folders.isEmpty());
-    TrackDataItem *cur = mDataRoot;
+    TrackDataContainer *cur = mDataRoot;
     TrackDataFolder *foundFolder = nullptr;
 
     for (const QString &name : folders)			// look for existing subfolder

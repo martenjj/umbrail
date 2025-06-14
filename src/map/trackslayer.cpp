@@ -102,7 +102,7 @@ bool TracksLayer::isIndirectContainer(const TrackDataItem *item) const
 }
 
 
-void TracksLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bool isSelected) const
+void TracksLayer::doPaintItem(const TrackDataContainer *item, GeoPainter *painter, bool isSelected) const
 {
     const int cnt = item->childCount();
 #ifdef DEBUG_PAINTING

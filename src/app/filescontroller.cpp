@@ -608,8 +608,12 @@ static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
     }
     else
     {
-        const int cnt = pnt->childCount();
-        for (int i = 0; i<cnt; ++i) findChildWithTime(pnt->childAt(i), dt);
+        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(pnt);
+        if (tdc !=nullptr)
+        {
+            const int cnt = tdc->childCount();
+            for (int i = 0; i<cnt; ++i) findChildWithTime(tdc->childAt(i), dt);
+        }
     }
 }
 
@@ -1031,7 +1035,7 @@ void FilesController::slotSplitSegment()
     if (items.count()!=1) return;
     const TrackDataItem *item = items.first();
 
-    TrackDataItem *pnt = item->parent();
+    TrackDataContainer *pnt = item->parent();
     if (pnt==nullptr) return;
     qDebug() << "split" << pnt->name() << "at" << item->name();
 
@@ -1052,7 +1056,7 @@ void FilesController::slotSplitSegment()
 
 
 
-static bool compareSegmentTimes(const TrackDataItem *item1, const TrackDataItem *item2)
+static bool compareSegmentTimes(const TrackDataContainer *item1, const TrackDataContainer *item2)
 {
     if (item1->childCount()==0) return (true);		// empty always sorts first
     if (item2->childCount()==0) return (false);
@@ -1080,9 +1084,18 @@ void FilesController::slotMergeSegments()
     // This can also be enabled for waypoints, in which case the manual
     // merge dialogue is started.
 
-    QList<TrackDataItem *> items = filesView()->selectedItems();
-    const int num = items.count();
+    const QList<TrackDataItem *> selItems = filesView()->selectedItems();
+    const int num = selItems.count();
     if (num<2) return;
+
+    // TODO: will this work for waypoints?
+    QList<TrackDataContainer *> items;
+    for (TrackDataItem *item : std::as_const(selItems))
+    {
+        TrackDataContainer *seg = dynamic_cast<TrackDataContainer *>(item);
+        Q_ASSERT(seg!=nullptr);
+        items.append(seg);
+    }
 
     if (dynamic_cast<const TrackDataSegment *>(items.first())!=nullptr)
     {							// operating on segments
@@ -1110,6 +1123,8 @@ void FilesController::slotMergeSegments()
     }
     else if (dynamic_cast<const TrackDataWaypoint *>(items.first())!=nullptr)
     {							// operating on waypoints
+        // TODO: split out into a separate function
+
         // from NavTracks PointsController::slotMergeSelection()
         emit statusMessage(i18n("Checking positions"));
 
@@ -1165,7 +1180,7 @@ void FilesController::slotMergeSegments()
 
         ReplaceItemsCommand *cmd = new ReplaceItemsCommand(this);
         cmd->setSenderText(sender());
-        cmd->setData(items, d.resultPoint());
+        cmd->setData(selItems, d.resultPoint());
         executeCommand(cmd);
 
         slotUpdateActionState();
@@ -1174,7 +1189,8 @@ void FilesController::slotMergeSegments()
     }
 
     // operating on a segment or route here
-    TrackDataItem *masterSeg = items.takeFirst();
+    TrackDataContainer *masterSeg = items.takeFirst();
+    Q_ASSERT(masterSeg!=nullptr);
 
     MergeSegmentsCommand *cmd = new MergeSegmentsCommand(this);
     cmd->setSenderText(sender());
@@ -1200,7 +1216,9 @@ void FilesController::slotMoveItem()
 
     if (!d.exec()) return;
 
-    TrackDataItem *dest = d.selectedItem();
+    TrackDataContainer *dest = dynamic_cast<TrackDataContainer *>(d.selectedItem());
+    if (dest==nullptr) return;
+
     MoveItemCommand *cmd = new MoveItemCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(items, dest);
@@ -1240,7 +1258,9 @@ void FilesController::slotAddFolder()
 {
     QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
-    TrackDataItem *pnt = items.first();			// parent item (file or folder)
+
+    // The parent item, which must be a file or a folder.
+    TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
     Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr || dynamic_cast<TrackDataFolder *>(pnt)!=nullptr);
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
@@ -1272,7 +1292,7 @@ void FilesController::slotDeleteItems()
     if (num==1)
     {
         const TrackDataItem *tdi = items.first();
-        if (tdi->childCount()==0)
+        if (dynamic_cast<const TrackDataContainer *>(tdi)==nullptr)
         {
             query = xi18nc("@info", "Delete the selected item \"<emphasis strong=\"1\">%1</emphasis>\"?", tdi->name());
         }
@@ -1438,7 +1458,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-void FilesController::slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row)
+void FilesController::slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataContainer *ontoParent, int row)
 {
     qDebug() << "items" << sourceItems.count() << "parent" << ontoParent->name() << "row" << row;
 

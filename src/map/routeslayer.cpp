@@ -101,17 +101,17 @@ bool RoutesLayer::isIndirectContainer(const TrackDataItem *item) const
 }
 
 
-void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bool isSelected) const
+void RoutesLayer::doPaintItem(const TrackDataContainer *item, GeoPainter *painter, bool isSelected) const
 {
     const int cnt = item->childCount();
 #ifdef DEBUG_PAINTING
     qDebug() << "routepoints for" << item->name() << "count" << cnt;
 #endif
 
-    // Scan along the segment, assembling the coordinates into a list,
-    // and draw them as a polyline.  We assume that routes will not be
-    // so extensive as tracks, so there is no need to split it up into
-    // smaller pieces.
+    // Scan along the route, assembling the routepoint coordinates into
+    // a list, and draw them as a polyline.  We assume that routes will
+    // not be so extensive as tracks, so there is no need to split it up
+    // into smaller pieces.
 
     QColor col = MapView::resolveLineColour(item);
     painter->setBrush(Qt::NoBrush);

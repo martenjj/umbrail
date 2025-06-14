@@ -40,8 +40,11 @@ class PointsView;
 class FilesModel;
 class WaypointsFilterModel;
 class HomePointsDataModel;
+
 class TrackDataFile;
 class TrackDataItem;
+class TrackDataContainer;
+
 class ErrorReporter;
 class ImporterExporterOptions;
 
@@ -132,7 +135,7 @@ private:
 
 private slots:
     void slotUpdateActionState();
-    void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
+    void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataContainer *ontoParent, int row);
 
 private:
     FilesView *mFilesView;

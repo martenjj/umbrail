@@ -630,7 +630,7 @@ void StopDetectDialogue::slotCommitResults()
     const QString folderPath = mFolderSelect->folderPath();
     Q_ASSERT(!folderPath.isEmpty());
 
-    TrackDataItem *root = filesController()->filesModel()->rootItem();
+    TrackDataContainer *root = filesController()->filesModel()->rootItem();
     // The destination folder may not exist at this point,
     // if the default entry has been accepted.
     TrackDataFolder *destFolder = TrackData::findFolderByPath(folderPath, root);
@@ -683,9 +683,9 @@ void StopDetectDialogue::slotCommitResults()
 }
 
 
-void StopDetectDialogue::slotNewFolder(const QString &name, TrackDataItem *pnt)
+void StopDetectDialogue::slotNewFolder(const QString &name, TrackDataContainer *pnt)
 {
-    TrackDataItem *parentItem = (pnt==nullptr ? filesController()->filesModel()->rootFileItem() : pnt);
+    TrackDataContainer *parentItem = (pnt==nullptr ? filesController()->filesModel()->rootFileItem() : pnt);
     qDebug() << "create" << name << "under" << parentItem->name();
 
     TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, parentItem);

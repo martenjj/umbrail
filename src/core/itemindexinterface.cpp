@@ -35,7 +35,7 @@ QModelIndex ItemIndexInterface::indexForItem(const TrackDataItem *item) const
 }
 
 
-TrackDataItem *ItemIndexInterface::rootItem() const
+TrackDataContainer *ItemIndexInterface::rootItem() const
 {
     return (of(mSourceModel->sourceModel())->rootItem());
 }

@@ -71,7 +71,7 @@ TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
 QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 {
     Q_ASSERT(tdi!=nullptr);
-    const TrackDataItem *pnt = tdi->parent();
+    const TrackDataContainer *pnt = tdi->parent();
     int row = (pnt==nullptr ? 0 : pnt->childIndex(tdi));
     // The two casts are necessary, the only alternative
     // is an old-style cast.
@@ -81,38 +81,37 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 {
-    const TrackDataItem *tdi = itemForIndex(pnt);
-    if (tdi==nullptr)
+    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(itemForIndex(pnt));
+    if (tdc==nullptr)
     {
         if (isEmpty()) return (QModelIndex());
         if (row>0) return (QModelIndex());
         return (createIndex(row, col, mRootItem));
     }
 
-    if (row>=tdi->childCount())				// only during initialisation
+    if (row>=tdc->childCount())				// only during initialisation
     {							// without SORTABLE_VIEW
-        qDebug() << "requested index for nonexistent row" << row << "of" << tdi->childCount();
+        qDebug() << "requested index for nonexistent row" << row << "of" << tdc->childCount();
         return (QModelIndex());
     }
 
-    return (createIndex(row, col, tdi->childAt(row)));
+    return (createIndex(row, col, tdc->childAt(row)));
 }
 
 
 QModelIndex FilesModel::parent(const QModelIndex &idx) const
 {
     const TrackDataItem *tdi = itemForIndex(idx);
-    if (tdi->parent()==nullptr) return (QModelIndex());
-    return (indexForItem(tdi->parent()));
+    const TrackDataContainer *tdc = tdi->parent();
+    return (tdc!=nullptr ? indexForItem(tdc) : QModelIndex());
 }
 
 
 int FilesModel::rowCount(const QModelIndex &pnt) const
 {
-   if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
-   const TrackDataItem *tdi = itemForIndex(pnt);
-   Q_ASSERT(tdi!=nullptr);
-   return (tdi->childCount());
+    if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
+    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(itemForIndex(pnt));
+    return (tdc!=nullptr ? tdc->childCount() : 0);
 }
 
 
@@ -323,9 +322,9 @@ QMimeData *FilesModel::mimeData(const QModelIndexList &idxs) const
 
 static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
 {
-    const TrackDataItem *parentA = a->parent();
+    const TrackDataContainer *parentA = a->parent();
     Q_ASSERT(parentA!=NULL);
-    const TrackDataItem *parentB = b->parent();
+    const TrackDataContainer *parentB = b->parent();
     Q_ASSERT(parentB!=NULL);
 
     int indexA = parentA->childIndex(a);
@@ -370,7 +369,7 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
     qDebug() << "doit" << doit << "row" << row << "pnt" << pnt;
 
     // Get the parent item of the drop location.
-    TrackDataItem *ontoParent = itemForIndex(pnt);
+    TrackDataContainer *ontoParent = dynamic_cast<TrackDataContainer *>(itemForIndex(pnt));
     if (ontoParent==nullptr) return (false);
     qDebug() << "  onto parent" << ontoParent->name();
 

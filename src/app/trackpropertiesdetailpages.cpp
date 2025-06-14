@@ -48,7 +48,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-static unsigned sumTotalTravelTime2(const TrackDataItem *item)
+static unsigned sumTotalTravelTime2(const TrackDataContainer *item)
 {
     const int num = item->childCount();
     if (num==0) return (0);				// no children
@@ -71,13 +71,14 @@ static unsigned sumTotalTravelTime2(const TrackDataItem *item)
     {
         // For any container that can contain segments (file or track),
         // recurse into its children.
-
         if (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
             dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
         {
             for (int i = 0; i<num; ++i)
             {
-                tt += sumTotalTravelTime2(item->childAt(i));
+                const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item->childAt(i));
+                if (tdc==nullptr) continue;
+                tt += sumTotalTravelTime2(tdc);
             }
         }
     }
@@ -116,17 +117,18 @@ static unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
     }
 
     // Sum segments, and recurse into other containers.
-
     for (const TrackDataItem *item : std::as_const(*items))
     {
-        tt += sumTotalTravelTime2(item);
+        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        if (tdc==nullptr) continue;
+        tt += sumTotalTravelTime2(tdc);
     }
 
     return (tt);
 }
 
 
-static double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly)
+static double sumTotalTravelDistance2(const TrackDataContainer *item, bool tracksOnly)
 {
     const int num = item->childCount();
     if (num==0) return (0.0);				// no children
@@ -163,7 +165,9 @@ static double sumTotalTravelDistance2(const TrackDataItem *item, bool tracksOnly
         // For any other sort ofcontainer (file or track), recurse into its children.
         for (int i = 0; i<num; ++i)
         {
-            dist += sumTotalTravelDistance2(item->childAt(i), tracksOnly);
+            const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item->childAt(i));
+            if (tdc==nullptr) continue;
+            dist += sumTotalTravelDistance2(tdc, tracksOnly);
         }
     }
 
@@ -198,10 +202,9 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     // If two points are selected in an ordered container (segment or
     // route), look at all of the points between them.  This works
     // for waypoints in folders also, but the result is meaningless.
-
     if (num==2 && tdp1!=nullptr)
     {
-        const TrackDataItem *pnt = tdp1->parent();
+        const TrackDataContainer *pnt = tdp1->parent();
         Q_ASSERT(pnt!=nullptr);
         const int idx1 = pnt->childIndex(tdp1);
 
@@ -224,7 +227,6 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     // If a number of points in an ordered container are selected,
     // sum the distance between each one and the next.  If the selection
     // is not contiguous then the result is not really meaningful.
-
     if (num>2 && tdp1!=nullptr)
     {
         const TrackDataAbstractPoint *prev = nullptr;
@@ -243,15 +245,16 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     // In which case, only tracks are to be considered.  If the file
     // contains no tracks but may still contain routes, then the routes
     // will be considered.
-
     bool tracksOnly = false;				// assume so to start
     if (dynamic_cast<const TrackDataFile *>(item1)!=nullptr)
     {							// file at top level
         for (const TrackDataItem *item : std::as_const(*items))
         {
-            for (int i = 0; i<item->childCount(); ++i)
+            const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+            if (tdc==nullptr) continue;
+            for (int i = 0; i<tdc->childCount(); ++i)
             {
-                const TrackDataItem *childItem = item->childAt(i);
+                const TrackDataItem *childItem = tdc->childAt(i);
                 const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(childItem);
                 if (tdt!=nullptr)			// have found a track
                 {
@@ -264,10 +267,11 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     }
 
     // Sum segments and/or routes, and recurse into other containers.
-
     for (const TrackDataItem *item : std::as_const(*items))
     {
-        dist += sumTotalTravelDistance2(item, tracksOnly);
+        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        if (tdc==nullptr) continue;
+        dist += sumTotalTravelDistance2(tdc, tracksOnly);
     }
 
     return (dist);
@@ -275,7 +279,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
 
 
 static void getTwoPoints(const QList<TrackDataItem *> *items,
-                         const TrackDataItem *parentContainer,
+                         const TrackDataContainer *parentContainer,
                          TrackDataAbstractPoint **ppt1,
                          TrackDataAbstractPoint **ppt2)
 {
@@ -333,12 +337,11 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
     qDebug() << "display" << disp << "for" << num << "items";
     Q_ASSERT(num>0);					// must have something here
 							// parent container, if any
-    const TrackDataItem *parentContainer = items->first()->parent();
+    const TrackDataContainer *parentContainer = items->first()->parent();
 
     // See if this selection is contiguous within its parent.
     // A single selected item or an item with no parent (i.e. the
     // top level file or root) is assumed to be contiguous.
-
     bool contiguousSelection = true;			// assume so at start
     if (num>1 && parentContainer!=nullptr)		// more than one item in container
     {							// its index of first item
@@ -758,7 +761,8 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
     int nRoutes = 0;
     for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataItem *item = items->at(i);
+        const TrackDataContainer *item = dynamic_cast<const TrackDataContainer *>(items->at(i));
+        if (item==nullptr) continue;
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
@@ -890,7 +894,8 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
     int nFolders = 0;
     for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataItem *item = items->at(i);
+        const TrackDataContainer *item = dynamic_cast<const TrackDataContainer *>(items->at(i));
+        if (item==nullptr) continue;
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);

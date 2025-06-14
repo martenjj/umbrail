@@ -39,7 +39,7 @@ class QLineEdit;
 class QPushButton;
 class QShowEvent;
 class ValueSlider;
-class TrackDataItem;
+class TrackDataContainer;
 class TrackDataAbstractPoint;
 class TrackDataWaypoint;
 class FolderSelectWidget;
@@ -61,7 +61,7 @@ protected slots:
     void slotMergeStops();
     void slotCommitResults();
 
-    void slotNewFolder(const QString &name, TrackDataItem *pnt);
+    void slotNewFolder(const QString &name, TrackDataContainer *pnt);
 
 private slots:
     void slotDetectStops();

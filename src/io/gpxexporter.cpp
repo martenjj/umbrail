@@ -173,8 +173,10 @@ GpxExporter::GpxExporter()
 
 
 // This cannot be file-static because it calls writeItem().
-bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const
+bool GpxExporter::writeChildren(const TrackDataContainer *item, QXmlStreamWriter &str) const
 {
+    if (item==nullptr) return (false);
+
     int num = item->childCount();
     for (int i = 0; i<num; ++i)
     {
@@ -189,10 +191,6 @@ bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str
 // access ExporterBase::isSelected().
 bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, const QString &newName) const
 {
-    // If the item is not selected for export, then simply look inside
-    // and process its child items.
-    if (!isSelected(item)) return (writeChildren(item, str));
-
     // The name to use when writing out this item.  If the name is
     // automatically assigned (not explicit), then no name is written.
     // If a new name to override the existing one is specified then
@@ -205,10 +203,15 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
     const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
     const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
+    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
 
     const TrackDataAbstractPoint *tda = dynamic_cast<const TrackDataAbstractPoint *>(item);
     const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+
+    // If the item is not selected for export, then simply look inside
+    // and process its child items.
+    if (!isSelected(item)) return (writeChildren(tdc, str));
 
     // Although in theory any item could have "flags" metadata, only waypoints
     // have a GUI to set them and so for efficiency only check the flags if the
@@ -306,7 +309,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     // should be output before its extensions.  However, in the interests
     // of clarity, unless EXTENSIONS_AFTER_CHILDREN is defined the extensions
     // are output first and then the children follow.
-    writeChildren(item, str);
+    writeChildren(tdc, str);
 #endif
 
     // The colour explicitly set in item metadata.
@@ -561,7 +564,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
 
 #ifndef EXTENSIONS_AFTER_CHILDREN
     // Finally write out the item's children, if any.
-    writeChildren(item, str);
+    writeChildren(tdc, str);
 #endif
 
     // And at last the element end tag.

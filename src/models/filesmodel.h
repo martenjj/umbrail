@@ -90,16 +90,16 @@ public:
     TrackDataItem *itemForIndex(const QModelIndex &idx) const override;
     QModelIndex indexForItem(const TrackDataItem *tdi) const override;
 
-    TrackDataItem *rootItem() const override			{ return (mRootItem); }
+    TrackDataContainer *rootItem() const override		{ return (mRootItem); }
 
 signals:
-    void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
+    void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataContainer *ontoParent, int row);
 
 private:
     bool dropMimeDataInternal(bool doit, const QMimeData *data, int row, const QModelIndex &pnt);
 
 private:
-    TrackDataItem *mRootItem;
+    TrackDataContainer *mRootItem;
 };
  
 #endif							// FILESMODEL_H

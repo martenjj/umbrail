@@ -65,7 +65,6 @@ static int counterTrackpoint = 0;
 static int counterFolder = 0;
 static int counterWaypoint = 0;
 static int counterRoutepoint = 0;
-static int counterContainer = 0;
 
 #ifdef MEMORY_TRACKING
 static int allocFile = 0;
@@ -76,8 +75,8 @@ static int allocTrackpoint = 0;
 static int allocFolder = 0;
 static int allocWaypoint = 0;
 static int allocRoutepoint = 0;
-static int allocContainer = 0;
 static int allocChildren = 0;
+static int allocContainer = 0;
 static int allocMetadata = 0;
 #endif
 
@@ -165,7 +164,11 @@ unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> *items)
 {
     if (items==nullptr) return (0);
     int num = 0;
-    for (int i = 0; i<items->count(); ++i) num += items->at(i)->childCount();
+    for (int i = 0; i<items->count(); ++i)
+    {
+        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(items->at(i));
+        if (tdc!=nullptr) num += tdc->childCount();
+    }
     return (num);
 }
 
@@ -234,18 +237,19 @@ QString TrackData::formattedTime(const QDateTime &dt, const QTimeZone *tz)
 }
 
 
-TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataItem *root)
+TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDataContainer *root)
 {
+    if (root==nullptr) return (nullptr);		// must have a root
     if (path.isEmpty()) return (nullptr);		// check for null path
     const QStringList names = path.split('/', Qt::SkipEmptyParts);
 							// list of folder names
-    const TrackDataItem *item = root;
+    const TrackDataContainer *item = root;
     for (const QString &name : names)			// descend through path names
     {
         const int cnt = item->childCount();
         if (cnt==0) return (nullptr);			// no children under this item
 
-        const TrackDataItem *folderItem = nullptr;
+        const TrackDataFolder *folderItem = nullptr;
         for (int i = 0; i<cnt; ++i)			// search through children
         {
             const TrackDataFolder *fold = dynamic_cast<const TrackDataFolder *>(item->childAt(i));
@@ -260,8 +264,8 @@ TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDat
         }
 
         if (folderItem==nullptr) return (nullptr);	// no child folder found
-        item = folderItem;				// continue descent from here
-    }
+        item = static_cast<const TrackDataContainer *>(folderItem);
+    }							// continue descent from here
 
     return (const_cast<TrackDataFolder *>(dynamic_cast<const TrackDataFolder *>(item)));
 }
@@ -391,7 +395,6 @@ TrackDataItem::TrackDataItem(const char *format, int *counter)
 
 void TrackDataItem::init()
 {
-    mChildren = nullptr;				// no children yet
     mParent = nullptr;					// not attached to parent
     mMetadata = nullptr;				// no metadata yet
     mSelectionId = 1;					// nothing selected yet
@@ -401,8 +404,6 @@ void TrackDataItem::init()
 
 TrackDataItem::~TrackDataItem()
 {
-    if (mChildren!=nullptr) qDeleteAll(*mChildren);	// delete children if any
-    delete mChildren;					// delete child list if present
     delete mMetadata;					// delete metadata if present
 }
 
@@ -414,72 +415,17 @@ void TrackDataItem::setName(const QString &newName, bool explicitName)
 }
 
 
-void TrackDataItem::addChildItem(TrackDataItem *data, int idx)
-{
-    if (data->parent()!=nullptr) qWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
-    Q_ASSERT(data->parent()==nullptr);
-
-    if (mChildren==nullptr)
-    {
-#ifdef MEMORY_TRACKING
-        ++allocChildren;
-#endif
-        mChildren = new QList<TrackDataItem *>;
-    }
-
-    if (idx>=0) mChildren->insert(idx, data);		// insert at specified place
-    else mChildren->append(data);			// default is to append
-							// have taken ownership of child
-    data->mParent = this;				// set child item parent
-}
-
-
-TrackDataItem *TrackDataItem::takeLastChildItem()
-{
-    Q_ASSERT(mChildren!=nullptr);
-    Q_ASSERT(!mChildren->isEmpty());
-    TrackDataItem *data = mChildren->takeLast();
-    data->mParent = nullptr;				// now no longer has parent
-    return (data);
-}
-
-
-TrackDataItem *TrackDataItem::takeFirstChildItem()
-{
-    Q_ASSERT(mChildren!=nullptr);
-    Q_ASSERT(!mChildren->isEmpty());
-    TrackDataItem *data = mChildren->takeFirst();
-    data->mParent = nullptr;				// now no longer has parent
-    return (data);
-}
-
-
-TrackDataItem *TrackDataItem::takeChildItem(int idx)
-{
-    Q_ASSERT(mChildren!=nullptr);
-    Q_ASSERT(idx>=0 && idx<mChildren->count());
-    TrackDataItem *data = mChildren->takeAt(idx);
-    data->mParent = nullptr;				// now no longer has parent
-    return (data);
-}
-
-
-void TrackDataItem::removeChildItem(TrackDataItem *item)
-{
-    Q_ASSERT(mChildren!=nullptr);
-    takeChildItem(mChildren->indexOf(item));
-}
-
-
 BoundingArea TrackDataItem::boundingArea() const
 {
-    return (TrackData::unifyBoundingAreas(mChildren));
+    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(this);
+    return (tdc!=nullptr ? tdc->boundingArea() : BoundingArea());
 }
 
 
 TimeRange TrackDataItem::timeSpan() const
 {
-    return (TrackData::unifyTimeSpans(mChildren));
+    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(this);
+    return (tdc!=nullptr ? tdc->timeSpan() : TimeRange());
 }
 
 
@@ -559,6 +505,10 @@ const PointIcon *TrackDataItem::icon() const
 }
 
 
+// TODO: what uses this?  Do they want the root file item or
+//       the data tree root?  if the former, rename it to rootFileItem()
+//       to make that clear.
+
 const TrackDataFile *TrackDataItem::root() const
 {
     // Find the root file item that this item belongs to, or NULL
@@ -575,6 +525,10 @@ const TrackDataFile *TrackDataItem::root() const
     return (root);
 }
 
+
+// TODO: use a TrackDataWaypoint for storage in MetadataModel
+//       then this can be a member of TrackDataWaypoint
+//       and TrackDataStore can be private to commands
 
 // Although in practice media and stops are only expected to be
 // associated with TrackDataWaypoint items, this is in TrackDataItem
@@ -606,12 +560,88 @@ TrackData::MediaType TrackDataItem::mediaType() const
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-TrackDataContainer::TrackDataContainer()
-    : TrackDataItem("container_%04d", &counterContainer)
+TrackDataContainer::TrackDataContainer(const char *format, int *counter)
+    : TrackDataItem(format, counter)
 {
 #ifdef MEMORY_TRACKING
     ++allocContainer;
 #endif
+    mChildren = nullptr;
+}
+
+
+TrackDataContainer::~TrackDataContainer()
+{
+    if (mChildren!=nullptr) qDeleteAll(*mChildren);	// delete children if any
+    delete mChildren;					// delete child list if present
+}
+
+void TrackDataContainer::addChildItem(TrackDataItem *data, int idx)
+{
+    if (data->parent()!=nullptr) qWarning() << "item" << data->name() << "already has parent" << data->parent()->name();
+    Q_ASSERT(data->parent()==nullptr);
+
+    if (mChildren==nullptr)
+    {
+#ifdef MEMORY_TRACKING
+        ++allocChildren;
+#endif
+        mChildren = new QList<TrackDataItem *>;
+    }
+
+    if (idx>=0) mChildren->insert(idx, data);		// insert at specified place
+    else mChildren->append(data);			// default is to append
+							// have taken ownership of child
+    data->mParent = this;				// set child item parent
+}
+
+
+TrackDataItem *TrackDataContainer::takeLastChildItem()
+{
+    Q_ASSERT(mChildren!=nullptr);
+    Q_ASSERT(!mChildren->isEmpty());
+    TrackDataItem *data = mChildren->takeLast();
+    data->mParent = nullptr;				// now no longer has parent
+    return (data);
+}
+
+
+TrackDataItem *TrackDataContainer::takeFirstChildItem()
+{
+    Q_ASSERT(mChildren!=nullptr);
+    Q_ASSERT(!mChildren->isEmpty());
+    TrackDataItem *data = mChildren->takeFirst();
+    data->mParent = nullptr;				// now no longer has parent
+    return (data);
+}
+
+
+TrackDataItem *TrackDataContainer::takeChildItem(int idx)
+{
+    Q_ASSERT(mChildren!=nullptr);
+    Q_ASSERT(idx>=0 && idx<mChildren->count());
+    TrackDataItem *data = mChildren->takeAt(idx);
+    data->mParent = nullptr;				// now no longer has parent
+    return (data);
+}
+
+
+void TrackDataContainer::removeChildItem(TrackDataItem *item)
+{
+    Q_ASSERT(mChildren!=nullptr);
+    takeChildItem(mChildren->indexOf(item));
+}
+
+
+BoundingArea TrackDataContainer::boundingArea() const
+{
+    return (TrackData::unifyBoundingAreas(mChildren));
+}
+
+
+TimeRange TrackDataContainer::timeSpan() const
+{
+    return (TrackData::unifyTimeSpans(mChildren));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -621,7 +651,7 @@ TrackDataContainer::TrackDataContainer()
 //////////////////////////////////////////////////////////////////////////
 
 TrackDataFile::TrackDataFile()
-    : TrackDataItem("file_%02d", &counterFile)
+    : TrackDataContainer("file_%02d", &counterFile)
 {
 #ifdef MEMORY_TRACKING
     ++allocFile;
@@ -668,7 +698,7 @@ QString TrackDataFile::toolTip() const
 //////////////////////////////////////////////////////////////////////////
 
 TrackDataTrack::TrackDataTrack()
-    : TrackDataItem("track_%02d", &counterTrack)
+    : TrackDataContainer("track_%02d", &counterTrack)
 {
 #ifdef MEMORY_TRACKING
     ++allocTrack;
@@ -695,7 +725,7 @@ QString TrackDataTrack::toolTip() const
 //////////////////////////////////////////////////////////////////////////
 
 TrackDataSegment::TrackDataSegment()
-    : TrackDataItem("segment_%02d", &counterSegment)
+    : TrackDataContainer("segment_%02d", &counterSegment)
 {
 #ifdef MEMORY_TRACKING
     ++allocSegment;
@@ -863,7 +893,7 @@ int TrackDataAbstractPoint::timeTo(const TrackDataAbstractPoint *other) const
 //////////////////////////////////////////////////////////////////////////
 
 TrackDataFolder::TrackDataFolder()
-    : TrackDataItem("folder_%02d", &counterFolder)
+    : TrackDataContainer("folder_%02d", &counterFolder)
 {
 #ifdef MEMORY_TRACKING
     ++allocFolder;
@@ -1041,9 +1071,9 @@ static const CategoryData *findCategoryData(const TrackDataItem *item)
     if (!cats.isNull())
     {							// first (primary) category only
         const QString cat = cats.toStringList().first();
-        const TrackDataFile *root = item->root();	// go up to the root file item
-        if (root!=nullptr)				// should always have been found
-        {
+        const TrackDataFile *root = dynamic_cast<const TrackDataFile *>(item->root());
+        if (root!=nullptr)				// go up to the root file item,
+        {						// should always have been found
             // If the file has categories available, then get the data for
             // the waypoint category from the map.  If the category is not
             // defined in the map then CategoryList::category() will return
@@ -1505,7 +1535,7 @@ void TrackDataWaypoint::mergeWith(const TrackDataWaypoint *other)
 //////////////////////////////////////////////////////////////////////////
 
 TrackDataRoute::TrackDataRoute()
-    : TrackDataItem("route_%02d", &counterRoute)
+    : TrackDataContainer("route_%02d", &counterRoute)
 {
 #ifdef MEMORY_TRACKING
     ++allocRoute;

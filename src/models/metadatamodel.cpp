@@ -49,7 +49,7 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     qDebug() << "for" << item->name();
 
     // Copy the existing item metadata.
-    mData = new TrackDataContainer;
+    mData = new TrackDataTrackpoint;
     mData->copyMetadata(item);
 
     // Copy and record data which is not stored by item metadata.
@@ -263,5 +263,5 @@ void MetadataModel::resolveTimeZone()
 
 const TrackDataItem *MetadataModel::currentItem() const
 {
-    return (static_cast<const TrackDataContainer *>(mData));
+    return (mData);
 }

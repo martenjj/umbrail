@@ -272,8 +272,12 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
     }
     else						// not a point, recurse for children
     {
-        const int num = item->childCount();
-        for (int i = 0; i<num; ++i) getPointData(item->childAt(i), points);
+        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        if (tdc!=nullptr)
+        {
+            const int num = tdc->childCount();
+            for (int i = 0; i<num; ++i) getPointData(tdc->childAt(i), points);
+        }
     }
 }
 

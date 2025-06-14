@@ -85,6 +85,30 @@ void CommandBase::setSenderText(const QObject *sdr)
 
 //////////////////////////////////////////////////////////////////////////
 //									//
+//  TrackDataStore							//
+//									//
+//  This is simply a TrackDataContainer with the pure virtual		//
+//  functions provided (with dummy values, because they are never	//
+//  used).  It is not intended to be used to represent real file	//
+//  tree data, but is used to provide a consistent interface where	//
+//  undo/redo commands need to retain and track an item.		//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+class TrackDataStore : public TrackDataContainer
+{
+public:
+    TrackDataStore() : TrackDataContainer(nullptr, nullptr)	{}
+    ~TrackDataStore() = default;
+
+    TrackData::Type type() const override			{ return (TrackData::None); }
+    QString iconName() const override				{ return (QString()); }
+    QString statusMessage(int num) const override		{ Q_UNUSED(num); return (QString()); }
+    QString toolTip() const override				{ return (QString()); }
+};
+
+//////////////////////////////////////////////////////////////////////////
+//									//
 //  Import File								//
 //									//
 //  This command is special.  It is only used for that operation, by	//
@@ -111,7 +135,7 @@ ImportFileCommand::~ImportFileCommand()
 // Locate any folders (at any depth) below that item.  If there are
 // subfolders then they and the parent folder are returned separately
 // with the parent folder first.
-static void findFolders(TrackDataItem *item, QVector<TrackDataFolder *> *res)
+static void findFolders(TrackDataContainer *item, QVector<TrackDataFolder *> *res)
 {
     // See if this item is a folder.  If so, record it in the result list.
     TrackDataFolder *tdf = dynamic_cast<TrackDataFolder *>(item);
@@ -123,7 +147,11 @@ static void findFolders(TrackDataItem *item, QVector<TrackDataFolder *> *res)
 
     // Recurse into child items to find any folders below here.
     const int num = item->childCount();
-    for (int i = 0; i<num; ++i) findFolders(item->childAt(i), res);
+    for (int i = 0; i<num; ++i)
+    {
+        TrackDataContainer *tdc = dynamic_cast<TrackDataContainer *>(item->childAt(i));
+        if (tdc!=nullptr) findFolders(tdc, res);
+    }
 }
 
 
@@ -247,8 +275,8 @@ again:                  if (j>=importFolder->childCount()) break;
             {
                 TrackDataFolder *tdf = importedFolders[i];
                 if (tdf->childCount()==0)		// is the folder empty?
-                {
-                    TrackDataItem *pnt = tdf->parent();	// parent containing this folder
+                {					// parent containing this folder
+                    TrackDataContainer *pnt = tdf->parent();
                     if (pnt==nullptr) continue;		// shouldn't happen at top level
                     qDebug() << "remove empty imported" << tdf->path();
                     pnt->removeChildItem(tdf);
@@ -444,7 +472,7 @@ SplitSegmentCommand::~SplitSegmentCommand()
 }
 
 
-void SplitSegmentCommand::setData(TrackDataItem *pnt, int idx)
+void SplitSegmentCommand::setData(TrackDataContainer *pnt, int idx)
 {
     mParentSegment = pnt;
     mSplitIndex = idx;
@@ -473,9 +501,9 @@ void SplitSegmentCommand::redo()
 
     if (mNewSegmentContainer==nullptr)
     {
-        mNewSegmentContainer = new TrackDataContainer;
+        mNewSegmentContainer = new TrackDataStore;
 
-        TrackDataItem *copySegment;
+        TrackDataContainer *copySegment;
         TrackDataAbstractPoint *copyPoint;
 
         if (dynamic_cast<TrackDataTrackpoint *>(splitPoint)!=nullptr)
@@ -501,7 +529,7 @@ void SplitSegmentCommand::redo()
     }
 
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
-    TrackDataItem *newSegment = mNewSegmentContainer->takeFirstChildItem();
+    TrackDataContainer *newSegment = dynamic_cast<TrackDataContainer *>(mNewSegmentContainer->takeFirstChildItem());
     Q_ASSERT(newSegment!=nullptr);
 
     int takeFrom = mSplitIndex+1;
@@ -515,7 +543,7 @@ void SplitSegmentCommand::redo()
     }
 
     // Adopt the receiving item as the next sibling of the split item
-    TrackDataItem *parentItem = mParentSegment->parent();
+    TrackDataContainer *parentItem = mParentSegment->parent();
     int parentIndex = (parentItem->childIndex(mParentSegment)+1);
     Q_ASSERT(parentItem!=nullptr);
     qDebug() << "add" << newSegment->name() << "to" << parentItem->name() << "as index" << parentIndex;
@@ -539,10 +567,11 @@ void SplitSegmentCommand::undo()
     // mParentSegment is the original segment that the split items are to be
     // merged back in to.  The added segment will be its next sibling.
 
-    TrackDataItem *parentItem = mParentSegment->parent();
+    TrackDataContainer *parentItem = mParentSegment->parent();
     Q_ASSERT(parentItem!=nullptr);
     const int parentIndex = parentItem->childIndex(mParentSegment);
-    TrackDataItem *newSegment = parentItem->childAt(parentIndex+1);
+    TrackDataContainer *newSegment = dynamic_cast<TrackDataContainer *>(parentItem->childAt(parentIndex+1));
+    Q_ASSERT(newSegment!=nullptr);
 
     const int startIndex = 1;				// all apart from first point
     qDebug() << "from" << newSegment->name() << "count" << newSegment->childCount()
@@ -598,7 +627,7 @@ MergeSegmentsCommand::~MergeSegmentsCommand()
 }
 
 
-void MergeSegmentsCommand::setData(TrackDataItem *master, const QList<TrackDataItem *> &others)
+void MergeSegmentsCommand::setData(TrackDataContainer *master, const QList<TrackDataContainer *> &others)
 {
     mMasterSegment = master;
     mSourceSegments = others;
@@ -613,7 +642,7 @@ void MergeSegmentsCommand::redo()
     controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
-    if (mSavedSegmentContainer==nullptr) mSavedSegmentContainer = new TrackDataContainer;
+    if (mSavedSegmentContainer==nullptr) mSavedSegmentContainer = new TrackDataStore;
     Q_ASSERT(mSavedSegmentContainer->childCount()==0);
 
     const int num = mSourceSegments.count();
@@ -623,10 +652,10 @@ void MergeSegmentsCommand::redo()
 
     for (int i = 0; i<num; ++i)
     {
-        TrackDataItem *item = mSourceSegments[i];
+        TrackDataContainer *item = mSourceSegments[i];
         mSourceCounts[i] = item->childCount();
 
-        TrackDataItem *parent = item->parent();
+        TrackDataContainer *parent = item->parent();
         Q_ASSERT(parent!=nullptr);
         mSourceParents[i] = parent;
         mSourceIndexes[i] = parent->childIndex(item);
@@ -642,7 +671,7 @@ void MergeSegmentsCommand::redo()
         }
 
         // Remove and adopt the now empty source segment
-        TrackDataItem *parentItem = item->parent();
+        TrackDataContainer *parentItem = item->parent();
         Q_ASSERT(parentItem!=nullptr);
         qDebug() << "remove" << item->name() << "from" << parentItem->name();
         parentItem->removeChildItem(item);
@@ -673,7 +702,8 @@ void MergeSegmentsCommand::undo()
     for (int i = segCount-1; i>=0; --i)
     {
         const int num = mSourceCounts[i];
-        TrackDataItem *item = mSavedSegmentContainer->takeLastChildItem();
+        TrackDataContainer *item = dynamic_cast<TrackDataContainer *>(mSavedSegmentContainer->takeLastChildItem());
+        Q_ASSERT(item!=nullptr);
 
         // The last 'num' points of the 'mMasterSegment' are those that
         // originally belonged to the former 'item' segment.
@@ -692,7 +722,7 @@ void MergeSegmentsCommand::undo()
         // Put the receiving segment, which was originally at index 'idx'
         // under parent 'parent', back in its original place.
         const int idx = mSourceIndexes[i];
-        TrackDataItem *parent = mSourceParents[i];
+        TrackDataContainer *parent = mSourceParents[i];
         Q_ASSERT(parent!=nullptr);
         qDebug() << "add to" << parent->name() << "as index" << idx;
         parent->addChildItem(item, idx);
@@ -738,7 +768,7 @@ AddContainerCommand::~AddContainerCommand()
 }
 
 
-void AddContainerCommand::setData(TrackData::Type type, TrackDataItem *pnt)
+void AddContainerCommand::setData(TrackData::Type type, TrackDataContainer *pnt)
 {
     mType = type;
     mParent = pnt;
@@ -752,7 +782,7 @@ void AddContainerCommand::redo()
 
     if (mNewItemContainer==nullptr)			// need to create new container
     {
-        mNewItemContainer = new TrackDataContainer;
+        mNewItemContainer = new TrackDataStore;
 
         if (mType==TrackData::Track) mAddedItem = new TrackDataTrack;
         else if (mType==TrackData::Route) mAddedItem = new TrackDataRoute;
@@ -840,12 +870,12 @@ void AddTrackpointCommand::redo()
     controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
-    TrackDataItem *parent = mAtPoint->parent();
+    TrackDataContainer *parent = mAtPoint->parent();
     Q_ASSERT(parent!=nullptr);
 
     if (mNewPointContainer==nullptr)			// need to create new point
     {
-        mNewPointContainer = new TrackDataContainer;
+        mNewPointContainer = new TrackDataStore;
 
         TrackDataTrackpoint *copyPoint = new TrackDataTrackpoint;
 
@@ -880,7 +910,7 @@ void AddTrackpointCommand::undo()
     controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
-    TrackDataItem *parent = mAtPoint->parent();
+    TrackDataContainer *parent = mAtPoint->parent();
     Q_ASSERT(parent!=nullptr);
     const int idx = parent->childIndex(mAtPoint);
     Q_ASSERT(idx>0);
@@ -916,7 +946,7 @@ MoveItemCommand::~MoveItemCommand()
 }
 
 
-void MoveItemCommand::setData(const QList<TrackDataItem *> &items, TrackDataItem *dest, int row)
+void MoveItemCommand::setData(const QList<TrackDataItem *> &items, TrackDataContainer *dest, int row)
 {
     mItems = items;
     mDestinationParent = dest;
@@ -960,7 +990,7 @@ void MoveItemCommand::redo()
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
-        TrackDataItem *par = item->parent();
+        TrackDataContainer *par = item->parent();
         Q_ASSERT(par!=nullptr);
         mParentItems[i] = par;
         const int idx = par->childIndex(item);
@@ -974,7 +1004,7 @@ void MoveItemCommand::redo()
     // because it will be the same as 'mItems'.
     for (int i = num-1; i>=0; --i)
     {
-        TrackDataItem *par = mParentItems[i];
+        TrackDataContainer *par = mParentItems[i];
         const int idx = mParentIndexes[i];
         par->takeChildItem(idx);
     }
@@ -1045,7 +1075,7 @@ void MoveItemCommand::undo()
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mItems[i];
-        TrackDataItem *par = mParentItems[i];
+        TrackDataContainer *par = mParentItems[i];
         const int idx = mParentIndexes[i];
         qDebug() << "  ->" << par->name() << "index" << idx;
         par->addChildItem(item, idx);
@@ -1153,7 +1183,7 @@ void AddWaypointCommand::redo()
 
     if (mNewWaypointContainer==nullptr)			// need to create new waypoint
     {
-        mNewWaypointContainer = new TrackDataContainer;
+        mNewWaypointContainer = new TrackDataStore;
 
         mAddedWaypoint = new TrackDataWaypoint;
         if (!mWaypointName.isEmpty()) mAddedWaypoint->setName(mWaypointName, true);
@@ -1265,7 +1295,7 @@ void AddRoutepointCommand::redo()
 
     if (mNewRoutepointContainer==nullptr)		// need to create new routepoint
     {
-        mNewRoutepointContainer = new TrackDataContainer;
+        mNewRoutepointContainer = new TrackDataStore;
 
         TrackDataRoutepoint *newRoutepoint = new TrackDataRoutepoint;
         if (!mRoutepointName.isEmpty()) newRoutepoint->setName(mRoutepointName, true);
@@ -1377,7 +1407,7 @@ void ReplaceItemsCommand::redo()
     controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
-    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new TrackDataContainer;
+    if (mDeletedItemsContainer==nullptr) mDeletedItemsContainer = new TrackDataStore;
     Q_ASSERT(mDeletedItemsContainer->childCount()==0);
 
     const int num = mRemoveItems.count();
@@ -1387,7 +1417,7 @@ void ReplaceItemsCommand::redo()
     for (int i = 0; i<num; ++i)
     {
         TrackDataItem *item = mRemoveItems[i];
-        TrackDataItem *parent = item->parent();
+        TrackDataContainer *parent = item->parent();
         Q_ASSERT(parent!=nullptr);
         mParentItems[i] = parent;
         mParentIndexes[i] = parent->childIndex(item);
@@ -1398,8 +1428,8 @@ void ReplaceItemsCommand::redo()
 
     if (mAddedItem!=nullptr)
     {
-        int addedIndex = mParentIndexes[0];		// index of first removed item
-        TrackDataItem *addedParent = mParentItems[0];	// parent of first removed item
+        int addedIndex = mParentIndexes[0];			// index of first removed item
+        TrackDataContainer *addedParent = mParentItems[0];	// parent of first removed item
         addedParent->addChildItem(mAddedItem, addedIndex);
     }
 
@@ -1429,7 +1459,7 @@ void ReplaceItemsCommand::undo()
     if (mWasAdded)					// a replacement was added,
     {							// remove it again
         int addedIndex = mParentIndexes[0];		// index of added item
-        TrackDataItem *addedParent = mParentItems[0];	// parent of added item
+        TrackDataContainer *addedParent = mParentItems[0];	// parent of added item
         mAddedItem = addedParent->takeChildItem(addedIndex);
     }							// remove replacement from tree
 
@@ -1437,7 +1467,7 @@ void ReplaceItemsCommand::undo()
     for (int i = num-1; i>=0; --i)			// now add back those deleted
     {
         TrackDataItem *item = mDeletedItemsContainer->takeLastChildItem();
-        TrackDataItem *parent = mParentItems[i];
+        TrackDataContainer *parent = mParentItems[i];
         parent->addChildItem(item, mParentIndexes[i]);
         addedItems.append(item);
     }

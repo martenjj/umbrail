@@ -742,8 +742,11 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
     const TrackDataAbstractPoint *tdp = nullptr;
     const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
     if (tdw!=nullptr) tdp = tdw;
-    const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(item);
-    if (tdr!=nullptr) tdp = tdr;
+    else
+    {
+        const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(item);
+        if (tdr!=nullptr) tdp = tdr;
+    }
 
     if (tdp!=nullptr)
     {
@@ -795,8 +798,14 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
 
         }
     }
-
-    for (int i = 0; i<item->childCount(); ++i) associateWaypoints(item->childAt(i));
+    else
+    {
+        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        if (tdc!=nullptr)
+        {
+            for (int i = 0; i<tdc->childCount(); ++i) associateWaypoints(tdc->childAt(i));
+        }
+    }
 }
 
 
