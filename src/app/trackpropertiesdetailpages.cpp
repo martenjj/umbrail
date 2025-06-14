@@ -71,8 +71,7 @@ static unsigned sumTotalTravelTime2(const TrackDataContainer *item)
     {
         // For any container that can contain segments (file or track),
         // recurse into its children.
-        if (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
-            dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
+        if (IS(TrackDataFile, item) || IS(TrackDataTrack, item))
         {
             for (int i = 0; i<num; ++i)
             {
@@ -246,7 +245,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     // contains no tracks but may still contain routes, then the routes
     // will be considered.
     bool tracksOnly = false;				// assume so to start
-    if (dynamic_cast<const TrackDataFile *>(item1)!=nullptr)
+    if (IS(TrackDataFile, item1))
     {							// file at top level
         for (const TrackDataItem *item : std::as_const(*items))
         {
@@ -766,9 +765,9 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
-            if (dynamic_cast<const TrackDataTrack *>(childItem)!=nullptr) ++nTracks;
-            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=nullptr) ++nFolders;
-            else if (dynamic_cast<const TrackDataRoute *>(childItem)!=nullptr) ++nRoutes;
+            if (IS(TrackDataTrack, childItem)) ++nTracks;
+            else if (IS(TrackDataFolder, childItem)) ++nFolders;
+            else if (IS(TrackDataRoute, childItem)) ++nRoutes;
         }
     }
 
@@ -899,8 +898,8 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
         for (int j = 0; j<item->childCount(); ++j)
         {
             const TrackDataItem *childItem = item->childAt(j);
-            if (dynamic_cast<const TrackDataWaypoint *>(childItem)!=nullptr) ++nWaypoints;
-            else if (dynamic_cast<const TrackDataFolder *>(childItem)!=nullptr) ++nFolders;
+            if (IS(TrackDataWaypoint, childItem)) ++nWaypoints;
+            else if (IS(TrackDataFolder, childItem)) ++nFolders;
         }
     }
 

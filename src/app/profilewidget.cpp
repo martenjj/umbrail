@@ -143,7 +143,7 @@ void WaypointLayerable::setShowPoints(WaypointSelectDialogue::SelectionSet sel)
 
 bool WaypointLayerable::isShowingPoint(const TrackDataAbstractPoint *pnt) const
 {
-    if (dynamic_cast<const TrackDataRoutepoint *>(pnt)!=nullptr)
+    if (IS(TrackDataRoutepoint, pnt))
     {							// is this a route point?
         return (mSelection & WaypointSelectDialogue::SelectRoutepoints);
     }

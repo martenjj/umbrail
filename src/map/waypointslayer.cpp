@@ -89,7 +89,7 @@ WaypointsLayer::~WaypointsLayer()
 bool WaypointsLayer::isApplicableItem(const TrackDataItem *item) const
 {
     // We are only interested in waypoints
-    return (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr);
+    return (IS(TrackDataWaypoint, item));
 }
 
 
@@ -97,7 +97,7 @@ bool WaypointsLayer::isApplicableItem(const TrackDataItem *item) const
 bool WaypointsLayer::isDirectContainer(const TrackDataItem *item) const
 {
     // Only folders contain waypoints to be drawn
-    return (dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
+    return (IS(TrackDataFolder, item));
 }
 
 
@@ -105,8 +105,7 @@ bool WaypointsLayer::isDirectContainer(const TrackDataItem *item) const
 bool WaypointsLayer::isIndirectContainer(const TrackDataItem *item) const
 {
     // Files or folders can include waypoints
-    return (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
-            dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
+    return (IS(TrackDataFile, item) || IS(TrackDataFolder, item));
 }
 
 

@@ -35,12 +35,6 @@
 #include <qurl.h>
 #include <qcolor.h>
 
-#define ISNAN(x)		std::isnan(x)		// to cover variations
-
-#define DEGREES_TO_RADIANS(x)	(((x)*2*M_PI)/360)	// angle conversion
-#define RADIANS_TO_DEGREES(x)	(((x)*360)/(2*M_PI))
-
-
 class QWidget;
 class QTimeZone;
 class TrackDataItem;
@@ -50,6 +44,28 @@ class TrackDataContainer;
 class TrackPropertiesPage;
 class PointIcon;
 class CategoryList;
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Macros for compatibility and common operations			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#define ISNAN(x)		std::isnan(x)		// to cover variations
+
+#define DEGREES_TO_RADIANS(x)	(((x)*2*M_PI)/360)	// angle conversion
+#define RADIANS_TO_DEGREES(x)	(((x)*360)/(2*M_PI))
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Macros for item type testing.  They do not eliminate the use of	//
+//  dynamic_cast or RTTI, but at least reduce their verbosity.		//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+// This works for both const and non-const 'value' arguments, because
+// although dynamic_cast cannot remove constness it can add it.
+#define IS(type, value)		(dynamic_cast<const type *>(value)!=nullptr)
 
 //////////////////////////////////////////////////////////////////////////
 //									//

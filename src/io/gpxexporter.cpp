@@ -122,29 +122,28 @@ default:
 
 static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 {
-    if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (false);
-							// file metadata - never in extensions
+    if (IS(TrackDataFile, item)) return (false);	// file metadata - never in extensions
     if (DataIndexer::isApplicationTag(name)) return (true);
 							// application tag - always in extensions
-    if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+    if (IS(TrackDataAbstractPoint, item))
     {
-        if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr)
-        {						// waypoint - these not in extensions
+        if (IS(TrackDataWaypoint, item))		// waypoint - these not in extensions
+        {
             if (name=="link"|| name=="sym" || name=="category" || name =="type") return (false);
         }
 							// point - these not in extensions
         return (!(name=="ele" || name=="time" || name=="hdop"));
     }
-    else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
-    {							// track - these not in extensions
+    else if (IS(TrackDataTrack, item))			// track - these not in extensions
+    {
         return (!(name=="desc" || name=="type"));
     }
-    else if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
-    {							// route - these not in extensions
+    else if (IS(TrackDataRoute, item))			// route - these not in extensions
+    {
         return (!(name=="desc" || name=="type"));
     }
-    else if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr)
-    {							// segment - all in extensions
+    else if (IS(TrackDataSegment, item))		// segment - all in extensions
+    {
         return (true);
     }
     else return (false);				// other - assume not in extensions
@@ -481,7 +480,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     //
     // Now resolve the final point or line colour - either one that
     // has been explicitly set, or the category colour if there is one.
-    if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
+    if (!IS(TrackDataFile, item))
     {							// but no COLOR at top level
         TagQueue &toQueue = (isExtensionTag(item, "color") ? extensionsQueue : toplevelQueue);
 

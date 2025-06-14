@@ -1097,7 +1097,7 @@ void FilesController::slotMergeSegments()
         items.append(seg);
     }
 
-    if (dynamic_cast<const TrackDataSegment *>(items.first())!=nullptr)
+    if (IS(TrackDataSegment, items.first()))
     {							// operating on segments
         std::sort(items.begin(), items.end(), &compareSegmentTimes);
 
@@ -1121,7 +1121,7 @@ void FilesController::slotMergeSegments()
             prevEnd = pnt2->time();				// note end for next time
         }
     }
-    else if (dynamic_cast<const TrackDataWaypoint *>(items.first())!=nullptr)
+    else if (IS(TrackDataWaypoint, items.first()))
     {							// operating on waypoints
         // TODO: split out into a separate function
 
@@ -1209,9 +1209,9 @@ void FilesController::slotMoveItem()
     d.setSource(&items);
 
     QString capt;
-    if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr) capt = i18nc("@title:window", "Move Segment");
-    else if (dynamic_cast<const TrackDataFolder *>(item)!=nullptr) capt = i18nc("@title:window", "Move Folder");
-    else if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr) capt = i18nc("@title:window", "Move Waypoint");
+    if (IS(TrackDataSegment, item)) capt = i18nc("@title:window", "Move Segment");
+    else if (IS(TrackDataFolder, item)) capt = i18nc("@title:window", "Move Folder");
+    else if (IS(TrackDataWaypoint, item)) capt = i18nc("@title:window", "Move Waypoint");
     if (!capt.isEmpty()) d.setWindowTitle(capt);
 
     if (!d.exec()) return;
@@ -1230,12 +1230,12 @@ void FilesController::slotAddTrack()
 {
     QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
-    TrackDataItem *pnt = items.first();			// parent item (must be file)
-    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr);
+    TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
+    Q_ASSERT(IS(TrackDataFile, pnt));			// parent item (must be file)
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
-    cmd->setData(TrackData::Track);
+    cmd->setData(TrackData::Track, pnt);
     executeCommand(cmd);
 }
 
@@ -1244,12 +1244,12 @@ void FilesController::slotAddRoute()
 {
     QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
-    TrackDataItem *pnt = items.first();			// parent item (must be file)
-    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr);
+    TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
+    Q_ASSERT(IS(TrackDataFile, pnt));			// parent item (must be file)
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
-    cmd->setData(TrackData::Route);
+    cmd->setData(TrackData::Route, pnt);
     executeCommand(cmd);
 }
 
@@ -1261,7 +1261,7 @@ void FilesController::slotAddFolder()
 
     // The parent item, which must be a file or a folder.
     TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
-    Q_ASSERT(dynamic_cast<TrackDataFile *>(pnt)!=nullptr || dynamic_cast<TrackDataFolder *>(pnt)!=nullptr);
+    Q_ASSERT(IS(TrackDataFile, pnt) || IS(TrackDataFolder, pnt));
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
     cmd->setSenderText(sender());
@@ -1292,7 +1292,7 @@ void FilesController::slotDeleteItems()
     if (num==1)
     {
         const TrackDataItem *tdi = items.first();
-        if (dynamic_cast<const TrackDataContainer *>(tdi)==nullptr)
+        if (!IS(TrackDataContainer, tdi))
         {
             query = xi18nc("@info", "Delete the selected item \"<emphasis strong=\"1\">%1</emphasis>\"?", tdi->name());
         }

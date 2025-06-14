@@ -262,7 +262,7 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
         if (ISNAN(tdp->latitude())) return;		// check position is valid
         if (ISNAN(tdp->longitude())) return;
 
-        if (dynamic_cast<const TrackDataRoutepoint *>(tdp)==nullptr)
+        if (!IS(TrackDataRoutepoint, tdp))
         {						// if not a route point,
             const QVariant dt = tdp->metadata("time");	// check time is valid
             if (!dt.canConvert(QMetaType::QDateTime)) return;
@@ -363,7 +363,7 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMa
     // If the thing clicked on the map was a track point, only scroll to
     // it if its parent segment is already expanded.  This avoids a long
     // list of points suddenly appearing in the view for a stray map click.
-    if (wasOnMap && dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr)
+    if (wasOnMap && IS(TrackDataTrackpoint, item))
     {
         const QModelIndex pnt = idx.parent();
         if (!isExpanded(pnt)) return;
@@ -385,8 +385,7 @@ void FilesView::expandItem(const QModelIndex &idx)
 {
     const TrackDataItem *item = itemForIndex(idx);
 
-    if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr ||
-        dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
+    if (IS(TrackDataSegment, item) || IS(TrackDataRoute, item))
     {
         collapse(idx);
         return;

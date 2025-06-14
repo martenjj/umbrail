@@ -48,9 +48,9 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QW
     mFormLayout = new QFormLayout(this);
 
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
-    if (mIsEmpty && !items->isEmpty())
+    if (mIsEmpty)
     {
-        if (dynamic_cast<const TrackDataAbstractPoint *>(items->first())!=nullptr) mIsEmpty = false;
+        if (IS(TrackDataAbstractPoint, items->first())) mIsEmpty = false;
     }
 }
 

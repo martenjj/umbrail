@@ -395,25 +395,24 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
 
     // See what sort of item is being dragged, and then whether it
     // is allowed to be dropped at the destination location.
-    const bool toTopLevel = (dynamic_cast<const TrackDataFile *>(ontoParent)!=nullptr);
-    const bool toFolder = (dynamic_cast<const TrackDataFolder *>(ontoParent)!=nullptr);
+    const bool toTopLevel = IS(TrackDataFile, ontoParent);
+    const bool toFolder = IS(TrackDataFolder, ontoParent);
 
     // A folder can only be dropped at the top level or inside another folder.
-    if (dynamic_cast<const TrackDataFolder *>(sourceItem)!=nullptr)
+    if (IS(TrackDataFolder, sourceItem))
     {
         if (!toTopLevel && !toFolder) return (false);
     }
 
     // A track or route can only be dropped at the top level.
-    else if (dynamic_cast<const TrackDataTrack *>(sourceItem)!=nullptr ||
-             dynamic_cast<const TrackDataRoute *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataTrack, sourceItem) ||IS(TrackDataRoute, sourceItem))
     {
         if (!toTopLevel) return (false);
     }
 
     // A segment is not allowed to be dragged.  This should be enforced by the
     // "Move Mode" action not being enabled in MainWindow::slotUpdateActionState().
-    else if (dynamic_cast<const TrackDataSegment *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataSegment, sourceItem))
     {
         return (false);
     }
@@ -428,21 +427,21 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
     // in time order within the file.  Allowing tracks to be moved around
     // breaks this, but it is unusual to want to perform those operations
     // over multiple tracks and so it is allowed for presentation purposes.
-    else if (dynamic_cast<const TrackDataTrackpoint *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataTrackpoint, sourceItem))
     {
         return (false);
     }
 
     // A waypoint can only be dropped into a folder.
-    else if (dynamic_cast<const TrackDataWaypoint *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataWaypoint, sourceItem))
     {
         if (!toFolder) return (false);
     }
 
     // A route point can only be dropped into a route.
-    else if (dynamic_cast<const TrackDataRoutepoint *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataRoutepoint, sourceItem))
     {
-        if (dynamic_cast<const TrackDataRoute *>(ontoParent)==nullptr) return (false);
+        if (!IS(TrackDataRoute, ontoParent)) return (false);
     }
 
     // If the drag and drop is within the same parent container, check that

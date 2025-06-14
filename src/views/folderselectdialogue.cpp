@@ -85,8 +85,8 @@ void FolderSelectDialogue::slotNewFolder()
 void FolderSelectDialogue::slotUpdateButtonStates()
 {
     const TrackDataItem *item = selectedItem();
-    const bool isFolder = (dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
-    const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=nullptr);
+    const bool isFolder = IS(TrackDataFolder, item);
+    const bool isFile = IS(TrackDataFile, item);
 
     setButtonEnabled(QDialogButtonBox::Ok, isFolder);
     setButtonEnabled(QDialogButtonBox::Reset, (isFolder || isFile) && !isReadOnly());

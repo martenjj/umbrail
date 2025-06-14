@@ -80,7 +80,7 @@ TracksLayer::~TracksLayer()
 bool TracksLayer::isApplicableItem(const TrackDataItem *item) const
 {
     // We are only interested in trackpoints
-    return (dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr);
+    return (IS(TrackDataTrackpoint, item));
 }
 
 
@@ -88,7 +88,7 @@ bool TracksLayer::isApplicableItem(const TrackDataItem *item) const
 bool TracksLayer::isDirectContainer(const TrackDataItem *item) const
 {
     // Only segments contain trackpoints to be drawn
-    return (dynamic_cast<const TrackDataSegment *>(item)!=nullptr);
+    return (IS(TrackDataSegment, item));
 }
 
 
@@ -96,9 +96,7 @@ bool TracksLayer::isDirectContainer(const TrackDataItem *item) const
 bool TracksLayer::isIndirectContainer(const TrackDataItem *item) const
 {
     // Files, tracks or segments can include trackpoints
-    return (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
-            dynamic_cast<const TrackDataTrack *>(item)!=nullptr ||
-            dynamic_cast<const TrackDataSegment *>(item)!=nullptr);
+    return (IS(TrackDataFile, item) || IS(TrackDataTrack, item) || IS(TrackDataSegment, item));
 }
 
 

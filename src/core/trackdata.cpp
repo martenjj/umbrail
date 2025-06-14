@@ -906,7 +906,7 @@ QString TrackDataFolder::path() const
     QStringList p(name());
     const TrackDataItem *pnt = parent();
 
-    while (pnt!=nullptr && dynamic_cast<const TrackDataFile *>(pnt)==nullptr)
+    while (pnt!=nullptr && !IS(TrackDataFile, pnt))
     {
         p.prepend(pnt->name());
         pnt = pnt->parent();

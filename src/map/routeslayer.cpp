@@ -80,7 +80,7 @@ RoutesLayer::~RoutesLayer()
 bool RoutesLayer::isApplicableItem(const TrackDataItem *item) const
 {
     // We are only interested in routepoints
-    return (dynamic_cast<const TrackDataRoutepoint *>(item)!=nullptr);
+    return (IS(TrackDataRoutepoint, item));
 }
 
 
@@ -88,7 +88,7 @@ bool RoutesLayer::isApplicableItem(const TrackDataItem *item) const
 bool RoutesLayer::isDirectContainer(const TrackDataItem *item) const
 {
     // Only routes contain routepoints to be drawn
-    return (dynamic_cast<const TrackDataRoute *>(item)!=nullptr);
+    return (IS(TrackDataRoute, item));
 }
 
 
@@ -96,8 +96,7 @@ bool RoutesLayer::isDirectContainer(const TrackDataItem *item) const
 bool RoutesLayer::isIndirectContainer(const TrackDataItem *item) const
 {
     // Files or routes can include routepoints
-    return (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
-            dynamic_cast<const TrackDataRoute *>(item)!=nullptr);
+    return (IS(TrackDataFile, item) || IS(TrackDataRoute, item));
 }
 
 

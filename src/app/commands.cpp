@@ -506,12 +506,12 @@ void SplitSegmentCommand::redo()
         TrackDataContainer *copySegment;
         TrackDataAbstractPoint *copyPoint;
 
-        if (dynamic_cast<TrackDataTrackpoint *>(splitPoint)!=nullptr)
+        if (IS(TrackDataTrackpoint, splitPoint))
         {
             copySegment = new TrackDataSegment;
             copyPoint = new TrackDataTrackpoint;
         }
-        else if (dynamic_cast<TrackDataRoutepoint *>(splitPoint)!=nullptr)
+        else if (IS(TrackDataRoutepoint, splitPoint))
         {
             copySegment = new TrackDataRoute;
             copyPoint = new TrackDataRoutepoint;
