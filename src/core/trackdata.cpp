@@ -166,7 +166,7 @@ unsigned TrackData::sumTotalChildCount(const QList<TrackDataItem *> *items)
     int num = 0;
     for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(items->at(i));
+        const TrackDataContainer *tdc = AS(TrackDataContainer, items->at(i));
         if (tdc!=nullptr) num += tdc->childCount();
     }
     return (num);
@@ -252,7 +252,7 @@ TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDat
         const TrackDataFolder *folderItem = nullptr;
         for (int i = 0; i<cnt; ++i)			// search through children
         {
-            const TrackDataFolder *fold = dynamic_cast<const TrackDataFolder *>(item->childAt(i));
+            const TrackDataFolder *fold = AS(TrackDataFolder, item->childAt(i));
             if (fold!=nullptr)				// child item is a folder
             {
                 if (fold->name()==name)			// folder name matches
@@ -267,7 +267,7 @@ TrackDataFolder *TrackData::findFolderByPath(const QString &path, const TrackDat
         item = static_cast<const TrackDataContainer *>(folderItem);
     }							// continue descent from here
 
-    return (const_cast<TrackDataFolder *>(dynamic_cast<const TrackDataFolder *>(item)));
+    return (ASV(TrackDataFolder, const_cast<TrackDataContainer *>(item)));
 }
 
 
@@ -417,14 +417,14 @@ void TrackDataItem::setName(const QString &newName, bool explicitName)
 
 BoundingArea TrackDataItem::boundingArea() const
 {
-    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(this);
+    const TrackDataContainer *tdc = AS(TrackDataContainer, this);
     return (tdc!=nullptr ? tdc->boundingArea() : BoundingArea());
 }
 
 
 TimeRange TrackDataItem::timeSpan() const
 {
-    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(this);
+    const TrackDataContainer *tdc = AS(TrackDataContainer, this);
     return (tdc!=nullptr ? tdc->timeSpan() : TimeRange());
 }
 
@@ -517,7 +517,7 @@ const TrackDataFile *TrackDataItem::root() const
     const TrackDataFile *root = nullptr;
     while (item!=nullptr)
     {
-        root = dynamic_cast<const TrackDataFile *>(item);
+        root = AS(TrackDataFile, item);
         if (root!=nullptr) break;
         item = item->parent();
     }
@@ -739,11 +739,11 @@ TimeRange TrackDataSegment::timeSpan() const
     int num = childCount();
     if (num==0) return (TimeRange());
 
-    const TrackDataTrackpoint *firstPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(0));
+    const TrackDataTrackpoint *firstPoint = AS(TrackDataTrackpoint, childAt(0));
     Q_ASSERT(firstPoint!=nullptr);
     if (num==1) return (TimeRange(firstPoint->time(), firstPoint->time()));
 
-    const TrackDataTrackpoint *lastPoint = dynamic_cast<const TrackDataTrackpoint *>(childAt(num-1));
+    const TrackDataTrackpoint *lastPoint = AS(TrackDataTrackpoint, childAt(num-1));
     Q_ASSERT(lastPoint!=nullptr);
     return (TimeRange(firstPoint->time(), lastPoint->time()));
 }
@@ -928,7 +928,7 @@ QString TrackDataFolder::statusMessage(int num) const
         const int childs = childCount();
         for (int i = 0; i<childs; ++i)
         {
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(childAt(i));
+            const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, childAt(i));
             if (tdw==nullptr) continue;
             ++numWaypoint;
 
@@ -1071,7 +1071,7 @@ static const CategoryData *findCategoryData(const TrackDataItem *item)
     if (!cats.isNull())
     {							// first (primary) category only
         const QString cat = cats.toStringList().first();
-        const TrackDataFile *root = dynamic_cast<const TrackDataFile *>(item->root());
+        const TrackDataFile *root = AS(TrackDataFile, item->root());
         if (root!=nullptr)				// go up to the root file item,
         {						// should always have been found
             // If the file has categories available, then get the data for

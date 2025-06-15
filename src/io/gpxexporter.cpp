@@ -198,15 +198,15 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     if (itemName.isEmpty() && item->hasExplicitName()) itemName = item->name();
 
     // What sort of element?
-    const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
-    const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
-    const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
-    const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
-    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+    const TrackDataTrack *tdt = AS(TrackDataTrack, item);
+    const TrackDataSegment *tds = AS(TrackDataSegment, item);
+    const TrackDataRoute *tdr = AS(TrackDataRoute, item);
+    const TrackDataFolder *tdf = AS(TrackDataFolder, item);
+    const TrackDataContainer *tdc = AS(TrackDataContainer, item);
 
-    const TrackDataAbstractPoint *tda = dynamic_cast<const TrackDataAbstractPoint *>(item);
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataAbstractPoint *tda = AS(TrackDataAbstractPoint, item);
+    const TrackDataTrackpoint *tdp = AS(TrackDataTrackpoint, item);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
 
     // If the item is not selected for export, then simply look inside
     // and process its child items.
@@ -469,7 +469,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     // so generate it here.
     if (tdw!=nullptr)
     {
-        const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
+        const TrackDataFolder *fold = AS(TrackDataFolder, tdw->parent());
         if (fold!=nullptr)				// within a folder?
         {						// note the folder path
             extensionsQueue.enqueue(DataIndexer::nameWithNamespace("folder"), fold->path());

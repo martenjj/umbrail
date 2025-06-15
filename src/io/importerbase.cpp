@@ -172,7 +172,7 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
 #endif
         for (int i = 0; i<mDataRoot->childCount(); ++i)
         {
-            TrackDataTrack *tdt = dynamic_cast<TrackDataTrack *>(mDataRoot->childAt(i));
+            TrackDataTrack *tdt = ASV(TrackDataTrack, mDataRoot->childAt(i));
             if (tdt==nullptr) continue;
 #ifdef DEBUG_IMPORT
             dumpMetadata(tdt, QString("original metadata of track %1 \"%2\":").arg(i).arg(tdt->name()));

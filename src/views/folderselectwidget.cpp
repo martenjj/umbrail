@@ -66,7 +66,7 @@ void FolderSelectWidget::slotSelectFolder()
     connect(&d, &FolderSelectDialogue::newFolder, this, &FolderSelectWidget::newFolder);
     if (!d.exec()) return;
 
-    const TrackDataFolder *selectedFolder = dynamic_cast<const TrackDataFolder *>(d.selectedItem());
+    const TrackDataFolder *selectedFolder = AS(TrackDataFolder, d.selectedItem());
     if (selectedFolder==nullptr) mDestFolder->clear();
     else mDestFolder->setText(selectedFolder->path());
 

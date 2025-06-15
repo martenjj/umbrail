@@ -59,7 +59,7 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     // they also need to be listed in DataIndexer::isInternaltag().
     // Any checks for these names elsewhere must use isInternalTag().
     mData->setMetadata(DataIndexer::index("name"), item->name());
-    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp!=nullptr)
     {
         mData->setMetadata(DataIndexer::index("latitude"), tdp->latitude());

@@ -81,7 +81,7 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 {
-    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(itemForIndex(pnt));
+    const TrackDataContainer *tdc = AS(TrackDataContainer, itemForIndex(pnt));
     if (tdc==nullptr)
     {
         if (isEmpty()) return (QModelIndex());
@@ -110,7 +110,7 @@ QModelIndex FilesModel::parent(const QModelIndex &idx) const
 int FilesModel::rowCount(const QModelIndex &pnt) const
 {
     if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
-    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(itemForIndex(pnt));
+    const TrackDataContainer *tdc = AS(TrackDataContainer, itemForIndex(pnt));
     return (tdc!=nullptr ? tdc->childCount() : 0);
 }
 
@@ -123,7 +123,7 @@ int FilesModel::columnCount(const QModelIndex &pnt) const
 
 static QVariant formatCoordinates(const TrackDataItem *item)
 {
-    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp==nullptr) return (QVariant());
     return (tdp->formattedPosition());
 }
@@ -131,7 +131,7 @@ static QVariant formatCoordinates(const TrackDataItem *item)
 
 static QVariant formatAddress(const TrackDataItem *item)
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
     if (tdw==nullptr) return (QVariant());
     return (tdw->formattedAddress().join(", "));
 }
@@ -369,7 +369,7 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
     qDebug() << "doit" << doit << "row" << row << "pnt" << pnt;
 
     // Get the parent item of the drop location.
-    TrackDataContainer *ontoParent = dynamic_cast<TrackDataContainer *>(itemForIndex(pnt));
+    TrackDataContainer *ontoParent = ASV(TrackDataContainer, itemForIndex(pnt));
     if (ontoParent==nullptr) return (false);
     qDebug() << "  onto parent" << ontoParent->name();
 
@@ -405,7 +405,7 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
     }
 
     // A track or route can only be dropped at the top level.
-    else if (IS(TrackDataTrack, sourceItem) ||IS(TrackDataRoute, sourceItem))
+    else if (IS(TrackDataTrack, sourceItem) || IS(TrackDataRoute, sourceItem))
     {
         if (!toTopLevel) return (false);
     }

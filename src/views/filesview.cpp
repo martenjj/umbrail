@@ -222,10 +222,9 @@ void FilesView::selectionChanged(const QItemSelection &sel,
         // (normally a segment for trackpoints or folder for waypoints, but
         // this is not enforced) to be selected also.  Only for drawing
         // purposes, not for any user operations.
-        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(tdi);
-        if (tdp!=nullptr)				// this is a point
+        if (IS(TrackDataAbstractPoint, tdi))		// this is a point
         {
-            TrackDataItem *par = tdp->parent();
+            TrackDataItem *par = tdi->parent();
             Q_ASSERT(par!=nullptr);
             par->setSelectionId(mSelectionId);		// select its parent
         }
@@ -256,7 +255,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 
 static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstractPoint *> *points)
 {
-    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp!=nullptr)					// is this a point?
     {
         if (ISNAN(tdp->latitude())) return;		// check position is valid
@@ -272,7 +271,7 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
     }
     else						// not a point, recurse for children
     {
-        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
         if (tdc!=nullptr)
         {
             const int num = tdc->childCount();

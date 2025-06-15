@@ -69,7 +69,7 @@ void FolderSelectDialogue::slotNewFolder()
     if (name.contains('/')) return;
 
     // Create the new named folder under the selected item as parent.
-    TrackDataContainer *parentItem = dynamic_cast<TrackDataContainer *>(selectedItem());
+    TrackDataContainer *parentItem = ASV(TrackDataContainer, selectedItem());
     Q_ASSERT(parentItem!=nullptr);
     emit newFolder(name, parentItem);
 

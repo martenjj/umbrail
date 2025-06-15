@@ -58,14 +58,24 @@ class CategoryList;
 
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Macros for item type testing.  They do not eliminate the use of	//
-//  dynamic_cast or RTTI, but at least reduce their verbosity.		//
+//  Macros for item type testing and comversion.  They do not in any	//
+//  way eliminate the use of dynamic_cast or RTTI, but at least reduce	//
+//  the source code verbosity where they are needed.			//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 // This works for both const and non-const 'value' arguments, because
 // although dynamic_cast cannot remove constness it can add it.
 #define IS(type, value)		(dynamic_cast<const type *>(value)!=nullptr)
+
+// However, actually using the converted 'value' needs two versions
+// to return either a const or a modifiable result as required.  In
+// theory thse two could be combined into one by using a const_cast
+// as in ASX() below, but that would allow unchecked assignment of
+// a const source pointer to a non-const destination.  Let's keep
+// the distinction explicit.
+#define AS(type, value)		(dynamic_cast<const type *>(value))
+#define ASV(type, value)	(dynamic_cast<type *>(value))
 
 //////////////////////////////////////////////////////////////////////////
 //									//

@@ -189,7 +189,7 @@ void LayerBase::paintDataTree(const TrackDataContainer *item, GeoPainter *painte
     const int cnt = item->childCount();
     for (int i = 0; i<cnt; ++i)				// recurse to paint children
     {
-        const TrackDataContainer *childItem = dynamic_cast<const TrackDataContainer *>(item->childAt(i));
+        const TrackDataContainer *childItem = AS(TrackDataContainer, item->childAt(i));
         if (childItem==nullptr) continue;		// do nothing if not a container
         if (childItem->childCount()==0) continue;	// do nothing if no children
 
@@ -207,7 +207,7 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
 
     if (this->isApplicableItem(item))			// consider this item itself?
     {
-        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+        const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
         if (tdp!=nullptr)				// applicable type of point
         {
             const double lat = tdp->latitude();
@@ -227,7 +227,7 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
 
     if (this->isIndirectContainer(item))		// can contain applicable items?
     {
-        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
         if (tdc!=nullptr)
         {
             for (int i = 0; i<tdc->childCount(); ++i)	// recurse to search children
@@ -270,7 +270,7 @@ void LayerBase::findSelectionInTree(const TrackDataContainer *item)
         SelectionRun run;
         for (int i = 0; i<cnt; ++i)
         {
-            const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i));
+            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item->childAt(i));
             if (tdp==nullptr) continue;
 
 #ifdef DEBUG_SELECTING
@@ -285,7 +285,7 @@ void LayerBase::findSelectionInTree(const TrackDataContainer *item)
 #endif
                     if (i>0)				// not first point in container
                     {
-                        const TrackDataAbstractPoint *prev = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i-1));
+                        const TrackDataAbstractPoint *prev = AS(TrackDataAbstractPoint, item->childAt(i-1));
                         if (prev!=nullptr)
                         {
 #ifdef DEBUG_SELECTING
@@ -339,7 +339,7 @@ void LayerBase::findSelectionInTree(const TrackDataContainer *item)
     {
         for (int i = 0; i<cnt; ++i)			// just recurse to search children
         {
-            const TrackDataContainer *childItem = dynamic_cast<TrackDataContainer *>(item->childAt(i));
+            const TrackDataContainer *childItem = AS(TrackDataContainer, item->childAt(i));
             if (childItem==nullptr) continue;
             if (childItem->childCount()==0) continue;	// no point if no children
             this->findSelectionInTree(childItem);

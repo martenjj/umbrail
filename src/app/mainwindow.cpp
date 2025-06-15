@@ -1057,7 +1057,7 @@ case TrackData::Waypoint:
 
         if (selCount==1)
         {
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(selectedItem);
+            const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, selectedItem);
             if (tdw!=nullptr)
             {
                 switch (tdw->mediaType())
@@ -1352,7 +1352,7 @@ void MainWindow::slotTrackStatistics()
 // TODO: status messages from player
 void MainWindow::slotPlayMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
     switch (tdw->mediaType())
     {
@@ -1372,7 +1372,7 @@ default:				break;
 
 void MainWindow::slotOpenMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
     if (tdw->isMediaType()) MediaPlayer::openMediaFile(tdw);
 }
@@ -1380,7 +1380,7 @@ void MainWindow::slotOpenMedia()
 
 void MainWindow::slotSaveMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     Q_ASSERT(tdw!=nullptr);
     if (tdw->isMediaType()) MediaPlayer::saveMediaFile(tdw);
 }

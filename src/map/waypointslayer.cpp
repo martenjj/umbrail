@@ -119,7 +119,7 @@ void WaypointsLayer::doPaintItem(const TrackDataContainer *item, GeoPainter *pai
 
     for (int i = 0; i<cnt; ++i)
     {
-        const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item->childAt(i));
+        const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item->childAt(i));
         if (tdw==nullptr) continue;
 
 #ifdef DEBUG_PAINTING

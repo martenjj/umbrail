@@ -62,7 +62,7 @@ bool ExporterBase::isSelected(const TrackDataItem *item) const
 {
     if (!options().hasFlag(ImporterExporterOptions::SelectionOnly)) return (true);
 							// all items, not just selection
-    const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+    const TrackDataContainer *tdc = AS(TrackDataContainer, item);
     if (tdc!=nullptr)					// is this a container?
     {
         // See whether this is actually a container which includes the selected

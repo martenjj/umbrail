@@ -58,12 +58,12 @@ static unsigned sumTotalTravelTime2(const TrackDataContainer *item)
     // Only consider segments (containing recorded tracks) for travel time.
     // Get the time from the first contained point to the last.
 
-    const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
+    const TrackDataSegment *tds = AS(TrackDataSegment, item);
     if (tds!=nullptr && num>=2)				// segment with enough points
     {
-        const TrackDataAbstractPoint *tdp1 = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(0));
+        const TrackDataAbstractPoint *tdp1 = AS(TrackDataAbstractPoint, item->childAt(0));
         Q_ASSERT(tdp1!=nullptr);
-        const TrackDataAbstractPoint *tdp2 = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(num-1));
+        const TrackDataAbstractPoint *tdp2 = AS(TrackDataAbstractPoint, item->childAt(num-1));
         Q_ASSERT(tdp2!=nullptr);
         tt = tdp1->timeTo(tdp2);
     }
@@ -75,7 +75,7 @@ static unsigned sumTotalTravelTime2(const TrackDataContainer *item)
         {
             for (int i = 0; i<num; ++i)
             {
-                const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item->childAt(i));
+                const TrackDataContainer *tdc = AS(TrackDataContainer, item->childAt(i));
                 if (tdc==nullptr) continue;
                 tt += sumTotalTravelTime2(tdc);
             }
@@ -102,14 +102,14 @@ static unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
     const TrackDataItem *item1 = items->first();	// first item
     unsigned tt = 0;					// running total
 
-    const TrackDataAbstractPoint *tdp1 = dynamic_cast<const TrackDataAbstractPoint *>(item1);
+    const TrackDataAbstractPoint *tdp1 = AS(TrackDataAbstractPoint, item1);
 
     // If two or more points are selected (in a segment), get the time span
     // between the first and last.
 
     if (num>=2 && tdp1!=nullptr)
     {
-        const TrackDataAbstractPoint *tdp2 = dynamic_cast<TrackDataAbstractPoint *>(items->last());
+        const TrackDataAbstractPoint *tdp2 = AS(TrackDataAbstractPoint, items->last());
         Q_ASSERT(tdp2!=nullptr);
         tt = tdp1->timeTo(tdp2);
         return (tt);
@@ -118,7 +118,7 @@ static unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
     // Sum segments, and recurse into other containers.
     for (const TrackDataItem *item : std::as_const(*items))
     {
-        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
         if (tdc==nullptr) continue;
         tt += sumTotalTravelTime2(tdc);
     }
@@ -134,14 +134,14 @@ static double sumTotalTravelDistance2(const TrackDataContainer *item, bool track
 
     // Ignore folders.  Waypoints are not considered to be in either time or
     // file order, so the concept of travel distance for them is meaningless.
-    const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
+    const TrackDataFolder *tdf = AS(TrackDataFolder, item);
     if (tdf!=nullptr) return (0.0);			// don't want folders here
 
     // See whether the item is a ordered container (segment or route).
     // If it is a route, but a higher level has decided that routes are
     // not wanted, then finish here.
-    const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
-    const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
+    const TrackDataSegment *tds = AS(TrackDataSegment, item);
+    const TrackDataRoute *tdr = AS(TrackDataRoute, item);
     if (tdr!=nullptr && tracksOnly) return (0.0);	// don't want routes here
 
     double dist = 0.0;					// running total
@@ -153,7 +153,7 @@ static double sumTotalTravelDistance2(const TrackDataContainer *item, bool track
         const TrackDataAbstractPoint *prev = nullptr;
         for (int i = 0; i<num; ++i)
         {
-            const TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(item->childAt(i));
+            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item->childAt(i));
             Q_ASSERT(tdp!=nullptr);
             if (prev!=nullptr) dist += prev->distanceTo(tdp);
             prev = tdp;
@@ -164,7 +164,7 @@ static double sumTotalTravelDistance2(const TrackDataContainer *item, bool track
         // For any other sort ofcontainer (file or track), recurse into its children.
         for (int i = 0; i<num; ++i)
         {
-            const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item->childAt(i));
+            const TrackDataContainer *tdc = AS(TrackDataContainer, item->childAt(i));
             if (tdc==nullptr) continue;
             dist += sumTotalTravelDistance2(tdc, tracksOnly);
         }
@@ -196,7 +196,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     const TrackDataItem *item1 = items->first();	// first item
     double dist = 0.0;					// running total
 
-    const TrackDataAbstractPoint *tdp1 = dynamic_cast<const TrackDataAbstractPoint *>(item1);
+    const TrackDataAbstractPoint *tdp1 = AS(TrackDataAbstractPoint, item1);
 
     // If two points are selected in an ordered container (segment or
     // route), look at all of the points between them.  This works
@@ -207,14 +207,14 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
         Q_ASSERT(pnt!=nullptr);
         const int idx1 = pnt->childIndex(tdp1);
 
-        const TrackDataAbstractPoint *tdp2 = dynamic_cast<TrackDataAbstractPoint *>(items->last());
+        const TrackDataAbstractPoint *tdp2 = AS(TrackDataAbstractPoint, items->last());
         Q_ASSERT(tdp2!=nullptr);
 
         const TrackDataAbstractPoint *prev = tdp1;
         const int idx2 = pnt->childIndex(tdp2);
         for (int i = idx1+1; i<=idx2; ++i)
         {
-            const TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(pnt->childAt(i));
+            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, pnt->childAt(i));
             Q_ASSERT(tdp!=nullptr);
             dist += prev->distanceTo(tdp);
             prev = tdp;
@@ -231,7 +231,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
         const TrackDataAbstractPoint *prev = nullptr;
         for (const TrackDataItem *item : std::as_const(*items))
         {
-            const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
             Q_ASSERT(tdp!=nullptr);
             if (prev!=nullptr) dist += prev->distanceTo(tdp);
             prev = tdp;
@@ -249,12 +249,12 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     {							// file at top level
         for (const TrackDataItem *item : std::as_const(*items))
         {
-            const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+            const TrackDataContainer *tdc = AS(TrackDataContainer, item);
             if (tdc==nullptr) continue;
             for (int i = 0; i<tdc->childCount(); ++i)
             {
                 const TrackDataItem *childItem = tdc->childAt(i);
-                const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(childItem);
+                const TrackDataTrack *tdt = AS(TrackDataTrack, childItem);
                 if (tdt!=nullptr)			// have found a track
                 {
                     tracksOnly = true;
@@ -268,7 +268,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     // Sum segments and/or routes, and recurse into other containers.
     for (const TrackDataItem *item : std::as_const(*items))
     {
-        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(item);
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
         if (tdc==nullptr) continue;
         dist += sumTotalTravelDistance2(tdc, tracksOnly);
     }
@@ -290,8 +290,8 @@ static void getTwoPoints(const QList<TrackDataItem *> *items,
     int idx2 = parentContainer->childIndex(item2);
     if (idx1>idx2) qSwap(idx1, idx2);			// order by index = time
 
-    TrackDataAbstractPoint *pnt1 = dynamic_cast<TrackDataAbstractPoint *>(parentContainer->childAt(idx1));
-    TrackDataAbstractPoint *pnt2 = dynamic_cast<TrackDataAbstractPoint *>(parentContainer->childAt(idx2));
+    TrackDataAbstractPoint *pnt1 = ASV(TrackDataAbstractPoint, parentContainer->childAt(idx1));
+    TrackDataAbstractPoint *pnt2 = ASV(TrackDataAbstractPoint, parentContainer->childAt(idx2));
     Q_ASSERT(pnt1!=nullptr && pnt2!=nullptr);
 
     *ppt1 = pnt1;
@@ -355,7 +355,7 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
         }
     }
 
-    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(items->first());
+    const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, items->first());
 
     TrackDataLabel *l;
     VariableUnitDisplay *vl;
@@ -760,7 +760,7 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
     int nRoutes = 0;
     for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataContainer *item = dynamic_cast<const TrackDataContainer *>(items->at(i));
+        const TrackDataContainer *item = AS(TrackDataContainer, items->at(i));
         if (item==nullptr) continue;
         for (int j = 0; j<item->childCount(); ++j)
         {
@@ -835,14 +835,14 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *ite
 
     if (items->count()==1)				// show interval if only one
     {
-        const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items->first());
+        const TrackDataSegment *tds = AS(TrackDataSegment, items->first());
         Q_ASSERT(tds!=nullptr);
 
         int cnt = tds->childCount();
         if (cnt>1)					// if more than one point
         {
-            const TrackDataTrackpoint *first = dynamic_cast<const TrackDataTrackpoint *>(tds->childAt(0));
-            const TrackDataTrackpoint *last = dynamic_cast<const TrackDataTrackpoint *>(tds->childAt(cnt-1));
+            const TrackDataTrackpoint *first = AS(TrackDataTrackpoint, tds->childAt(0));
+            const TrackDataTrackpoint *last = AS(TrackDataTrackpoint, tds->childAt(cnt-1));
             Q_ASSERT(first!=nullptr && last!=nullptr);
             int tt = qRound(double(first->timeTo(last))/(cnt-1));
             QLabel *l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
@@ -893,7 +893,7 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
     int nFolders = 0;
     for (int i = 0; i<items->count(); ++i)
     {
-        const TrackDataContainer *item = dynamic_cast<const TrackDataContainer *>(items->at(i));
+        const TrackDataContainer *item = AS(TrackDataContainer, items->at(i));
         if (item==nullptr) continue;
         for (int j = 0; j<item->childCount(); ++j)
         {
@@ -916,7 +916,7 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
 
     if (items->count()==1)				// a single item
     {
-        TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(items->first());
+        const TrackDataFolder *folderItem = AS(TrackDataFolder, items->first());
         Q_ASSERT(folderItem!=nullptr);
         mFolderParent = folderItem->path();
         const int idx = mFolderParent.lastIndexOf('/');
@@ -952,7 +952,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
     if (items->count()==1)				// single selection
     {
-        const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(items->first());
+        const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, items->first());
         Q_ASSERT(tdw!=nullptr);
 
         addSeparatorField();
@@ -961,7 +961,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
         pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
         mFormLayout->addRow(i18nc("@label:textbox", "Folder:"), pathDisplay);
 
-        TrackDataFolder *folderItem = dynamic_cast<TrackDataFolder *>(tdw->parent());
+        const TrackDataFolder *folderItem = AS(TrackDataFolder, tdw->parent());
         Q_ASSERT(folderItem!=nullptr);
         pathDisplay->setText(folderItem->path());
 

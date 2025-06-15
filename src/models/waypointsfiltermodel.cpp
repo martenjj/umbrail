@@ -45,6 +45,6 @@ bool WaypointsFilterModel::filterAcceptsRow(int row, const QModelIndex &pnt) con
 
     const TrackDataItem *item = itemForSourceIndex(sourceModel()->index(row, 0, pnt));
     if (item==nullptr) return (false);
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
     return (tdw!=nullptr);
 }

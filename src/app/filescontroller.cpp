@@ -593,7 +593,7 @@ static const TrackDataTrackpoint *closestPoint;
 
 static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
 {
-    const TrackDataTrackpoint *p = dynamic_cast<const TrackDataTrackpoint *>(pnt);
+    const TrackDataTrackpoint *p = AS(TrackDataTrackpoint, pnt);
     if (p!=nullptr)
     {
         QDateTime pt = p->time();
@@ -608,7 +608,7 @@ static void findChildWithTime(const TrackDataItem *pnt, const QDateTime &dt)
     }
     else
     {
-        const TrackDataContainer *tdc = dynamic_cast<const TrackDataContainer *>(pnt);
+        const TrackDataContainer *tdc = AS(TrackDataContainer, pnt);
         if (tdc !=nullptr)
         {
             const int cnt = tdc->childCount();
@@ -806,7 +806,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
             cmd1->setName(PHOTO_FOLDER_NAME);
             cmd1->setData(TrackData::Folder, filesModel()->rootItem());
             executeCommand(cmd1);
-            destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
+            destFolder = ASV(TrackDataFolder, cmd1->addedItem());
         }
         Q_ASSERT(destFolder!=nullptr);
 
@@ -916,7 +916,7 @@ void FilesController::slotTrackProperties()
     const QVariant &lonData = model->data(DataIndexer::index("longitude"));
     if (!latData.isNull() && !lonData.isNull())		// if applies to this point
     {
-        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(item);
+        TrackDataAbstractPoint *tdp = ASV(TrackDataAbstractPoint, item);
         Q_ASSERT(tdp!=nullptr);
 
         const double newLat = latData.toDouble();
@@ -1061,9 +1061,9 @@ static bool compareSegmentTimes(const TrackDataContainer *item1, const TrackData
     if (item1->childCount()==0) return (true);		// empty always sorts first
     if (item2->childCount()==0) return (false);
 
-    const TrackDataAbstractPoint *pnt1 = dynamic_cast<TrackDataAbstractPoint *>(item1->childAt(0));
+    const TrackDataAbstractPoint *pnt1 = AS(TrackDataAbstractPoint, item1->childAt(0));
     Q_ASSERT(pnt1!=nullptr);
-    const TrackDataAbstractPoint *pnt2 = dynamic_cast<TrackDataAbstractPoint *>(item2->childAt(0));
+    const TrackDataAbstractPoint *pnt2 = AS(TrackDataAbstractPoint, item2->childAt(0));
     Q_ASSERT(pnt2!=nullptr);
 
     return (pnt1->time()<pnt2->time());
@@ -1088,11 +1088,11 @@ void FilesController::slotMergeSegments()
     const int num = selItems.count();
     if (num<2) return;
 
-    // TODO: will this work for waypoints?
+    // TODO: XXXXXXXXXXXXX will this work for waypoints?
     QList<TrackDataContainer *> items;
     for (TrackDataItem *item : std::as_const(selItems))
     {
-        TrackDataContainer *seg = dynamic_cast<TrackDataContainer *>(item);
+        TrackDataContainer *seg = ASV(TrackDataContainer, item);
         Q_ASSERT(seg!=nullptr);
         items.append(seg);
     }
@@ -1105,9 +1105,9 @@ void FilesController::slotMergeSegments()
         QDateTime prevEnd;
         for (int i = 0; i<num; ++i)
         {
-            const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
-            const TrackDataTrackpoint *pnt1 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(0));
-            const TrackDataTrackpoint *pnt2 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(tds->childCount()-1));
+            const TrackDataSegment *tds = AS(TrackDataSegment, items[i]);
+            const TrackDataTrackpoint *pnt1 = AS(TrackDataTrackpoint, tds->childAt(0));
+            const TrackDataTrackpoint *pnt2 = AS(TrackDataTrackpoint, tds->childAt(tds->childCount()-1));
             qDebug() << "  " << tds->name() << "start" << pnt1->formattedTime() << "end" << pnt2->formattedTime();
 
             if (i>0 && pnt1->time()<prevEnd)		// check no time overlap
@@ -1134,7 +1134,7 @@ void FilesController::slotMergeSegments()
 
         for (const TrackDataItem *item : std::as_const(items))
         {						// check reference against others
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+            const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
             if (tdw==nullptr)				// should never happen, enforced by GUI
             {
                 qWarning() << "trying to merge non-waypoint" << item->name();
@@ -1216,7 +1216,7 @@ void FilesController::slotMoveItem()
 
     if (!d.exec()) return;
 
-    TrackDataContainer *dest = dynamic_cast<TrackDataContainer *>(d.selectedItem());
+    TrackDataContainer *dest = ASV(TrackDataContainer, d.selectedItem());
     if (dest==nullptr) return;
 
     MoveItemCommand *cmd = new MoveItemCommand(this);
@@ -1230,7 +1230,7 @@ void FilesController::slotAddTrack()
 {
     QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
-    TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
+    TrackDataContainer *pnt = ASV(TrackDataContainer, items.first());
     Q_ASSERT(IS(TrackDataFile, pnt));			// parent item (must be file)
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
@@ -1244,7 +1244,7 @@ void FilesController::slotAddRoute()
 {
     QList<TrackDataItem *> items = filesView()->selectedItems();
     if (items.count()!=1) return;
-    TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
+    TrackDataContainer *pnt = ASV(TrackDataContainer, items.first());
     Q_ASSERT(IS(TrackDataFile, pnt));			// parent item (must be file)
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
@@ -1260,7 +1260,7 @@ void FilesController::slotAddFolder()
     if (items.count()!=1) return;
 
     // The parent item, which must be a file or a folder.
-    TrackDataContainer *pnt = dynamic_cast<TrackDataContainer *>(items.first());
+    TrackDataContainer *pnt = ASV(TrackDataContainer, items.first());
     Q_ASSERT(IS(TrackDataFile, pnt) || IS(TrackDataFolder, pnt));
 
     AddContainerCommand *cmd = new AddContainerCommand(this);
@@ -1348,7 +1348,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
         cmd1->setText(i18n("Create Waypoint Folder"));
         executeCommand(cmd1);
 
-        TrackDataFolder *destFolder = dynamic_cast<TrackDataFolder *>(cmd1->addedItem());
+        TrackDataFolder *destFolder = ASV(TrackDataFolder, cmd1->addedItem());
         Q_ASSERT(destFolder!=nullptr);			// should now have been created
         d.setDestinationContainer(destFolder);
     }
@@ -1357,9 +1357,9 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     const QList<TrackDataItem *> items = filesView()->selectedItems();
 
     const TrackDataItem *sel = (items.count()==1 ? items.first() : nullptr);
-    const TrackDataAbstractPoint *selPoint = dynamic_cast<const TrackDataAbstractPoint *>(sel);
-    const TrackDataFolder *selFolder = dynamic_cast<const TrackDataFolder *>(sel);
-    const TrackDataWaypoint *selWaypoint = dynamic_cast<const TrackDataWaypoint *>(sel);
+    const TrackDataAbstractPoint *selPoint = AS(TrackDataAbstractPoint, sel);
+    const TrackDataFolder *selFolder = AS(TrackDataFolder, sel);
+    const TrackDataWaypoint *selWaypoint = AS(TrackDataWaypoint, sel);
 
     // Select where the new waypoint is to be placed.  If a single
     // folder is selected, then add it to that folder.  Otherwise, if a
@@ -1367,7 +1367,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
     // Otherwise, allow the user to select where it is to go.
     if (selWaypoint!=nullptr)
     {
-        selFolder = dynamic_cast<const TrackDataFolder *>(sel->parent());
+        selFolder = AS(TrackDataFolder, sel->parent());
         selPoint = nullptr;			// don't want this as source
     }
     if (selFolder!=nullptr) d.setDestinationContainer(selFolder);
@@ -1382,7 +1382,7 @@ void FilesController::slotAddWaypoint(qreal lat, qreal lon)
 
     d.pointPosition(&lat, &lon);
     const QString name = d.pointName();
-    TrackDataFolder *destFolder = dynamic_cast<TrackDataFolder *>(d.selectedContainer());
+    TrackDataFolder *destFolder = ASV(TrackDataFolder, d.selectedContainer());
     Q_ASSERT(destFolder!=nullptr);
 
     qDebug() << "create" << name << "in" << destFolder->name() << "at" << lat << lon;
@@ -1412,9 +1412,9 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     const QList<TrackDataItem *> items = filesView()->selectedItems();
 
     const TrackDataItem *sel = (items.count()==1 ? items.first() : nullptr);
-    const TrackDataAbstractPoint *selPoint = dynamic_cast<const TrackDataAbstractPoint *>(sel);
-    const TrackDataRoute *selRoute = dynamic_cast<const TrackDataRoute *>(sel);
-    const TrackDataRoutepoint *selRoutepoint = dynamic_cast<const TrackDataRoutepoint *>(sel);
+    const TrackDataAbstractPoint *selPoint = AS(TrackDataAbstractPoint, sel);
+    const TrackDataRoute *selRoute = AS(TrackDataRoute, sel);
+    const TrackDataRoutepoint *selRoutepoint = AS(TrackDataRoutepoint, sel);
 
     // Select where the new route point is to be placed.  If a single
     // route is selected, then add it to that route.  Otherwise, if a
@@ -1422,7 +1422,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
     // Otherwise, allow the user to select where it is to go.
     if (selRoutepoint!=nullptr)
     {
-        selRoute = dynamic_cast<const TrackDataRoute *>(sel->parent());
+        selRoute = AS(TrackDataRoute, sel->parent());
         selPoint = nullptr;			// don't want this as source
     }
     if (selRoute!=nullptr) d.setDestinationContainer(selRoute);
@@ -1437,7 +1437,7 @@ void FilesController::slotAddRoutepoint(qreal lat, qreal lon)
 
     d.pointPosition(&lat, &lon);
     const QString name = d.pointName();
-    TrackDataRoute *destRoute = dynamic_cast<TrackDataRoute *>(d.selectedContainer());
+    TrackDataRoute *destRoute = ASV(TrackDataRoute, d.selectedContainer());
     Q_ASSERT(destRoute!=nullptr);
 
     qDebug() << "create" << name << "in" << destRoute->name() << "at" << lat << lon;

@@ -300,7 +300,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         const double ele = elementText.toDouble();
         if (ISNAN(ele)) return (addWarning("Value \""+elementText+"\" ignored for ELE"));
 
-        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
+        TrackDataAbstractPoint *tdp = ASV(TrackDataAbstractPoint, currentItem());
 
         // The explicit use of QVariant(double) seems to be needed, otherwise there is
         // an ambiguous overload:
@@ -318,7 +318,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     else if (localName=="category")			// start of a CATEGORY element
     {
         elementText = mXmlReader->readElementText();
-        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        TrackDataWaypoint *item = ASV(TrackDataWaypoint, currentItem());
         if (item!=nullptr) item->setMetadata(localName, elementText);
         else addError("CATEGORY not within WPT");
     }
@@ -346,7 +346,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         // This may already be included in CATEGORY/TYPE above, so
         // only combine with the existing category if it is not already present.
         elementText = mXmlReader->readElementText();
-        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        TrackDataWaypoint *item = ASV(TrackDataWaypoint, currentItem());
         if (item!=nullptr)
         {
             QStringList cats = item->metadata("category").toStringList();
@@ -736,7 +736,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="wpt")				// end of a WPT element
     {
-        TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mCurrentPoint);
+        TrackDataWaypoint *tdw = ASV(TrackDataWaypoint, mCurrentPoint);
         if (tdw==nullptr)				// check must have started
         {
             return (addError("WPT element not started"));

@@ -341,7 +341,7 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
     const TrackDataAbstractPoint *selpoint = nullptr;
     if (items.count()==1)				// a single selected item
     {							// which must be a point
-        selpoint = dynamic_cast<const TrackDataAbstractPoint *>(items.first());
+        selpoint = AS(TrackDataAbstractPoint, items.first());
     }
 
     MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget());

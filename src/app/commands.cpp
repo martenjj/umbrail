@@ -138,7 +138,7 @@ ImportFileCommand::~ImportFileCommand()
 static void findFolders(TrackDataContainer *item, QVector<TrackDataFolder *> *res)
 {
     // See if this item is a folder.  If so, record it in the result list.
-    TrackDataFolder *tdf = dynamic_cast<TrackDataFolder *>(item);
+    TrackDataFolder *tdf = ASV(TrackDataFolder, item);
     if (tdf!=nullptr)
     {
         qDebug() << "found" << tdf->path();
@@ -149,7 +149,7 @@ static void findFolders(TrackDataContainer *item, QVector<TrackDataFolder *> *re
     const int num = item->childCount();
     for (int i = 0; i<num; ++i)
     {
-        TrackDataContainer *tdc = dynamic_cast<TrackDataContainer *>(item->childAt(i));
+        TrackDataContainer *tdc = ASV(TrackDataContainer, item->childAt(i));
         if (tdc!=nullptr) findFolders(tdc, res);
     }
 }
@@ -230,7 +230,7 @@ again:                  if (j>=importFolder->childCount()) break;
                         // The import waypoint to potentially be merged.
                         // It may not be a waypoint (if not, most likely
                         // a subfolder), in which case just ignore it.
-                        TrackDataWaypoint *importWpt = dynamic_cast<TrackDataWaypoint *>(importFolder->childAt(j));
+                        TrackDataWaypoint *importWpt = ASV(TrackDataWaypoint, importFolder->childAt(j));
                         if (importWpt==nullptr) continue;
 
                         ++importPoints;
@@ -241,7 +241,7 @@ again:                  if (j>=importFolder->childCount()) break;
                             // The existing waypoint to potentially be merged into.
                             // Again it may not be a waypoint, in which case
                             // just ignore it.
-                            TrackDataWaypoint *existingWpt = dynamic_cast<TrackDataWaypoint *>(existingFolder->childAt(k));
+                            TrackDataWaypoint *existingWpt = ASV(TrackDataWaypoint, existingFolder->childAt(k));
                             if (existingWpt==nullptr) continue;
 
                             // See if the two waypoints can be automatically merged.
@@ -496,7 +496,7 @@ void SplitSegmentCommand::redo()
     controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
-    TrackDataAbstractPoint *splitPoint = dynamic_cast<TrackDataAbstractPoint *>(mParentSegment->childAt(mSplitIndex));
+    const TrackDataAbstractPoint *splitPoint = AS(TrackDataAbstractPoint, mParentSegment->childAt(mSplitIndex));
     Q_ASSERT(splitPoint!=nullptr);
 
     if (mNewSegmentContainer==nullptr)
@@ -529,7 +529,7 @@ void SplitSegmentCommand::redo()
     }
 
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
-    TrackDataContainer *newSegment = dynamic_cast<TrackDataContainer *>(mNewSegmentContainer->takeFirstChildItem());
+    TrackDataContainer *newSegment = ASV(TrackDataContainer, mNewSegmentContainer->takeFirstChildItem());
     Q_ASSERT(newSegment!=nullptr);
 
     int takeFrom = mSplitIndex+1;
@@ -570,7 +570,7 @@ void SplitSegmentCommand::undo()
     TrackDataContainer *parentItem = mParentSegment->parent();
     Q_ASSERT(parentItem!=nullptr);
     const int parentIndex = parentItem->childIndex(mParentSegment);
-    TrackDataContainer *newSegment = dynamic_cast<TrackDataContainer *>(parentItem->childAt(parentIndex+1));
+    TrackDataContainer *newSegment = ASV(TrackDataContainer, parentItem->childAt(parentIndex+1));
     Q_ASSERT(newSegment!=nullptr);
 
     const int startIndex = 1;				// all apart from first point
@@ -702,7 +702,7 @@ void MergeSegmentsCommand::undo()
     for (int i = segCount-1; i>=0; --i)
     {
         const int num = mSourceCounts[i];
-        TrackDataContainer *item = dynamic_cast<TrackDataContainer *>(mSavedSegmentContainer->takeLastChildItem());
+        TrackDataContainer *item = ASV(TrackDataContainer, mSavedSegmentContainer->takeLastChildItem());
         Q_ASSERT(item!=nullptr);
 
         // The last 'num' points of the 'mMasterSegment' are those that
@@ -858,7 +858,7 @@ AddTrackpointCommand::~AddTrackpointCommand()
 
 void AddTrackpointCommand::setData(TrackDataItem *item)
 {
-    mAtPoint = dynamic_cast<TrackDataTrackpoint *>(item);
+    mAtPoint = ASV(TrackDataTrackpoint, item);
     Q_ASSERT(mAtPoint!=nullptr);
 }
 
@@ -881,7 +881,7 @@ void AddTrackpointCommand::redo()
 
         const int idx = parent->childIndex(mAtPoint);
         Q_ASSERT(idx>0);				// not allowed at first point
-        const TrackDataTrackpoint *prevPoint = dynamic_cast<const TrackDataTrackpoint *>(parent->childAt(idx-1));
+        const TrackDataTrackpoint *prevPoint = AS(TrackDataTrackpoint, parent->childAt(idx-1));
         Q_ASSERT(prevPoint!=nullptr);
 
         double lat = (mAtPoint->latitude()+prevPoint->latitude())/2;
@@ -1114,7 +1114,7 @@ void MovePointsCommand::redo()
     Q_ASSERT(!mItems.isEmpty());
     for (int i = 0; i<mItems.count(); ++i)
     {
-        TrackDataAbstractPoint *item = dynamic_cast<TrackDataAbstractPoint *>(mItems[i]);
+        TrackDataAbstractPoint *item = ASV(TrackDataAbstractPoint, mItems[i]);
         if (item==nullptr) continue;
         item->setLatLong(item->latitude()+mLatOff, item->longitude()+mLonOff);
         model()->changedItem(item);
@@ -1129,7 +1129,7 @@ void MovePointsCommand::undo()
     Q_ASSERT(!mItems.isEmpty());
     for (int i = 0; i<mItems.count(); ++i)
     {
-        TrackDataAbstractPoint *item = dynamic_cast<TrackDataAbstractPoint *>(mItems[i]);
+        TrackDataAbstractPoint *item = ASV(TrackDataAbstractPoint, mItems[i]);
         if (item==nullptr) continue;
         item->setLatLong(item->latitude()-mLatOff, item->longitude()-mLonOff);
         model()->changedItem(item);
