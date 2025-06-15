@@ -61,10 +61,8 @@ static unsigned sumTotalTravelTime2(const TrackDataContainer *item)
     const TrackDataSegment *tds = AS(TrackDataSegment, item);
     if (tds!=nullptr && num>=2)				// segment with enough points
     {
-        const TrackDataAbstractPoint *tdp1 = AS(TrackDataAbstractPoint, item->childAt(0));
-        Q_ASSERT(tdp1!=nullptr);
-        const TrackDataAbstractPoint *tdp2 = AS(TrackDataAbstractPoint, item->childAt(num-1));
-        Q_ASSERT(tdp2!=nullptr);
+        const TrackDataAbstractPoint *tdp1 = ASX(TrackDataAbstractPoint, item->childAt(0));
+        const TrackDataAbstractPoint *tdp2 = ASX(TrackDataAbstractPoint, item->childAt(num-1));
         tt = tdp1->timeTo(tdp2);
     }
     else						// any other container
@@ -109,8 +107,7 @@ static unsigned sumTotalTravelTime(const QList<TrackDataItem *> *items)
 
     if (num>=2 && tdp1!=nullptr)
     {
-        const TrackDataAbstractPoint *tdp2 = AS(TrackDataAbstractPoint, items->last());
-        Q_ASSERT(tdp2!=nullptr);
+        const TrackDataAbstractPoint *tdp2 = ASX(TrackDataAbstractPoint, items->last());
         tt = tdp1->timeTo(tdp2);
         return (tt);
     }
@@ -153,8 +150,7 @@ static double sumTotalTravelDistance2(const TrackDataContainer *item, bool track
         const TrackDataAbstractPoint *prev = nullptr;
         for (int i = 0; i<num; ++i)
         {
-            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item->childAt(i));
-            Q_ASSERT(tdp!=nullptr);
+            const TrackDataAbstractPoint *tdp = ASX(TrackDataAbstractPoint, item->childAt(i));
             if (prev!=nullptr) dist += prev->distanceTo(tdp);
             prev = tdp;
         }
@@ -207,15 +203,13 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
         Q_ASSERT(pnt!=nullptr);
         const int idx1 = pnt->childIndex(tdp1);
 
-        const TrackDataAbstractPoint *tdp2 = AS(TrackDataAbstractPoint, items->last());
-        Q_ASSERT(tdp2!=nullptr);
+        const TrackDataAbstractPoint *tdp2 = ASX(TrackDataAbstractPoint, items->last());
 
         const TrackDataAbstractPoint *prev = tdp1;
         const int idx2 = pnt->childIndex(tdp2);
         for (int i = idx1+1; i<=idx2; ++i)
         {
-            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, pnt->childAt(i));
-            Q_ASSERT(tdp!=nullptr);
+            const TrackDataAbstractPoint *tdp = ASX(TrackDataAbstractPoint, pnt->childAt(i));
             dist += prev->distanceTo(tdp);
             prev = tdp;
         }
@@ -231,8 +225,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
         const TrackDataAbstractPoint *prev = nullptr;
         for (const TrackDataItem *item : std::as_const(*items))
         {
-            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
-            Q_ASSERT(tdp!=nullptr);
+            const TrackDataAbstractPoint *tdp = ASX(TrackDataAbstractPoint, item);
             if (prev!=nullptr) dist += prev->distanceTo(tdp);
             prev = tdp;
         }
@@ -290,9 +283,8 @@ static void getTwoPoints(const QList<TrackDataItem *> *items,
     int idx2 = parentContainer->childIndex(item2);
     if (idx1>idx2) qSwap(idx1, idx2);			// order by index = time
 
-    TrackDataAbstractPoint *pnt1 = ASV(TrackDataAbstractPoint, parentContainer->childAt(idx1));
-    TrackDataAbstractPoint *pnt2 = ASV(TrackDataAbstractPoint, parentContainer->childAt(idx2));
-    Q_ASSERT(pnt1!=nullptr && pnt2!=nullptr);
+    TrackDataAbstractPoint *pnt1 = ASX(TrackDataAbstractPoint, parentContainer->childAt(idx1));
+    TrackDataAbstractPoint *pnt2 = ASX(TrackDataAbstractPoint, parentContainer->childAt(idx2));
 
     *ppt1 = pnt1;
     *ppt2 = pnt2;
@@ -835,15 +827,12 @@ TrackSegmentDetailPage::TrackSegmentDetailPage(const QList<TrackDataItem *> *ite
 
     if (items->count()==1)				// show interval if only one
     {
-        const TrackDataSegment *tds = AS(TrackDataSegment, items->first());
-        Q_ASSERT(tds!=nullptr);
-
+        const TrackDataSegment *tds = ASX(TrackDataSegment, items->first());
         int cnt = tds->childCount();
         if (cnt>1)					// if more than one point
         {
-            const TrackDataTrackpoint *first = AS(TrackDataTrackpoint, tds->childAt(0));
-            const TrackDataTrackpoint *last = AS(TrackDataTrackpoint, tds->childAt(cnt-1));
-            Q_ASSERT(first!=nullptr && last!=nullptr);
+            const TrackDataTrackpoint *first = ASX(TrackDataTrackpoint, tds->childAt(0));
+            const TrackDataTrackpoint *last = ASX(TrackDataTrackpoint, tds->childAt(cnt-1));
             int tt = qRound(double(first->timeTo(last))/(cnt-1));
             QLabel *l = new TrackDataLabel(TrackData::formattedDuration(tt), this);
             mFormLayout->addRow(i18nc("@label:textbox", "Interval:"), l);
@@ -916,8 +905,7 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
 
     if (items->count()==1)				// a single item
     {
-        const TrackDataFolder *folderItem = AS(TrackDataFolder, items->first());
-        Q_ASSERT(folderItem!=nullptr);
+        const TrackDataFolder *folderItem = ASX(TrackDataFolder, items->first());
         mFolderParent = folderItem->path();
         const int idx = mFolderParent.lastIndexOf('/');
         if (idx!=-1) mFolderParent = mFolderParent.left(idx);
@@ -952,8 +940,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
     addDisplayFields(items, DisplayPosition|DisplayTime|DisplayElevation);
     if (items->count()==1)				// single selection
     {
-        const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, items->first());
-        Q_ASSERT(tdw!=nullptr);
+        const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, items->first());
 
         addSeparatorField();
 
@@ -961,8 +948,7 @@ TrackWaypointDetailPage::TrackWaypointDetailPage(const QList<TrackDataItem *> *i
         pathDisplay->setTextInteractionFlags(Qt::TextSelectableByMouse|Qt::TextSelectableByKeyboard);
         mFormLayout->addRow(i18nc("@label:textbox", "Folder:"), pathDisplay);
 
-        const TrackDataFolder *folderItem = AS(TrackDataFolder, tdw->parent());
-        Q_ASSERT(folderItem!=nullptr);
+        const TrackDataFolder *folderItem = ASX(TrackDataFolder, tdw->parent());
         pathDisplay->setText(folderItem->path());
 
         if (tdw->isMediaType())

@@ -333,8 +333,7 @@ again:                  if (j>=importFolder->childCount()) break;
 
 void ImportFileCommand::undo()
 {
-    TrackDataFile *root = static_cast<TrackDataFile *>(ItemIndexInterface::of(model())->rootItem());
-    Q_ASSERT(root!=nullptr);
+    TrackDataFile *root = ASX(TrackDataFile, ItemIndexInterface::of(model())->rootItem());
 
     if (mImportData==nullptr)				// was set as file root
     {
@@ -496,8 +495,7 @@ void SplitSegmentCommand::redo()
     controller()->filesView()->clearSelection();
     model()->startLayoutChange();
 
-    const TrackDataAbstractPoint *splitPoint = AS(TrackDataAbstractPoint, mParentSegment->childAt(mSplitIndex));
-    Q_ASSERT(splitPoint!=nullptr);
+    const TrackDataAbstractPoint *splitPoint = ASV(TrackDataAbstractPoint, mParentSegment->childAt(mSplitIndex));
 
     if (mNewSegmentContainer==nullptr)
     {
@@ -529,8 +527,7 @@ void SplitSegmentCommand::redo()
     }
 
     Q_ASSERT(mNewSegmentContainer->childCount()==1);
-    TrackDataContainer *newSegment = ASV(TrackDataContainer, mNewSegmentContainer->takeFirstChildItem());
-    Q_ASSERT(newSegment!=nullptr);
+    TrackDataContainer *newSegment = ASX(TrackDataContainer, mNewSegmentContainer->takeFirstChildItem());
 
     int takeFrom = mSplitIndex+1;
     qDebug() << "from" << mParentSegment->name() << "start" << takeFrom << "->" << newSegment->name();
@@ -570,8 +567,7 @@ void SplitSegmentCommand::undo()
     TrackDataContainer *parentItem = mParentSegment->parent();
     Q_ASSERT(parentItem!=nullptr);
     const int parentIndex = parentItem->childIndex(mParentSegment);
-    TrackDataContainer *newSegment = ASV(TrackDataContainer, parentItem->childAt(parentIndex+1));
-    Q_ASSERT(newSegment!=nullptr);
+    TrackDataContainer *newSegment = ASX(TrackDataContainer, parentItem->childAt(parentIndex+1));
 
     const int startIndex = 1;				// all apart from first point
     qDebug() << "from" << newSegment->name() << "count" << newSegment->childCount()
@@ -702,8 +698,7 @@ void MergeSegmentsCommand::undo()
     for (int i = segCount-1; i>=0; --i)
     {
         const int num = mSourceCounts[i];
-        TrackDataContainer *item = ASV(TrackDataContainer, mSavedSegmentContainer->takeLastChildItem());
-        Q_ASSERT(item!=nullptr);
+        TrackDataContainer *item = ASX(TrackDataContainer, mSavedSegmentContainer->takeLastChildItem());
 
         // The last 'num' points of the 'mMasterSegment' are those that
         // originally belonged to the former 'item' segment.
@@ -881,8 +876,7 @@ void AddTrackpointCommand::redo()
 
         const int idx = parent->childIndex(mAtPoint);
         Q_ASSERT(idx>0);				// not allowed at first point
-        const TrackDataTrackpoint *prevPoint = AS(TrackDataTrackpoint, parent->childAt(idx-1));
-        Q_ASSERT(prevPoint!=nullptr);
+        const TrackDataTrackpoint *prevPoint = ASX(TrackDataTrackpoint, parent->childAt(idx-1));
 
         double lat = (mAtPoint->latitude()+prevPoint->latitude())/2;
         double lon = (mAtPoint->longitude()+prevPoint->longitude())/2;

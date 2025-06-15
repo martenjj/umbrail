@@ -1352,8 +1352,7 @@ void MainWindow::slotTrackStatistics()
 // TODO: status messages from player
 void MainWindow::slotPlayMedia()
 {
-    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, filesController()->filesView()->selectedItem());
-    Q_ASSERT(tdw!=nullptr);
+    const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     switch (tdw->mediaType())
     {
 case TrackData::MediaAudioNote:		MediaPlayer::playAudioNote(tdw);
@@ -1372,16 +1371,14 @@ default:				break;
 
 void MainWindow::slotOpenMedia()
 {
-    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, filesController()->filesView()->selectedItem());
-    Q_ASSERT(tdw!=nullptr);
+    const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     if (tdw->isMediaType()) MediaPlayer::openMediaFile(tdw);
 }
 
 
 void MainWindow::slotSaveMedia()
 {
-    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, filesController()->filesView()->selectedItem());
-    Q_ASSERT(tdw!=nullptr);
+    const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     if (tdw->isMediaType()) MediaPlayer::saveMediaFile(tdw);
 }
 

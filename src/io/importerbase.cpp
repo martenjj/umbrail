@@ -228,7 +228,6 @@ TrackDataFolder *ImporterBase::waypointFolder(const TrackDataWaypoint *tdw, cons
     // If the waypoint has a folder defined, then that folder is used.
     // Otherwise, an appropriately named top level folder is used, or
     // created if necessary.
-
     const QVariant path = tdw->metadata("folder");	// waypoint folder, if it has one
     if (!path.isNull()) return (getFolder(path.toString()));
     return (getFolder(defaultName));			// find or create folder

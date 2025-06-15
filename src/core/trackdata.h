@@ -77,6 +77,22 @@ class CategoryList;
 #define AS(type, value)		(dynamic_cast<const type *>(value))
 #define ASV(type, value)	(dynamic_cast<type *>(value))
 
+// The assertion is not needed in all cases.
+//
+// Theoretically the cast from a const pointer to a non-const one can
+// allow unchecked assignment from a const source pointer to a non-const
+// destination, leading to undefined behaviour.  However, it is never
+// actually dereferenced within the lambda function.  If the target
+// pointer type is const then the return will implicitly convert the
+// result back to a const pointer before the caller dereferences or
+// makes any further use of it.
+#define ASX(type, value)	(([](decltype(value) v)							\
+                                {									\
+                                    auto *t = const_cast<type *>(dynamic_cast<const type *>(v));	\
+                                    Q_ASSERT(t!=nullptr);						\
+                                    return (t);								\
+                                })(value))
+
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackPropertiesInterface						//

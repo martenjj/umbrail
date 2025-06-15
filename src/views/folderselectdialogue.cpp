@@ -69,8 +69,7 @@ void FolderSelectDialogue::slotNewFolder()
     if (name.contains('/')) return;
 
     // Create the new named folder under the selected item as parent.
-    TrackDataContainer *parentItem = ASV(TrackDataContainer, selectedItem());
-    Q_ASSERT(parentItem!=nullptr);
+    TrackDataContainer *parentItem = ASX(TrackDataContainer, selectedItem());
     emit newFolder(name, parentItem);
 
     // Then find and select the new added folder.

@@ -739,12 +739,10 @@ TimeRange TrackDataSegment::timeSpan() const
     int num = childCount();
     if (num==0) return (TimeRange());
 
-    const TrackDataTrackpoint *firstPoint = AS(TrackDataTrackpoint, childAt(0));
-    Q_ASSERT(firstPoint!=nullptr);
+    const TrackDataTrackpoint *firstPoint = ASX(TrackDataTrackpoint, childAt(0));
     if (num==1) return (TimeRange(firstPoint->time(), firstPoint->time()));
 
-    const TrackDataTrackpoint *lastPoint = AS(TrackDataTrackpoint, childAt(num-1));
-    Q_ASSERT(lastPoint!=nullptr);
+    const TrackDataTrackpoint *lastPoint = ASX(TrackDataTrackpoint, childAt(num-1));
     return (TimeRange(firstPoint->time(), lastPoint->time()));
 }
 
