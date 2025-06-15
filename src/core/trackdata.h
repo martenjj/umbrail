@@ -89,7 +89,7 @@ class CategoryList;
 #define ASX(type, value)	(([](decltype(value) v)							\
                                 {									\
                                     auto *t = const_cast<type *>(dynamic_cast<const type *>(v));	\
-                                    Q_ASSERT(t!=nullptr);						\
+                                    Q_ASSERT_X(t!=nullptr, "ASX", (#value " is not " #type));		\
                                     return (t);								\
                                 })(value))
 
