@@ -98,7 +98,7 @@ public:
 public slots:               
     void slotTrackProperties();
     void slotSplitSegment();
-    void slotMergeSegments();
+    void slotMergeItems();
     void slotMoveItem();
     void slotAddTrack();
     void slotAddRoute();
@@ -129,6 +129,9 @@ private:
 
     bool adjustTimeSpec(QDateTime &dt);
     FilesController::Status importPhotoInternal(const QUrl &importFrom, bool multiple);
+
+    void mergeSegmentsInternal(QList<TrackDataItem *> &items);
+    void mergeWaypointsInternal(QList<TrackDataItem *> &items);
 
 private slots:
     void slotUpdateActionState();

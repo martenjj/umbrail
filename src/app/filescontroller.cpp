@@ -1066,7 +1066,23 @@ static bool compareSegmentTimes(const TrackDataItem *item1, const TrackDataItem 
 }
 
 
-void FilesController::slotMergeSegments()
+void FilesController::slotMergeItems()
+{
+    // This slot was originally called slotMergeSegments() and did exactly
+    // that.  Later on it was extended to also work on waypoints, to
+    // perform a manual merge.  The two operations are now each performed
+    // in their own function.
+
+    QList<TrackDataItem *> items = filesView()->selectedItems();
+    const int num = items.count();
+    if (num<2) return;
+
+    if (dynamic_cast<const TrackDataWaypoint *>(items.first())!=nullptr) mergeWaypointsInternal(items);
+    else mergeSegmentsInternal(items);			// operating on segments or routes
+}
+
+
+void FilesController::mergeSegmentsInternal(QList<TrackDataItem *> &items)
 {
     // There may be more than two segments selected.  They will all be merged
     // in time order, which must still result in a strict monotonic ordering
@@ -1076,21 +1092,16 @@ void FilesController::slotMergeSegments()
     //
     // Routes and route points do not have associated times.  In this case,
     // they are simply merged in file order.
-    //
-    // This can also be enabled for waypoints, in which case the manual
-    // merge dialogue is started.
-
-    QList<TrackDataItem *> items = filesView()->selectedItems();
-    const int num = items.count();
-    if (num<2) return;
 
     if (dynamic_cast<const TrackDataSegment *>(items.first())!=nullptr)
-    {							// operating on segments
+    {
+        // Operating on segments.  Sort them into time order and check that
+        // there is no overlap from one to the next.
         std::sort(items.begin(), items.end(), &compareSegmentTimes);
 
         qDebug() << "sorted segments:";
         QDateTime prevEnd;
-        for (int i = 0; i<num; ++i)
+        for (int i = 0; i<items.count(); ++i)
         {
             const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(items[i]);
             const TrackDataTrackpoint *pnt1 = dynamic_cast<TrackDataTrackpoint *>(tds->childAt(0));
@@ -1105,81 +1116,85 @@ void FilesController::slotMergeSegments()
                 return;
             }
 
-            prevEnd = pnt2->time();				// note end for next time
+            prevEnd = pnt2->time();			// note end for next time
         }
     }
-    else if (dynamic_cast<const TrackDataWaypoint *>(items.first())!=nullptr)
-    {							// operating on waypoints
-        // from NavTracks PointsController::slotMergeSelection()
-        emit statusMessage(i18n("Checking positions"));
 
-        const TrackDataWaypoint *refPoint = nullptr;	// first reference point
-        bool mergeOk = true;				// positions close enough?
-        QList<const TrackDataWaypoint *> pointsToMerge;	// waypoint list to merge
-
-        for (const TrackDataItem *item : std::as_const(items))
-        {						// check reference against others
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
-            if (tdw==nullptr)				// should never happen, enforced by GUI
-            {
-                qWarning() << "trying to merge non-waypoint" << item->name();
-                return;
-            }
-
-            if (refPoint==nullptr) refPoint = tdw;	// note the first reference point
-            else					// compare others against it
-            {
-                if (!refPoint->canMerge(tdw, true))	// position check only
-                {
-                    mergeOk = false;			// point is too far away
-                }
-            }
-
-            pointsToMerge.append(tdw);			// cast to a waypoint
-        }
-
-        if (!mergeOk)					// points were too far apart
-        {
-            // TODO: show the difference distance
-            // TODO: should really use i18np() here, because some languages have
-            // more plural forms than just "1" or "more".
-            QString query = xi18nc("@info", "Some of the selected points are not close together.<nl/>Really merge the %1 points?", num);
-            if (KMessageBox::warningContinueCancel(mainWidget(), query,
-                                                   i18n("Merge Points"),
-                                                   KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")))!=KMessageBox::Continue)
-            {
-                emit statusMessage(i18n("Merge cancelled"));
-                return;
-            }
-        }
-
-        emit statusMessage(i18n("Manual merge"));
-
-        MergePointsDialogue d(mainWidget());
-        d.setPoints(&pointsToMerge);
-        if (!d.exec())
-        {
-            emit statusMessage(i18n("Merge cancelled"));
-            return;
-        }
-
-        ReplaceItemsCommand *cmd = new ReplaceItemsCommand(this);
-        cmd->setSenderText(sender());
-        cmd->setData(items, d.resultPoint());
-        executeCommand(cmd);
-
-        slotUpdateActionState();
-        emit statusMessage(i18n("Merged %1 points", num));
-        return;
-    }
-
-    // operating on a segment or route here
+    // Operating on segments or routes.
     TrackDataItem *masterSeg = items.takeFirst();
 
     MergeSegmentsCommand *cmd = new MergeSegmentsCommand(this);
     cmd->setSenderText(sender());
     cmd->setData(masterSeg, items);
     executeCommand(cmd);
+}
+
+
+void FilesController::mergeWaypointsInternal(QList<TrackDataItem *> &items)
+{
+    // Manually merge any number of waypoints.
+    // from NavTracks PointsController::slotMergeSelection()
+
+    emit statusMessage(i18n("Checking positions"));
+
+    const TrackDataWaypoint *refPoint = nullptr;	// first reference point
+    bool mergeOk = true;				// positions close enough?
+    QList<const TrackDataWaypoint *> pointsToMerge;	// waypoint list to merge
+    const int num = items.count();
+
+    for (const TrackDataItem *item : std::as_const(items))
+    {							// check reference against others
+        const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+        if (tdw==nullptr)				// should never happen, enforced by GUI
+        {
+            qWarning() << "trying to merge non-waypoint" << item->name();
+            return;
+        }
+
+        if (refPoint==nullptr) refPoint = tdw;		// note the first reference point
+        else						// compare others against it
+        {
+            if (!refPoint->canMerge(tdw, true))		// position check only
+            {
+                mergeOk = false;			// point is too far away
+            }
+        }
+
+        pointsToMerge.append(tdw);			// cast to a waypoint
+    }
+
+    if (!mergeOk)					// points were too far apart
+    {
+        // TODO: show the difference distance
+        // TODO: should really use i18np() here, because some languages have
+        // more plural forms than just "1" or "more".
+        QString query = xi18nc("@info", "Some of the selected points are not close together.<nl/>Really merge the %1 points?", num);
+        if (KMessageBox::warningContinueCancel(mainWidget(), query,
+                                               i18n("Merge Points"),
+                                               KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")))!=KMessageBox::Continue)
+        {
+            emit statusMessage(i18n("Merge cancelled"));
+            return;
+        }
+    }
+
+    emit statusMessage(i18n("Manual merge"));
+
+    MergePointsDialogue d(mainWidget());
+    d.setPoints(&pointsToMerge);
+    if (!d.exec())
+    {
+        emit statusMessage(i18n("Merge cancelled"));
+        return;
+    }
+
+    ReplaceItemsCommand *cmd = new ReplaceItemsCommand(this);
+    cmd->setSenderText(sender());
+    cmd->setData(items, d.resultPoint());
+    executeCommand(cmd);
+
+    slotUpdateActionState();
+    emit statusMessage(i18n("Merged %1 points", num));
 }
 
 

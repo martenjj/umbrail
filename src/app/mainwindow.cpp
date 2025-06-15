@@ -317,7 +317,7 @@ void MainWindow::setupActions()
     mMergeTrackAction = ac->addAction("track_merge");
     mMergeTrackAction->setText(i18n("Merge"));
     mMergeTrackAction->setIcon(QIcon::fromTheme("merge"));
-    connect(mMergeTrackAction, &QAction::triggered, filesController(), &FilesController::slotMergeSegments);
+    connect(mMergeTrackAction, &QAction::triggered, filesController(), &FilesController::slotMergeItems);
 
     mMoveItemAction = ac->addAction("track_move_item");
     mMoveItemAction->setText(i18n("Move Item..."));
