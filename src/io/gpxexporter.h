@@ -29,6 +29,7 @@
 #include "exporterbase.h"
 
 class TrackDataFile;
+class TrackDataContainer;
 class QXmlStreamWriter;
 class CategoryList;
 
@@ -46,7 +47,7 @@ protected:
 
 private:
     bool writeItem(const TrackDataItem *item, QXmlStreamWriter &str, const QString &newName = QString()) const;
-    bool writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const;
+    bool writeChildren(const TrackDataContainer *item, QXmlStreamWriter &str) const;
 
 private:
     const CategoryList *mCategoriesList;

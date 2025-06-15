@@ -300,7 +300,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         const double ele = elementText.toDouble();
         if (ISNAN(ele)) return (addWarning("Value \""+elementText+"\" ignored for ELE"));
 
-        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(currentItem());
+        TrackDataAbstractPoint *tdp = ASV(TrackDataAbstractPoint, currentItem());
 
         // The explicit use of QVariant(double) seems to be needed, otherwise there is
         // an ambiguous overload:
@@ -318,7 +318,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     else if (localName=="category")			// start of a CATEGORY element
     {
         elementText = mXmlReader->readElementText();
-        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        TrackDataWaypoint *item = ASV(TrackDataWaypoint, currentItem());
         if (item!=nullptr) item->setMetadata(localName, elementText);
         else addError("CATEGORY not within WPT");
     }
@@ -327,14 +327,14 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         elementText = mXmlReader->readElementText();
 
         TrackDataItem *item = currentItem();
-        if (dynamic_cast<TrackDataWaypoint *>(item)!=nullptr)
+        if (IS(TrackDataWaypoint, item))
         {
             // For a waypoint, a synonym for CATEGORY but only if
             // there is no CATEGORY already.
             const int idx2 = DataIndexer::index("category");
             if (item->metadata(idx2).isNull()) item->setMetadata(idx2, elementText);
         }
-        else if (dynamic_cast<TrackDataTrack *>(item)!=nullptr || dynamic_cast<TrackDataSegment *>(item)!=nullptr)
+        else if (IS(TrackDataTrack, item) || IS(TrackDataSegment, item))
         {
             // For a track or segment, normal metadata.
             item->setMetadata(localName, elementText);
@@ -346,7 +346,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
         // This may already be included in CATEGORY/TYPE above, so
         // only combine with the existing category if it is not already present.
         elementText = mXmlReader->readElementText();
-        TrackDataWaypoint *item = dynamic_cast<TrackDataWaypoint *>(currentItem());
+        TrackDataWaypoint *item = ASV(TrackDataWaypoint, currentItem());
         if (item!=nullptr)
         {
             QStringList cats = item->metadata("category").toStringList();
@@ -527,7 +527,7 @@ bool GpxImporter::startElement(const QByteArray &localName, const QByteArray &qN
     }
     else if (localName=="link")				// start of a LINK element
     {
-        if (dynamic_cast<TrackDataWaypoint *>(mCurrentPoint)==nullptr)
+        if (!IS(TrackDataWaypoint, mCurrentPoint))
         {						// check contained where expected
             return (addError("LINK not within WPT"));
         }
@@ -688,7 +688,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="trkpt")			// end of a TRKPT element
     {
-        if (dynamic_cast<TrackDataTrackpoint *>(mCurrentPoint)==nullptr)
+        if (!IS(TrackDataTrackpoint, mCurrentPoint))
         {
             return (addError("TRKPT element not started"));
         }
@@ -720,7 +720,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="rtept")			// end of a RTEPT element
     {
-        if (dynamic_cast<TrackDataRoutepoint *>(mCurrentPoint)==nullptr)
+        if (!IS(TrackDataRoutepoint, mCurrentPoint))
         {						// check start element matched
             return (addError("RTEPT element not started"));
         }
@@ -736,7 +736,7 @@ bool GpxImporter::endElement(const QByteArray &localName, const QByteArray &qNam
     }
     else if (localName=="wpt")				// end of a WPT element
     {
-        TrackDataWaypoint *tdw = dynamic_cast<TrackDataWaypoint *>(mCurrentPoint);
+        TrackDataWaypoint *tdw = ASV(TrackDataWaypoint, mCurrentPoint);
         if (tdw==nullptr)				// check must have started
         {
             return (addError("WPT element not started"));
@@ -1062,7 +1062,7 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
     // Only our own colour tags should be present for the top level file
     // element (in file metadata), and both may be present.  Accept and
     // retain them without any further checking.
-    if (dynamic_cast<TrackDataFile *>(item)!=nullptr) return (true);
+    if (IS(TrackDataFile, item)) return (true);
 
     // These checks only need to be performed if the COLOR tag is present.
     const QColor col = item->metadata("color").value<QColor>();
@@ -1071,7 +1071,7 @@ bool GpxImporter::finaliseElement(TrackDataItem *item)
         // Note whether this is a point element (POINTCOLOR applies), or
         // any other element (LINECOLOR applies).  Then note the tag name
         // as appropriate and get the corresponding colour value.
-        const bool isPoint = (dynamic_cast<TrackDataAbstractPoint *>(item)!=nullptr);
+        const bool isPoint = IS(TrackDataAbstractPoint, item);
         const QByteArray &name = (isPoint ? "pointcolor" : "linecolor");
         const QColor ourCol = item->metadata(name).value<QColor>();
 

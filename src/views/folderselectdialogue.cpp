@@ -69,7 +69,7 @@ void FolderSelectDialogue::slotNewFolder()
     if (name.contains('/')) return;
 
     // Create the new named folder under the selected item as parent.
-    TrackDataItem *parentItem = selectedItem();
+    TrackDataContainer *parentItem = ASX(TrackDataContainer, selectedItem());
     emit newFolder(name, parentItem);
 
     // Then find and select the new added folder.
@@ -84,8 +84,8 @@ void FolderSelectDialogue::slotNewFolder()
 void FolderSelectDialogue::slotUpdateButtonStates()
 {
     const TrackDataItem *item = selectedItem();
-    const bool isFolder = (dynamic_cast<const TrackDataFolder *>(item)!=nullptr);
-    const bool isFile = (dynamic_cast<const TrackDataFile *>(item)!=nullptr);
+    const bool isFolder = IS(TrackDataFolder, item);
+    const bool isFile = IS(TrackDataFile, item);
 
     setButtonEnabled(QDialogButtonBox::Ok, isFolder);
     setButtonEnabled(QDialogButtonBox::Reset, (isFolder || isFile) && !isReadOnly());

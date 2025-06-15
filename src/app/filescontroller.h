@@ -40,8 +40,11 @@ class PointsView;
 class FilesModel;
 class WaypointsFilterModel;
 class HomePointsDataModel;
+
 class TrackDataFile;
 class TrackDataItem;
+class TrackDataContainer;
+
 class ErrorReporter;
 class ImporterExporterOptions;
 
@@ -130,12 +133,12 @@ private:
     bool adjustTimeSpec(QDateTime &dt);
     FilesController::Status importPhotoInternal(const QUrl &importFrom, bool multiple);
 
-    void mergeSegmentsInternal(QList<TrackDataItem *> &items);
-    void mergeWaypointsInternal(QList<TrackDataItem *> &items);
+    void mergeSegmentsInternal(const QList<TrackDataItem *> &items);
+    void mergeWaypointsInternal(const QList<TrackDataItem *> &items);
 
 private slots:
     void slotUpdateActionState();
-    void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataItem *ontoParent, int row);
+    void slotDragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataContainer *ontoParent, int row);
 
 private:
     FilesView *mFilesView;

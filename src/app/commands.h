@@ -26,18 +26,20 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
  
-
 #include <QUndoCommand>
 
 #include "trackdata.h"
 #include "filescontroller.h"
 #include "importerexporteroptions.h"
 
+class TrackDataStore;
 
-class TrackDataContainer;
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  CommandBase (abstract)						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
-
-// abstract
 class CommandBase : public QUndoCommand
 {
 public:
@@ -57,11 +59,12 @@ protected:
     CommandBase(QUndoCommand *parent = nullptr) : QUndoCommand(parent)	{};
 };
 
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  FilesCommandBase (abstract)						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
-
-
-
-// abstract
 class FilesCommandBase : public CommandBase
 {
 public:
@@ -82,7 +85,11 @@ private:
     FilesController *mController;
 };
 
-
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Command implementations						//
+//									//
+//////////////////////////////////////////////////////////////////////////
 
 class ImportFileCommand : public FilesCommandBase
 {
@@ -169,15 +176,15 @@ public:
     SplitSegmentCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~SplitSegmentCommand();
 
-    void setData(TrackDataItem *pnt, int idx);
+    void setData(TrackDataContainer *pnt, int idx);
 
     void redo() override;
     void undo() override;
 
 private:
-    TrackDataItem *mParentSegment;
+    TrackDataContainer *mParentSegment;
     int mSplitIndex;
-    TrackDataContainer *mNewSegmentContainer;
+    TrackDataStore *mNewSegmentContainer;
 };
 
 
@@ -188,18 +195,18 @@ public:
     MergeSegmentsCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~MergeSegmentsCommand();
 
-    void setData(TrackDataItem *master, const QList<TrackDataItem *> &others);
+    void setData(TrackDataContainer *master, const QList<TrackDataContainer *> &others);
 
     void redo() override;
     void undo() override;
 
 private:
-    TrackDataItem *mMasterSegment;
-    QList<TrackDataItem *> mSourceSegments;
-    QVector<TrackDataItem *> mSourceParents;
+    TrackDataContainer *mMasterSegment;
+    QList<TrackDataContainer *> mSourceSegments;
+    QVector<TrackDataContainer *> mSourceParents;
     QVector<int> mSourceCounts;
     QVector<int> mSourceIndexes;
-    TrackDataContainer *mSavedSegmentContainer;
+    TrackDataStore *mSavedSegmentContainer;
 };
 
 
@@ -213,15 +220,15 @@ public:
     void redo() override;
     void undo() override;
 
-    void setData(TrackData::Type type, TrackDataItem *pnt = nullptr);
+    void setData(TrackData::Type type, TrackDataContainer *pnt = nullptr);
     void setName(const QString &name)			{ mAddName = name; }
 
     TrackDataItem *addedItem() const;
 
 private:
     TrackData::Type mType;
-    TrackDataItem *mParent;
-    TrackDataContainer *mNewItemContainer;
+    TrackDataContainer *mParent;
+    TrackDataStore *mNewItemContainer;
     QString mAddName;
     TrackDataItem *mAddedItem;
 };
@@ -240,7 +247,7 @@ public:
     void setData(TrackDataItem *item);
 
 private:
-    TrackDataContainer *mNewPointContainer;
+    TrackDataStore *mNewPointContainer;
     TrackDataTrackpoint *mAtPoint;
 };
 
@@ -252,16 +259,16 @@ public:
     MoveItemCommand(FilesController *fc, QUndoCommand *parent = nullptr);
     virtual ~MoveItemCommand();
 
-    void setData(const QList<TrackDataItem *> &items, TrackDataItem *dest, int row = -1);
+    void setData(const QList<TrackDataItem *> &items, TrackDataContainer *dest, int row = -1);
 
     void redo() override;
     void undo() override;
 
 private:
     QList<TrackDataItem *> mItems;
-    QVector<TrackDataItem *> mParentItems;
+    QVector<TrackDataContainer *> mParentItems;
     QVector<int> mParentIndexes;
-    TrackDataItem *mDestinationParent;
+    TrackDataContainer *mDestinationParent;
     int mDestinationRow;
 };
 
@@ -310,7 +317,7 @@ private:
     qreal mLatitude;
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
-    TrackDataContainer *mNewWaypointContainer;
+    TrackDataStore *mNewWaypointContainer;
     TrackDataWaypoint *mAddedWaypoint;
 };
 
@@ -336,7 +343,7 @@ private:
     qreal mLatitude;
     qreal mLongitude;
     const TrackDataAbstractPoint *mSourcePoint;
-    TrackDataContainer *mNewRoutepointContainer;
+    TrackDataStore *mNewRoutepointContainer;
 };
 
 
@@ -374,9 +381,9 @@ public:
 
 private:
     QList<TrackDataItem *> mRemoveItems;
-    QVector<TrackDataItem *> mParentItems;
+    QVector<TrackDataContainer *> mParentItems;
     QVector<int> mParentIndexes;
-    TrackDataContainer *mDeletedItemsContainer;
+    TrackDataStore *mDeletedItemsContainer;
     TrackDataItem *mAddedItem;
     bool mWasAdded;
 };

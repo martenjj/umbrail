@@ -172,7 +172,7 @@ TrackDataFile *ImporterBase::load(const QUrl &file)
 #endif
         for (int i = 0; i<mDataRoot->childCount(); ++i)
         {
-            TrackDataTrack *tdt = dynamic_cast<TrackDataTrack *>(mDataRoot->childAt(i));
+            TrackDataTrack *tdt = ASV(TrackDataTrack, mDataRoot->childAt(i));
             if (tdt==nullptr) continue;
 #ifdef DEBUG_IMPORT
             dumpMetadata(tdt, QString("original metadata of track %1 \"%2\":").arg(i).arg(tdt->name()));
@@ -200,7 +200,7 @@ TrackDataFolder *ImporterBase::getFolder(const QString &path)
 
     const QStringList folders = path.split('/');
     Q_ASSERT(!folders.isEmpty());
-    TrackDataItem *cur = mDataRoot;
+    TrackDataContainer *cur = mDataRoot;
     TrackDataFolder *foundFolder = nullptr;
 
     for (const QString &name : folders)			// look for existing subfolder
@@ -228,7 +228,6 @@ TrackDataFolder *ImporterBase::waypointFolder(const TrackDataWaypoint *tdw, cons
     // If the waypoint has a folder defined, then that folder is used.
     // Otherwise, an appropriately named top level folder is used, or
     // created if necessary.
-
     const QVariant path = tdw->metadata("folder");	// waypoint folder, if it has one
     if (!path.isNull()) return (getFolder(path.toString()));
     return (getFolder(defaultName));			// find or create folder

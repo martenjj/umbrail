@@ -222,10 +222,9 @@ void FilesView::selectionChanged(const QItemSelection &sel,
         // (normally a segment for trackpoints or folder for waypoints, but
         // this is not enforced) to be selected also.  Only for drawing
         // purposes, not for any user operations.
-        TrackDataAbstractPoint *tdp = dynamic_cast<TrackDataAbstractPoint *>(tdi);
-        if (tdp!=nullptr)				// this is a point
+        if (IS(TrackDataAbstractPoint, tdi))		// this is a point
         {
-            TrackDataItem *par = tdp->parent();
+            TrackDataItem *par = tdi->parent();
             Q_ASSERT(par!=nullptr);
             par->setSelectionId(mSelectionId);		// select its parent
         }
@@ -256,13 +255,13 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 
 static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstractPoint *> *points)
 {
-    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp!=nullptr)					// is this a point?
     {
         if (ISNAN(tdp->latitude())) return;		// check position is valid
         if (ISNAN(tdp->longitude())) return;
 
-        if (dynamic_cast<const TrackDataRoutepoint *>(tdp)==nullptr)
+        if (!IS(TrackDataRoutepoint, tdp))
         {						// if not a route point,
             const QVariant dt = tdp->metadata("time");	// check time is valid
             if (!dt.canConvert(QMetaType::QDateTime)) return;
@@ -272,8 +271,12 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
     }
     else						// not a point, recurse for children
     {
-        const int num = item->childCount();
-        for (int i = 0; i<num; ++i) getPointData(item->childAt(i), points);
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
+        if (tdc!=nullptr)
+        {
+            const int num = tdc->childCount();
+            for (int i = 0; i<num; ++i) getPointData(tdc->childAt(i), points);
+        }
     }
 }
 
@@ -359,7 +362,7 @@ void FilesView::selectItem(const TrackDataItem *item, bool combine, bool wasOnMa
     // If the thing clicked on the map was a track point, only scroll to
     // it if its parent segment is already expanded.  This avoids a long
     // list of points suddenly appearing in the view for a stray map click.
-    if (wasOnMap && dynamic_cast<const TrackDataTrackpoint *>(item)!=nullptr)
+    if (wasOnMap && IS(TrackDataTrackpoint, item))
     {
         const QModelIndex pnt = idx.parent();
         if (!isExpanded(pnt)) return;
@@ -381,8 +384,7 @@ void FilesView::expandItem(const QModelIndex &idx)
 {
     const TrackDataItem *item = itemForIndex(idx);
 
-    if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr ||
-        dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
+    if (IS(TrackDataSegment, item) || IS(TrackDataRoute, item))
     {
         collapse(idx);
         return;

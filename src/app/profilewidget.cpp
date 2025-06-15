@@ -143,12 +143,12 @@ void WaypointLayerable::setShowPoints(WaypointSelectDialogue::SelectionSet sel)
 
 bool WaypointLayerable::isShowingPoint(const TrackDataAbstractPoint *pnt) const
 {
-    if (dynamic_cast<const TrackDataRoutepoint *>(pnt)!=nullptr)
+    if (IS(TrackDataRoutepoint, pnt))
     {							// is this a route point?
         return (mSelection & WaypointSelectDialogue::SelectRoutepoints);
     }
 
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(pnt);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, pnt);
     if (tdw==nullptr) return (false);			// otherwise, should be a waypoint
 
     const TrackData::MediaType type = tdw->mediaType();
@@ -263,7 +263,7 @@ ProfileWidget::ProfileWidget(QWidget *pnt)
 
     // See if the first of those is a route point.  If so, assume that all of them are
     // and that the plot is in route mode (interpolated points, limited options).
-    const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(mPoints.first());
+    const TrackDataRoutepoint *tdr = AS(TrackDataRoutepoint, mPoints.first());
     mRouteMode = (tdr!=nullptr);
     qDebug() << "route mode?" << mRouteMode;
 
@@ -740,10 +740,13 @@ void ProfileWidget::slotUpdatePlot()
 void ProfileWidget::associateWaypoints(const TrackDataItem *item)
 {
     const TrackDataAbstractPoint *tdp = nullptr;
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
     if (tdw!=nullptr) tdp = tdw;
-    const TrackDataRoutepoint *tdr = dynamic_cast<const TrackDataRoutepoint *>(item);
-    if (tdr!=nullptr) tdp = tdr;
+    else
+    {
+        const TrackDataRoutepoint *tdr = AS(TrackDataRoutepoint, item);
+        if (tdr!=nullptr) tdp = tdr;
+    }
 
     if (tdp!=nullptr)
     {
@@ -795,8 +798,14 @@ void ProfileWidget::associateWaypoints(const TrackDataItem *item)
 
         }
     }
-
-    for (int i = 0; i<item->childCount(); ++i) associateWaypoints(item->childAt(i));
+    else
+    {
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
+        if (tdc!=nullptr)
+        {
+            for (int i = 0; i<tdc->childCount(); ++i) associateWaypoints(tdc->childAt(i));
+        }
+    }
 }
 
 

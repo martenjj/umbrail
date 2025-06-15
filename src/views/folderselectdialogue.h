@@ -30,6 +30,9 @@
 #include "itemselectdialogue.h"
 
 
+class TrackDataContainer;
+
+
 class FolderSelectDialogue : public ItemSelectDialogue
 {
     Q_OBJECT
@@ -41,7 +44,7 @@ public:
     void setPath(const QString &path);
 
 signals:
-    void newFolder(const QString &name, TrackDataItem *pnt);
+    void newFolder(const QString &name, TrackDataContainer *pnt);
 
 protected slots:
     void slotNewFolder();

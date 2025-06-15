@@ -140,7 +140,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
 
     mSelectionId = filesView()->selectionId();
 
-    const TrackDataItem *filesRoot = ItemIndexInterface::of(filesView()->model())->rootItem();
+    const TrackDataContainer *filesRoot = ItemIndexInterface::of(filesView()->model())->rootItem();
     if (filesRoot==nullptr) return (false);		// should never happen
 
     // Paint the data in two passes.  The first does all non-selected items,
@@ -163,8 +163,7 @@ bool LayerBase::render(GeoPainter *painter, ViewportParams *viewport,
 }
 
 
-
-void LayerBase::paintDataTree(const TrackDataItem *item, GeoPainter *painter, 
+void LayerBase::paintDataTree(const TrackDataContainer *item, GeoPainter *painter, 
                               bool doSelected, bool parentSelected)
 {
     if (item==nullptr) return;				// nothing to paint
@@ -190,8 +189,10 @@ void LayerBase::paintDataTree(const TrackDataItem *item, GeoPainter *painter,
     const int cnt = item->childCount();
     for (int i = 0; i<cnt; ++i)				// recurse to paint children
     {
-        const TrackDataItem *childItem = item->childAt(i);
-        if (childItem->childCount()==0) continue;	// no point if no children
+        const TrackDataContainer *childItem = AS(TrackDataContainer, item->childAt(i));
+        if (childItem==nullptr) continue;		// do nothing if not a container
+        if (childItem->childCount()==0) continue;	// do nothing if no children
+
         if (this->isIndirectContainer(childItem))	// can contain applicable items?
         {
             paintDataTree(childItem, painter, doSelected, isSelected);
@@ -200,14 +201,13 @@ void LayerBase::paintDataTree(const TrackDataItem *item, GeoPainter *painter,
 }
 
 
-
 const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *item)
 {
     if (item==nullptr) return (nullptr);		// nothing to do
 
     if (this->isApplicableItem(item))			// consider this item itself?
     {
-        const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+        const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
         if (tdp!=nullptr)				// applicable type of point
         {
             const double lat = tdp->latitude();
@@ -227,12 +227,16 @@ const TrackDataAbstractPoint *LayerBase::findClickedPoint(const TrackDataItem *i
 
     if (this->isIndirectContainer(item))		// can contain applicable items?
     {
-        for (int i = 0; i<item->childCount(); ++i)	// recurse to search children
+        const TrackDataContainer *tdc = AS(TrackDataContainer, item);
+        if (tdc!=nullptr)
         {
-            const TrackDataItem *childItem = item->childAt(i);
-            const TrackDataAbstractPoint *childPoint = findClickedPoint(childItem);
-            if (childPoint!=nullptr) return (childPoint);
-        }						// this point found
+            for (int i = 0; i<tdc->childCount(); ++i)	// recurse to search children
+            {
+                const TrackDataItem *childItem = tdc->childAt(i);
+                const TrackDataAbstractPoint *childPoint = findClickedPoint(childItem);
+                if (childPoint!=nullptr) return (childPoint);
+            }						// this point found
+        }
      }
 
     return (nullptr);					// nothing found
@@ -250,7 +254,7 @@ bool LayerBase::testClickTolerance(const QMouseEvent *mev) const
 
 
 
-void LayerBase::findSelectionInTree(const TrackDataItem *item)
+void LayerBase::findSelectionInTree(const TrackDataContainer *item)
 {
     if (item==nullptr) return;				// nothing to search
     int cnt = item->childCount();
@@ -266,7 +270,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
         SelectionRun run;
         for (int i = 0; i<cnt; ++i)
         {
-            const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i));
+            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item->childAt(i));
             if (tdp==nullptr) continue;
 
 #ifdef DEBUG_SELECTING
@@ -281,7 +285,7 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
 #endif
                     if (i>0)				// not first point in container
                     {
-                        const TrackDataAbstractPoint *prev = dynamic_cast<const TrackDataAbstractPoint *>(item->childAt(i-1));
+                        const TrackDataAbstractPoint *prev = AS(TrackDataAbstractPoint, item->childAt(i-1));
                         if (prev!=nullptr)
                         {
 #ifdef DEBUG_SELECTING
@@ -335,7 +339,8 @@ void LayerBase::findSelectionInTree(const TrackDataItem *item)
     {
         for (int i = 0; i<cnt; ++i)			// just recurse to search children
         {
-            const TrackDataItem *childItem = item->childAt(i);
+            const TrackDataContainer *childItem = AS(TrackDataContainer, item->childAt(i));
+            if (childItem==nullptr) continue;
             if (childItem->childCount()==0) continue;	// no point if no children
             this->findSelectionInTree(childItem);
         }
@@ -356,7 +361,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
     if (!isVisible()) return (false);			// no interaction if not visible
 
     MapView *mapView = mapController()->view();
-    const TrackDataItem *filesRoot = ItemIndexInterface::of(filesView()->model())->rootItem();
+    const TrackDataContainer *filesRoot = ItemIndexInterface::of(filesView()->model())->rootItem();
     if (filesRoot==nullptr) return (false);		// should never happen
 
     if (ev->type()==QEvent::MouseButtonPress)

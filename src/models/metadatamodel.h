@@ -31,7 +31,7 @@
 
 class QTimeZone;
 class TrackDataItem;
-class TrackDataContainer;
+class TrackDataTrackpoint;
 
 
 class MetadataModel : public QAbstractTableModel
@@ -76,7 +76,7 @@ private:
     void resolveTimeZone();
 
 private:
-    TrackDataContainer *mData;
+    TrackDataTrackpoint *mData;
 
     // This is a QMap, even though the indexes are simply ordered integers,
     // so that it will auto-expand when necessary without having to be

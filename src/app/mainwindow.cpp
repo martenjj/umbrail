@@ -310,12 +310,12 @@ void MainWindow::setupActions()
     connect(mDeleteItemsAction, &QAction::triggered, filesController(), &FilesController::slotDeleteItems);
 
     mSplitTrackAction = ac->addAction("track_split");
-    mSplitTrackAction->setText(i18n("Split"));
+    mSplitTrackAction->setText(i18n("Split Item"));
     mSplitTrackAction->setIcon(QIcon::fromTheme("split"));
     connect(mSplitTrackAction, &QAction::triggered, filesController(), &FilesController::slotSplitSegment);
 
     mMergeTrackAction = ac->addAction("track_merge");
-    mMergeTrackAction->setText(i18n("Merge"));
+    mMergeTrackAction->setText(i18n("Merge Item"));
     mMergeTrackAction->setIcon(QIcon::fromTheme("merge"));
     connect(mMergeTrackAction, &QAction::triggered, filesController(), &FilesController::slotMergeItems);
 
@@ -1057,7 +1057,7 @@ case TrackData::Waypoint:
 
         if (selCount==1)
         {
-            const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(selectedItem);
+            const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, selectedItem);
             if (tdw!=nullptr)
             {
                 switch (tdw->mediaType())
@@ -1352,8 +1352,7 @@ void MainWindow::slotTrackStatistics()
 // TODO: status messages from player
 void MainWindow::slotPlayMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
-    Q_ASSERT(tdw!=nullptr);
+    const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     switch (tdw->mediaType())
     {
 case TrackData::MediaAudioNote:		MediaPlayer::playAudioNote(tdw);
@@ -1372,16 +1371,14 @@ default:				break;
 
 void MainWindow::slotOpenMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
-    Q_ASSERT(tdw!=nullptr);
+    const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     if (tdw->isMediaType()) MediaPlayer::openMediaFile(tdw);
 }
 
 
 void MainWindow::slotSaveMedia()
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(filesController()->filesView()->selectedItem());
-    Q_ASSERT(tdw!=nullptr);
+    const TrackDataWaypoint *tdw = ASX(TrackDataWaypoint, filesController()->filesView()->selectedItem());
     if (tdw->isMediaType()) MediaPlayer::saveMediaFile(tdw);
 }
 

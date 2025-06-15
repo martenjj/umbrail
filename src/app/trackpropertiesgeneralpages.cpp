@@ -328,7 +328,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
 
     if (items->count()==1)				// a single item
     {
-        TrackDataFile *fileItem = dynamic_cast<TrackDataFile *>(items->first());
+        const TrackDataFile *fileItem = AS(TrackDataFile, items->first());
         Q_ASSERT(fileItem!=nullptr);
         mUrlRequester->setText(fileItem->fileName().toDisplayString());
         mTimeZoneSel->setItems(items);			// use these to get timezone
@@ -485,7 +485,7 @@ TrackWaypointGeneralPage::TrackWaypointGeneralPage(const QList<TrackDataItem *> 
         // TODO: The "Media" field and the media that is output when the play
         // button is pressed is not automatically updated from the metadata.
 
-        theWaypoint = dynamic_cast<const TrackDataWaypoint *>(items->first());
+        theWaypoint = AS(TrackDataWaypoint, items->first());
         Q_ASSERT(theWaypoint!=nullptr);
 
         QString typeName;

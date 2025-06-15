@@ -80,7 +80,7 @@ RoutesLayer::~RoutesLayer()
 bool RoutesLayer::isApplicableItem(const TrackDataItem *item) const
 {
     // We are only interested in routepoints
-    return (dynamic_cast<const TrackDataRoutepoint *>(item)!=nullptr);
+    return (IS(TrackDataRoutepoint, item));
 }
 
 
@@ -88,7 +88,7 @@ bool RoutesLayer::isApplicableItem(const TrackDataItem *item) const
 bool RoutesLayer::isDirectContainer(const TrackDataItem *item) const
 {
     // Only routes contain routepoints to be drawn
-    return (dynamic_cast<const TrackDataRoute *>(item)!=nullptr);
+    return (IS(TrackDataRoute, item));
 }
 
 
@@ -96,22 +96,21 @@ bool RoutesLayer::isDirectContainer(const TrackDataItem *item) const
 bool RoutesLayer::isIndirectContainer(const TrackDataItem *item) const
 {
     // Files or routes can include routepoints
-    return (dynamic_cast<const TrackDataFile *>(item)!=nullptr ||
-            dynamic_cast<const TrackDataRoute *>(item)!=nullptr);
+    return (IS(TrackDataFile, item) || IS(TrackDataRoute, item));
 }
 
 
-void RoutesLayer::doPaintItem(const TrackDataItem *item, GeoPainter *painter, bool isSelected) const
+void RoutesLayer::doPaintItem(const TrackDataContainer *item, GeoPainter *painter, bool isSelected) const
 {
     const int cnt = item->childCount();
 #ifdef DEBUG_PAINTING
     qDebug() << "routepoints for" << item->name() << "count" << cnt;
 #endif
 
-    // Scan along the segment, assembling the coordinates into a list,
-    // and draw them as a polyline.  We assume that routes will not be
-    // so extensive as tracks, so there is no need to split it up into
-    // smaller pieces.
+    // Scan along the route, assembling the routepoint coordinates into
+    // a list, and draw them as a polyline.  We assume that routes will
+    // not be so extensive as tracks, so there is no need to split it up
+    // into smaller pieces.
 
     QColor col = MapView::resolveLineColour(item);
     painter->setBrush(Qt::NoBrush);

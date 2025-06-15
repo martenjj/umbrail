@@ -71,7 +71,7 @@ TrackDataItem *FilesModel::itemForIndex(const QModelIndex &idx) const
 QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 {
     Q_ASSERT(tdi!=nullptr);
-    const TrackDataItem *pnt = tdi->parent();
+    const TrackDataContainer *pnt = tdi->parent();
     int row = (pnt==nullptr ? 0 : pnt->childIndex(tdi));
     // The two casts are necessary, the only alternative
     // is an old-style cast.
@@ -81,38 +81,37 @@ QModelIndex FilesModel::indexForItem(const TrackDataItem *tdi) const
 
 QModelIndex FilesModel::index(int row, int col, const QModelIndex &pnt) const
 {
-    const TrackDataItem *tdi = itemForIndex(pnt);
-    if (tdi==nullptr)
+    const TrackDataContainer *tdc = AS(TrackDataContainer, itemForIndex(pnt));
+    if (tdc==nullptr)
     {
         if (isEmpty()) return (QModelIndex());
         if (row>0) return (QModelIndex());
         return (createIndex(row, col, mRootItem));
     }
 
-    if (row>=tdi->childCount())				// only during initialisation
+    if (row>=tdc->childCount())				// only during initialisation
     {							// without SORTABLE_VIEW
-        qDebug() << "requested index for nonexistent row" << row << "of" << tdi->childCount();
+        qDebug() << "requested index for nonexistent row" << row << "of" << tdc->childCount();
         return (QModelIndex());
     }
 
-    return (createIndex(row, col, tdi->childAt(row)));
+    return (createIndex(row, col, tdc->childAt(row)));
 }
 
 
 QModelIndex FilesModel::parent(const QModelIndex &idx) const
 {
     const TrackDataItem *tdi = itemForIndex(idx);
-    if (tdi->parent()==nullptr) return (QModelIndex());
-    return (indexForItem(tdi->parent()));
+    const TrackDataContainer *tdc = tdi->parent();
+    return (tdc!=nullptr ? indexForItem(tdc) : QModelIndex());
 }
 
 
 int FilesModel::rowCount(const QModelIndex &pnt) const
 {
-   if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
-   const TrackDataItem *tdi = itemForIndex(pnt);
-   Q_ASSERT(tdi!=nullptr);
-   return (tdi->childCount());
+    if (pnt==QModelIndex()) return (!isEmpty() ? 1 : 0);
+    const TrackDataContainer *tdc = AS(TrackDataContainer, itemForIndex(pnt));
+    return (tdc!=nullptr ? tdc->childCount() : 0);
 }
 
 
@@ -124,7 +123,7 @@ int FilesModel::columnCount(const QModelIndex &pnt) const
 
 static QVariant formatCoordinates(const TrackDataItem *item)
 {
-    const TrackDataAbstractPoint *tdp = dynamic_cast<const TrackDataAbstractPoint *>(item);
+    const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp==nullptr) return (QVariant());
     return (tdp->formattedPosition());
 }
@@ -132,7 +131,7 @@ static QVariant formatCoordinates(const TrackDataItem *item)
 
 static QVariant formatAddress(const TrackDataItem *item)
 {
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
     if (tdw==nullptr) return (QVariant());
     return (tdw->formattedAddress().join(", "));
 }
@@ -323,9 +322,9 @@ QMimeData *FilesModel::mimeData(const QModelIndexList &idxs) const
 
 static bool lessThanByIndexRow(const TrackDataItem *a, const TrackDataItem *b)
 {
-    const TrackDataItem *parentA = a->parent();
+    const TrackDataContainer *parentA = a->parent();
     Q_ASSERT(parentA!=NULL);
-    const TrackDataItem *parentB = b->parent();
+    const TrackDataContainer *parentB = b->parent();
     Q_ASSERT(parentB!=NULL);
 
     int indexA = parentA->childIndex(a);
@@ -370,7 +369,7 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
     qDebug() << "doit" << doit << "row" << row << "pnt" << pnt;
 
     // Get the parent item of the drop location.
-    TrackDataItem *ontoParent = itemForIndex(pnt);
+    TrackDataContainer *ontoParent = ASV(TrackDataContainer, itemForIndex(pnt));
     if (ontoParent==nullptr) return (false);
     qDebug() << "  onto parent" << ontoParent->name();
 
@@ -396,25 +395,24 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
 
     // See what sort of item is being dragged, and then whether it
     // is allowed to be dropped at the destination location.
-    const bool toTopLevel = (dynamic_cast<const TrackDataFile *>(ontoParent)!=nullptr);
-    const bool toFolder = (dynamic_cast<const TrackDataFolder *>(ontoParent)!=nullptr);
+    const bool toTopLevel = IS(TrackDataFile, ontoParent);
+    const bool toFolder = IS(TrackDataFolder, ontoParent);
 
     // A folder can only be dropped at the top level or inside another folder.
-    if (dynamic_cast<const TrackDataFolder *>(sourceItem)!=nullptr)
+    if (IS(TrackDataFolder, sourceItem))
     {
         if (!toTopLevel && !toFolder) return (false);
     }
 
     // A track or route can only be dropped at the top level.
-    else if (dynamic_cast<const TrackDataTrack *>(sourceItem)!=nullptr ||
-             dynamic_cast<const TrackDataRoute *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataTrack, sourceItem) || IS(TrackDataRoute, sourceItem))
     {
         if (!toTopLevel) return (false);
     }
 
     // A segment is not allowed to be dragged.  This should be enforced by the
     // "Move Mode" action not being enabled in MainWindow::slotUpdateActionState().
-    else if (dynamic_cast<const TrackDataSegment *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataSegment, sourceItem))
     {
         return (false);
     }
@@ -429,21 +427,21 @@ bool FilesModel::dropMimeDataInternal(bool doit, const QMimeData *data, int row,
     // in time order within the file.  Allowing tracks to be moved around
     // breaks this, but it is unusual to want to perform those operations
     // over multiple tracks and so it is allowed for presentation purposes.
-    else if (dynamic_cast<const TrackDataTrackpoint *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataTrackpoint, sourceItem))
     {
         return (false);
     }
 
     // A waypoint can only be dropped into a folder.
-    else if (dynamic_cast<const TrackDataWaypoint *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataWaypoint, sourceItem))
     {
         if (!toFolder) return (false);
     }
 
     // A route point can only be dropped into a route.
-    else if (dynamic_cast<const TrackDataRoutepoint *>(sourceItem)!=nullptr)
+    else if (IS(TrackDataRoutepoint, sourceItem))
     {
-        if (dynamic_cast<const TrackDataRoute *>(ontoParent)==nullptr) return (false);
+        if (!IS(TrackDataRoute, ontoParent)) return (false);
     }
 
     // If the drag and drop is within the same parent container, check that

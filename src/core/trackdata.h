@@ -35,20 +35,63 @@
 #include <qurl.h>
 #include <qcolor.h>
 
-#define ISNAN(x)		std::isnan(x)		// to cover variations
-
-#define DEGREES_TO_RADIANS(x)	(((x)*2*M_PI)/360)	// angle conversion
-#define RADIANS_TO_DEGREES(x)	(((x)*360)/(2*M_PI))
-
-
 class QWidget;
 class QTimeZone;
 class TrackDataItem;
 class TrackDataFile;
 class TrackDataFolder;
+class TrackDataContainer;
 class TrackPropertiesPage;
 class PointIcon;
 class CategoryList;
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Macros for compatibility and common operations			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+#define ISNAN(x)		std::isnan(x)		// to cover variations
+
+#define DEGREES_TO_RADIANS(x)	(((x)*2*M_PI)/360)	// angle conversion
+#define RADIANS_TO_DEGREES(x)	(((x)*360)/(2*M_PI))
+
+//////////////////////////////////////////////////////////////////////////
+//									//
+//  Macros for item type testing and comversion.  They do not in any	//
+//  way eliminate the use of dynamic_cast or RTTI, but at least reduce	//
+//  the source code verbosity where they are needed.			//
+//									//
+//////////////////////////////////////////////////////////////////////////
+
+// This works for both const and non-const 'value' arguments, because
+// although dynamic_cast cannot remove constness it can add it.
+#define IS(type, value)		(dynamic_cast<const type *>(value)!=nullptr)
+
+// However, actually using the converted 'value' needs two versions
+// to return either a const or a modifiable result as required.  In
+// theory thse two could be combined into one by using a const_cast
+// as in ASX() below, but that would allow unchecked assignment of
+// a const source pointer to a non-const destination.  Let's keep
+// the distinction explicit.
+#define AS(type, value)		(dynamic_cast<const type *>(value))
+#define ASV(type, value)	(dynamic_cast<type *>(value))
+
+// The assertion is not needed in all cases.
+//
+// Theoretically the cast from a const pointer to a non-const one can
+// allow unchecked assignment from a const source pointer to a non-const
+// destination, leading to undefined behaviour.  However, it is never
+// actually dereferenced within the lambda function.  If the target
+// pointer type is const then the return will implicitly convert the
+// result back to a const pointer before the caller dereferences or
+// makes any further use of it.
+#define ASX(type, value)	(([](decltype(value) v)							\
+                                {									\
+                                    auto *t = const_cast<type *>(dynamic_cast<const type *>(v));	\
+                                    Q_ASSERT_X(t!=nullptr, "ASX", (#value " is not " #type));		\
+                                    return (t);								\
+                                })(value))
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -211,10 +254,10 @@ namespace TrackData
      * Find a folder by name or path.
      *
      * @param path Path of the folder to find, names separated by '/'
-     * @param item Root item to start path search from
-     * @return The specified folder if it exists, otherwise, @c NULL
+     * @param root Root item to start path search from
+     * @return The specified folder if it exists, otherwise @c NULL
      **/
-    TrackDataFolder *findFolderByPath(const QString &path, const TrackDataItem *root);
+    TrackDataFolder *findFolderByPath(const QString &path, const TrackDataContainer *root);
 
     QVariant valueOrNull(const QVariant &v);
 
@@ -250,6 +293,9 @@ namespace TrackData
 //									//
 //  TrackDataItem							//
 //									//
+//  This is an abstract data item that simply has a name, parent and	//
+//  metadata.								//
+//									//
 //////////////////////////////////////////////////////////////////////////
 
 class TrackDataItem
@@ -265,6 +311,10 @@ public:
 
     virtual const PointIcon *icon() const;
 
+    // Only a TrackDataContainer can have children, but any
+    // type of item can have a parent.
+    TrackDataContainer *parent() const			{ return (mParent); }
+
     // Return a status message indicating that one or more of this item type
     // is selected by the user in the application's GUI.  It is displayed in
     // the status bar by FilesController::slotUpdateActionState().  A mixed
@@ -275,20 +325,10 @@ public:
     // This only ever applies to a single item.
     virtual QString toolTip() const = 0;
 
-    int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
-    TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
-    int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=nullptr); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
-    TrackDataItem *parent() const			{ return (mParent); }
-    const TrackDataFile *root() const;
-
-    void addChildItem(TrackDataItem *data, int idx = -1);
-    TrackDataItem *takeFirstChildItem();
-    TrackDataItem *takeLastChildItem();
-    TrackDataItem *takeChildItem(int idx);
-    void removeChildItem(TrackDataItem *item);
-
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
+
+    const TrackDataFile *root() const;
 
     QVariant metadata(int idx) const;
     QVariant metadata(const QByteArray &key) const;
@@ -296,13 +336,14 @@ public:
     void setMetadata(const QByteArray &key, const QVariant &value);
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
-    virtual BoundingArea boundingArea() const;
-    virtual TimeRange timeSpan() const;
     QString timeZone() const;
     TrackData::MediaType mediaType() const;
 
+    virtual BoundingArea boundingArea() const;
+    virtual TimeRange timeSpan() const;
+
 protected:
-    TrackDataItem(const char *format = nullptr, int *counter = nullptr);
+    TrackDataItem(const char *format, int *counter);
 
     virtual QString iconName() const = 0;
 
@@ -314,35 +355,47 @@ private:
 
     QString mName;
     bool mExplicitName;
-    QList<TrackDataItem *> *mChildren;
     QVector<QVariant> *mMetadata;
-    TrackDataItem *mParent;
     unsigned long mSelectionId;
+
+    friend class TrackDataContainer;
+    TrackDataContainer *mParent;
 };
 
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataContainer							//
 //									//
-//  This is simply a TrackDataItem with the pure virtual functions	//
-//  provided (with dummy values, because they are never used).  It	//
-//  is not intended to be used to represent real file tree data, but	//
-//  is used to provide a consistent interface where undo/redo		//
-//  commands need to retain an item pointer or MetadataModel needs	//
-//  to store item metadata.						//
+//  This is an abstract data item that, in addition to the name and	//
+//  metadata provided by TrackDataItem, can also have children.		//
+//  Note that any TrackDataItem can have a parent, which must be	//
+//  a TrackDataContainer.						//
 //									//
 //////////////////////////////////////////////////////////////////////////
 
 class TrackDataContainer : public TrackDataItem
 {
 public:
-    explicit TrackDataContainer();
-    virtual ~TrackDataContainer() = default;
+    virtual ~TrackDataContainer();
 
-    TrackData::Type type() const override			{ return (TrackData::None); }
-    virtual QString iconName() const override			{ return (QString()); }
-    virtual QString statusMessage(int num) const override	{ Q_UNUSED(num); return (QString()); }
-    virtual QString toolTip() const override			{ return (QString()); }
+    int childCount() const				{ return (mChildren==nullptr ? 0 : mChildren->count()); }
+    TrackDataItem *childAt(int idx) const		{ Q_ASSERT(mChildren!=nullptr); return (mChildren->at(idx)); }
+    int childIndex(const TrackDataItem *data) const	{ Q_ASSERT(mChildren!=nullptr); return (mChildren->indexOf(const_cast<TrackDataItem *>(data))); }
+
+    void addChildItem(TrackDataItem *data, int idx = -1);
+    TrackDataItem *takeFirstChildItem();
+    TrackDataItem *takeLastChildItem();
+    TrackDataItem *takeChildItem(int idx);
+    void removeChildItem(TrackDataItem *item);
+
+    virtual BoundingArea boundingArea() const override;
+    virtual TimeRange timeSpan() const override;
+
+protected:
+    TrackDataContainer(const char *format, int *counter);
+
+private:
+    QList<TrackDataItem *> *mChildren;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -351,7 +404,7 @@ public:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataFile : public TrackDataItem, public TrackPropertiesInterface
+class TrackDataFile : public TrackDataContainer, public TrackPropertiesInterface
 {
 public:
     explicit TrackDataFile();
@@ -386,7 +439,7 @@ private:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataTrack : public TrackDataItem, public TrackPropertiesInterface
+class TrackDataTrack : public TrackDataContainer, public TrackPropertiesInterface
 {
 public:
     explicit TrackDataTrack();
@@ -412,7 +465,7 @@ protected:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataSegment : public TrackDataItem, public TrackPropertiesInterface
+class TrackDataSegment : public TrackDataContainer, public TrackPropertiesInterface
 {
 public:
     explicit TrackDataSegment();
@@ -440,7 +493,7 @@ protected:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataFolder : public TrackDataItem, public TrackPropertiesInterface
+class TrackDataFolder : public TrackDataContainer, public TrackPropertiesInterface
 {
 public:
     explicit TrackDataFolder();
@@ -485,8 +538,8 @@ public:
     QString formattedTime(bool withZone = false) const;
     QString formattedPosition() const;
 
-    BoundingArea boundingArea() const override;
-    TimeRange timeSpan() const override;
+    virtual BoundingArea boundingArea() const override;
+    virtual TimeRange timeSpan() const override;
     double distanceTo(const TrackDataAbstractPoint *other, bool accurate = false) const;
     double distanceTo(double lat, double lon, bool accurate = false) const;
     double bearingTo(const TrackDataAbstractPoint *other) const;
@@ -563,7 +616,7 @@ protected:
 //									//
 //////////////////////////////////////////////////////////////////////////
 
-class TrackDataRoute : public TrackDataItem, public TrackPropertiesInterface
+class TrackDataRoute : public TrackDataContainer, public TrackPropertiesInterface
 {
 public:
     explicit TrackDataRoute();

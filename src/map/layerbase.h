@@ -38,6 +38,7 @@ class QMouseEvent;
 class QElapsedTimer;
 class QPainter;
 class TrackDataItem;
+class TrackDataContainer;
 class TrackDataAbstractPoint;
 class MapView;
 
@@ -100,7 +101,7 @@ protected:
     virtual bool isDirectContainer(const TrackDataItem *item) const = 0;
     virtual bool isIndirectContainer(const TrackDataItem *item) const = 0;
 
-    virtual void doPaintItem(const TrackDataItem *item, GeoPainter *painter, bool isSelected) const = 0;
+    virtual void doPaintItem(const TrackDataContainer *item, GeoPainter *painter, bool isSelected) const = 0;
     virtual void doPaintDrag(const SelectionRun *run, GeoPainter *painter) const = 0;
 
     GeoDataCoordinates applyOffset(const GeoDataCoordinates &coords) const;
@@ -109,10 +110,11 @@ protected:
     ViewportParams *viewport() const			{ return (mViewport); }
 
 private:
-    void paintDataTree(const TrackDataItem *item, GeoPainter *painter, bool doSelected, bool parentSelected);
+    void paintDataTree(const TrackDataContainer *item, GeoPainter *painter, bool doSelected, bool parentSelected);
     const TrackDataAbstractPoint *findClickedPoint(const TrackDataItem *item);
     bool testClickTolerance(const QMouseEvent *mev) const;
-    virtual void findSelectionInTree(const TrackDataItem *item);
+    // TODO: does this need to be virtual? No subclasses use it.
+    virtual void findSelectionInTree(const TrackDataContainer *item);
 
 private slots:
     void slotInstallEventFilter();

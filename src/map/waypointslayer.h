@@ -46,7 +46,7 @@ protected:
     bool isDirectContainer(const TrackDataItem *item) const override;
     bool isIndirectContainer(const TrackDataItem *item) const override;
 
-    void doPaintItem(const TrackDataItem *item, GeoPainter *painter, bool isSelected) const override;
+    void doPaintItem(const TrackDataContainer *item, GeoPainter *painter, bool isSelected) const override;
     void doPaintDrag(const SelectionRun *run, GeoPainter *painter) const override;
 };
 

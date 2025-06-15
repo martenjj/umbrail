@@ -122,29 +122,28 @@ default:
 
 static bool isExtensionTag(const TrackDataItem *item, const QByteArray &name)
 {
-    if (dynamic_cast<const TrackDataFile *>(item)!=nullptr) return (false);
-							// file metadata - never in extensions
+    if (IS(TrackDataFile, item)) return (false);	// file metadata - never in extensions
     if (DataIndexer::isApplicationTag(name)) return (true);
 							// application tag - always in extensions
-    if (dynamic_cast<const TrackDataAbstractPoint *>(item)!=nullptr)
+    if (IS(TrackDataAbstractPoint, item))
     {
-        if (dynamic_cast<const TrackDataWaypoint *>(item)!=nullptr)
-        {						// waypoint - these not in extensions
+        if (IS(TrackDataWaypoint, item))		// waypoint - these not in extensions
+        {
             if (name=="link"|| name=="sym" || name=="category" || name =="type") return (false);
         }
 							// point - these not in extensions
         return (!(name=="ele" || name=="time" || name=="hdop"));
     }
-    else if (dynamic_cast<const TrackDataTrack *>(item)!=nullptr)
-    {							// track - these not in extensions
+    else if (IS(TrackDataTrack, item))			// track - these not in extensions
+    {
         return (!(name=="desc" || name=="type"));
     }
-    else if (dynamic_cast<const TrackDataRoute *>(item)!=nullptr)
-    {							// route - these not in extensions
+    else if (IS(TrackDataRoute, item))			// route - these not in extensions
+    {
         return (!(name=="desc" || name=="type"));
     }
-    else if (dynamic_cast<const TrackDataSegment *>(item)!=nullptr)
-    {							// segment - all in extensions
+    else if (IS(TrackDataSegment, item))		// segment - all in extensions
+    {
         return (true);
     }
     else return (false);				// other - assume not in extensions
@@ -173,8 +172,10 @@ GpxExporter::GpxExporter()
 
 
 // This cannot be file-static because it calls writeItem().
-bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str) const
+bool GpxExporter::writeChildren(const TrackDataContainer *item, QXmlStreamWriter &str) const
 {
+    if (item==nullptr) return (false);
+
     int num = item->childCount();
     for (int i = 0; i<num; ++i)
     {
@@ -189,10 +190,6 @@ bool GpxExporter::writeChildren(const TrackDataItem *item, QXmlStreamWriter &str
 // access ExporterBase::isSelected().
 bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, const QString &newName) const
 {
-    // If the item is not selected for export, then simply look inside
-    // and process its child items.
-    if (!isSelected(item)) return (writeChildren(item, str));
-
     // The name to use when writing out this item.  If the name is
     // automatically assigned (not explicit), then no name is written.
     // If a new name to override the existing one is specified then
@@ -201,14 +198,19 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     if (itemName.isEmpty() && item->hasExplicitName()) itemName = item->name();
 
     // What sort of element?
-    const TrackDataTrack *tdt = dynamic_cast<const TrackDataTrack *>(item);
-    const TrackDataSegment *tds = dynamic_cast<const TrackDataSegment *>(item);
-    const TrackDataRoute *tdr = dynamic_cast<const TrackDataRoute *>(item);
-    const TrackDataFolder *tdf = dynamic_cast<const TrackDataFolder *>(item);
+    const TrackDataTrack *tdt = AS(TrackDataTrack, item);
+    const TrackDataSegment *tds = AS(TrackDataSegment, item);
+    const TrackDataRoute *tdr = AS(TrackDataRoute, item);
+    const TrackDataFolder *tdf = AS(TrackDataFolder, item);
+    const TrackDataContainer *tdc = AS(TrackDataContainer, item);
 
-    const TrackDataAbstractPoint *tda = dynamic_cast<const TrackDataAbstractPoint *>(item);
-    const TrackDataTrackpoint *tdp = dynamic_cast<const TrackDataTrackpoint *>(item);
-    const TrackDataWaypoint *tdw = dynamic_cast<const TrackDataWaypoint *>(item);
+    const TrackDataAbstractPoint *tda = AS(TrackDataAbstractPoint, item);
+    const TrackDataTrackpoint *tdp = AS(TrackDataTrackpoint, item);
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
+
+    // If the item is not selected for export, then simply look inside
+    // and process its child items.
+    if (!isSelected(item)) return (writeChildren(tdc, str));
 
     // Although in theory any item could have "flags" metadata, only waypoints
     // have a GUI to set them and so for efficiency only check the flags if the
@@ -306,7 +308,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     // should be output before its extensions.  However, in the interests
     // of clarity, unless EXTENSIONS_AFTER_CHILDREN is defined the extensions
     // are output first and then the children follow.
-    writeChildren(item, str);
+    writeChildren(tdc, str);
 #endif
 
     // The colour explicitly set in item metadata.
@@ -467,7 +469,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     // so generate it here.
     if (tdw!=nullptr)
     {
-        const TrackDataFolder *fold = dynamic_cast<TrackDataFolder *>(tdw->parent());
+        const TrackDataFolder *fold = AS(TrackDataFolder, tdw->parent());
         if (fold!=nullptr)				// within a folder?
         {						// note the folder path
             extensionsQueue.enqueue(DataIndexer::nameWithNamespace("folder"), fold->path());
@@ -478,7 +480,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
     //
     // Now resolve the final point or line colour - either one that
     // has been explicitly set, or the category colour if there is one.
-    if (dynamic_cast<const TrackDataFile *>(item)==nullptr)
+    if (!IS(TrackDataFile, item))
     {							// but no COLOR at top level
         TagQueue &toQueue = (isExtensionTag(item, "color") ? extensionsQueue : toplevelQueue);
 
@@ -561,7 +563,7 @@ bool GpxExporter::writeItem(const TrackDataItem *item, QXmlStreamWriter &str, co
 
 #ifndef EXTENSIONS_AFTER_CHILDREN
     // Finally write out the item's children, if any.
-    writeChildren(item, str);
+    writeChildren(tdc, str);
 #endif
 
     // And at last the element end tag.

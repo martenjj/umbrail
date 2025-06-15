@@ -62,8 +62,8 @@ bool ExporterBase::isSelected(const TrackDataItem *item) const
 {
     if (!options().hasFlag(ImporterExporterOptions::SelectionOnly)) return (true);
 							// all items, not just selection
-    const int num = item->childCount();
-    if (num>0)						// is this a container?
+    const TrackDataContainer *tdc = AS(TrackDataContainer, item);
+    if (tdc!=nullptr)					// is this a container?
     {
         // See whether this is actually a container which includes the selected
         // items.  If so, then do not consider the container itself as selected.
@@ -73,9 +73,10 @@ bool ExporterBase::isSelected(const TrackDataItem *item) const
         // each parent container (track, segment, folder or route) in the file.
         // There should not be too many of those, and the usual !SelectionOnly
         // case is checked above first.
+        const int num = tdc->childCount();
         for (int i = 0; i<num; ++i)			// look at all children
         {
-            const TrackDataItem *childItem = item->childAt(i);
+            const TrackDataItem *childItem = tdc->childAt(i);
             if (childItem->selectionId()==mSelectionId) return (false);
         }						// a child item is selected
     }
