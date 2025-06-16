@@ -525,35 +525,6 @@ const TrackDataFile *TrackDataItem::root() const
     return (root);
 }
 
-
-// TODO: use a TrackDataWaypoint for storage in MetadataModel
-//       then this can be a member of TrackDataWaypoint
-//       and TrackDataStore can be private to commands
-
-// Although in practice media and stops are only expected to be
-// associated with TrackDataWaypoint items, this is in TrackDataItem
-// so that the temporary untyped item provided by MetadataModel can
-// be checked in the same way.
-TrackData::MediaType TrackDataItem::mediaType() const
-{
-    QVariant n = metadata("stop");			// first try saved stop data
-    if (!n.isNull()) return (TrackData::MediaStop);	// this means it's a stop
-
-    n = metadata("link");				// then get saved link name
-    // TODO: eliminate "media" here and in MediaPlayer, translate in importer
-    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
-    if (n.isNull()) n = name();				// lastly try our waypoint name
-    if (n.isNull()) return (TrackData::MediaNormal);	// no media data present
-
-    QString ns = n.toString();
-    // TODO: should get MIME type for extension and then compare against recognised ones
-    // or even look for a general category (audio/... video/... image/... respectively)
-    if (ns.endsWith(".3gp", Qt::CaseInsensitive)) return (TrackData::MediaAudioNote);
-    if (ns.endsWith(".mp4", Qt::CaseInsensitive)) return (TrackData::MediaVideoNote);
-    if (ns.endsWith(".jpg", Qt::CaseInsensitive)) return (TrackData::MediaPhoto);
-    return (TrackData::MediaNormal);
-}
-
 //////////////////////////////////////////////////////////////////////////
 //									//
 //  TrackDataContainer							//
@@ -1058,9 +1029,28 @@ bool TrackDataWaypoint::isMediaType() const
 }
 
 
+TrackData::MediaType TrackDataWaypoint::mediaType() const
+{
+    QVariant n = metadata("stop");			// first try saved stop data
+    if (!n.isNull()) return (TrackData::MediaStop);	// this means it's a stop
+
+    n = metadata("link");				// then get saved link name
+    if (n.isNull()) n = metadata("media");		// compatibility with old metadata
+    if (n.isNull()) n = name();				// lastly try our waypoint name
+    if (n.isNull()) return (TrackData::MediaNormal);	// no media data present
+
+    QString ns = n.toString();
+    // TODO: should get MIME type for extension and then compare against recognised ones
+    // or even look for a general category (audio/... video/... image/... respectively)
+    if (ns.endsWith(".3gp", Qt::CaseInsensitive)) return (TrackData::MediaAudioNote);
+    if (ns.endsWith(".mp4", Qt::CaseInsensitive)) return (TrackData::MediaVideoNote);
+    if (ns.endsWith(".jpg", Qt::CaseInsensitive)) return (TrackData::MediaPhoto);
+    return (TrackData::MediaNormal);
+}
+
+
 // Get the item category data, if the item has a category set and
 // the file has a category map defining that category.
-
 static const CategoryData *findCategoryData(const TrackDataItem *item)
 {
     const CategoryData *d = nullptr;

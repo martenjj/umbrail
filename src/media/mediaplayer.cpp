@@ -55,8 +55,10 @@
 
 static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expectedType, bool errorMsg = true)
 {
-    if (item==nullptr) return (QUrl());
-    if (expectedType!=TrackData::MediaAny && item->mediaType()!=expectedType)
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
+    if (tdw==nullptr) return (QUrl());
+
+    if (expectedType!=TrackData::MediaAny && tdw->mediaType()!=expectedType)
     {
         qWarning() << "waypoint" << item->name() << "is not type" << expectedType;
         return (QUrl());

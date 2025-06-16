@@ -205,7 +205,7 @@ namespace TrackData
     };
 
     // Finer grained classification for waypoints,
-    // accessed by TrackDataItem::mediaType()
+    // accessed by TrackDataWaypoint::mediaType()
     enum MediaType
     {
         MediaNormal,
@@ -337,7 +337,6 @@ public:
     void copyMetadata(const TrackDataItem *other, bool overwrite = false);
 
     QString timeZone() const;
-    TrackData::MediaType mediaType() const;
 
     virtual BoundingArea boundingArea() const;
     virtual TimeRange timeSpan() const;
@@ -595,6 +594,7 @@ public:
     const PointIcon *icon() const override;
 
     bool isMediaType() const;
+    TrackData::MediaType mediaType() const;
 
     bool canMerge(const TrackDataWaypoint *other, bool positionOnly = false) const;
     void mergeWith(const TrackDataWaypoint *other);

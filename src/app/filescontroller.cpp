@@ -989,7 +989,8 @@ void FilesController::slotTrackProperties()
     // Workflow help: If a media waypoint description has been set where it
     // was previously empty, and the waypoint status has not been set or is
     // being set, then set the status to "To Do".
-    if (item->mediaType()!=TrackData::MediaNormal)
+    const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
+    if (tdw!=nullptr && tdw->isMediaType())
     {
         if (oldDesc.isNull() && !model->data("desc").isNull())
         {
