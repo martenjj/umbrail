@@ -342,7 +342,7 @@ void LayerBase::findSelectionInTree(const TrackDataContainer *item)
             const TrackDataContainer *childItem = AS(TrackDataContainer, item->childAt(i));
             if (childItem==nullptr) continue;
             if (childItem->childCount()==0) continue;	// no point if no children
-            this->findSelectionInTree(childItem);
+            findSelectionInTree(childItem);
         }
     }
 }
@@ -468,7 +468,7 @@ bool LayerBase::eventFilter(QObject *obj, QEvent *ev)
                 }
 
                 mDraggingPoints = new QList<SelectionRun>;
-                this->findSelectionInTree(filesRoot);
+                findSelectionInTree(filesRoot);
             }
             else return (false);			// outside click tolerance
         }

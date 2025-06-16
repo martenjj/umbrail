@@ -113,8 +113,7 @@ private:
     void paintDataTree(const TrackDataContainer *item, GeoPainter *painter, bool doSelected, bool parentSelected);
     const TrackDataAbstractPoint *findClickedPoint(const TrackDataItem *item);
     bool testClickTolerance(const QMouseEvent *mev) const;
-    // TODO: does this need to be virtual? No subclasses use it.
-    virtual void findSelectionInTree(const TrackDataContainer *item);
+    void findSelectionInTree(const TrackDataContainer *item);
 
 private slots:
     void slotInstallEventFilter();
