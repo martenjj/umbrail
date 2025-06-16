@@ -69,7 +69,7 @@ TrackPropertiesDialogue::TrackPropertiesDialogue(const QList<TrackDataItem *> *i
     Q_ASSERT(item!=nullptr);
     mItemType = item->type();
 
-    mDataModel = new MetadataModel(item, this);
+    mDataModel = new MetadataModel(items, this);
 
     QWidget *w = new QWidget(this);
     QGridLayout *gl = new QGridLayout(w);

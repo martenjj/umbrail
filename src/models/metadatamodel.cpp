@@ -28,8 +28,11 @@
 #include <qdebug.h>
 #include <qtimezone.h>
 #include <qcolor.h>
+#include <qfont.h>
+#include <qfontdatabase.h>
 
 #include <klocalizedstring.h>
+#include <kcolorscheme.h>
 
 #include "trackdata.h"
 #include "dataindexer.h"
@@ -43,9 +46,14 @@ enum COLUMN
 };
 
 
-MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
+Q_DECLARE_OPERATORS_FOR_FLAGS(MetadataModel::ItemFlags);
+
+
+MetadataModel::MetadataModel(const QList<TrackDataItem *> *items, QObject *pnt)
     : QAbstractTableModel(pnt)
 {
+    Q_ASSERT(!items->isEmpty());
+    const TrackDataItem *item = items->first();
     qDebug() << "for" << item->name();
 
     // Copy the existing item metadata.
@@ -56,20 +64,70 @@ MetadataModel::MetadataModel(const TrackDataItem *item, QObject *pnt)
     //
     // These names are only used here for internal data;  they are not
     // used anywhere outside of this model.  If any are added here then
-    // they also need to be listed in DataIndexer::isInternaltag().
+    // they also need to be listed in DataIndexer::isInternalTag().
     // Any checks for these names elsewhere must use isInternalTag().
-    mData->setMetadata(DataIndexer::index("name"), item->name());
+    const int dc = DataIndexer::count();
+    const int idxName = DataIndexer::index("name");
+    const int idxLat = DataIndexer::index("latitude");
+    const int idxLon = DataIndexer::index("longitude");
+
+    mData->setMetadata(idxName, item->name());
     const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp!=nullptr)
     {
-        mData->setMetadata(DataIndexer::index("latitude"), tdp->latitude());
-        mData->setMetadata(DataIndexer::index("longitude"), tdp->longitude());
+        mData->setMetadata(idxLat, tdp->latitude());
+        mData->setMetadata(idxLon, tdp->longitude());
     }
+
+    // If there is more than one item, then check whether the metadata
+    // values for any of those differ from the first (reference) item.
+    // If so, mark them as having multiple values.  If a value is
+    // changed later on, then they will no longer be multiple values
+    // because the changes will eventually be applied to all the items.
+    const int num = items->count();
+    for (int i = 1; i<num; ++i)
+    {
+        const TrackDataItem *other = items->at(i);
+        for (int dx = 0; dx<dc; ++dx)
+        {
+            bool multi = false;
+            if (dx==idxName && item->name()!=other->name()) multi = true;
+            else if (dx==idxLat && tdp!=nullptr)
+            {
+                const TrackDataAbstractPoint *otherp = AS(TrackDataAbstractPoint, other);
+                if (tdp->latitude()!=otherp->latitude()) multi = true;
+            }
+            else if (dx==idxLon && tdp!=nullptr)
+            {
+                const TrackDataAbstractPoint *otherp = AS(TrackDataAbstractPoint, other);
+                if (tdp->longitude()!=otherp->longitude()) multi = true;
+            }
+            else if (item->metadata(dx)!=other->metadata(dx)) multi = true;
+
+            if (multi) mItemFlags[dx] |= MetadataModel::Multiple;
+        }
+    }
+
+    // Resolve values for these, to avoid a potentially expensive database
+    // construction every time that they are needed.
+    //
+    // Yes, this does mean that if the user changes their desktop settings
+    // while this dialogue is open then this table display will not change
+    // accordingly.  No, that is not really of any consequence.
+    KColorScheme sch;
+    mChangedColour = QVariant::fromValue(sch.foreground(KColorScheme::PositiveText));
+    mMultipleColour = QVariant::fromValue(sch.foreground(KColorScheme::InactiveText));
+
+    QFont f = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    f.setItalic(true);
+    mMultipleFont = QVariant::fromValue(f);
 
     // The default time zone to use is that appropriate for the reference item,
     // which will be obtained by a search of that item and its parents up to
     // the top level.  It may be null, meaning UTC.
     mParentTimeZone = item->timeZone();
+    // TODO: possible root above a TrackDataFile means that we need to check
+    // for a TrackDataFile here.
     mUseParentTimeZone = (item->parent()!=nullptr);
     qDebug() << "parent time zone" << mParentTimeZone << "use parent?" << mUseParentTimeZone;
     mTimeZone = nullptr;
@@ -99,6 +157,7 @@ int MetadataModel::columnCount(const QModelIndex &pnt) const
 QVariant MetadataModel::data(const QModelIndex &idx, int role) const
 {
     const int row = idx.row();				// metadata index
+    const int col = idx.column();
     const QVariant &v = data(row);			// reference to data
 
     switch (role)
@@ -107,15 +166,21 @@ case Qt::UserRole:					// raw unformatted data
         return (v);
 
 case Qt::ForegroundRole:
-        if (isChanged(row)) return (QColor(Qt::red));
+        if (isChanged(row)) return (mChangedColour);
+        if (col==COL_VALUE && (mItemFlags[row] & MetadataModel::Multiple)) return (mMultipleColour);
+        return (QVariant());
+
+case Qt::FontRole:
+        if (col==COL_VALUE && (mItemFlags[row] & MetadataModel::Multiple)) return (mMultipleFont);
         return (QVariant());
 
 case Qt::DisplayRole:					// formatted display data
-        switch (idx.column())
+        switch (col)
         {
 case COL_NAME:
             return (DataIndexer::name(row));
 case COL_VALUE:
+            if (mItemFlags[row] & MetadataModel::Multiple) return (i18nc("@item:intable", "Multiple Values"));
             switch (v.typeId())
             {
 case QMetaType::QDateTime:
@@ -149,7 +214,7 @@ const QVariant MetadataModel::data(int idx) const
 
 bool MetadataModel::isChanged(int idx) const
 {
-    return (mItemChanged.value(idx, false));
+    return (mItemFlags.value(idx, MetadataModel::ItemFlags()) & MetadataModel::Changed);
 }
 
 
@@ -166,7 +231,7 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 
     const int row = idx.row();
     mData->setMetadata(row, TrackData::valueOrNull(value));
-    mItemChanged[row] = true;
+    mItemFlags[row] = MetadataModel::Changed;		// also clears "Multiple"
     // QAbstractItemModel::setData() API documentation says that we have to
     // emit this signal explicitly.
     emit dataChanged(idx, idx);
@@ -176,10 +241,16 @@ bool MetadataModel::setData(const QModelIndex &idx, const QVariant &value, int r
 
 void MetadataModel::setData(int idx, const QVariant &value)
 {
-    if (value==data(idx)) return;			// no change to existing
+    // In the multiple values case we must apply the change even if
+    // the value is apparently the same as the reference item, because
+    // the corresponding value for the other items may not be.
+    if (!(mItemFlags[idx] & MetadataModel::Multiple))
+    {
+        if (value==data(idx)) return;			// no change to existing
+    }
 
     mData->setMetadata(idx, TrackData::valueOrNull(value));
-    mItemChanged[idx] = true;
+    mItemFlags[idx] = MetadataModel::Changed;		// also clears "Multiple"
 
     if (idx==DataIndexer::index("timezone")) resolveTimeZone();
 							// update time zone data
