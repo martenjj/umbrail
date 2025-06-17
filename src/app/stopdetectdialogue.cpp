@@ -147,7 +147,7 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     mFolderSelect = new FolderSelectWidget(this);
     mFolderSelect->setToolTip(i18n("The folder where the located stops will be saved"));
     const QString folderName = i18nc("Name of the default folder for stops", "Stops");
-    const bool folderExists = (TrackData::findFolderByPath(folderName, filesController()->filesModel()->rootItem())!=nullptr);
+    const bool folderExists = (TrackData::findFolderByPath(folderName, root)!=nullptr);
 							// either existing or placeholder
     mFolderSelect->setFolderPath(folderName, !folderExists);
     connect(mFolderSelect, &FolderSelectWidget::folderChanged, this, &StopDetectDialogue::slotSetButtonStates);
