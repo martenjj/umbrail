@@ -28,7 +28,6 @@
  
 #include <QAbstractTableModel>
 
-
 class QTimeZone;
 class TrackDataItem;
 class TrackDataTrackpoint;
@@ -39,7 +38,7 @@ class MetadataModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit MetadataModel(const TrackDataItem *item, QObject *pnt = nullptr);
+    explicit MetadataModel(const QList<TrackDataItem *> *items, QObject *pnt = nullptr);
     virtual ~MetadataModel();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -76,16 +75,30 @@ private:
     void resolveTimeZone();
 
 private:
+    enum ItemFlag
+    {
+        Changed = 0x01,
+        Multiple = 0x02,
+    };
+
+public:
+    Q_DECLARE_FLAGS(ItemFlags, ItemFlag);
+
+private:
     TrackDataTrackpoint *mData;
 
     // This is a QMap, even though the indexes are simply ordered integers,
     // so that it will auto-expand when necessary without having to be
     // checked for every access.
-    QMap<int,bool> mItemChanged;
+    QMap<int, MetadataModel::ItemFlags> mItemFlags;
 
     QString mParentTimeZone;
     bool mUseParentTimeZone;
     QTimeZone *mTimeZone;
+
+    QVariant mChangedColour;
+    QVariant mMultipleColour;
+    QVariant mMultipleFont;
 };
  
 #endif							// METADATAMODEL_H
