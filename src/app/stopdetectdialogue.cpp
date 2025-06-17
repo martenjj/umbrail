@@ -99,7 +99,9 @@ StopDetectDialogue::StopDetectDialogue(QWidget *pnt)
     }
 
     mTimeZone = QTimeZone::utc();			// a sensible default
-    QString zoneName = filesController()->filesModel()->rootItem()->metadata("timezone").toString();
+
+    const TrackDataFile *root = mInputPoints.first()->rootFileItem();
+    const QString zoneName = (root!=nullptr ? root->metadata("timezone").toString() : QString());
     if (!zoneName.isEmpty())				// resolve from file time zone
     {
         QTimeZone tz(zoneName.toLatin1());
@@ -685,10 +687,11 @@ void StopDetectDialogue::slotCommitResults()
 
 void StopDetectDialogue::slotNewFolder(const QString &name, TrackDataContainer *pnt)
 {
-    TrackDataContainer *parentItem = (pnt==nullptr ? filesController()->filesModel()->rootFileItem() : pnt);
-    qDebug() << "create" << name << "under" << parentItem->name();
+    qDebug() << "create" << name << "under" << pnt->name();
 
-    TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, parentItem);
+    // The 'pnt' item can never be NULL here, because it is assert-checked
+    // in FolderSelectDialogue::slotNewFolder().
+    TrackDataFolder *foundFolder = TrackData::findFolderByPath(name, pnt);
     if (foundFolder!=nullptr)
     {
         KMessageBox::error(this,
@@ -698,7 +701,7 @@ void StopDetectDialogue::slotNewFolder(const QString &name, TrackDataContainer *
     };
 
     AddContainerCommand *cmd1 = new AddContainerCommand(filesController());
-    cmd1->setData(TrackData::Folder, parentItem);
+    cmd1->setData(TrackData::Folder, pnt);
     cmd1->setName(name);
     cmd1->setText(i18n("Create Stops Folder"));
 
