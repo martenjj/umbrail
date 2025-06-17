@@ -236,11 +236,8 @@ void TrackItemGeneralPage::addTypeField(const QList<TrackDataItem *> *items)
 
     if (!items->isEmpty())
     {
-        const TrackDataItem *tdi = items->first();
-        Q_ASSERT(tdi!=nullptr);
-
         mTypeCombo->setEnabled(!isReadOnly());
-        // TODO: are both needed?
+        // Both of these are needed for correct updates from selecting and editing
         connect(mTypeCombo, &QComboBox::currentTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
         connect(mTypeCombo, &QComboBox::editTextChanged, this, &TrackItemGeneralPage::slotTypeChanged);
     }

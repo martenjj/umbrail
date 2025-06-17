@@ -26,6 +26,7 @@
 #include "itemtypecombo.h"
 
 #include <qdebug.h>
+#include <qlineedit.h>
 
 #include <klocalizedstring.h>
 #include <ksharedconfig.h>
@@ -42,11 +43,18 @@ ItemTypeCombo::ItemTypeCombo(QWidget *pnt)
     setInsertPolicy(QComboBox::InsertAtBottom);
     setSizePolicy(QSizePolicy::Expanding, sizePolicy().verticalPolicy());
 
-    QStringList defaultTypes(i18n("(none)"));
+    addItem("");					// always first item - no type
+    lineEdit()->setPlaceholderText(i18n("(None)"));
+
+    QStringList defaultTypes;
     defaultTypes << "Walk" << "Car";
+
     const KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
-    QStringList types = grp.readEntry("types", defaultTypes);
-    addItems(types);
+    const QStringList types = grp.readEntry("types", defaultTypes);
+    for (const QString &type : std::as_const(types))
+    {							// ignore old "(none)" value
+        if (!type.isEmpty() && !type.startsWith('(')) addItem(type);
+    }
 
     mOriginalCount = count();				// how many when we started
 }
@@ -58,7 +66,11 @@ ItemTypeCombo::~ItemTypeCombo()
     if (count()>mOriginalCount)				// was anything added?
     {
         QStringList types;
-        for (int i = 0; i<count(); ++i) types << itemText(i);
+        for (int i = 0; i<count(); ++i)
+        {
+            const QString &type = itemText(i);
+            if (!type.isEmpty() && !type.startsWith('(')) types.append(type);
+        }
         qDebug() << "saving" << types;
         KConfigGroup grp = KSharedConfig::openConfig()->group(objectName());
         grp.writeEntry("types", types);
