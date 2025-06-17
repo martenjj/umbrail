@@ -217,23 +217,35 @@ default:		return (QVariant());
 }
 
 
-TrackDataFile *FilesModel::takeRootFileItem()
+/* deprecated */ TrackDataFile *FilesModel::takeRootFileItem()
 {
-    TrackDataFile *root = static_cast<TrackDataFile *>(mRootItem);
+    return (static_cast<TrackDataFile *>(takeRootItem()));
+}
+
+
+TrackDataContainer *FilesModel::takeRootItem()
+{
+    TrackDataContainer *root = mRootItem;
     Q_ASSERT(root!=nullptr);
+    qDebug() << "removing root" << root->name();
     beginResetModel();
     mRootItem = nullptr;
     endResetModel();
-    qDebug() << "removing root" << root->name();
     return (root);
 }
 
 
-void FilesModel::setRootFileItem(TrackDataFile *root)
+/* deprecated */ void FilesModel::setRootFileItem(TrackDataFile *root)
+{
+    setRootItem(static_cast<TrackDataContainer *>(root));
+}
+
+
+void FilesModel::setRootItem(TrackDataContainer *root)
 {
     Q_ASSERT(mRootItem==nullptr);
-    beginResetModel();
     qDebug() << "setting root" << root->name();
+    beginResetModel();
     mRootItem = root;
     endResetModel();
 }
@@ -480,10 +492,4 @@ bool FilesModel::canDropMimeData(const QMimeData *data, Qt::DropAction act,
     // be safe against undefined behaviour because dropMimeDataInternal() does
     // not actually modify any members when called with 'doit' set to false.
     return (const_cast<FilesModel *>(this)->dropMimeDataInternal(false, data, row, pnt));
-}
-
-
-TrackDataFile *FilesModel::rootFileItem() const
-{
-    return (static_cast<TrackDataFile *>(mRootItem));
 }

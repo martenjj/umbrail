@@ -74,10 +74,13 @@ public:
     virtual QStringList mimeTypes() const override;
     virtual QMimeData *mimeData(const QModelIndexList &idxs) const override;
 
-    Q_DECL_DEPRECATED TrackDataFile *rootFileItem() const;
+    TrackDataContainer *rootItem() const override		{ return (mRootItem); }
     bool isEmpty() const					{ return (mRootItem==nullptr); }
-    TrackDataFile *takeRootFileItem();
-    void setRootFileItem(TrackDataFile *root);
+    TrackDataContainer *takeRootItem();
+    void setRootItem(TrackDataContainer *root);
+
+    Q_DECL_DEPRECATED TrackDataFile *takeRootFileItem();
+    Q_DECL_DEPRECATED void setRootFileItem(TrackDataFile *root);
 
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 
@@ -89,8 +92,6 @@ public:
     // ItemIndexInterface
     TrackDataItem *itemForIndex(const QModelIndex &idx) const override;
     QModelIndex indexForItem(const TrackDataItem *tdi) const override;
-
-    TrackDataContainer *rootItem() const override		{ return (mRootItem); }
 
 signals:
     void dragDropItems(const QList<TrackDataItem *> &sourceItems, TrackDataContainer *ontoParent, int row);
