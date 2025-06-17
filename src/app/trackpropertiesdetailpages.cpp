@@ -313,7 +313,9 @@ TrackItemDetailPage::TrackItemDetailPage(const QList<TrackDataItem *> *items, QW
 
     if (!items->isEmpty())
     {
-        const TrackDataFile *root = items->first()->root();
+        // All of the items will be within the same file tree and
+        // hence will have the same categories.
+        const TrackDataFile *root = items->first()->rootFileItem();
         if (root!=nullptr) mAllCategories = root->categories();
     }
 

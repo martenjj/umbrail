@@ -505,14 +505,12 @@ const PointIcon *TrackDataItem::icon() const
 }
 
 
-// TODO: what uses this?  Do they want the root file item or
-//       the data tree root?  if the former, rename it to rootFileItem()
-//       to make that clear.
-
-const TrackDataFile *TrackDataItem::root() const
+// This finds the TrackDataFile which is the ancestor of an item,
+// although that may not necessarily be the root of the data tree.
+// The categories and timezone properties of the root file item
+// apply to everything below it.
+const TrackDataFile *TrackDataItem::rootFileItem() const
 {
-    // Find the root file item that this item belongs to, or NULL
-    // if the item is not part of the data tree.
     const TrackDataItem *item = this;
     const TrackDataFile *root = nullptr;
     while (item!=nullptr)
@@ -1059,7 +1057,7 @@ static const CategoryData *findCategoryData(const TrackDataItem *item)
     if (!cats.isNull())
     {							// first (primary) category only
         const QString cat = cats.toStringList().first();
-        const TrackDataFile *root = AS(TrackDataFile, item->root());
+        const TrackDataFile *root = item->rootFileItem();
         if (root!=nullptr)				// go up to the root file item,
         {						// should always have been found
             // If the file has categories available, then get the data for

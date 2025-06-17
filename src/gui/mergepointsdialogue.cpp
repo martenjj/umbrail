@@ -365,12 +365,12 @@ void MergePointsDialogue::slotUpdateButtons()
 
 void MergePointsDialogue::slotEditCategories()
 {
-    const TrackDataFile *root = mPoints->first()->root();
+    const TrackDataFile *root = mPoints->first()->rootFileItem();
     Q_ASSERT(root!=nullptr);
 
-    // The dialogue below is able to handle the case where
-    // no categories have ever been created or imported
-    // and therefore root-><categories() is NULL.
+    // The dialogue below is able to handle the case where no categories
+    // have ever been created or imported and therefore root->categories()
+    // is NULL.
     CategoriesEditDialogue d(&mCombinedCats, root->categories(), this);
     if (!d.exec()) return;
 
