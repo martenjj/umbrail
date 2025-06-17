@@ -201,7 +201,7 @@ void FilesController::initNew()
 {
     Q_ASSERT(filesModel()->isEmpty());
     TrackDataFile *fileItem = new TrackDataFile;
-    filesModel()->setRootFileItem(fileItem);
+    filesModel()->setRootItem(fileItem);
 }
 
 

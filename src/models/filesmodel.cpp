@@ -217,12 +217,6 @@ default:		return (QVariant());
 }
 
 
-/* deprecated */ TrackDataFile *FilesModel::takeRootFileItem()
-{
-    return (static_cast<TrackDataFile *>(takeRootItem()));
-}
-
-
 TrackDataContainer *FilesModel::takeRootItem()
 {
     TrackDataContainer *root = mRootItem;
@@ -232,12 +226,6 @@ TrackDataContainer *FilesModel::takeRootItem()
     mRootItem = nullptr;
     endResetModel();
     return (root);
-}
-
-
-/* deprecated */ void FilesModel::setRootFileItem(TrackDataFile *root)
-{
-    setRootItem(static_cast<TrackDataContainer *>(root));
 }
 
 

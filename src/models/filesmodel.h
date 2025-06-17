@@ -79,9 +79,6 @@ public:
     TrackDataContainer *takeRootItem();
     void setRootItem(TrackDataContainer *root);
 
-    Q_DECL_DEPRECATED TrackDataFile *takeRootFileItem();
-    Q_DECL_DEPRECATED void setRootFileItem(TrackDataFile *root);
-
     static void sortByIndexRow(QList<TrackDataItem *> *list);
 
     // Tell the model to signal changes

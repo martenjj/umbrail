@@ -258,6 +258,7 @@ namespace TrackData
      * @return The specified folder if it exists, otherwise @c NULL
      **/
     TrackDataFolder *findFolderByPath(const QString &path, const TrackDataContainer *root);
+    // TODO: folder paths start at root, so should take a TrackDataFile
 
     QVariant valueOrNull(const QVariant &v);
 

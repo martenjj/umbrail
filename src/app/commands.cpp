@@ -173,7 +173,7 @@ void ImportFileCommand::redo()
         if (mOptions.hasFlag(ImporterExporterOptions::MergeWaypoints)) qWarning() << "Ignoring merge option into empty model";
 
         // Set the top level imported file item as the model file root.
-        model()->setRootFileItem(mImportData);		// use this as root item
+        model()->setRootItem(mImportData);		// use this as root item
         mImportData = nullptr;				// now owned by model
     }
     else
@@ -333,14 +333,14 @@ again:                  if (j>=importFolder->childCount()) break;
 
 void ImportFileCommand::undo()
 {
-    TrackDataFile *root = ASX(TrackDataFile, ItemIndexInterface::of(model())->rootItem());
-
     if (mImportData==nullptr)				// was set as file root
     {
-        mImportData = model()->takeRootFileItem();
+        mImportData = ASX(TrackDataFile, model()->takeRootItem());
     }
     else						// not used as file root,
     {							// just take back its children
+        TrackDataContainer *root = model()->rootItem();
+        Q_ASSERT(root!=nullptr);
         Q_ASSERT(root->childCount()>=mSavedCount);
         model()->startLayoutChange();
 
