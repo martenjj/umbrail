@@ -328,7 +328,7 @@ public:
     unsigned long selectionId() const			{ return (mSelectionId); }
     void setSelectionId(unsigned long id)		{ mSelectionId = id; }
 
-    const TrackDataFile *root() const;
+    const TrackDataFile *rootFileItem() const;
 
     QVariant metadata(int idx) const;
     QVariant metadata(const QByteArray &key) const;
