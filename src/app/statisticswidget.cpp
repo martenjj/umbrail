@@ -50,27 +50,50 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     setObjectName("StatisticsWidget");
     setButtons(QDialogButtonBox::Close);
 
-    mTotalPoints = 0;
+    mTotalPoints = 0;					// for all types of point
     mWithTime = 0;
     mWithElevation = 0;
-    mWithGpsSpeed = 0;
+
+    mTrackpoints = 0;					// classification of points
+    mWaypoints = 0;
+    mRoutepoints = 0;
+
+    mWithGpsSpeed = 0;					// for track points
     mWithGpsHdop = 0;
     mWithGpsHeading = 0;
 
-    QVector<const TrackDataAbstractPoint *> points;
-    filesController()->filesView()->selectedPoints().swap(points);
+    mStatusTodo = 0;					// for waypoints
+    mStatusDone = 0;
+    mStatusUnwanted = 0;
+    mStatusOther = 0;
+
+    QVector<const TrackDataAbstractPoint *> points;	// all points, not just trackpoints
+    filesController()->filesView()->selectedPoints(false).swap(points);
     for (const TrackDataAbstractPoint *tdp : std::as_const(points)) getPointData(tdp);
 
     mWidget = new QWidget(this);
     mLayout = new QGridLayout(mWidget);
 
     addRow(i18nc("@title:row", "Total points:"), mTotalPoints, false);
-    mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
     addRow(i18nc("@title:row", "With time:"), mWithTime);
     addRow(i18nc("@title:row", "With elevation:"), mWithElevation);
+    mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
+
+    addRow(i18nc("@title:row", "Track points:"), mTrackpoints);
     addRow(i18nc("@title:row", "With GPS speed:"), mWithGpsSpeed);
     addRow(i18nc("@title:row", "With GPS HDOP:"), mWithGpsHdop);
     addRow(i18nc("@title:row", "With GPS heading:"), mWithGpsHeading);
+    mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
+
+    addRow(i18nc("@title:row", "Waypoints:"), mWaypoints);
+    addRow(TrackData::formattedWaypointStatus(TrackData::StatusTodo)+':', mStatusTodo);
+    addRow(TrackData::formattedWaypointStatus(TrackData::StatusDone)+':', mStatusDone);
+    addRow(TrackData::formattedWaypointStatus(TrackData::StatusQuestion)+'/'+
+           TrackData::formattedWaypointStatus(TrackData::StatusUnwanted)+':', mStatusUnwanted);
+    addRow(i18nc("@title:row", "None/Other:"), mStatusOther);
+    mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
+
+    addRow(i18nc("@title:row", "Route points:"), mRoutepoints);
 
     mLayout->setRowStretch(mLayout->rowCount(), 1);
     mLayout->setColumnStretch(5, 1);
@@ -152,5 +175,25 @@ void StatisticsWidget::getPointData(const TrackDataAbstractPoint *point)
 
         const QVariant headingMeta = tdp->metadata("heading");
         if (!headingMeta.isNull()) ++mWithGpsHeading;	// GPS heading recorded
+
+        const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, point);
+        if (tdw!=nullptr)				// is this a waypoint?
+        {
+            ++mWaypoints;
+            const TrackData::WaypointStatus status = static_cast<TrackData::WaypointStatus>(tdw->metadata("status").toInt());
+            switch (status)
+            {
+case TrackData::StatusTodo:		++mStatusTodo;		break;
+case TrackData::StatusDone:		++mStatusDone;		break;
+case TrackData::StatusQuestion:
+case TrackData::StatusUnwanted:		++mStatusUnwanted;	break;
+default:				++mStatusOther;		break;
+            }
+        }
+        else
+        {
+            if (IS(TrackDataRoutepoint, tdp)) ++mRoutepoints;
+            else ++mTrackpoints;
+        }
     }
 }
