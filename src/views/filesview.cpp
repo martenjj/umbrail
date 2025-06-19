@@ -253,7 +253,7 @@ QList<TrackDataItem *> FilesView::selectedItems() const
 }
 
 
-static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstractPoint *> *points)
+static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstractPoint *> *points, bool requireTime)
 {
     const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
     if (tdp!=nullptr)					// is this a point?
@@ -261,7 +261,7 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
         if (ISNAN(tdp->latitude())) return;		// check position is valid
         if (ISNAN(tdp->longitude())) return;
 
-        if (!IS(TrackDataRoutepoint, tdp))
+        if (requireTime && !IS(TrackDataRoutepoint, tdp))
         {						// if not a route point,
             const QVariant dt = tdp->metadata("time");	// check time is valid
             if (!dt.canConvert(QMetaType::QDateTime)) return;
@@ -275,18 +275,18 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
         if (tdc!=nullptr)
         {
             const int num = tdc->childCount();
-            for (int i = 0; i<num; ++i) getPointData(tdc->childAt(i), points);
+            for (int i = 0; i<num; ++i) getPointData(tdc->childAt(i), points, requireTime);
         }
     }
 }
 
 
-QVector<const TrackDataAbstractPoint *> FilesView::selectedPoints() const
+QVector<const TrackDataAbstractPoint *> FilesView::selectedPoints(bool requireTime) const
 {
     QVector<const TrackDataAbstractPoint *> result;
 
     const QList<TrackDataItem *> items = selectedItems();
-    for (int i = 0; i<items.count(); ++i) getPointData(items[i], &result);
+    for (int i = 0; i<items.count(); ++i) getPointData(items[i], &result, requireTime);
 
     qDebug() << "from" << items.count() << "items got" << result.count() << "points";
     return (result);

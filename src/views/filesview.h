@@ -49,7 +49,7 @@ public:
     TrackData::Type selectedType() const	{ return (mSelectedType); }
     const TrackDataItem *selectedItem() const	{ return (mSelectedItem); }
     QList<TrackDataItem *> selectedItems() const;
-    QVector<const TrackDataAbstractPoint *> selectedPoints() const;
+    QVector<const TrackDataAbstractPoint *> selectedPoints(bool requireTime = true) const;
 
     void selectItem(const TrackDataItem *item, bool combine = false, bool wasOnMap = false);
     void selectMapPoint(const TrackDataItem *item, Qt::KeyboardModifiers mods);
