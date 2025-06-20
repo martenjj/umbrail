@@ -53,9 +53,19 @@ private:
     int mTotalPoints;
     int mWithTime;
     int mWithElevation;
+
+    int mTrackpoints;
+    int mWaypoints;
+    int mRoutepoints;
+
     int mWithGpsSpeed;
     int mWithGpsHdop;
     int mWithGpsHeading;
+
+    int mStatusTodo;
+    int mStatusDone;
+    int mStatusUnwanted;
+    int mStatusOther;
 };
 
 #endif							// STATISTICSWIDGET_H

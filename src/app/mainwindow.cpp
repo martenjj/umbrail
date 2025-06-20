@@ -949,6 +949,7 @@ void MainWindow::slotUpdateActionState()
     bool copyEnabled = false;
     bool propsEnabled = false;
     bool profileEnabled = false;
+    bool statsEnabled = false;
     bool stopsEnabled = false;
     QString propsText = i18nc("@action:inmenu", "Item Properties...");
     bool delEnabled = true;
@@ -980,7 +981,7 @@ case TrackData::File:
         // to really verify whether points are selected is is a bit too
         // expensive.  These operations must either work with no selected
         // points, or tell the user if there are no points to work on.
-        stopsEnabled = profileEnabled = true;
+        statsEnabled = stopsEnabled = profileEnabled = true;
         break;
 
 case TrackData::Track:
@@ -988,7 +989,7 @@ case TrackData::Track:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Track", "Delete Tracks", selCount);
         selectedContainer = selectedItem;
-        stopsEnabled = profileEnabled = true;
+        statsEnabled = stopsEnabled = profileEnabled = true;
         break;
 
 case TrackData::Route:
@@ -996,7 +997,7 @@ case TrackData::Route:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route", "Delete Routes", selCount);
         selectedContainer = selectedItem;
-        profileEnabled = true;
+        statsEnabled = profileEnabled = true;
         mergeEnabled = (selCount>1);
         mergeText = i18nc("@action:inmenu", "Merge Routes");
         break;
@@ -1007,7 +1008,7 @@ case TrackData::Segment:
         delText = i18ncp("@action:inmenu", "Delete Segment", "Delete Segments", selCount);
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Segment...");
-        stopsEnabled = profileEnabled = true;
+        statsEnabled = stopsEnabled = profileEnabled = true;
         mergeEnabled = (selCount>1);
         mergeText = i18nc("@action:inmenu", "Merge Segments");
         break;
@@ -1017,7 +1018,7 @@ case TrackData::Trackpoint:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Point", "Delete Points", selCount);
         selectedContainer = selectedItem->parent();
-        stopsEnabled = profileEnabled = (selCount>1);
+        statsEnabled = stopsEnabled = profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
         splitText = i18nc("@action:inmenu", "Split Segment");
@@ -1028,7 +1029,7 @@ case TrackData::Routepoint:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Route Point", "Delete Route Points", selCount);
         selectedContainer = selectedItem->parent();
-        profileEnabled = (selCount>1);
+        statsEnabled = profileEnabled = (selCount>1);
         copyEnabled = true;
         splitEnabled = (selCount==1);
         splitText = i18nc("@action:inmenu", "Split Route");
@@ -1039,6 +1040,7 @@ case TrackData::Folder:
         propsEnabled = true;
         delText = i18ncp("@action:inmenu", "Delete Folder", "Delete Folders", selCount);
         selectedContainer = selectedItem;
+        statsEnabled = true;
         moveEnabled = true;
         moveText = i18nc("@action:inmenu", "Move Folder...");
         break;
@@ -1052,6 +1054,7 @@ case TrackData::Waypoint:
         selectedContainer = selectedItem->parent();
         statusEnabled = true;
         copyEnabled = true;
+        statsEnabled = (selCount>1);
         mergeEnabled = (selCount>1);
         mergeText = i18nc("@action:inmenu", "Merge Waypoints...");
 
@@ -1160,7 +1163,7 @@ default:
     mDeleteItemsAction->setEnabled(delEnabled);
     mDeleteItemsAction->setText(delText);
     mProfileAction->setEnabled(profileEnabled);
-    mStatisticsAction->setEnabled(profileEnabled);
+    mStatisticsAction->setEnabled(statsEnabled);
     mStopDetectAction->setEnabled(stopsEnabled);
 
     mSplitTrackAction->setEnabled(splitEnabled);
