@@ -1205,31 +1205,6 @@ default:
         mAddTrackpointAction->setEnabled(idx.row()>0);
     }
     else mAddTrackpointAction->setEnabled(false);
-
-    // If there is a selected container or point(s), then move points mode
-    // is allowed to be entered;  otherwise, it is disabled.
-    //
-    // If there is a selected container and it is the same as the currently
-    // selected container, then move points mode can stay at the same state
-    // as it currently is.  Otherwise, it is forced off.
-
-    if (selectedContainer!=nullptr)
-    {
-        if (selectedContainer!=mSelectedContainer)
-        {
-            mMapDragAction->setChecked(false);
-            slotMapMovePoints();
-        }
-        mMapDragAction->setEnabled(true);
-    }
-    else
-    {
-        mMapDragAction->setChecked(false);
-        slotMapMovePoints();
-        mMapDragAction->setEnabled(false);
-    }
-
-    mSelectedContainer = selectedContainer;
 }
 
 //////////////////////////////////////////////////////////////////////////
