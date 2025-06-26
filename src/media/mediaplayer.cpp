@@ -53,12 +53,10 @@
 #include "photoviewer.h"
 
 
-static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expectedType, bool errorMsg = true)
+static QUrl findMediaFileInternal(const TrackDataItem *item, TrackData::MediaType expectedType, bool errorMsg = true)
 {
     const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
-    if (tdw==nullptr) return (QUrl());
-
-    if (expectedType!=TrackData::MediaAny && tdw->mediaType()!=expectedType)
+    if (expectedType!=TrackData::MediaAny && (tdw==nullptr || tdw->mediaType()!=expectedType))
     {
         qWarning() << "waypoint" << item->name() << "is not type" << expectedType;
         return (QUrl());
@@ -93,11 +91,11 @@ static QUrl findMediaFile(const TrackDataItem *item, TrackData::MediaType expect
 
 void MediaPlayer::playAudioNote(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::MediaAudioNote);
+    QUrl file = findMediaFileInternal(item, TrackData::MediaAudioNote);
     if (!file.isValid()) return;
 
     // TODO: selectable external player output with a config setting,
-    // see krepton//src/sounds.cpp
+    // see krepton/src/sounds.cpp
 
 #ifdef HAVE_PHONON
     Phonon::MediaObject *mediaObject = new Phonon::MediaObject;
@@ -115,7 +113,7 @@ void MediaPlayer::playAudioNote(const TrackDataItem *item)
 
 void MediaPlayer::playVideoNote(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::MediaVideoNote);
+    QUrl file = findMediaFileInternal(item, TrackData::MediaVideoNote);
     if (!file.isValid()) return;
 
     // TODO: selectable external player output with a config setting,
@@ -133,7 +131,7 @@ void MediaPlayer::playVideoNote(const TrackDataItem *item)
 
 void MediaPlayer::viewPhotoNote(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::MediaPhoto);
+    QUrl file = findMediaFileInternal(item, TrackData::MediaPhoto);
     if (!file.isValid()) return;
 
     PhotoViewer *v = new PhotoViewer(file, nullptr);
@@ -144,7 +142,7 @@ void MediaPlayer::viewPhotoNote(const TrackDataItem *item)
 
 void MediaPlayer::openMediaFile(const TrackDataItem *item)
 {
-    QUrl file = findMediaFile(item, TrackData::MediaAny);
+    QUrl file = findMediaFileInternal(item, TrackData::MediaAny);
     if (file.isEmpty()) return;
 
     auto *job = new KIO::ApplicationLauncherJob(nullptr);
@@ -160,7 +158,7 @@ void MediaPlayer::openMediaFile(const TrackDataItem *item)
 
 void MediaPlayer::saveMediaFile(const TrackDataItem *item)
 {
-    QUrl sourceUrl = findMediaFile(item, TrackData::MediaAny);
+    QUrl sourceUrl = findMediaFileInternal(item, TrackData::MediaAny);
     if (!sourceUrl.isValid()) return;
 
     QMimeDatabase db;
@@ -185,5 +183,5 @@ void MediaPlayer::saveMediaFile(const TrackDataItem *item)
 
 QUrl MediaPlayer::findMediaFile(const TrackDataItem *item)
 {
-    return (findMediaFile(item, TrackData::MediaAny, false));
+    return (findMediaFileInternal(item, TrackData::MediaAny, false));
 }
