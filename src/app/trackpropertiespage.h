@@ -31,6 +31,8 @@
 #include "applicationdatainterface.h"
 
 class QFormLayout;
+class QVBoxLayout;
+class KMessageWidget;
 
 class TrackDataItem;
 class MetadataModel;
@@ -79,12 +81,17 @@ protected:
     void addSeparatorField(const QString &title = QString());
     void disableIfEmpty(QWidget *field, bool always = false);
 
+    void addTimeZoneWarning();
+    void updateTimeZoneWarning();
+
 protected:
     QFormLayout *mFormLayout;
+    QVBoxLayout *mMainLayout;
 
 private:
     bool mIsEmpty;
     MetadataModel *mDataModel;
+    KMessageWidget *mTimeZoneWarning;
 };
 
 #endif							// TRACKPROPERTIESPAGE_H

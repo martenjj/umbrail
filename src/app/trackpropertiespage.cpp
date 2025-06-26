@@ -29,12 +29,16 @@
 #include <qgroupbox.h>
 #include <qlabel.h>
 #include <qdebug.h>
+#include <qtimezone.h>
+#include <qboxlayout.h>
 
 #include <klocalizedstring.h>
+#include <kmessagewidget.h>
 
 #include <kfdialog/dialogbase.h>
 
 #include "trackdata.h"
+#include "metadatamodel.h"
 
 
 // This constructor cannot use dataModel(), because it has not been set yet.
@@ -45,7 +49,11 @@ TrackPropertiesPage::TrackPropertiesPage(const QList<TrackDataItem *> *items, QW
     Q_ASSERT(items!=nullptr);
     Q_ASSERT(!items->isEmpty());
 
-    mFormLayout = new QFormLayout(this);
+    mTimeZoneWarning = nullptr;
+
+    mMainLayout = new QVBoxLayout(this);
+    mFormLayout = new QFormLayout(nullptr);
+    mMainLayout->addLayout(mFormLayout);
 
     mIsEmpty = (TrackData::sumTotalChildCount(items)==0);
     if (mIsEmpty)
@@ -77,4 +85,33 @@ void TrackPropertiesPage::disableIfEmpty(QWidget *field, bool always)
     QWidget *l = mFormLayout->labelForField(field);
     if (l!=nullptr) l->setEnabled(false);
     field->setEnabled(false);
+}
+
+
+// This may be called during derived class construction, so it cannot
+// use dataModel() for the same reasons as above.
+void TrackPropertiesPage::addTimeZoneWarning()
+{
+    if (mTimeZoneWarning!=nullptr) return;
+
+    mTimeZoneWarning = new KMessageWidget(this);
+    mTimeZoneWarning->setMessageType(KMessageWidget::Warning);
+    mTimeZoneWarning->setPosition(KMessageWidget::Inline);
+    mTimeZoneWarning->setIcon(QIcon::fromTheme("dialog-warning"));
+    mTimeZoneWarning->setCloseButtonVisible(false);
+    mTimeZoneWarning->setWordWrap(true);
+    mTimeZoneWarning->setText(i18n("The file time zone is not set. Times are displayed in UTC."));
+    mTimeZoneWarning->setVisible(false);
+
+    mMainLayout->addStretch(1);
+    mMainLayout->addWidget(mTimeZoneWarning);
+}
+
+
+void TrackPropertiesPage::updateTimeZoneWarning()
+{
+    if (mTimeZoneWarning==nullptr) return;
+
+    const QTimeZone *tz = dataModel()->timeZone();
+    mTimeZoneWarning->setVisible(tz==nullptr || !tz->isValid());
 }

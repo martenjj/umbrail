@@ -63,8 +63,7 @@ TrackItemMetadataPage::TrackItemMetadataPage(const QList<TrackDataItem *> *items
     // the way to the bottom.  There are no labels and nothing else to display
     // on this page, so the form layout is not needed.
     delete mFormLayout; mFormLayout = nullptr;
-    QVBoxLayout *vboxLayout = new QVBoxLayout(this);
-    vboxLayout->addWidget(mView);
+    mMainLayout->addWidget(mView);
 
     if (items->count()!=1) return;			// only populate for single item
 

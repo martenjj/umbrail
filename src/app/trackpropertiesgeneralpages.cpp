@@ -176,6 +176,7 @@ void TrackItemGeneralPage::refreshData()
 
     if (mTimeStartLabel!=nullptr) mTimeStartLabel->setTimeZone(tz);
     if (mTimeEndLabel!=nullptr) mTimeEndLabel->setTimeZone(tz);
+    updateTimeZoneWarning();
 }
 
 
@@ -341,6 +342,7 @@ TrackFileGeneralPage::TrackFileGeneralPage(const QList<TrackDataItem *> *items, 
     addSeparatorField();
 
     addTimeSpanFields(items);
+    addTimeZoneWarning();
 }
 
 
@@ -390,6 +392,7 @@ TrackTrackGeneralPage::TrackTrackGeneralPage(const QList<TrackDataItem *> *items
     addSeparatorField();
     addTypeField(items);
     addDescField(items);
+    addTimeZoneWarning();
 }
 
 
@@ -413,6 +416,7 @@ TrackSegmentGeneralPage::TrackSegmentGeneralPage(const QList<TrackDataItem *> *i
     addSeparatorField();
     addTypeField(items);
     addDescField(items);
+    addTimeZoneWarning();
 }
 
 
@@ -435,6 +439,7 @@ TrackTrackpointGeneralPage::TrackTrackpointGeneralPage(const QList<TrackDataItem
     addPositionFields(items);
     addTimeField(items);
     if (items->count()>1) addTimeSpanFields(items);
+    addTimeZoneWarning();
 }
 
 
@@ -571,6 +576,7 @@ default:    break;
     addSeparatorField();
     addStatusField(items);
     addDescField(items);
+    if (showTime) addTimeZoneWarning();
 }
 
 

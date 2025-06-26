@@ -588,6 +588,8 @@ void TrackItemDetailPage::addDisplayFields(const QList<TrackDataItem *> *items,
         connect(mFlagsLabel, &ListEditWidget::editRequested, this, &TrackItemDetailPage::slotEditFlags);
         mFormLayout->addRow(i18nc("@label:textbox", "Flags:"), mFlagsLabel);
     }
+
+    if (disp & (DisplayTime|DisplayTravelTime)) addTimeZoneWarning();
 }
 
 
@@ -667,6 +669,7 @@ void TrackItemDetailPage::refreshData()
         mTimeLabel->setDateTime(dataModel()->data("time").toDateTime());
         mTimeLabel->setTimeZone(tz);
     }
+    updateTimeZoneWarning();
 
     if (mTimeStartLabel!=nullptr) mTimeStartLabel->setTimeZone(tz);
     if (mTimeEndLabel!=nullptr) mTimeEndLabel->setTimeZone(tz);
