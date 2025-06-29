@@ -157,6 +157,12 @@ void MainWindow::init()
     mTreeModeSplitter->addWidget(mFilesController->filesView());
     mTreeModeSplitter->addWidget(mMapTreePlaceholder);
 
+    // Prevent the map from taking mouse focus, so that common operations
+    // (click, drag, wheel zoom) do not take the focus away from the file
+    // data tree.  With this setting, the map will still accept tab focus
+    // if the user really wants to move the map around using the keyboard.
+    mapController()->view()->setFocusPolicy(Qt::TabFocus);
+
     setupStatusBar();
     setupActions();
 
