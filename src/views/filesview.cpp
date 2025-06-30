@@ -264,7 +264,7 @@ static void getPointData(const TrackDataItem *item, QVector<const TrackDataAbstr
         if (requireTime && !IS(TrackDataRoutepoint, tdp))
         {						// if not a route point,
             const QVariant dt = tdp->metadata("time");	// check time is valid
-            if (!dt.canConvert(QMetaType::QDateTime)) return;
+            if (!dt.canConvert<QDateTime>()) return;
         }
 
         points->append(tdp);				// add point to list
