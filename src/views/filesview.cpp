@@ -409,3 +409,18 @@ void FilesView::setMovePointsMode(bool on)
 {
     setDragDropMode(on ? QAbstractItemView::InternalMove : QAbstractItemView::NoDragDrop);
 }
+
+
+void FilesView::keyPressEvent(QKeyEvent *ev)
+{
+    if ((ev->modifiers() & ~Qt::KeypadModifier)==Qt::NoModifier)
+    {
+        if (ev->key()==Qt::Key_Return || ev->key()==Qt::Key_Enter)
+        {
+            emit updateActionState();			// update actions and status
+            return;					// event accepted
+        }
+    }
+
+    QTreeView::keyPressEvent(ev);
+}

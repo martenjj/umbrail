@@ -65,6 +65,7 @@ public slots:
 protected:
     void selectionChanged(const QItemSelection &sel, const QItemSelection &desel) override;
     void contextMenuEvent(QContextMenuEvent *ev) override;
+    void keyPressEvent(QKeyEvent *ev) override;
 
 signals:
     void updateActionState();
