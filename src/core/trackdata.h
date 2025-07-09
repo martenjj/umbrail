@@ -319,7 +319,7 @@ public:
     // is selected by the user in the application's GUI.  It is displayed in
     // the status bar by FilesController::slotUpdateActionState().  A mixed
     // selection is handled specially there and will never be seen here.
-    virtual QString statusMessage(int num) const = 0;
+    virtual QString selectionStatus(int num) const = 0;
 
     // Return a tool tip for the hovered item in the application's GUI.
     // This only ever applies to a single item.
@@ -410,7 +410,7 @@ public:
     virtual ~TrackDataFile();
 
     TrackData::Type type() const override		{ return (TrackData::File); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     QUrl fileName() const				{ return (mFileName); }
@@ -445,7 +445,7 @@ public:
     virtual ~TrackDataTrack() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Track); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
@@ -471,7 +471,7 @@ public:
     virtual ~TrackDataSegment() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Segment); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
@@ -499,7 +499,7 @@ public:
     virtual ~TrackDataFolder() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Folder); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
@@ -562,7 +562,7 @@ public:
     virtual ~TrackDataTrackpoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Trackpoint); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
@@ -588,7 +588,7 @@ public:
     virtual ~TrackDataWaypoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Waypoint); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     const PointIcon *icon() const override;
@@ -623,7 +623,7 @@ public:
     virtual ~TrackDataRoute() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Route); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)
@@ -649,7 +649,7 @@ public:
     virtual ~TrackDataRoutepoint() = default;
 
     TrackData::Type type() const override		{ return (TrackData::Routepoint); }
-    virtual QString statusMessage(int num) const override;
+    virtual QString selectionStatus(int num) const override;
     virtual QString toolTip() const override;
 
     DEFINE_PROPERTIES_PAGE(General)

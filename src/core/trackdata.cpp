@@ -648,7 +648,7 @@ QString TrackDataFile::iconName() const
 }
 
 
-QString TrackDataFile::statusMessage(int num) const
+QString TrackDataFile::selectionStatus(int num) const
 {
     if (num==1) return (i18n("Selected file '%1'", name()));
     else return (i18np("Selected %1 file", "Selected %1 files", num));
@@ -675,7 +675,7 @@ TrackDataTrack::TrackDataTrack()
 }
 
 
-QString TrackDataTrack::statusMessage(int num) const
+QString TrackDataTrack::selectionStatus(int num) const
 {
     if (num==1) return (i18n("Selected track '%1'", name()));
     else return (i18np("Selected %1 track", "Selected %1 tracks", num));
@@ -716,7 +716,7 @@ TimeRange TrackDataSegment::timeSpan() const
 }
 
 
-QString TrackDataSegment::statusMessage(int num) const
+QString TrackDataSegment::selectionStatus(int num) const
 {
     if (num==1) return (i18n("Selected segment '%1'", name()));
     else return (i18np("Selected %1 segment", "Selected %1 segments", num));
@@ -883,7 +883,7 @@ QString TrackDataFolder::path() const
 }
 
 
-QString TrackDataFolder::statusMessage(int num) const
+QString TrackDataFolder::selectionStatus(int num) const
 {
     QString msg;
     if (num==1)
@@ -936,7 +936,7 @@ TrackDataTrackpoint::TrackDataTrackpoint()
 }
 
 
-QString TrackDataTrackpoint::statusMessage(int num) const
+QString TrackDataTrackpoint::selectionStatus(int num) const
 {
     if (num==1) return (i18n("Selected point '%1'", name()));
     else return (i18np("Selected %1 point", "Selected %1 points", num));
@@ -979,7 +979,7 @@ default:				return ("unknown");
 }
 
 
-QString TrackDataWaypoint::statusMessage(int num) const
+QString TrackDataWaypoint::selectionStatus(int num) const
 {
     QString msg;
     if (num==1)
@@ -1529,7 +1529,7 @@ TrackDataRoute::TrackDataRoute()
 }
 
 
-QString TrackDataRoute::statusMessage(int num) const
+QString TrackDataRoute::selectionStatus(int num) const
 {
     if (num==1) return (i18n("Selected route '%1'", name()));
     else return (i18np("Selected %1 route", "Selected %1 routes", num));
@@ -1556,7 +1556,7 @@ TrackDataRoutepoint::TrackDataRoutepoint()
 }
 
 
-QString TrackDataRoutepoint::statusMessage(int num) const
+QString TrackDataRoutepoint::selectionStatus(int num) const
 {
     if (num==1) return (i18n("Selected routepoint '%1'", name()));
     else return (i18np("Selected %1 routepoint", "Selected %1 routepoints", num));

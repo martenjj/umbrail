@@ -847,7 +847,7 @@ void FilesController::slotUpdateActionState()
     else
     {
         const TrackDataItem *tdi = filesView()->selectedItem();
-        const QString msg = tdi->statusMessage(selCount);
+        const QString msg = tdi->selectionStatus(selCount);
         if (!msg.isEmpty()) emit statusMessage(msg);
     }
 
