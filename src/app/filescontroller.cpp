@@ -425,7 +425,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, cons
         // (synchronously), so that the MainWindow can
         // then clear its undo stack.
         cmd->redo();					// do the import and merge
-        QString msg = cmd->statusMessage();		// save message now, before
+        QString msg = cmd->commandStatus();		// save message now, before
         if (!msg.isEmpty()) msg.prepend(": ");		// deleting the command
         delete cmd;					// no need for this now
         emit statusMessage(xi18nc("@info", "Merged <filename>%1</filename>%2", importFrom.toDisplayString(), msg));
