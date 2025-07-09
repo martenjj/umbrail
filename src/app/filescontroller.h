@@ -118,7 +118,7 @@ public slots:
     void slotMapDraggedPoints(qreal latOff, qreal lonOff);
 
 signals:
-    void statusMessage(const QString &text);
+    void statusMessage(const QString &text, bool transient = false);
     void modified();
     void updateActionState();
     void updateMap();

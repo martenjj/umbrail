@@ -560,17 +560,45 @@ void MainWindow::setupStatusBar()
     mModifiedIndicator->setFixedWidth(20);
     sb->insertPermanentWidget(sbModified, mModifiedIndicator);
 
-    mStatusMessage = new KSqueezedTextLabel(i18n("Initialising..."), sb);
-    sb->addWidget(mStatusMessage, 1);
+    mStatusBarLabel = new KSqueezedTextLabel(i18n("Initialising..."), sb);
+    sb->addWidget(mStatusBarLabel, 1);
 
     sb->setSizeGripEnabled(false);
+
+    mStatusBarTimer = new QTimer(this);
+    mStatusBarTimer->setSingleShot(true);
+    mStatusBarTimer->setInterval(1500);
+    connect(mStatusBarTimer, &QTimer::timeout, this, &MainWindow::slotStatusTimer);
 }
 
 
-void MainWindow::slotStatusMessage(const QString &text)
+void MainWindow::slotStatusMessage(const QString &text, bool transient)
 {
-    mStatusMessage->setText(text);
-    mStatusMessage->repaint();				// show new message immediately
+    if (mStatusBarTimer->isActive())			// displaying a transient message
+    {
+        if (!transient)					// not another transient message
+        {
+            mStatusBarTimer->stop();			// stop the restore timer
+            mStatusBarSaved.clear();			// forget previous saved message
+        }
+    }
+    else if (transient)					// a new transient message
+    {
+        mStatusBarSaved = mStatusBarLabel->fullText();	// save the current message
+    }
+
+    if (transient) mStatusBarTimer->start();		// start the restore timer
+    mStatusBarLabel->setText(text);			// set the new message
+    mStatusBarLabel->repaint();				// show the update immediately
+}
+
+
+void MainWindow::slotStatusTimer()
+{
+    if (mStatusBarSaved.isEmpty()) return;		// no saved message
+    mStatusBarLabel->setText(mStatusBarSaved);		// restore the saved message
+    mStatusBarSaved.clear();				// message is now displayed
+    mStatusBarLabel->repaint();				// show the update immediately
 }
 
 //////////////////////////////////////////////////////////////////////////

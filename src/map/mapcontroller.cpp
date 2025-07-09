@@ -198,7 +198,7 @@ void MapController::slotResetZoom()
 {
     qDebug() << "zoom" << mHomeZoom;
     view()->zoomView(mHomeZoom);
-    emit statusMessage(i18n("At standard zoom %1", mHomeZoom));
+    emit statusMessage(i18n("At standard zoom %1", mHomeZoom), true);
 }
 
 
@@ -260,7 +260,7 @@ void MapController::slotZoomChanged(int zoom)
                         (zoom>(view()->minimumZoom())));
 
     // TODO: improve display, check against scale bar!
-    emit statusMessage(i18n("At zoom %1 = %2 km", zoom, view()->distanceFromZoom(zoom)));
+    emit statusMessage(i18n("At zoom %1 = %2 km", zoom, view()->distanceFromZoom(zoom)), true);
 }
 
 

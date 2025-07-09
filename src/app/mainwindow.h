@@ -41,6 +41,7 @@ class QAction;
 class QStackedWidget;
 class QTabWidget;
 class QUrl;
+class QTimer;
 
 class QCloseEvent;
 class QDragEnterEvent;
@@ -70,7 +71,6 @@ public:
     bool isPointsListMode() const;
 
 public slots:               
-    void slotStatusMessage(const QString &text);
     void slotSetModified(bool mod = true);
 
     void slotExecuteCommand(QUndoCommand *cmd);
@@ -141,8 +141,10 @@ private slots:
     void slotUpdateActionState();
     void slotUpdatePasteState();
 
+    void slotStatusMessage(const QString &text, bool transient);
+    void slotStatusTimer();
+
 private:
-    KSqueezedTextLabel *mStatusMessage;
     QLabel *mModifiedIndicator;
 
     QAction *mSaveProjectAction;
@@ -201,6 +203,10 @@ private:
     QUndoStack *mUndoStack;
 
     const TrackDataItem *mSelectedContainer;
+
+    KSqueezedTextLabel *mStatusBarLabel;
+    QTimer *mStatusBarTimer;
+    QString mStatusBarSaved;
 };
  
 #endif							// MAINWINDOW_H
