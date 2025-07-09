@@ -91,3 +91,12 @@ void ApplicationDataInterface::executeCommand(QUndoCommand *cmd)
                               "slotExecuteCommand",
                               Q_ARG(QUndoCommand *, cmd));
 }
+
+
+void ApplicationDataInterface::statusMessage(const QString &msg, bool transient)
+{
+    QMetaObject::invokeMethod(mApplicationData->mainWidget(),
+                              "slotStatusMessage",
+                              Q_ARG(QString, msg),
+                              Q_ARG(bool, transient));
+}

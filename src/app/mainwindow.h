@@ -73,8 +73,6 @@ public:
 public slots:               
     void slotSetModified(bool mod = true);
 
-    void slotExecuteCommand(QUndoCommand *cmd);
-
 protected:
     void saveProperties(KConfigGroup &grp) override;
     void readProperties(const KConfigGroup &grp) override;
@@ -143,6 +141,8 @@ private slots:
 
     void slotStatusMessage(const QString &text, bool transient);
     void slotStatusTimer();
+
+    void slotExecuteCommand(QUndoCommand *cmd);
 
 private:
     QLabel *mModifiedIndicator;

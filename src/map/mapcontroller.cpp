@@ -135,7 +135,7 @@ void MapController::slotGoHome()
     view()->zoomView(mHomeZoom);
     view()->centerOn(mHomeLong, mHomeLat);
 
-    emit statusMessage(i18n("At home position %1", TrackData::formattedLatLong(mHomeLat, mHomeLong)));
+    statusMessage(i18n("At home position %1", TrackData::formattedLatLong(mHomeLat, mHomeLong)));
 }
 
 
@@ -161,10 +161,10 @@ void MapController::slotSetHome()
     // TODO: do this here?
     //mHomeZoom = view()->zoom();
 
-    if (isReadOnly()) emit statusMessage(i18n("Home position set to %1 for this session", pos));
+    if (isReadOnly()) statusMessage(i18n("Home position set to %1 for this session", pos));
     else
     {
-        emit statusMessage(i18n("Home position set to %1", pos));
+        statusMessage(i18n("Home position set to %1", pos));
         emit modified();
     }
 }
@@ -185,10 +185,10 @@ void MapController::slotSetZoom()
     }
 
     mHomeZoom = zoom;
-    if (isReadOnly()) emit statusMessage(i18n("Standard zoom set to %1 for this session", zoom));
+    if (isReadOnly()) statusMessage(i18n("Standard zoom set to %1 for this session", zoom));
     else
     {
-        emit statusMessage(i18n("Standard zoom set to %1", zoom));
+        statusMessage(i18n("Standard zoom set to %1", zoom));
         emit modified();
     }
 }
@@ -198,7 +198,7 @@ void MapController::slotResetZoom()
 {
     qDebug() << "zoom" << mHomeZoom;
     view()->zoomView(mHomeZoom);
-    emit statusMessage(i18n("At standard zoom %1", mHomeZoom), true);
+    statusMessage(i18n("At standard zoom %1", mHomeZoom), true);
 }
 
 
@@ -219,7 +219,7 @@ void MapController::slotSaveImage()
     QStringList currentOverlays = view()->allOverlays(true);
     view()->showOverlays(QStringList());
 
-    emit statusMessage(i18n("Saving map image..."));
+    statusMessage(i18n("Saving map image..."));
     QPixmap pix = view()->mapScreenShot();
     qDebug() << "size" << pix.size() << "to" << file;
     if (!pix.save(file.path()))
@@ -227,11 +227,11 @@ void MapController::slotSaveImage()
         KMessageBox::error(mainWidget(),
                            xi18nc("@info", "Failed to save image file:<nl/><filename>%1</filename>", file.toDisplayString()),
                            i18n("Save Failed"));
-        emit statusMessage(i18n("Failed to save map image"));
+        statusMessage(i18n("Failed to save map image"));
     }
     else
     {
-        emit statusMessage(xi18nc("@info", "Saved map image to <filename>%1</filename>", file.toDisplayString()));
+        statusMessage(xi18nc("@info", "Saved map image to <filename>%1</filename>", file.toDisplayString()));
     }
 
     view()->showOverlays(currentOverlays);
@@ -260,7 +260,7 @@ void MapController::slotZoomChanged(int zoom)
                         (zoom>(view()->minimumZoom())));
 
     // TODO: improve display, check against scale bar!
-    emit statusMessage(i18n("At zoom %1 = %2 km", zoom, view()->distanceFromZoom(zoom)), true);
+    statusMessage(i18n("At zoom %1 = %2 km", zoom, view()->distanceFromZoom(zoom)), true);
 }
 
 
@@ -291,7 +291,7 @@ void MapController::slotMapThemeSelected(const QString &themeId)
     view()->setMapThemeId(themeId);
     view()->showOverlays(currentOverlays);
 
-    emit statusMessage(i18n("Map theme '%1'", themeId));
+    statusMessage(i18n("Map theme '%1'", themeId));
 }
 
 

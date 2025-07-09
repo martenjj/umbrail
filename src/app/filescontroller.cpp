@@ -391,14 +391,14 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, cons
         return (FilesController::StatusFailed);
     }
 
-    emit statusMessage(xi18nc("@info", "Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
+    statusMessage(xi18nc("@info", "Loading %1 from <filename>%2</filename>...", importType, importFrom.toDisplayString()));
     imp->setOptions(options);				// set the import options
     TrackDataFile *tdf = imp->load(importFrom);		// do the import
 
     const ErrorReporter *rep = imp->reporter();
     if (!reportFileError(false, importFrom, rep))
     {
-        emit statusMessage(xi18nc("@info", "Loading <filename>%1</filename> failed", importFrom.toDisplayString()));
+        statusMessage(xi18nc("@info", "Loading <filename>%1</filename> failed", importFrom.toDisplayString()));
         return (FilesController::StatusFailed);
     }
 
@@ -417,7 +417,7 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, cons
     {
         cmd->redo();					// yes, just do the import
         delete cmd;					// no need for this now
-        emit statusMessage(xi18nc("@info", "Loaded <filename>%1</filename>", importFrom.toDisplayString()));
+        statusMessage(xi18nc("@info", "Loaded <filename>%1</filename>", importFrom.toDisplayString()));
     }
     else if (options.hasFlag(ImporterExporterOptions::MergeWaypoints))
     {							// import with waypoint merge
@@ -428,12 +428,12 @@ FilesController::Status FilesController::importFile(const QUrl &importFrom, cons
         QString msg = cmd->commandStatus();		// save message now, before
         if (!msg.isEmpty()) msg.prepend(": ");		// deleting the command
         delete cmd;					// no need for this now
-        emit statusMessage(xi18nc("@info", "Merged <filename>%1</filename>%2", importFrom.toDisplayString(), msg));
+        statusMessage(xi18nc("@info", "Merged <filename>%1</filename>%2", importFrom.toDisplayString(), msg));
     }
     else						// an import without merge
     {
         executeCommand(cmd);				// make the operation undo'able
-        emit statusMessage(xi18nc("@info", "Imported <filename>%1</filename>", importFrom.toDisplayString()));
+        statusMessage(xi18nc("@info", "Imported <filename>%1</filename>", importFrom.toDisplayString()));
     }
 
     emit modified();					// done, finished with importer
@@ -542,7 +542,7 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
             if (!ok)
             {
                 reportFileError(true, backupFile, i18n("Cannot save backup file"));
-                emit statusMessage(i18n("Backup failed"));
+                statusMessage(i18n("Backup failed"));
                 return (FilesController::StatusFailed);
             }
 
@@ -556,30 +556,30 @@ FilesController::Status FilesController::exportFile(const QUrl &exportTo, const 
 
     if (options.hasFlag(ImporterExporterOptions::SelectionOnly)) exp->setSelectionId(filesView()->selectionId());
 
-    emit statusMessage(xi18nc("@info", "Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
+    statusMessage(xi18nc("@info", "Saving %1 to <filename>%2</filename>...", exportType, exportTo.toDisplayString()));
     exp->setOptions(options);				// set the export options
     exp->save(exportTo, static_cast<TrackDataFile *>(filesModel()->rootItem()));
 
     const ErrorReporter *rep = exp->reporter();
     if (!reportFileError(true, exportTo, rep))
     {
-        emit statusMessage(xi18nc("@info", "Saving <filename>%1</filename> failed", exportTo.toDisplayString()));
+        statusMessage(xi18nc("@info", "Saving <filename>%1</filename> failed", exportTo.toDisplayString()));
         return (FilesController::StatusFailed);
     }
 
     if (options.hasFlag(ImporterExporterOptions::ToClipboard))
     {
-        emit statusMessage(xi18nc("@info", "Copied selection to clipboard"));
+        statusMessage(xi18nc("@info", "Copied selection to clipboard"));
     }
     else
     {
         if (options.hasFlag(ImporterExporterOptions::SelectionOnly))
         {
-            emit statusMessage(xi18nc("@info", "Saved selection to <filename>%1</filename>", exportTo.toDisplayString()));
+            statusMessage(xi18nc("@info", "Saved selection to <filename>%1</filename>", exportTo.toDisplayString()));
         }
         else
         {
-            emit statusMessage(xi18nc("@info", "Saved to <filename>%1</filename>", exportTo.toDisplayString()));
+            statusMessage(xi18nc("@info", "Saved to <filename>%1</filename>", exportTo.toDisplayString()));
         }
     }
 
@@ -816,7 +816,7 @@ FilesController::Status FilesController::importPhoto(const QList<QUrl> &urls)
         cmd2->setLink(importFrom);
         if (dt.isValid()) cmd2->setTime(dt);
 
-        emit statusMessage(statusText);
+        statusMessage(statusText);
     }
 
     if (cmd->childCount()==0)				// anything to actually do?
@@ -838,17 +838,17 @@ void FilesController::slotUpdateActionState()
 
     if (selType==TrackData::None)
     {
-        emit statusMessage(i18n("Nothing selected"));
+        statusMessage(i18n("Nothing selected"));
     }
     else if (selType==TrackData::Mixed)
     {
-        emit statusMessage(i18np("Selected %1 item", "Selected %1 items", selCount));
+        statusMessage(i18np("Selected %1 item", "Selected %1 items", selCount));
     }
     else
     {
         const TrackDataItem *tdi = filesView()->selectedItem();
         const QString msg = tdi->selectionStatus(selCount);
-        if (!msg.isEmpty()) emit statusMessage(msg);
+        if (!msg.isEmpty()) statusMessage(msg);
     }
 
     emit updateActionState();
@@ -1150,7 +1150,7 @@ void FilesController::mergeWaypointsInternal(const QList<TrackDataItem *> &selIt
     // Manually merge any number of waypoints.
     // from NavTracks PointsController::slotMergeSelection()
 
-    emit statusMessage(i18n("Checking positions"));
+    statusMessage(i18n("Checking positions"));
 
     const TrackDataWaypoint *refPoint = nullptr;	// first reference point
     bool mergeOk = true;				// positions close enough?
@@ -1188,18 +1188,18 @@ void FilesController::mergeWaypointsInternal(const QList<TrackDataItem *> &selIt
                                                i18n("Merge Points"),
                                                KGuiItem(i18n("Merge"), QIcon::fromTheme("merge")))!=KMessageBox::Continue)
         {
-            emit statusMessage(i18n("Merge cancelled"));
+            statusMessage(i18n("Merge cancelled"));
             return;
         }
     }
 
-    emit statusMessage(i18n("Manual merge"));
+    statusMessage(i18n("Manual merge"));
 
     MergePointsDialogue d(mainWidget());
     d.setPoints(&pointsToMerge);
     if (!d.exec())
     {
-        emit statusMessage(i18n("Merge cancelled"));
+        statusMessage(i18n("Merge cancelled"));
         return;
     }
 
@@ -1209,7 +1209,7 @@ void FilesController::mergeWaypointsInternal(const QList<TrackDataItem *> &selIt
     executeCommand(cmd);
 
     slotUpdateActionState();
-    emit statusMessage(i18n("Merged %1 points", num));
+    statusMessage(i18n("Merged %1 points", num));
 }
 
 

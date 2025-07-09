@@ -75,7 +75,6 @@ protected slots:
     void slotZoomChanged(int zoom);
 
 signals:
-    void statusMessage(const QString &text, bool transient = false);
     void modified();
 
     void mapZoomChanged(bool canZoomIn, bool canZoomOut);

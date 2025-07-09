@@ -128,7 +128,6 @@ void MainWindow::init()
     mMainWidget = this;
 
     mFilesController = new FilesController(this);
-    connect(mFilesController, &FilesController::statusMessage, this, &MainWindow::slotStatusMessage);
     connect(mFilesController, &FilesController::modified, this, [this]() { slotSetModified(true); });
     connect(mFilesController, &FilesController::updateActionState, this, &MainWindow::slotUpdateActionState);
 
@@ -136,7 +135,6 @@ void MainWindow::init()
     mPointsView = filesController()->pointsView();		// set in ApplicationData
 
     mMapController = new MapController(this);
-    connect(mMapController, &MapController::statusMessage, this, &MainWindow::slotStatusMessage);
     connect(mMapController, &MapController::modified, this, [this]() { slotSetModified(true); });
     connect(mMapController, &MapController::mapZoomChanged, this, &MainWindow::slotMapZoomChanged);
     connect(mMapController, &MapController::mapDraggedPoints, mFilesController, &FilesController::slotMapDraggedPoints);
