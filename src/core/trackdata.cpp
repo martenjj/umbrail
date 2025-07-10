@@ -991,7 +991,7 @@ QString TrackDataWaypoint::statusMessage(int num) const
         QString wptDesc = metadata("desc").toString();
         int idx = wptDesc.indexOf('\n');
         if (idx!=-1) wptDesc = wptDesc.left(idx);
-        if (!wptDesc.isEmpty()) msg += (" \""+KStringHandler::rsqueeze(wptDesc, 50)+"\"");
+        if (!wptDesc.isEmpty()) msg += (" \""+KStringHandler::rsqueeze(wptDesc, 80)+"\"");
     }
     else msg = i18np("Selected %1 waypoint", "Selected %1 waypoints", num);
     return (msg);
