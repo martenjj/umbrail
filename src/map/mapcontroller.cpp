@@ -342,6 +342,10 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
     if (items.count()==1)				// a single selected item
     {							// which must be a point
         selpoint = AS(TrackDataAbstractPoint, items.first());
+
+        // Only centre on the selected point if it is currently visible
+        // in the map view.
+        if (!displayedArea.contains(selpoint->longitude(), selpoint->latitude())) selpoint = nullptr;
     }
 
     MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget());
