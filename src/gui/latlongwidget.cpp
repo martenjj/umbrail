@@ -89,7 +89,7 @@ LatLongWidget::LatLongWidget(QWidget *pnt)
         vbl->addWidget(lab);
 
         connect(handler, &AbstractCoordinateHandler::valueChanged, this, &LatLongWidget::slotValueChanged);
-        connect(handler, &AbstractCoordinateHandler::statusMessage, lab, &QLabel::setText);
+        connect(handler, &AbstractCoordinateHandler::coordinateStatus, lab, &QLabel::setText);
 
         mHandlers.append(handler);
         mTabs->addTab(w, handler->tabName());

@@ -73,6 +73,7 @@ protected:
     bool isReadOnly() const;
 
     void executeCommand(QUndoCommand *cmd);
+    void statusMessage(const QString &msg, bool transient = false);
 
 private:
     ApplicationData *mApplicationData;

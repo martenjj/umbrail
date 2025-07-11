@@ -50,7 +50,7 @@ public:
     static QString senderText(const QObject *sdr);
     void setSenderText(const QObject *sdr);
 
-    QString statusMessage() const			{ return (mStatusMessage); }
+    QString commandStatus() const			{ return (mStatusMessage); }
 
 protected:
     QString mStatusMessage;

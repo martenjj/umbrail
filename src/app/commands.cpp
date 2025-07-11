@@ -103,7 +103,7 @@ public:
 
     TrackData::Type type() const override			{ return (TrackData::None); }
     QString iconName() const override				{ return (QString()); }
-    QString statusMessage(int num) const override		{ Q_UNUSED(num); return (QString()); }
+    QString selectionStatus(int num) const override		{ Q_UNUSED(num); return (QString()); }
     QString toolTip() const override				{ return (QString()); }
 };
 

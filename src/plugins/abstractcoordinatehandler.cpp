@@ -70,5 +70,5 @@ void AbstractCoordinateHandler::checkError()
 void AbstractCoordinateHandler::setError(const QString &msg)
 {
     qDebug() << msg;
-    emit statusMessage(msg);
+    emit coordinateStatus(msg);
 }
