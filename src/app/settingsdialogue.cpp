@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2023 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -196,17 +196,21 @@ SettingsMapStylePage::SettingsMapStylePage(QWidget *pnt)
     g->setFlat(true);
     fl->addRow(g);
 
-    mIconProviderList = new QListWidget(w);
+    mIconProviderList = new QListWidget(g);
     mIconProviderList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     mIconProviderList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     kcsi = Settings::self()->disabledIconProvidersItem();
     mIconProviderList->setToolTip(kcsi->toolTip());
     fl->addRow(kcsi->label(), mIconProviderList);
 
-    // If a maximum size is not set then the list box forces the dialogue
+    // If a maximum size is not set, then the list box forces the dialogue
     // to expand beyond the restored size.  There will not be very many
     // icon providers, so this should be big enough.
     mIconProviderList->setMaximumSize(200, 80);
+    // With the size having been set above, there is no need to allow
+    // the list to expand any more, which somehow also causes the
+    // group boxes to stretch.
+    mIconProviderList->setSizePolicy(mIconProviderList->sizePolicy().horizontalPolicy(), QSizePolicy::Minimum);
 
     const auto *providers = PointIcon::allProviders();
     for (const AbstractIconProvider *provider : std::as_const(*providers))
@@ -323,7 +327,6 @@ SettingsFilesPage::SettingsFilesPage(QWidget *pnt)
 
     ski = Settings::self()->fileCheckTimezoneItem();
     Q_ASSERT(ski!=nullptr);
-
     mTimezoneCheck = new QCheckBox(ski->label(), w);
     mTimezoneCheck->setToolTip(ski->toolTip());
     mTimezoneCheck->setChecked(Settings::fileCheckTimezone());
