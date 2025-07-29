@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -597,6 +597,13 @@ void StopDetectDialogue::updateResults()
             item->setData(Qt::CheckStateRole, (wasChecked ? Qt::Checked : Qt::Unchecked));
         }						// new stop, set to checked
         else item->setData(Qt::CheckStateRole, Qt::Checked);
+
+        const QDateTime dt1 = tdw->metadata("time").toDateTime();
+        const QDateTime dt2 = dt1.addSecs(tdw->metadata("duration").toInt());
+        const QString itemTip = i18n("Stop from %1 to %2",
+                                     dt1.toString("hh:mm:ss"),
+                                     dt2.toString("hh:mm:ss"));
+        item->setToolTip(itemTip);
 
         mResultsList->addItem(item);
     }
