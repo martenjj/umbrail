@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -927,12 +927,20 @@ void MainWindow::slotImportFile()
 							// do the import or merge
     if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
 
-
-
-    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))	// did import with merge,
-    {							// cannot undo after that
+    // If the import was done with merged waypoints, then as noted above
+    // the operation cannot be undone.  Clear the undo stack to remove
+    // all existing undo operations and indicate this to the user.
+    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))
+    {
         qDebug() << "clearing undo stack after import with merge";
         mUndoStack->clear();
+
+        // Clearing the undo stack will have called slotCleanUndoChanged()
+        // via the QUndoStack::cleanChanged() signal, which because the
+        // undo stack is clean will mark the document unmodified.  It
+        // should of course be modified because of the import, so
+        // explicitly set that state.
+        slotSetModified(true);
     }
 #else
     RecentSaver saver("import");
