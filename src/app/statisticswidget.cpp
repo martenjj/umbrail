@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -73,19 +73,20 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
 
     mWidget = new QWidget(this);
     mLayout = new QGridLayout(mWidget);
+    mEnableSection = true;
 
-    addRow(i18nc("@title:row", "Total points:"), mTotalPoints, false);
+    addRow(i18nc("@title:row", "Total points:"), mTotalPoints);
     addRow(i18nc("@title:row", "With time:"), mWithTime);
     addRow(i18nc("@title:row", "With elevation:"), mWithElevation);
     mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
 
-    addRow(i18nc("@title:row", "Track points:"), mTrackpoints);
+    addRow(i18nc("@title:row", "Track points:"), mTrackpoints, true);
     addRow(i18nc("@title:row", "With GPS speed:"), mWithGpsSpeed);
     addRow(i18nc("@title:row", "With GPS HDOP:"), mWithGpsHdop);
     addRow(i18nc("@title:row", "With GPS heading:"), mWithGpsHeading);
     mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
 
-    addRow(i18nc("@title:row", "Waypoints:"), mWaypoints);
+    addRow(i18nc("@title:row", "Waypoints:"), mWaypoints, true);
     addRow(TrackData::formattedWaypointStatus(TrackData::StatusTodo)+':', mStatusTodo);
     addRow(TrackData::formattedWaypointStatus(TrackData::StatusDone)+':', mStatusDone);
     addRow(TrackData::formattedWaypointStatus(TrackData::StatusQuestion)+'/'+
@@ -93,7 +94,7 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
     addRow(i18nc("@title:row", "None/Other:"), mStatusOther);
     mLayout->setRowMinimumHeight(mLayout->rowCount(), DialogBase::verticalSpacing());
 
-    addRow(i18nc("@title:row", "Route points:"), mRoutepoints);
+    addRow(i18nc("@title:row", "Route points:"), mRoutepoints, true);
 
     mLayout->setRowStretch(mLayout->rowCount(), 1);
     mLayout->setColumnStretch(5, 1);
@@ -105,20 +106,25 @@ StatisticsWidget::StatisticsWidget(QWidget *pnt)
 }
 
 
-void StatisticsWidget::addRow(const QString &text, int num, bool withPercent)
+void StatisticsWidget::addRow(const QString &text, int num, bool newSection)
 {
     const int row = mLayout->rowCount();
 
+    if (newSection) mEnableSection = (num>0);
+
     QLabel *l = new QLabel(text, mWidget);
+    l->setEnabled(mEnableSection);
     mLayout->addWidget(l, row, 0, Qt::AlignRight);
 
     l = new QLabel(QString::number(num), mWidget);
+    l->setEnabled(mEnableSection);
     mLayout->addWidget(l, row, 1, Qt::AlignRight);
 
-    if (withPercent)
+    if (row>0)						// not for the grand total
     {
         const int pct = qRound(num*100.0/mTotalPoints);
         l = new QLabel(QString("(%1%)").arg(pct), mWidget);
+        l->setEnabled(mEnableSection);
         mLayout->addWidget(l, row, 3);
 
         QProgressBar *p = new QProgressBar(mWidget);
@@ -149,6 +155,7 @@ void StatisticsWidget::addRow(const QString &text, int num, bool withPercent)
         pal.setColor(QPalette::Inactive, QPalette::Highlight, back);
 #endif
         p->setPalette(pal);
+        p->setEnabled(mEnableSection);
         mLayout->addWidget(p, row, 5);
     }
 }
