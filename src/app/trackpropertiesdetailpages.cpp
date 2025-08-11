@@ -41,6 +41,7 @@
 #include "flagseditdialogue.h"
 #include "listeditwidget.h"
 #include "mediaplayer.h"
+#include "itemcounter.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -179,7 +180,7 @@ static double sumTotalTravelDistance(const QList<TrackDataItem *> *items)
     // If a route, look at its route points.
     //
     // The intention of this is to give sensible results for the "total
-    // "travel distance" of a file.  If it contains tracks then it is
+    // travel distance" of a file.  If it contains tracks then it is
     // probably a track recording file and the figure of interest is that
     // for the recordings.  If it does not contain any tracks then it is
     // probably a route planning file and the figure of interest is
@@ -752,27 +753,13 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
     qDebug();
     setObjectName("TrackFileDetailPage");
 
-    int nTracks = 0;
-    int nFolders = 0;
-    int nRoutes = 0;
-    for (int i = 0; i<items->count(); ++i)
-    {
-        const TrackDataContainer *item = AS(TrackDataContainer, items->at(i));
-        if (item==nullptr) continue;
-        for (int j = 0; j<item->childCount(); ++j)
-        {
-            const TrackDataItem *childItem = item->childAt(j);
-            if (IS(TrackDataTrack, childItem)) ++nTracks;
-            else if (IS(TrackDataFolder, childItem)) ++nFolders;
-            else if (IS(TrackDataRoute, childItem)) ++nRoutes;
-        }
-    }
+    const ItemCounter counter(items, ItemCounter::RecurseOnce);
 
-    TrackDataLabel *l = new TrackDataLabel(nTracks, this);
+    TrackDataLabel *l = new TrackDataLabel(counter.count(ItemCounter::Track), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Tracks:"), l);
-    l = new TrackDataLabel(nFolders, this);
+    l = new TrackDataLabel(counter.count(ItemCounter::Folder), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Folders:"), l);
-    l = new TrackDataLabel(nRoutes, this);
+    l = new TrackDataLabel(counter.count(ItemCounter::Route), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Routes:"), l);
     addSeparatorField();
 
