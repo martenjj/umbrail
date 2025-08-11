@@ -754,7 +754,6 @@ TrackFileDetailPage::TrackFileDetailPage(const QList<TrackDataItem *> *items, QW
     setObjectName("TrackFileDetailPage");
 
     const ItemCounter counter(items, ItemCounter::RecurseOnce);
-
     TrackDataLabel *l = new TrackDataLabel(counter.count(ItemCounter::Track), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Tracks:"), l);
     l = new TrackDataLabel(counter.count(ItemCounter::Folder), this);
@@ -870,23 +869,10 @@ TrackFolderDetailPage::TrackFolderDetailPage(const QList<TrackDataItem *> *items
     qDebug();
     setObjectName("TrackFolderDetailPage");
 
-    int nWaypoints = 0;
-    int nFolders = 0;
-    for (int i = 0; i<items->count(); ++i)
-    {
-        const TrackDataContainer *item = AS(TrackDataContainer, items->at(i));
-        if (item==nullptr) continue;
-        for (int j = 0; j<item->childCount(); ++j)
-        {
-            const TrackDataItem *childItem = item->childAt(j);
-            if (IS(TrackDataWaypoint, childItem)) ++nWaypoints;
-            else if (IS(TrackDataFolder, childItem)) ++nFolders;
-        }
-    }
-
-    TrackDataLabel *l = new TrackDataLabel(nWaypoints, this);
+    const ItemCounter counter(items, ItemCounter::RecurseOnce|ItemCounter::RecurseOnly);
+    TrackDataLabel *l = new TrackDataLabel(counter.count(ItemCounter::Waypoint), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Waypoints:"), l);
-    l = new TrackDataLabel(nFolders, this);
+    l = new TrackDataLabel(counter.count(ItemCounter::Folder), this);
     mFormLayout->addRow(i18nc("@label:textbox", "Subfolders:"), l);
 
     addSeparatorField();

@@ -51,6 +51,7 @@ public:
         NoRecurse = 0x00,
         RecurseOnce = 0x01,
         RecurseAll = 0x02,
+        RecurseOnly = 0x04,
     };
     Q_DECLARE_FLAGS(CountFlags, CountFlag)
 
@@ -65,5 +66,7 @@ private:
 private:
     QMap<ItemCounter::ItemType, int> mItemCounts;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ItemCounter::CountFlags)
 
 #endif							// ITEMCOUNTER_H

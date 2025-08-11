@@ -40,23 +40,28 @@ ItemCounter::ItemCounter(const QList<TrackDataItem *> *items, ItemCounter::Count
 
 /* private */ void ItemCounter::countItem(const TrackDataItem *item, ItemCounter::CountFlags flags)
 {
-    if (IS(TrackDataFile, item)) ++mItemCounts[ItemCounter::File];
-    else if (IS(TrackDataTrack, item)) ++mItemCounts[ItemCounter::Track];
-    else if (IS(TrackDataRoute, item)) ++mItemCounts[ItemCounter::Route];
-    else if (IS(TrackDataSegment, item)) ++mItemCounts[ItemCounter::Segment];
-    else if (IS(TrackDataTrackpoint, item)) ++mItemCounts[ItemCounter::Trackpoint];
-    else if (IS(TrackDataFolder, item)) ++mItemCounts[ItemCounter::Folder];
-    else if (IS(TrackDataWaypoint, item)) ++mItemCounts[ItemCounter::Waypoint];
-    else if (IS(TrackDataRoutepoint, item)) ++mItemCounts[ItemCounter::Routepoint];
+    if (!(flags & ItemCounter::RecurseOnly))
+    {
+        if (IS(TrackDataFile, item)) ++mItemCounts[ItemCounter::File];
+        else if (IS(TrackDataTrack, item)) ++mItemCounts[ItemCounter::Track];
+        else if (IS(TrackDataRoute, item)) ++mItemCounts[ItemCounter::Route];
+        else if (IS(TrackDataSegment, item)) ++mItemCounts[ItemCounter::Segment];
+        else if (IS(TrackDataTrackpoint, item)) ++mItemCounts[ItemCounter::Trackpoint];
+        else if (IS(TrackDataFolder, item)) ++mItemCounts[ItemCounter::Folder];
+        else if (IS(TrackDataWaypoint, item)) ++mItemCounts[ItemCounter::Waypoint];
+        else if (IS(TrackDataRoutepoint, item)) ++mItemCounts[ItemCounter::Routepoint];
+    }
 
     if (flags & (ItemCounter::RecurseOnce|ItemCounter::RecurseAll))
     {
         const TrackDataContainer *tdc = AS(TrackDataContainer, item);
         if (tdc!=nullptr)
         {
-            // If the RecurseOnce flag is set, turn it off so that
+            // If the RecurseOnce flag is set, then turn it off so that
             // the iterations over these child items do not recurse.
-            flags &= ~ItemCounter::RecurseOnce;
+            // If the RecurseOnly flag is set, also turn it off so that
+            // the child items and their children are counted normally.
+            flags &= ~(ItemCounter::RecurseOnce|ItemCounter::RecurseOnly);
             for (int j = 0; j<tdc->childCount(); ++j) countItem(tdc->childAt(j), flags);
         }
     }
