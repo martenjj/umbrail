@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -44,7 +44,7 @@ public:
 
 private:
     void getPointData(const TrackDataAbstractPoint *point);
-    void addRow(const QString &text, int num, bool withPercent = true);
+    void addRow(const QString &text, int num, bool newSection = false);
 
 private:
     QWidget *mWidget;
@@ -66,6 +66,8 @@ private:
     int mStatusDone;
     int mStatusUnwanted;
     int mStatusOther;
+
+    bool mEnableSection;
 };
 
 #endif							// STATISTICSWIDGET_H
