@@ -38,6 +38,12 @@ ItemCounter::ItemCounter(const QList<TrackDataItem *> *items, ItemCounter::Count
 }
 
 
+ItemCounter::ItemCounter(const TrackDataItem *item, ItemCounter::CountFlags flags)
+{
+    countItem(item, flags);
+}
+
+
 /* private */ void ItemCounter::countItem(const TrackDataItem *item, ItemCounter::CountFlags flags)
 {
     if (!(flags & ItemCounter::RecurseOnly))
@@ -50,6 +56,22 @@ ItemCounter::ItemCounter(const QList<TrackDataItem *> *items, ItemCounter::Count
         else if (IS(TrackDataFolder, item)) ++mItemCounts[ItemCounter::Folder];
         else if (IS(TrackDataWaypoint, item)) ++mItemCounts[ItemCounter::Waypoint];
         else if (IS(TrackDataRoutepoint, item)) ++mItemCounts[ItemCounter::Routepoint];
+
+        if (flags & ItemCounter::WaypointStatus)	// info requested for waypoints
+        {
+            const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, item);
+            if (tdw!=nullptr)
+            {
+                switch (tdw->metadata("status").toInt())
+                {
+case TrackData::StatusTodo:	++mItemCounts[ItemCounter::StatusTodo];		break;
+case TrackData::StatusDone:	++mItemCounts[ItemCounter::StatusDone];		break;
+case TrackData::StatusQuestion:	++mItemCounts[ItemCounter::StatusQuestion];	break;
+case TrackData::StatusUnwanted:	++mItemCounts[ItemCounter::StatusUnwanted];	break;
+default:			++mItemCounts[ItemCounter::StatusOther];	break;
+                }
+            }
+        }
     }
 
     if (flags & (ItemCounter::RecurseOnce|ItemCounter::RecurseAll))

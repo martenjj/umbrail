@@ -43,7 +43,13 @@ public:
         Trackpoint = TrackData::Trackpoint,
         Folder = TrackData::Folder,
         Waypoint = TrackData::Waypoint,
-        Routepoint = TrackData::Routepoint
+        Routepoint = TrackData::Routepoint,
+
+        StatusOther = TrackData::StatusNone+100,
+        StatusTodo = TrackData::StatusTodo+100,
+        StatusDone = TrackData::StatusDone+100,
+        StatusQuestion = TrackData::StatusQuestion+100,
+        StatusUnwanted = TrackData::StatusUnwanted+100,
     };
 
     enum CountFlag
@@ -52,11 +58,13 @@ public:
         RecurseOnce = 0x01,
         RecurseAll = 0x02,
         RecurseOnly = 0x04,
+        WaypointStatus = 0x08,
     };
     Q_DECLARE_FLAGS(CountFlags, CountFlag)
 
     //ItemCounter(const QList<const TrackDataItem *> *items, ItemCounter::CountFlags flags);
     ItemCounter(const QList<TrackDataItem *> *items, ItemCounter::CountFlags flags);
+    ItemCounter(const TrackDataItem *item, ItemCounter::CountFlags flags);
 
     int count(ItemCounter::ItemType type) const		{ return (mItemCounts.value(type)); }
 
