@@ -595,6 +595,13 @@ SettingsServicesPage::SettingsServicesPage(QWidget *pnt)
     fl->addRow(ski->label(), mBingBrowserCombo);
 #endif // ENABLE_OPEN_WITH_BING
 
+    ski = Settings::self()->minimiseAfterExternalItem();
+    Q_ASSERT(ski!=nullptr);
+    mMinimiseExternalCheck = new QCheckBox(ski->label(), w);
+    mMinimiseExternalCheck->setToolTip(ski->toolTip());
+    mMinimiseExternalCheck->setChecked(Settings::minimiseAfterExternal());
+    fl->addRow(QString(), mMinimiseExternalCheck);
+
     fl->addItem(DialogBase::verticalSpacerItem());
 
     ski = Settings::self()->geonamesUserItem();
@@ -627,6 +634,7 @@ void SettingsServicesPage::slotSave()
 #endif // ENABLE_OPEN_WITH_BING
     Settings::setGeonamesUser(mGeonamesUserEdit->text());
     Settings::setOpenTopoApiKey(mOpenTopoApiKeyEdit->text());
+    Settings::setMinimiseAfterExternal(mMinimiseExternalCheck->isChecked());
 }
 
 
@@ -641,6 +649,11 @@ void SettingsServicesPage::slotDefaults()
 #endif // ENABLE_OPEN_WITH_BING
     mGeonamesUserEdit->clear();
     mOpenTopoApiKeyEdit->clear();
+
+    KConfigSkeletonItem *ski = Settings::self()->minimiseAfterExternalItem();
+    ski->setDefault();
+    mMinimiseExternalCheck->setChecked(Settings::minimiseAfterExternal());
+
     slotItemChanged();
 }
 

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -166,6 +166,7 @@ private:
 #endif // ENABLE_OPEN_WITH_BING
     QLineEdit *mGeonamesUserEdit;
     QLineEdit *mOpenTopoApiKeyEdit;
+    QCheckBox *mMinimiseExternalCheck;
 };
 
 

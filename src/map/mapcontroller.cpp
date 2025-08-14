@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -321,7 +321,7 @@ void MapController::gotoSelection(const QList<TrackDataItem *> &items)
 }
 
 
-void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items)
+KJob *MapController::openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items)
 {
     // The displayed map bounding area in pixels
     const QRect rect = view()->mapRegion().boundingRect();
@@ -330,10 +330,10 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
     QRectF displayedArea;
 
     qreal lon, lat;
-    if (!view()->geoCoordinates(rect.left(), rect.bottom(), lon, lat)) return;
+    if (!view()->geoCoordinates(rect.left(), rect.bottom(), lon, lat)) return (nullptr);
     displayedArea.setLeft(lon);
     displayedArea.setBottom(lat);
-    if (!view()->geoCoordinates(rect.right(), rect.top(), lon, lat)) return;
+    if (!view()->geoCoordinates(rect.right(), rect.top(), lon, lat)) return (nullptr);
     displayedArea.setRight(lon);
     displayedArea.setTop(lat);
     qDebug() << "map" << map << "bounds" << displayedArea;
@@ -348,5 +348,5 @@ void MapController::openExternalMap(MapBrowser::MapProvider map, const QList<Tra
         if (!displayedArea.contains(selpoint->longitude(), selpoint->latitude())) selpoint = nullptr;
     }
 
-    MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget());
+    return (MapBrowser::openBrowser(map, displayedArea, selpoint, mainWidget()));
 }
