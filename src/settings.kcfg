@@ -164,7 +164,7 @@
     </entry>
     <entry name="MinimiseAfterExternal" type="Bool">
       <default>true</default>
-      <label>Minimise after opening external browser</label>
+      <label>Minimise after opening</label>
       <tooltip>Minimise the main window after opening the map in an external web browser.</tooltip>
     </entry>
   </group>
