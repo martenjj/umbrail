@@ -56,6 +56,7 @@
 #include <kmessagebox.h>
 #include <ksqueezedtextlabel.h>
 #include <kactionmenu.h>
+#include <kjob.h>
 
 #include <kfdialog/recentsaver.h>
 #include <kfdialog/imagefilter.h>
@@ -1433,7 +1434,21 @@ void MainWindow::slotReadOnly(bool on)
 
 void MainWindow::openExternalMap(MapBrowser::MapProvider map)
 {
-    mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+    KJob *job = mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+    if (job==nullptr) return;				// problem with browser query
+
+    if (Settings::minimiseAfterExternal())
+    {
+        // After a time delay, so that the window minimises after the
+        // new browser window has hopefully opened.  Less disconcerting
+        // for the user.
+        connect(job, &KJob::result, this, [this](KJob *j)
+        {
+            if (j!=nullptr && j->error()==0) QTimer::singleShot(3000, this, &QWidget::showMinimized);
+        });
+    }
+
+    job->start();
 }
 
 //////////////////////////////////////////////////////////////////////////

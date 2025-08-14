@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -72,10 +72,10 @@ static int getBoundsZoomLevel(const QRectF &bounds)
 }
 
 
-void MapBrowser::openBrowser(MapBrowser::MapProvider map,
-                             const QRectF &displayedArea,
-                             const TrackDataAbstractPoint *selectedPoint,
-                             QWidget *pnt)
+KJob *MapBrowser::openBrowser(MapBrowser::MapProvider map,
+                              const QRectF &displayedArea,
+                              const TrackDataAbstractPoint *selectedPoint,
+                              QWidget *pnt)
 {
     QString browserService;
     QUrl u;
@@ -153,13 +153,12 @@ case MapBrowser::Bing:
 
 default:
         qWarning() << "unknown external map" << map;
-        return;
     }
 
     // Make sure that the browser URL is valid.  It should always have been
-    // resolved by now, because otherwise the 'default' above will have been
-    // hit.  Then add the URL query parameters.
-    if (!u.isValid()) return;
+    // resolved by now, unless the 'default' case above has been hit.  Then
+    // add the URL query parameters.
+    if (!u.isValid()) return (nullptr);
     if (!q.isEmpty()) u.setQuery(q);
 
     // If not opening OpenStreetMap, display a warning that copying data from
@@ -190,7 +189,7 @@ default:
         // There is no configured browser service, just open the map URL
         // in the default web browser.
         KIO::OpenUrlJob *job = new KIO::OpenUrlJob(u, "text/html", pnt);
-        job->start();					// assume MIME type
+        return (job);					// assume MIME type
     }
     else						// there is a configured service
     {
@@ -199,11 +198,11 @@ default:
         if (!service)
         {
             qWarning() << "unknown service" << browserService;
-            return;
+            return (nullptr);
         }
 
         KIO::ApplicationLauncherJob *job = new KIO::ApplicationLauncherJob(service, pnt);
         job->setUrls(QList<QUrl>() << u);
-        job->start();
+        return (job);
     }
 }
