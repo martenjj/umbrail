@@ -26,12 +26,6 @@
 #include "itemcounter.h"
 
 
-// ItemCounter::ItemCounter(const QList<const TrackDataItem *> *items, ItemCounter::CountFlags flags)
-// {
-    // for (const TrackDataItem *item : std::as_const(*items)) countItem(item, flags);
-// }
-
-
 ItemCounter::ItemCounter(const QList<TrackDataItem *> *items, ItemCounter::CountFlags flags)
 {
     for (const TrackDataItem *item : std::as_const(*items)) countItem(item, flags);
@@ -48,14 +42,16 @@ ItemCounter::ItemCounter(const TrackDataItem *item, ItemCounter::CountFlags flag
 {
     if (!(flags & ItemCounter::RecurseOnly))
     {
-        if (IS(TrackDataFile, item)) ++mItemCounts[ItemCounter::File];
-        else if (IS(TrackDataTrack, item)) ++mItemCounts[ItemCounter::Track];
-        else if (IS(TrackDataRoute, item)) ++mItemCounts[ItemCounter::Route];
-        else if (IS(TrackDataSegment, item)) ++mItemCounts[ItemCounter::Segment];
-        else if (IS(TrackDataTrackpoint, item)) ++mItemCounts[ItemCounter::Trackpoint];
-        else if (IS(TrackDataFolder, item)) ++mItemCounts[ItemCounter::Folder];
+        // As a very slight optimisation, check for the item types
+        // which are likely to be the most frequently encountered first.
+        if (IS(TrackDataTrackpoint, item)) ++mItemCounts[ItemCounter::Trackpoint];
         else if (IS(TrackDataWaypoint, item)) ++mItemCounts[ItemCounter::Waypoint];
         else if (IS(TrackDataRoutepoint, item)) ++mItemCounts[ItemCounter::Routepoint];
+        else if (IS(TrackDataFile, item)) ++mItemCounts[ItemCounter::File];
+        else if (IS(TrackDataTrack, item)) ++mItemCounts[ItemCounter::Track];
+        else if (IS(TrackDataSegment, item)) ++mItemCounts[ItemCounter::Segment];
+        else if (IS(TrackDataFolder, item)) ++mItemCounts[ItemCounter::Folder];
+        else if (IS(TrackDataRoute, item)) ++mItemCounts[ItemCounter::Route];
 
         if (flags & ItemCounter::WaypointStatus)	// info requested for waypoints
         {
@@ -72,10 +68,29 @@ default:			++mItemCounts[ItemCounter::StatusOther];	break;
                 }
             }
         }
+
+        if (flags & ItemCounter::PointDetail)		// info requested for all points
+        {
+            const TrackDataAbstractPoint *tdp = AS(TrackDataAbstractPoint, item);
+            if (tdp!=nullptr)
+            {
+                // time available
+                if (tdp->time().isValid()) ++mItemCounts[ItemCounter::DetailTime];
+                // elevation available, valid and not zero
+                const double ele = tdp->elevation();
+                if (!ISNAN(ele) && ele!=0) ++mItemCounts[ItemCounter::DetailEle];
+                // GPS speed recorded
+                if (!tdp->metadata("speed").isNull()) ++mItemCounts[ItemCounter::DetailSpeed];
+                // GPS HDOP recorded
+                if (!tdp->metadata("hdop").isNull()) ++mItemCounts[ItemCounter::DetailHdop];
+                // GPS heading recorded
+                if (!tdp->metadata("heading").isNull()) ++mItemCounts[ItemCounter::DetailHeading];
+            }
+        }
     }
 
     if (flags & (ItemCounter::RecurseOnce|ItemCounter::RecurseAll))
-    {
+    {							// recursion requested
         const TrackDataContainer *tdc = AS(TrackDataContainer, item);
         if (tdc!=nullptr)
         {

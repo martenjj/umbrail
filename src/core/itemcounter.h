@@ -50,6 +50,12 @@ public:
         StatusDone = TrackData::StatusDone+100,
         StatusQuestion = TrackData::StatusQuestion+100,
         StatusUnwanted = TrackData::StatusUnwanted+100,
+
+        DetailTime = 200,
+        DetailEle = 201,
+        DetailSpeed = 202,
+        DetailHdop = 203,
+        DetailHeading = 204,
     };
 
     enum CountFlag
@@ -59,10 +65,10 @@ public:
         RecurseAll = 0x02,
         RecurseOnly = 0x04,
         WaypointStatus = 0x08,
+        PointDetail = 0x10,
     };
     Q_DECLARE_FLAGS(CountFlags, CountFlag)
 
-    //ItemCounter(const QList<const TrackDataItem *> *items, ItemCounter::CountFlags flags);
     ItemCounter(const QList<TrackDataItem *> *items, ItemCounter::CountFlags flags);
     ItemCounter(const TrackDataItem *item, ItemCounter::CountFlags flags);
 
