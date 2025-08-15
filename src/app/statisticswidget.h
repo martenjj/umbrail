@@ -29,9 +29,7 @@
 #include <kfdialog/dialogbase.h>
 #include "applicationdatainterface.h"
 
-
 class QGridLayout;
-class TrackDataAbstractPoint;
 
 
 class StatisticsWidget : public DialogBase, public ApplicationDataInterface
@@ -43,7 +41,6 @@ public:
     virtual ~StatisticsWidget() = default;
 
 private:
-    void getPointData(const TrackDataAbstractPoint *point);
     void addRow(const QString &text, int num, bool newSection = false);
 
 private:
@@ -51,22 +48,6 @@ private:
     QGridLayout *mLayout;
 
     int mTotalPoints;
-    int mWithTime;
-    int mWithElevation;
-
-    int mTrackpoints;
-    int mWaypoints;
-    int mRoutepoints;
-
-    int mWithGpsSpeed;
-    int mWithGpsHdop;
-    int mWithGpsHeading;
-
-    int mStatusTodo;
-    int mStatusDone;
-    int mStatusUnwanted;
-    int mStatusOther;
-
     bool mEnableSection;
 };
 
