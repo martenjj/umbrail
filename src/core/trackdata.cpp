@@ -279,7 +279,7 @@ QString TrackData::formattedWaypointStatus(TrackData::WaypointStatus status, boo
 case TrackData::StatusNone:		return (blankForNone ? QString() : i18n("(None)"));
 case TrackData::StatusTodo:		return (i18n("To Do"));
 case TrackData::StatusDone:		return (i18n("Done"));
-case TrackData::StatusQuestion:		return (i18n("Uncertain"));
+case TrackData::StatusQuestion:		return (i18n("Questionable"));
 case TrackData::StatusUnwanted:		return (i18n("Unwanted"));
 case TrackData::StatusInvalid:		return (i18n("(Invalid)"));
 default:				return (i18n("(Unknown %1)", status));
