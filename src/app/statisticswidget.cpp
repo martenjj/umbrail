@@ -104,7 +104,10 @@ void StatisticsWidget::addRow(const QString &text, int num, bool newSection)
     l->setEnabled(mEnableSection);
     mLayout->addWidget(l, row, 1, Qt::AlignRight);
 
-    if (row>0)						// not for the grand total
+    // Do not show a percentage for the grand total (it will of course
+    // always be 100%).  QGridLayout::rowCount() above will have
+    // returned 1 for the initial empty layout.
+    if (row>1)
     {
         const int pct = qRound(num*100.0/mTotalPoints);
         l = new QLabel(QString("(%1%)").arg(pct), mWidget);
