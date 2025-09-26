@@ -1196,6 +1196,7 @@ default:
         mAddFolderAction->setEnabled(false);
         mAddWaypointAction->setEnabled(false);
         mAddRoutepointAction->setEnabled(false);
+        mAddTrackpointAction->setEnabled(false);
         mWaypointStatusAction->setEnabled(false);
         mMapDragAction->setEnabled(false);
         return;
