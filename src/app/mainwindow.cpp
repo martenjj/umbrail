@@ -772,9 +772,11 @@ void MainWindow::slotSaveAs()
 void MainWindow::slotSaveCopy()
 {
     RecentSaver saver("projectcopy");
+    const QString base = (hasFileName() ? fileName().fileName() : "untitled");
+
     QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
                                             i18n("Save Copy of Tracks File As"),	// caption
-                                            saver.recentUrl("untitled"),		// dir
+                                            saver.recentUrl(base),			// dir
                                             FilesController::allProjectFilters(false),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
