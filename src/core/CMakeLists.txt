@@ -43,6 +43,7 @@ set(core_SRCS
   abstracticonprovider.cpp
   garminiconprovider.cpp
   osmandiconprovider.cpp
+  itemcounter.cpp
 )
 
 add_library(${PN}core STATIC ${core_SRCS})

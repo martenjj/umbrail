@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -56,6 +56,7 @@
 #include <kmessagebox.h>
 #include <ksqueezedtextlabel.h>
 #include <kactionmenu.h>
+#include <kjob.h>
 
 #include <kfdialog/recentsaver.h>
 #include <kfdialog/imagefilter.h>
@@ -927,12 +928,20 @@ void MainWindow::slotImportFile()
 							// do the import or merge
     if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
 
-
-
-    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))	// did import with merge,
-    {							// cannot undo after that
+    // If the import was done with merged waypoints, then as noted above
+    // the operation cannot be undone.  Clear the undo stack to remove
+    // all existing undo operations and indicate this to the user.
+    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))
+    {
         qDebug() << "clearing undo stack after import with merge";
         mUndoStack->clear();
+
+        // Clearing the undo stack will have called slotCleanUndoChanged()
+        // via the QUndoStack::cleanChanged() signal, which because the
+        // undo stack is clean will mark the document unmodified.  It
+        // should of course be modified because of the import, so
+        // explicitly set that state.
+        slotSetModified(true);
     }
 #else
     RecentSaver saver("import");
@@ -1187,6 +1196,7 @@ default:
         mAddFolderAction->setEnabled(false);
         mAddWaypointAction->setEnabled(false);
         mAddRoutepointAction->setEnabled(false);
+        mAddTrackpointAction->setEnabled(false);
         mWaypointStatusAction->setEnabled(false);
         mMapDragAction->setEnabled(false);
         return;
@@ -1425,7 +1435,21 @@ void MainWindow::slotReadOnly(bool on)
 
 void MainWindow::openExternalMap(MapBrowser::MapProvider map)
 {
-    mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+    KJob *job = mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+    if (job==nullptr) return;				// problem with browser query
+
+    if (Settings::minimiseAfterExternal())
+    {
+        // After a time delay, so that the window minimises after the
+        // new browser window has hopefully opened.  Less disconcerting
+        // for the user.
+        connect(job, &KJob::result, this, [this](KJob *j)
+        {
+            if (j!=nullptr && j->error()==0) QTimer::singleShot(3000, this, &QWidget::showMinimized);
+        });
+    }
+
+    job->start();
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -29,9 +29,7 @@
 #include <kfdialog/dialogbase.h>
 #include "applicationdatainterface.h"
 
-
 class QGridLayout;
-class TrackDataAbstractPoint;
 
 
 class StatisticsWidget : public DialogBase, public ApplicationDataInterface
@@ -43,29 +41,14 @@ public:
     virtual ~StatisticsWidget() = default;
 
 private:
-    void getPointData(const TrackDataAbstractPoint *point);
-    void addRow(const QString &text, int num, bool withPercent = true);
+    void addRow(const QString &text, int num, bool newSection = false);
 
 private:
     QWidget *mWidget;
     QGridLayout *mLayout;
 
     int mTotalPoints;
-    int mWithTime;
-    int mWithElevation;
-
-    int mTrackpoints;
-    int mWaypoints;
-    int mRoutepoints;
-
-    int mWithGpsSpeed;
-    int mWithGpsHdop;
-    int mWithGpsHeading;
-
-    int mStatusTodo;
-    int mStatusDone;
-    int mStatusUnwanted;
-    int mStatusOther;
+    bool mEnableSection;
 };
 
 #endif							// STATISTICSWIDGET_H

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -40,6 +40,7 @@
 #include "pointicon.h"
 #include "category.h"
 #include "abstracticonprovider.h"
+#include "itemcounter.h"
 
 //////////////////////////////////////////////////////////////////////////
 //									//
@@ -278,7 +279,7 @@ QString TrackData::formattedWaypointStatus(TrackData::WaypointStatus status, boo
 case TrackData::StatusNone:		return (blankForNone ? QString() : i18n("(None)"));
 case TrackData::StatusTodo:		return (i18n("To Do"));
 case TrackData::StatusDone:		return (i18n("Done"));
-case TrackData::StatusQuestion:		return (i18n("Uncertain"));
+case TrackData::StatusQuestion:		return (i18n("Questionable"));
 case TrackData::StatusUnwanted:		return (i18n("Unwanted"));
 case TrackData::StatusInvalid:		return (i18n("(Invalid)"));
 default:				return (i18n("(Unknown %1)", status));
@@ -888,28 +889,19 @@ QString TrackDataFolder::selectionStatus(int num) const
     QString msg;
     if (num==1)
     {
-        int numWaypoint = 0;
-        int numTodo = 0;
-        int numDone = 0;
+        const ItemCounter counter(this,  ItemCounter::RecurseOnce|ItemCounter::WaypointStatus);
 
-        const int childs = childCount();
-        for (int i = 0; i<childs; ++i)
+        const int numWaypoint = counter.count(ItemCounter::Waypoint);
+        const int numTodo = counter.count(ItemCounter::StatusTodo);
+        const int numDone = counter.count(ItemCounter::StatusDone);
+
+        if (numTodo==0 && numDone==0) msg = i18n("Selected folder '%1': %2 waypoints", name(), numWaypoint);
+        else
         {
-            const TrackDataWaypoint *tdw = AS(TrackDataWaypoint, childAt(i));
-            if (tdw==nullptr) continue;
-            ++numWaypoint;
-
-            switch (tdw->metadata("status").toInt())
-            {
-case TrackData::StatusTodo:     ++numTodo;	break;
-case TrackData::StatusDone:     ++numDone;	break;
-            }
+            const int numOther = numWaypoint-(numTodo+numDone);
+            if (numOther==0) msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %4 to do", name(), numWaypoint, numDone, numTodo);
+            else msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %5 other, %4 to do", name(), numWaypoint, numDone, numTodo, numOther);
         }
-
-        const int numOther = numWaypoint-(numTodo+numDone);
-        if ((numTodo+numDone)==0) msg = i18n("Selected folder '%1': %2 waypoints", name(), numWaypoint);
-        else if (numOther==0) msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %4 to do", name(), numWaypoint, numDone, numTodo);
-        else msg = i18n("Selected folder '%1': %2 waypoints, %3 done, %5 other, %4 to do", name(), numWaypoint, numDone, numTodo, numOther);
     }
     else msg = i18np("Selected %1 folder", "Selected %1 folders", num);
     return (msg);
