@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -56,7 +56,7 @@ public:
     void clear();
 
     void gotoSelection(const QList<TrackDataItem *> &items);
-    void openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items);
+    KJob *openExternalMap(MapBrowser::MapProvider map, const QList<TrackDataItem *> &items);
 
     static QString positionToString(double lat, double lon, int zoom);
     static bool positionFromString(const QString &str, double *plat, double *plon, int *pzoom);
@@ -75,7 +75,6 @@ protected slots:
     void slotZoomChanged(int zoom);
 
 signals:
-    void statusMessage(const QString &text);
     void modified();
 
     void mapZoomChanged(bool canZoomIn, bool canZoomOut);

@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -56,6 +56,7 @@
 #include <kmessagebox.h>
 #include <ksqueezedtextlabel.h>
 #include <kactionmenu.h>
+#include <kjob.h>
 
 #include <kfdialog/recentsaver.h>
 #include <kfdialog/imagefilter.h>
@@ -128,7 +129,6 @@ void MainWindow::init()
     mMainWidget = this;
 
     mFilesController = new FilesController(this);
-    connect(mFilesController, &FilesController::statusMessage, this, &MainWindow::slotStatusMessage);
     connect(mFilesController, &FilesController::modified, this, [this]() { slotSetModified(true); });
     connect(mFilesController, &FilesController::updateActionState, this, &MainWindow::slotUpdateActionState);
 
@@ -136,7 +136,6 @@ void MainWindow::init()
     mPointsView = filesController()->pointsView();		// set in ApplicationData
 
     mMapController = new MapController(this);
-    connect(mMapController, &MapController::statusMessage, this, &MainWindow::slotStatusMessage);
     connect(mMapController, &MapController::modified, this, [this]() { slotSetModified(true); });
     connect(mMapController, &MapController::mapZoomChanged, this, &MainWindow::slotMapZoomChanged);
     connect(mMapController, &MapController::mapDraggedPoints, mFilesController, &FilesController::slotMapDraggedPoints);
@@ -560,17 +559,45 @@ void MainWindow::setupStatusBar()
     mModifiedIndicator->setFixedWidth(20);
     sb->insertPermanentWidget(sbModified, mModifiedIndicator);
 
-    mStatusMessage = new KSqueezedTextLabel(i18n("Initialising..."), sb);
-    sb->addWidget(mStatusMessage, 1);
+    mStatusBarLabel = new KSqueezedTextLabel(i18n("Initialising..."), sb);
+    sb->addWidget(mStatusBarLabel, 1);
 
     sb->setSizeGripEnabled(false);
+
+    mStatusBarTimer = new QTimer(this);
+    mStatusBarTimer->setSingleShot(true);
+    mStatusBarTimer->setInterval(1500);
+    connect(mStatusBarTimer, &QTimer::timeout, this, &MainWindow::slotStatusTimer);
 }
 
 
-void MainWindow::slotStatusMessage(const QString &text)
+void MainWindow::slotStatusMessage(const QString &text, bool transient)
 {
-    mStatusMessage->setText(text);
-    mStatusMessage->repaint();				// show new message immediately
+    if (mStatusBarTimer->isActive())			// displaying a transient message
+    {
+        if (!transient)					// not another transient message
+        {
+            mStatusBarTimer->stop();			// stop the restore timer
+            mStatusBarSaved.clear();			// forget previous saved message
+        }
+    }
+    else if (transient)					// a new transient message
+    {
+        mStatusBarSaved = mStatusBarLabel->fullText();	// save the current message
+    }
+
+    if (transient) mStatusBarTimer->start();		// start the restore timer
+    mStatusBarLabel->setText(text);			// set the new message
+    mStatusBarLabel->repaint();				// show the update immediately
+}
+
+
+void MainWindow::slotStatusTimer()
+{
+    if (mStatusBarSaved.isEmpty()) return;		// no saved message
+    mStatusBarLabel->setText(mStatusBarSaved);		// restore the saved message
+    mStatusBarSaved.clear();				// message is now displayed
+    mStatusBarLabel->repaint();				// show the update immediately
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -745,9 +772,11 @@ void MainWindow::slotSaveAs()
 void MainWindow::slotSaveCopy()
 {
     RecentSaver saver("projectcopy");
+    const QString base = (hasFileName() ? fileName().fileName() : "untitled");
+
     QUrl file = QFileDialog::getSaveFileUrl(this,					// parent
                                             i18n("Save Copy of Tracks File As"),	// caption
-                                            saver.recentUrl("untitled"),		// dir
+                                            saver.recentUrl(base),			// dir
                                             FilesController::allProjectFilters(false),	// filter
                                             nullptr,					// selectedFilter,
                                             QFileDialog::Options(),			// options
@@ -901,12 +930,20 @@ void MainWindow::slotImportFile()
 							// do the import or merge
     if (filesController()->importFile(d.selectedUrl(), opts)!=FilesController::StatusOk) return;
 
-
-
-    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))	// did import with merge,
-    {							// cannot undo after that
+    // If the import was done with merged waypoints, then as noted above
+    // the operation cannot be undone.  Clear the undo stack to remove
+    // all existing undo operations and indicate this to the user.
+    if (opts.hasFlag(ImporterExporterOptions::MergeWaypoints))
+    {
         qDebug() << "clearing undo stack after import with merge";
         mUndoStack->clear();
+
+        // Clearing the undo stack will have called slotCleanUndoChanged()
+        // via the QUndoStack::cleanChanged() signal, which because the
+        // undo stack is clean will mark the document unmodified.  It
+        // should of course be modified because of the import, so
+        // explicitly set that state.
+        slotSetModified(true);
     }
 #else
     RecentSaver saver("import");
@@ -1161,6 +1198,7 @@ default:
         mAddFolderAction->setEnabled(false);
         mAddWaypointAction->setEnabled(false);
         mAddRoutepointAction->setEnabled(false);
+        mAddTrackpointAction->setEnabled(false);
         mWaypointStatusAction->setEnabled(false);
         mMapDragAction->setEnabled(false);
         return;
@@ -1399,7 +1437,21 @@ void MainWindow::slotReadOnly(bool on)
 
 void MainWindow::openExternalMap(MapBrowser::MapProvider map)
 {
-    mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+    KJob *job = mapController()->openExternalMap(map, filesController()->filesView()->selectedItems());
+    if (job==nullptr) return;				// problem with browser query
+
+    if (Settings::minimiseAfterExternal())
+    {
+        // After a time delay, so that the window minimises after the
+        // new browser window has hopefully opened.  Less disconcerting
+        // for the user.
+        connect(job, &KJob::result, this, [this](KJob *j)
+        {
+            if (j!=nullptr && j->error()==0) QTimer::singleShot(3000, this, &QWidget::showMinimized);
+        });
+    }
+
+    job->start();
 }
 
 //////////////////////////////////////////////////////////////////////////

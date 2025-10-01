@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2022 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -267,16 +267,21 @@ static bool withinDistance(const TrackDataAbstractPoint *tdp, double lat, double
 }
 
 
-static void setStopData(TrackDataWaypoint *tdw, const QDateTime &dt, int dur)
+static QString formattedDuration(int dur)
 {
-    const QString text1 = dt.toString("hh:mm:ss");	// start time
-							// duration...
     const int hrs = dur/3600;				// hours, zero unless a very long stop
     const int min = (dur/60) % 60;			// minutes
     const int sec = dur % 60;				// seconds
 
-    const QString text2 = (hrs==0) ? QString("%1:%2").arg(min).arg(sec, 2, 10, QLatin1Char('0')) :
-                                     QString("%1:%2:%3").arg(hrs).arg(min, 2, 10, QLatin1Char('0')).arg(sec, 2, 10, QLatin1Char('0'));
+    return (hrs==0 ? QString("%1:%2").arg(min).arg(sec, 2, 10, QLatin1Char('0')) :
+                     QString("%1:%2:%3").arg(hrs).arg(min, 2, 10, QLatin1Char('0')).arg(sec, 2, 10, QLatin1Char('0')));
+}
+
+
+static void setStopData(TrackDataWaypoint *tdw, const QDateTime &dt, int dur)
+{
+    const QString text1 = dt.toString("hh:mm:ss");	// start time
+    const QString text2 = formattedDuration(dur);	// duration
 
     tdw->setName(i18n("Stop at %1 for %2", text1, text2), true);
     tdw->setMetadata("time", dt);
@@ -582,6 +587,11 @@ void StopDetectDialogue::updateResults()
         delete item;
     }
 
+    //const bool isMetric = (QLocale::system().measurementSystem()==QLocale::MetricSystem);
+
+    const TrackDataWaypoint *prevStop = nullptr;
+    QDateTime prevEnd;
+
     for (int i = 0; i<num; ++i)				// generate items for new results
     {
         const TrackDataWaypoint *tdw = mResultPoints[i];
@@ -597,6 +607,41 @@ void StopDetectDialogue::updateResults()
             item->setData(Qt::CheckStateRole, (wasChecked ? Qt::Checked : Qt::Unchecked));
         }						// new stop, set to checked
         else item->setData(Qt::CheckStateRole, Qt::Checked);
+
+        const QDateTime dt1 = tdw->metadata("time").toDateTime();
+        const QDateTime dt2 = dt1.addSecs(tdw->metadata("duration").toInt());
+        QString itemTip;
+
+        if (prevStop!=nullptr)
+        {
+            // TODO: This should really adapt to metric/imperial units,
+            // either the unit as last used by a VariableUnitCombo for
+            // distance, a dialogue setting, a global preference option,
+            // or the system's locale setting.  However, since this
+            // dialogue currently only works in metric units (for the
+            // "Distance threshold" setting), for the moment this will
+            // just use metric units.
+
+            const double dist = Units::internalToLength(qAbs(prevStop->distanceTo(tdw)), Units::LengthKilometres);
+            const QString distStr = (dist<2.0 ? i18nc("distance in metres with unit suffix", "%1m", qRound(dist*1000)) :
+                                                i18nc("distance in kilometres with unit suffix", "%1km", qRound(dist)));
+            const QString durStr = formattedDuration(prevEnd.secsTo(dt1));
+
+            itemTip = i18n("Travel %4 for %3 then stop from %1 to %2",
+                           dt1.toString("hh:mm:ss"),
+                           dt2.toString("hh:mm:ss"),
+                           distStr, durStr);
+        }
+        else
+        {
+            itemTip = i18n("Stop from %1 to %2",
+                           dt1.toString("hh:mm:ss"),
+                           dt2.toString("hh:mm:ss"));
+        }
+
+        item->setToolTip(itemTip);
+        prevStop = tdw;
+        prevEnd = dt2;
 
         mResultsList->addItem(item);
     }

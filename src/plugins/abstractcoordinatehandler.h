@@ -59,7 +59,7 @@ public:
 
 signals:
     void valueChanged();
-    void statusMessage(const QString &msg);
+    void coordinateStatus(const QString &msg);
 
 protected:
     AbstractCoordinateHandler(QObject *pnt = nullptr);

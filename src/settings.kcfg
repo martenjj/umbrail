@@ -162,6 +162,11 @@
       <label>opentopography.org API key:</label>
       <tooltip>The API key to use for access to opentopography.org. This web service is used for the Digital Elevation Model.</tooltip>
     </entry>
+    <entry name="MinimiseAfterExternal" type="Bool">
+      <default>true</default>
+      <label>Minimise after opening</label>
+      <tooltip>Minimise the main window after opening the map in an external web browser.</tooltip>
+    </entry>
   </group>
 
   <group name="TimeZones">

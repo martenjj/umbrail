@@ -4,7 +4,7 @@
 //									//
 //////////////////////////////////////////////////////////////////////////
 //									//
-//  Copyright (c) 2014-2021 Jonathan Marten <jjm@keelhaul.me.uk>	//
+//  Copyright (c) 2014-2025 Jonathan Marten <jjm@keelhaul.me.uk>	//
 //  Home and download page: <http://github.com/martenjj/umbrail>	//
 //									//
 //  This program is free software; you can redistribute it and/or	//
@@ -28,6 +28,7 @@
 
 class QWidget;
 class QRectF;
+class KJob;
 class TrackDataAbstractPoint;
 
 
@@ -40,8 +41,8 @@ namespace MapBrowser
         Bing						// Bing Maps
     };
 
-    void openBrowser(MapBrowser::MapProvider map, const QRectF &displayedArea,
-                     const TrackDataAbstractPoint *selectedPoint, QWidget *pnt = nullptr);
+    KJob *openBrowser(MapBrowser::MapProvider map, const QRectF &displayedArea,
+                      const TrackDataAbstractPoint *selectedPoint, QWidget *pnt = nullptr);
 };
 
 #endif							// MAPBROWSER_H
