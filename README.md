@@ -28,7 +28,7 @@ Building and installing
 -----------------------
 
 This package does not require a full KDE desktop installation, but
-only the Frameworks libraries (https://develop.kde.org/products/frameworks)
+only the Frameworks 6 libraries (https://develop.kde.org/products/frameworks)
 and Marble (https://marble.kde.org).  CMake is required for building.
 Your distro should have packages for all of these, either installed as
 standard or additionally available.
@@ -44,7 +44,7 @@ copy will be used.
 
 Some additional KDE libraries can be used if they are available:
 
-Phonon4Qt5 - Multimedia playback library, for playback of audio/video notes
+Phonon4Qt6 - Multimedia playback library, for playback of audio/video notes
 https://invent.kde.org/libraries/phonon
 
 KExiv2 - Wrapper around the Exiv2 library, for geolocation of photos
@@ -56,6 +56,7 @@ directory) and do:
 
      git clone https://github.com/martenjj/umbrail.git
      cd umbrail
+     git switch frameworks6
      mkdir build
      cd build
      cmake ..
@@ -241,12 +242,13 @@ map area, but it should be close enough.
 
 DEM elevation data is provided by [Open Topography](http://opentopography.org),
 which is a free service with no registration required.  The data used
-is the SRTMGL3 model.
+is the SRTMGL3 model.  If you have your own API key for this service then
+enter it in "Configure - Services".
 
 If using the "Get time zone from location" facility, the time zone
 corresponding to a position is found from [GeoNames](http://www.geonames.org).
 Using this service requires a user name, so register on GeoNames and
-then enter your user name in "Configure - Services".  You do not need
+then enter your user name in "Configure - Services".  There is no need
 to enter a password here.
 
 The "Position Information" address lookup uses
@@ -257,6 +259,51 @@ Please see those services' privacy policies for information on how
 they may store and use your data.  This may include any user
 information that you provide for registration, the queries that you
 make, or the URLs of any data that you download.
+
+
+Points List Mode
+----------------
+
+This alternative view mode, which can be turned on using "View - Points List",
+is intended for easy maintenance of a master list of favourites, which most
+mapping applications can import or export.  The list does not show tracks,
+routes or any other data apart from waypoints, but they are only hidden and
+are not removed from the GPX file.
+
+When importing in this mode, if the "Merge with existing..." option is turned
+on, any new waypoint which is similar enough to an existing one is simply merged
+with it and not duplicated.  With the option "Mark newly imported..." on, any
+new waypoints which do not match any existing ones are marked in the list.
+This allows a master file of favourites to be kept locally and updated with any
+new favourites from a mapping device or application, with a workflow such as:
+
+* open existing master file
+* import new file from device with merge
+* check and verify any new waypoints, or manually merge with an existing one
+* save the new master file
+* export, setting "Home" and "Work" waypoints if required
+* send exported file to device, and import there if necessary
+
+When exporting, any existing waypoint can be selected as the "Home" or "Work"
+location.  To make selecting them easier, only those waypoints which have the
+"Home point" flag set will be listed; the flag can be set in the waypoint's
+"Details" properties page.
+
+A list of categories, which can be maintained by "Data - Manage Categories" and
+set for a waypoint via its "Details" properties page, is also saved in exported
+files.  These can define an icon colour and image for all waypoints of that
+category.
+
+
+Symbolic Icons
+--------------
+
+Symbolic icons for Garmin devices and for the OsmAnd mapping app can
+be shown on the map and in the list for waypoints.  The Garmin symbols are
+built in; to use OsmAnd symbols clone the repository
+[https://github.com/osmandapp/OsmAnd-resources.git] and then set its location
+in "Settings - Configure - Files - OsmAnd icons".  An icon image for a waypoint
+can then be set in its "Style" properties page.
 
 
 Resaving Files - Caution
