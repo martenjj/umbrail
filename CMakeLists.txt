@@ -45,7 +45,7 @@ endif ()
 set(QV ${QT_MAJOR_VERSION})
 set(PN ${CMAKE_PROJECT_NAME})
 
-set(VERSION "${QV}.0.0")
+set(VERSION "${QV}.1.0")
 message(STATUS "Configuring for project '${CMAKE_PROJECT_NAME}' version ${VERSION}")
 
 #########################################################################
